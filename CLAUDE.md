@@ -8,9 +8,26 @@ SkinWise là web app quản lý routine skincare: người dùng xếp lịch d�
 
 Văn bản hiển thị cho người dùng (giao diện, giải thích cảnh báo) viết bằng **tiếng Việt**; code, tên định danh và commit message viết bằng tiếng Anh. `README.md` là đặc tả cho người dùng — giữ mục "Lộ trình" và "Chạy trên máy" khớp với code.
 
-## Hiện trạng
+## Lệnh
 
-Dự án được làm lại từ đầu ngày 2026-10-21: repo chỉ có `README.md`. Chưa có code, build, lint hay test — bổ sung các lệnh vào đây khi đã dựng khung.
+Cần PostgreSQL chạy ở `localhost:5432` với hai database `skinwise` (dev) và `skinwise_test` (test); chuỗi kết nối nằm trong `backend/.env` (mẫu: `backend/.env.example`).
+
+Backend (chạy trong `backend/`, quản lý bằng uv):
+- `uv run python -m scripts.init_db` — áp schema (`app/schema.sql`, chạy lặp lại không lỗi)
+- `uv run uvicorn app.main:app --reload` — API tại `http://127.0.0.1:8000`
+- `uv run pytest` — test (dùng DB `skinwise_test`); một test: `uv run pytest tests/test_health.py::test_health`
+- `uv run ruff check` / `uv run ruff format`
+
+Frontend (chạy trong `frontend/`):
+- `npm run dev` — Vite tại `http://localhost:5173`, proxy `/api/*` sang backend (bỏ tiền tố `/api`)
+- `npm run build` (kiểm tra kiểu + build) / `npm run lint` (oxlint)
+
+## Cấu trúc
+
+- `backend/app/main.py` — `create_app()` khai báo route FastAPI; test thay `get_session` bằng `dependency_overrides` để trỏ sang DB test (`tests/conftest.py`).
+- `backend/app/db.py` — engine SQLAlchemy, dependency `get_session`, `init_schema()`. Schema là SQL thuần trong `app/schema.sql`, chưa dùng Alembic.
+- `backend/scripts/` — script chạy tay (khởi tạo DB; sau này seed dữ liệu, kiểm tra đoạn trích nguồn).
+- `frontend/src/` — app React; gọi API qua đường dẫn `/api/...`.
 
 ## Phạm vi (MVP, hạn ≈ 2026-11-10)
 
@@ -18,11 +35,11 @@ Một lập trình viên, không có nền tảng y khoa, nên MVP cố tình h�
 - Làm: dán bảng INCI hoặc chọn từ khoảng 30 sản phẩm mẫu; xếp lịch sáng/tối + ngày trong tuần theo thứ tự bước; phát hiện trùng hoạt chất; 5–8 luật xung đột có nguồn mạnh; 2–3 thẻ myth.
 - Để sau: tra cứu mã vạch qua Open Beauty Facts, OCR nhãn, hồ sơ da (nhạy cảm, mang thai…), tài khoản và đồng bộ. Trong MVP routine lưu trên trình duyệt.
 
-## Công nghệ (dự kiến)
+## Công nghệ
 
-- Backend: Python, FastAPI, Pydantic (kiểm tra dữ liệu đầu vào). Script xử lý dữ liệu (CosIng, dữ liệu mẫu, kiểm tra đoạn trích nguồn) cũng viết bằng Python. Chỉ một backend, không chạy thêm service Node.
-- Cơ sở dữ liệu: PostgreSQL, cả khi dev (chạy bằng Docker hoặc cài trực tiếp). Tìm sản phẩm chấp nhận gõ sai, không dấu bằng `pg_trgm`.
-- Frontend: React + Vite + Tailwind CSS.
+- Backend: Python 3.13+, FastAPI, Pydantic (kiểm tra dữ liệu đầu vào), SQLAlchemy 2 + psycopg 3, pytest, ruff. Script xử lý dữ liệu (CosIng, dữ liệu mẫu, kiểm tra đoạn trích nguồn) cũng viết bằng Python. Chỉ một backend, không chạy thêm service Node.
+- Cơ sở dữ liệu: PostgreSQL 17, cài trực tiếp trên máy khi dev. Tìm sản phẩm chấp nhận gõ sai, không dấu bằng `pg_trgm` + `unaccent`.
+- Frontend: React + TypeScript + Vite + Tailwind CSS v4.
 
 ## Kiến trúc (thiết kế đã chốt — bám theo)
 
