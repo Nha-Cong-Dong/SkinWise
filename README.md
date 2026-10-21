@@ -78,35 +78,19 @@ SkinWise được xây theo nguyên tắc **"không có nguồn thì không có 
 
 Mỗi sản phẩm cũng ghi lại bảng thành phần lấy từ đâu (nhập tay, dữ liệu mẫu, Open Beauty Facts…) và trạng thái xác minh.
 
-## Công nghệ
+## Công nghệ (dự kiến)
 
 - **Backend:** Node.js, TypeScript, Fastify 5, zod
 - **Cơ sở dữ liệu:** PostgreSQL. Khi phát triển dùng [PGlite](https://pglite.dev) (Postgres nhúng, không cần cài đặt). Tìm kiếm mờ bằng `pg_trgm`
-- **Frontend (đang phát triển):** React, Vite, Tailwind CSS
+- **Frontend:** React, Vite, Tailwind CSS
 
 ## Chạy trên máy
 
-Yêu cầu Node.js 22 trở lên.
-
-```bash
-npm install
-npm run dev        # chạy API tại http://127.0.0.1:3000 (kiểm tra: GET /health)
-npm test           # chạy test
-npm run build      # build ra thư mục dist/
-```
-
-Mặc định dữ liệu được lưu bằng PGlite trong thư mục `.data/pglite`. Để dùng PostgreSQL thật, đặt biến môi trường `DATABASE_URL`.
-
-| Biến môi trường | Mặc định | Ý nghĩa |
-|---|---|---|
-| `PORT` | `3000` | Cổng API |
-| `HOST` | `127.0.0.1` | Địa chỉ lắng nghe |
-| `DATABASE_URL` | (trống) | Chuỗi kết nối PostgreSQL; để trống thì dùng PGlite |
-| `PGLITE_DIR` | `.data/pglite` | Thư mục dữ liệu PGlite |
+Dự án đang được khởi tạo lại; hướng dẫn cài đặt và chạy sẽ được bổ sung khi có mã nguồn.
 
 ## Lộ trình
 
-- [x] Khung dự án: API, cơ sở dữ liệu, test
+- [ ] Khung dự án: API, cơ sở dữ liệu, test
 - [ ] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [ ] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
 - [ ] API: tìm sản phẩm, kiểm tra routine
