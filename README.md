@@ -80,8 +80,8 @@ Mỗi sản phẩm cũng ghi lại bảng thành phần lấy từ đâu (nhập
 
 ## Công nghệ (dự kiến)
 
-- **Backend:** Node.js, TypeScript, Fastify 5, zod
-- **Cơ sở dữ liệu:** PostgreSQL. Khi phát triển dùng [PGlite](https://pglite.dev) (Postgres nhúng, không cần cài đặt). Tìm kiếm mờ bằng `pg_trgm`
+- **Backend:** Python, FastAPI, Pydantic
+- **Cơ sở dữ liệu:** PostgreSQL. Tìm kiếm mờ bằng `pg_trgm`
 - **Frontend:** React, Vite, Tailwind CSS
 
 ## Chạy trên máy
