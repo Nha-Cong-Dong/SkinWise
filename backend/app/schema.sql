@@ -51,6 +51,12 @@ CREATE TABLE IF NOT EXISTS products (
   created_at          timestamptz NOT NULL DEFAULT now()
 );
 
+-- Added in phase 1; ALTER keeps existing databases in step with the CREATE above.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS slug text;            -- stable key for seed upserts
+ALTER TABLE products ADD COLUMN IF NOT EXISTS market text;          -- formulas differ by market
+ALTER TABLE products ADD COLUMN IF NOT EXISTS ingredients_raw text; -- verbatim list, re-checked against source_url
+CREATE UNIQUE INDEX IF NOT EXISTS products_slug_key ON products (slug);
+
 CREATE INDEX IF NOT EXISTS products_search_name_trgm
   ON products USING gin (search_name gin_trgm_ops);
 

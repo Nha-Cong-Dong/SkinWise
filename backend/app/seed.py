@@ -1,0 +1,144 @@
+"""Load backend/data/*.toml into the database. Upserts on natural keys, so it is safe to rerun
+and product ids stay stable (routines saved in the browser refer to them)."""
+
+import tomllib
+from pathlib import Path
+from typing import Any
+
+from sqlalchemy import Engine, text
+from sqlalchemy.engine import Connection
+
+from app.inci import normalize_name, parse_inci
+from app.ingredients import resolve
+
+DATA_DIR = Path(__file__).resolve().parent.parent / "data"
+
+
+def load_toml(name: str) -> dict[str, Any]:
+    with (DATA_DIR / name).open("rb") as f:
+        return tomllib.load(f)
+
+
+def seed(engine: Engine) -> dict[str, int]:
+    groups = load_toml("functional_groups.toml")["group"]
+    ingredients = load_toml("ingredients.toml")["ingredient"]
+    products = load_toml("products.toml").get("product", [])
+    with engine.begin() as conn:
+        _seed_groups(conn, groups)
+        _seed_ingredients(conn, ingredients)
+        for product in products:
+            _seed_product(conn, product)
+    return {"groups": len(groups), "ingredients": len(ingredients), "products": len(products)}
+
+
+def _seed_groups(conn: Connection, groups: list[dict[str, Any]]) -> None:
+    for g in groups:
+        conn.execute(
+            text(
+                """
+                INSERT INTO functional_groups (code, name_vi, description_vi)
+                VALUES (:code, :name_vi, :description_vi)
+                ON CONFLICT (code) DO UPDATE
+                  SET name_vi = excluded.name_vi, description_vi = excluded.description_vi
+                """
+            ),
+            {"code": g["code"], "name_vi": g["name_vi"], "description_vi": g.get("description_vi")},
+        )
+
+
+def _seed_ingredients(conn: Connection, ingredients: list[dict[str, Any]]) -> None:
+    for ing in ingredients:
+        ingredient_id = conn.execute(
+            text(
+                """
+                INSERT INTO ingredients (inci_name, normalized_name, cosing_ref)
+                VALUES (:inci, :normalized, :cosing_ref)
+                ON CONFLICT (inci_name) DO UPDATE
+                  SET normalized_name = excluded.normalized_name, cosing_ref = excluded.cosing_ref
+                RETURNING id
+                """
+            ),
+            {
+                "inci": ing["inci"],
+                "normalized": normalize_name(ing["inci"]),
+                "cosing_ref": ing.get("cosing_ref"),
+            },
+        ).scalar_one()
+
+        # Synonyms and groups are replaced wholesale so removals in the TOML take effect.
+        conn.execute(
+            text("DELETE FROM ingredient_synonyms WHERE ingredient_id = :id"), {"id": ingredient_id}
+        )
+        names = {normalize_name(n) for n in [ing["inci"], *ing.get("synonyms", [])]}
+        for name in sorted(names):
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO ingredient_synonyms (normalized_name, ingredient_id)
+                    VALUES (:name, :id)
+                    ON CONFLICT (normalized_name)
+                      DO UPDATE SET ingredient_id = excluded.ingredient_id
+                    """
+                ),
+                {"name": name, "id": ingredient_id},
+            )
+
+        conn.execute(
+            text("DELETE FROM ingredient_groups WHERE ingredient_id = :id"), {"id": ingredient_id}
+        )
+        for code in ing.get("groups", []):
+            conn.execute(
+                text(
+                    "INSERT INTO ingredient_groups (ingredient_id, group_code) VALUES (:id, :code)"
+                ),
+                {"id": ingredient_id, "code": code},
+            )
+
+
+def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
+    product_id = conn.execute(
+        text(
+            """
+            INSERT INTO products (slug, brand, name, market, search_name, ingredients_source,
+                                  source_url, source_retrieved_at, verification_status,
+                                  ingredients_raw)
+            VALUES (:slug, :brand, :name, :market, :search_name, 'seed',
+                    :source_url, :retrieved_at, :verification_status, :ingredients_raw)
+            ON CONFLICT (slug) DO UPDATE SET
+              brand = excluded.brand, name = excluded.name, market = excluded.market,
+              search_name = excluded.search_name, source_url = excluded.source_url,
+              source_retrieved_at = excluded.source_retrieved_at,
+              verification_status = excluded.verification_status,
+              ingredients_raw = excluded.ingredients_raw
+            RETURNING id
+            """
+        ),
+        {
+            "slug": p["slug"],
+            "brand": p["brand"],
+            "name": p["name"],
+            "market": p.get("market"),
+            "search_name": normalize_name(f"{p['brand']} {p['name']}"),
+            "source_url": p["source_url"],
+            "retrieved_at": p["retrieved_at"],
+            "verification_status": p.get("verification_status", "unverified"),
+            "ingredients_raw": p["ingredients"],
+        },
+    ).scalar_one()
+
+    conn.execute(text("DELETE FROM product_ingredients WHERE product_id = :id"), {"id": product_id})
+    for r in resolve(conn, parse_inci(p["ingredients"])):
+        conn.execute(
+            text(
+                """
+                INSERT INTO product_ingredients (product_id, position, ingredient_id, raw_name)
+                VALUES (:product_id, :position, :ingredient_id, :raw_name)
+                """
+            ),
+            {
+                "product_id": product_id,
+                "position": r.entry.position,
+                "ingredient_id": r.ingredient_id,
+                "raw_name": r.entry.raw,
+            },
+        )

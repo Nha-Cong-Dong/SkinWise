@@ -1,0 +1,307 @@
+# Từ điển hoạt chất (chỉ các chất liên quan tới nhóm hoạt chất; thành phần khác để "không nhận ra").
+# inci: tên INCI chuẩn (đối chiếu EU CosIng). synonyms: cách viết khác hay gặp trên nhãn.
+# groups: mã trong functional_groups.toml; để trống = có trong từ điển nhưng KHÔNG tính là hoạt chất.
+# note: chỗ dễ nhầm hoặc giới hạn — người duyệt đọc kỹ các mục có note.
+# TRẠNG THÁI: bản nháp do Claude soạn, chờ người duyệt.
+
+# --- AHA ---
+[[ingredient]]
+inci = "Glycolic Acid"
+groups = ["AHA", "EXFOLIANT_ACID"]
+
+[[ingredient]]
+inci = "Lactic Acid"
+groups = ["AHA", "EXFOLIANT_ACID"]
+note = "Cũng hay dùng với lượng nhỏ để chỉnh pH; INCI không có nồng độ nên vẫn tính là AHA, cảnh báo dùng 'có thể'."
+
+[[ingredient]]
+inci = "Mandelic Acid"
+groups = ["AHA", "EXFOLIANT_ACID"]
+
+[[ingredient]]
+inci = "Malic Acid"
+groups = ["AHA", "EXFOLIANT_ACID"]
+note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH."
+
+[[ingredient]]
+inci = "Tartaric Acid"
+groups = ["AHA", "EXFOLIANT_ACID"]
+note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH."
+
+[[ingredient]]
+inci = "Citric Acid"
+groups = []
+note = "Thường là chất chỉnh pH; cố ý KHÔNG tính là AHA tẩy tế bào chết."
+
+# --- BHA ---
+[[ingredient]]
+inci = "Salicylic Acid"
+synonyms = ["BHA", "Beta Hydroxy Acid"]
+groups = ["BHA", "EXFOLIANT_ACID"]
+
+[[ingredient]]
+inci = "Capryloyl Salicylic Acid"
+synonyms = ["LHA"]
+groups = ["BHA", "EXFOLIANT_ACID"]
+note = "Dẫn xuất của salicylic acid (LHA)."
+
+[[ingredient]]
+inci = "Betaine Salicylate"
+groups = ["BHA", "EXFOLIANT_ACID"]
+note = "Dẫn xuất của salicylic acid, thường được coi là nhẹ hơn."
+
+# --- PHA ---
+[[ingredient]]
+inci = "Gluconolactone"
+groups = ["PHA", "EXFOLIANT_ACID"]
+
+[[ingredient]]
+inci = "Lactobionic Acid"
+groups = ["PHA", "EXFOLIANT_ACID"]
+
+# --- Retinoid ---
+[[ingredient]]
+inci = "Retinol"
+groups = ["RETINOID"]
+
+[[ingredient]]
+inci = "Retinal"
+synonyms = ["Retinaldehyde"]
+groups = ["RETINOID"]
+
+[[ingredient]]
+inci = "Retinyl Palmitate"
+groups = ["RETINOID"]
+note = "Ester retinyl, thường được coi là yếu hơn retinol."
+
+[[ingredient]]
+inci = "Retinyl Acetate"
+groups = ["RETINOID"]
+
+[[ingredient]]
+inci = "Retinyl Propionate"
+groups = ["RETINOID"]
+
+[[ingredient]]
+inci = "Retinyl Retinoate"
+groups = ["RETINOID"]
+
+[[ingredient]]
+inci = "Hydroxypinacolone Retinoate"
+synonyms = ["HPR", "Granactive Retinoid"]
+groups = ["RETINOID"]
+
+[[ingredient]]
+inci = "Adapalene"
+groups = ["RETINOID"]
+note = "Thuốc (ở nhiều nước là thuốc bán không cần đơn hoặc cần đơn), không phải mỹ phẩm thông thường."
+
+[[ingredient]]
+inci = "Tretinoin"
+synonyms = ["Retinoic Acid"]
+groups = ["RETINOID"]
+note = "Thuốc kê đơn."
+
+[[ingredient]]
+inci = "Bakuchiol"
+groups = []
+note = "Thường được quảng cáo là 'retinol thực vật' nhưng không phải retinoid; cố ý KHÔNG xếp vào RETINOID."
+
+# --- Vitamin C ---
+[[ingredient]]
+inci = "Ascorbic Acid"
+synonyms = ["L-Ascorbic Acid", "Vitamin C"]
+groups = ["VITAMIN_C"]
+
+[[ingredient]]
+inci = "Ascorbyl Glucoside"
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "Sodium Ascorbyl Phosphate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "Magnesium Ascorbyl Phosphate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "3-O-Ethyl Ascorbic Acid"
+synonyms = ["Ethyl Ascorbic Acid"]
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "Tetrahexyldecyl Ascorbate"
+synonyms = ["Ascorbyl Tetraisopalmitate"]
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "Ascorbyl Palmitate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức."
+
+# --- Niacinamide ---
+[[ingredient]]
+inci = "Niacinamide"
+synonyms = ["Nicotinamide", "Vitamin B3"]
+groups = ["NIACINAMIDE"]
+
+# --- Benzoyl peroxide ---
+[[ingredient]]
+inci = "Benzoyl Peroxide"
+synonyms = ["Hydrous Benzoyl Peroxide"]
+groups = ["BENZOYL_PEROXIDE"]
+
+# --- Azelaic acid ---
+[[ingredient]]
+inci = "Azelaic Acid"
+groups = ["AZELAIC_ACID"]
+
+[[ingredient]]
+inci = "Potassium Azeloyl Diglycinate"
+synonyms = ["Azeloglicina"]
+groups = ["AZELAIC_ACID"]
+note = "Dẫn xuất tan trong nước của azelaic acid."
+
+# ======================================================================================
+# Mở rộng (23/10): biến thể của các nhóm đã có. Bản nháp, chờ người duyệt.
+# ======================================================================================
+
+[[ingredient]]
+inci = "Ammonium Lactate"
+groups = ["AHA", "EXFOLIANT_ACID"]
+note = "Lactic acid đã trung hoà một phần; dùng như AHA trong kem dưỡng thể. Kém chắc chắn hơn lactic acid."
+
+[[ingredient]]
+inci = "Ammonium Glycolate"
+groups = ["AHA", "EXFOLIANT_ACID"]
+note = "Glycolic acid đã trung hoà một phần (đệm pH); vẫn tính là AHA, cảnh báo dùng 'có thể'."
+
+[[ingredient]]
+inci = "Maltobionic Acid"
+groups = ["PHA", "EXFOLIANT_ACID"]
+
+[[ingredient]]
+inci = "Retinyl Linoleate"
+groups = ["RETINOID"]
+note = "Ester retinyl, thường được coi là yếu hơn retinol."
+
+[[ingredient]]
+inci = "Isotretinoin"
+groups = ["RETINOID"]
+note = "Thuốc kê đơn."
+
+[[ingredient]]
+inci = "Tazarotene"
+groups = ["RETINOID"]
+note = "Thuốc kê đơn."
+
+[[ingredient]]
+inci = "Trifarotene"
+groups = ["RETINOID"]
+note = "Thuốc kê đơn."
+
+[[ingredient]]
+inci = "Sodium Ascorbate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+note = "Muối của ascorbic acid; xếp vào dẫn xuất, không phải L-ascorbic acid nguyên chất."
+
+[[ingredient]]
+inci = "Calcium Ascorbate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+note = "Muối của ascorbic acid."
+
+[[ingredient]]
+inci = "Aminopropyl Ascorbyl Phosphate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "Ascorbyl Methylsilanol Pectinate"
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+[[ingredient]]
+inci = "Glyceryl Ascorbate"
+synonyms = ["3-Glyceryl Ascorbate"]
+groups = ["VITAMIN_C_DERIVATIVE"]
+
+# ======================================================================================
+# Trông giống hoạt chất nhưng KHÔNG tính (groups = []): ghi rõ để không ai "sửa" nhầm.
+# ======================================================================================
+
+[[ingredient]]
+inci = "Ethylhexyl Salicylate"
+synonyms = ["Octisalate"]
+groups = []
+note = "Chất lọc UV trong kem chống nắng, không phải BHA tẩy tế bào chết."
+
+[[ingredient]]
+inci = "Homosalate"
+groups = []
+note = "Chất lọc UV, không phải BHA."
+
+[[ingredient]]
+inci = "Benzyl Salicylate"
+groups = []
+note = "Thành phần hương liệu, không phải BHA."
+
+[[ingredient]]
+inci = "Sodium Salicylate"
+groups = []
+note = "Chủ yếu dùng làm chất bảo quản; không tính là BHA. Cần người duyệt xác nhận."
+
+[[ingredient]]
+inci = "Salix Alba Bark Extract"
+synonyms = ["Willow Bark Extract"]
+groups = []
+note = "Hay quảng cáo là 'BHA tự nhiên' nhưng chứa salicin, không phải salicylic acid."
+
+[[ingredient]]
+inci = "Sodium Lactate"
+groups = []
+note = "Chất giữ ẩm / đệm pH, không phải AHA tẩy tế bào chết."
+
+[[ingredient]]
+inci = "Sodium Citrate"
+groups = []
+note = "Chất đệm pH."
+
+[[ingredient]]
+inci = "Ferulic Acid"
+groups = []
+note = "Chất chống oxy hoá, thường đi kèm vitamin C; không phải acid tẩy tế bào chết."
+
+[[ingredient]]
+inci = "Hyaluronic Acid"
+groups = []
+note = "Chất giữ ẩm; tên có chữ 'acid' nhưng không tẩy tế bào chết."
+
+[[ingredient]]
+inci = "Sodium Hyaluronate"
+groups = []
+note = "Chất giữ ẩm (muối của hyaluronic acid)."
+
+[[ingredient]]
+inci = "Kojic Acid"
+groups = []
+note = "Chất làm sáng da; không thuộc nhóm nào đang có luật."
+
+[[ingredient]]
+inci = "Tranexamic Acid"
+groups = []
+note = "Chất làm sáng da; không thuộc nhóm nào đang có luật."
+
+[[ingredient]]
+inci = "Phytic Acid"
+groups = []
+note = "Chất tạo phức / chống oxy hoá; không tính là AHA."
+
+[[ingredient]]
+inci = "Benzoic Acid"
+groups = []
+note = "Chất bảo quản."
+
+[[ingredient]]
+inci = "Niacin"
+synonyms = ["Nicotinic Acid"]
+groups = []
+note = "Khác niacinamide; không xếp vào NIACINAMIDE."

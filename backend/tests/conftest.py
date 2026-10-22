@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session, sessionmaker
 
 from app.db import get_session, init_schema
 from app.main import create_app
+from app.seed import seed
 
 
 class TestSettings(BaseSettings):
@@ -22,6 +23,7 @@ def engine() -> Iterator[Engine]:
     url = os.environ.get("TEST_DATABASE_URL") or TestSettings().test_database_url
     engine = create_engine(url)
     init_schema(engine)
+    seed(engine)
     yield engine
     engine.dispose()
 

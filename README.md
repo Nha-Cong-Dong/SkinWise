@@ -110,8 +110,10 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
 
 ## Lộ trình
 
+Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
+
 - [x] Khung dự án: API, cơ sở dữ liệu, test
-- [ ] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
+- [x] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [ ] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
 - [ ] API: tìm sản phẩm, kiểm tra routine
 - [ ] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo
