@@ -86,11 +86,31 @@ Mỗi sản phẩm cũng ghi lại bảng thành phần lấy từ đâu (nhập
 
 ## Chạy trên máy
 
-Dự án đang được khởi tạo lại; hướng dẫn cài đặt và chạy sẽ được bổ sung khi có mã nguồn.
+Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, PostgreSQL 17.
+
+1. Tạo hai database `skinwise` và `skinwise_test` trong PostgreSQL.
+2. Backend:
+
+   ```bash
+   cd backend
+   cp .env.example .env            # điền mật khẩu PostgreSQL
+   uv sync
+   uv run python -m scripts.init_db
+   uv run uvicorn app.main:app --reload   # API tại http://127.0.0.1:8000 (kiểm tra: GET /health)
+   uv run pytest                  # chạy test
+   ```
+
+3. Frontend (mở terminal khác):
+
+   ```bash
+   cd frontend
+   npm install
+   npm run dev                    # mở http://localhost:5173
+   ```
 
 ## Lộ trình
 
-- [ ] Khung dự án: API, cơ sở dữ liệu, test
+- [x] Khung dự án: API, cơ sở dữ liệu, test
 - [ ] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [ ] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
 - [ ] API: tìm sản phẩm, kiểm tra routine
