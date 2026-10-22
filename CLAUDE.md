@@ -8,14 +8,19 @@ SkinWise là web app quản lý routine skincare: người dùng xếp lịch d�
 
 Văn bản hiển thị cho người dùng (giao diện, giải thích cảnh báo) viết bằng **tiếng Việt**; code, tên định danh và commit message viết bằng tiếng Anh. `README.md` là đặc tả cho người dùng — giữ mục "Lộ trình" và "Chạy trên máy" khớp với code.
 
+Kế hoạch, tiến độ và các quyết định đã chốt nằm trong `plan/` (`plan/README.md` là bảng tổng). Đọc trước khi bắt đầu việc mới; cập nhật checklist của giai đoạn đang làm khi xong việc và khi xong mỗi PR.
+
 ## Lệnh
 
 Cần PostgreSQL chạy ở `localhost:5432` với hai database `skinwise` (dev) và `skinwise_test` (test); chuỗi kết nối nằm trong `backend/.env` (mẫu: `backend/.env.example`).
 
 Backend (chạy trong `backend/`, quản lý bằng uv):
 - `uv run python -m scripts.init_db` — áp schema (`app/schema.sql`, chạy lặp lại không lỗi)
+- `uv run python -m scripts.seed` — áp schema rồi nạp `data/*.toml` vào DB (upsert, chạy lại an toàn)
+- `uv run python -m scripts.verify_products [slug ...]` — tải lại trang nguồn, xác nhận từng thành phần của sản phẩm mẫu có trên trang và đúng thứ tự
+- `uv run python -m scripts.unresolved` — liệt kê tên thành phần chưa nhận ra trong sản phẩm mẫu (để bắt hoạt chất bị sót)
 - `uv run uvicorn app.main:app --reload` — API tại `http://127.0.0.1:8000`
-- `uv run pytest` — test (dùng DB `skinwise_test`); một test: `uv run pytest tests/test_health.py::test_health`
+- `uv run pytest` — test (DB `skinwise_test`, tự áp schema + seed); một test: `uv run pytest tests/test_inci.py::test_normalize_name`
 - `uv run ruff check` / `uv run ruff format`
 
 Frontend (chạy trong `frontend/`):
@@ -26,7 +31,10 @@ Frontend (chạy trong `frontend/`):
 
 - `backend/app/main.py` — `create_app()` khai báo route FastAPI; test thay `get_session` bằng `dependency_overrides` để trỏ sang DB test (`tests/conftest.py`).
 - `backend/app/db.py` — engine SQLAlchemy, dependency `get_session`, `init_schema()`. Schema là SQL thuần trong `app/schema.sql`, chưa dùng Alembic.
-- `backend/scripts/` — script chạy tay (khởi tạo DB; sau này seed dữ liệu, kiểm tra đoạn trích nguồn).
+- `backend/app/inci.py` — tách + chuẩn hoá bảng INCI, không cần DB. Mỗi dòng có nhiều `candidates` (tên đầy đủ trước, rồi các phần của `A (B)` và `A/B`); `app/ingredients.py` `resolve()` lấy tên đầu tiên có trong `ingredient_synonyms` → hoạt chất + nhóm. Thành phần không nhận ra vẫn giữ tên gốc.
+- `backend/data/*.toml` — dữ liệu seed, nguồn sự thật cho nhóm hoạt chất, từ điển hoạt chất và sản phẩm mẫu; sửa ở đây rồi chạy lại seed, không sửa thẳng trong DB. Seed upsert theo khoá tự nhiên (`code`, `inci_name`, `slug`) để id không đổi. Từ điển chỉ chứa hoạt chất; chất có mặt với `groups = []` (vd. Citric Acid, Bakuchiol) là cố ý không tính là hoạt chất.
+- `backend/app/sources.py` — tải trang nguồn và kiểm tra văn bản có trên trang; dùng chung cho kiểm tra sản phẩm và (giai đoạn 2) đoạn trích của luật.
+- `backend/scripts/` — điểm vào chạy tay, mỏng, gọi code trong `app/`.
 - `frontend/src/` — app React; gọi API qua đường dẫn `/api/...`.
 
 ## Phạm vi (MVP, hạn ≈ 2026-11-10)

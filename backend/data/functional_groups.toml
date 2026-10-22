@@ -1,0 +1,52 @@
+# Nhóm hoạt chất. Luật cảnh báo viết theo các mã này, không theo từng chất.
+# Mô tả chỉ để giải thích cho người dùng; không chứa khuyến cáo (khuyến cáo nằm trong luật có nguồn).
+
+[[group]]
+code = "AHA"
+name_vi = "AHA (alpha hydroxy acid)"
+description_vi = "Nhóm acid tẩy tế bào chết tan trong nước, ví dụ glycolic acid, lactic acid, mandelic acid."
+
+[[group]]
+code = "BHA"
+name_vi = "BHA (beta hydroxy acid)"
+description_vi = "Acid tẩy tế bào chết tan trong dầu, chủ yếu là salicylic acid và các dẫn xuất."
+
+[[group]]
+code = "PHA"
+name_vi = "PHA (polyhydroxy acid)"
+description_vi = "Acid tẩy tế bào chết có phân tử lớn hơn AHA, ví dụ gluconolactone, lactobionic acid."
+
+[[group]]
+code = "EXFOLIANT_ACID"
+name_vi = "Acid tẩy tế bào chết"
+description_vi = "Nhóm chung gồm AHA, BHA và PHA."
+
+[[group]]
+code = "RETINOID"
+name_vi = "Retinoid (dẫn xuất vitamin A)"
+description_vi = "Retinol, retinal, các ester retinyl, hydroxypinacolone retinoate, adapalene, tretinoin."
+
+[[group]]
+code = "VITAMIN_C"
+name_vi = "Vitamin C (L-ascorbic acid)"
+description_vi = "Dạng vitamin C nguyên chất, ascorbic acid."
+
+[[group]]
+code = "VITAMIN_C_DERIVATIVE"
+name_vi = "Dẫn xuất vitamin C"
+description_vi = "Các dạng vitamin C đã biến đổi, ví dụ ascorbyl glucoside, sodium ascorbyl phosphate."
+
+[[group]]
+code = "NIACINAMIDE"
+name_vi = "Niacinamide (vitamin B3)"
+description_vi = "Niacinamide, còn gọi là nicotinamide."
+
+[[group]]
+code = "BENZOYL_PEROXIDE"
+name_vi = "Benzoyl peroxide"
+description_vi = "Hoạt chất thường dùng trong sản phẩm trị mụn."
+
+[[group]]
+code = "AZELAIC_ACID"
+name_vi = "Azelaic acid"
+description_vi = "Azelaic acid và dẫn xuất."

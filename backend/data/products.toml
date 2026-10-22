@@ -1,0 +1,184 @@
+# Sản phẩm mẫu. Bảng thành phần chép NGUYÊN VĂN từ trang chính hãng (source_url), không chép từ trí nhớ.
+# Kiểm tra lại với trang nguồn: uv run python -m scripts.verify_products
+# slug: khoá ổn định, không đổi sau khi đã seed (routine trên trình duyệt tham chiếu id sản phẩm).
+# verification_status: "verified" chỉ khi verify_products đạt và đã có người xem lại.
+
+# --- AHA ---
+# The Ordinary Glycolic Acid 7% Exfoliating Toner: dropped, its page (all regions tried) has an empty
+# ingredient list in the HTML. Mandelic Acid 10% + HA covers AHA from the same brand instead.
+
+[[product]]
+slug = "the-ordinary-lactic-acid-10-ha"
+brand = "The Ordinary"
+name = "Lactic Acid 10% + HA"
+market = "US"
+source_url = "https://theordinary.com/en-us/lactic-acid-10-ha-exfoliator-100426.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Aqua (Water), Lactic Acid, Glycerin, Pentylene Glycol, Propanediol, Sodium Hydroxide, Sodium Hyaluronate Crosspolymer, Tasmannia Lanceolata Fruit/Leaf Extract, Acacia Senegal Gum, Xanthan Gum, Isoceteth-20, Trisodium Ethylenediamine Disuccinate, Ethylhexylglycerin, 1,2-Hexanediol, Caprylyl Glycol."""
+
+[[product]]
+slug = "the-ordinary-mandelic-acid-10-ha"
+brand = "The Ordinary"
+name = "Mandelic Acid 10% + HA"
+market = "US"
+source_url = "https://theordinary.com/en-us/mandelic-acid-10-ha-exfoliator-100429.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Propanediol, Aqua (Water), Mandelic Acid, Glycerin, Dimethyl Isosorbide, Sodium Hyaluronate Crosspolymer, Tasmannia Lanceolata Fruit/Leaf Extract, Pentylene Glycol, Polysorbate 20, Sodium Hydroxide, Ethylhexylglycerin, 1,2-Hexanediol, Caprylyl Glycol."""
+
+# --- BHA ---
+# paulaschoice.com (US) does not include the full list in its HTML; the UK site does.
+
+[[product]]
+slug = "paulas-choice-skin-perfecting-2-bha-liquid-exfoliant"
+brand = "Paula's Choice"
+name = "Skin Perfecting 2% BHA Liquid Exfoliant"
+market = "UK"
+source_url = "https://www.paulaschoice.co.uk/skin-perfecting-2pct-bha-liquid-exfoliant/2010.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Water (Aqua/Eau), Methylpropanediol, Butylene Glycol, Salicylic Acid, Polysorbate 20, Camellia Oleifera Leaf Extract, Sodium Hydroxide, Tetrasodium EDTA."""
+
+# Sold as "SA Smoothing Cleanser" outside the US; the US site names it Renewing SA Cleanser.
+[[product]]
+slug = "cerave-renewing-sa-cleanser"
+brand = "CeraVe"
+name = "Renewing SA Cleanser"
+market = "US"
+source_url = "https://www.cerave.com/skincare/cleansers/renewing-sa-cleanser"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Aqua/Water/Eau, Cocamidopropyl Hydroxysultaine, Glycerin, Sodium Lauroyl Sarcosinate, Niacinamide, Gluconolactone, Peg-150 Pentaerythrityl Tetrastearate, Sodium Methyl Cocoyl Taurate, Zea Mays Oil/Corn Oil, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Calcium Gluconate, Sodium Chloride, Salicylic Acid, Sodium Benzoate, Sodium Lauroyl Lactylate, Cholecalciferol, Cholesterol, Phenoxyethanol, Disodium Edta, Tetrasodium Edta, Hydrolyzed Hyaluronic Acid, Phytosphingosine, Xanthan Gum, Ethylhexylglycerin"""
+
+# --- AHA + BHA + PHA ---
+# Korean-label English names (e.g. "Purified Water", "Papaya Fruit Extract"), not INCI. This formula lists
+# no glycolic/lactic acid: the "AHA" is Citric Acid (500 ppm); BHA and PHA are at 100 ppm.
+[[product]]
+slug = "some-by-mi-aha-bha-pha-30-days-miracle-toner"
+brand = "Some By Mi"
+name = "AHA-BHA-PHA 30 Days Miracle Toner"
+market = "KR (en.somebymi.com)"
+source_url = "https://en.somebymi.com/product/aha-bha-pha-30-days-miracle-toner-150ml/73/"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Purified Water, Butylene Glycol, Dipropylene Glycol, Glycerin, Niacinamide, Tea Tree Leaf Water, Polyglyceryl-4 Caprate, Papaya Fruit Extract, Esculenta Lentinus Seed Extract, Witch Hazel Extract, Lotus Flower Extract, Swiftlet Nest Extract, Sodium Hyaluronate, Fructan, Allantoin, Adenosine, Hydroxyethyl Urea, Xylitol, Salicylic Acid (100 ppm), Lactobionic Acid (100 ppm), Citric Acid (500 ppm), Sodium Citrate, 1,2-Hexanediol, Benzyl Glycol, Ethylhexylglycerin, Raspberry Ketone, Peppermint Oil"""
+
+# --- Retinoid ---
+
+[[product]]
+slug = "the-ordinary-retinol-05-in-squalane"
+brand = "The Ordinary"
+name = "Retinol 0.5% in Squalane"
+market = "US"
+source_url = "https://theordinary.com/en-us/retinol-05-in-squalane-serum-100440.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Squalane, Caprylic/Capric Triglyceride, Simmondsia Chinensis (Jojoba) Seed Oil, Retinol, Solanum Lycopersicum (Tomato) Fruit Extract, Rosmarinus Officinalis (Rosemary) Leaf Extract, Hydroxymethoxyphenyl Decanone, BHT."""
+
+[[product]]
+slug = "cerave-resurfacing-retinol-serum"
+brand = "CeraVe"
+name = "Resurfacing Retinol Serum"
+market = "US"
+source_url = "https://www.cerave.com/skincare/serums/resurfacing-retinol-serum"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """AQUA/WATER/EAU, PROPANEDIOL, DIMETHICONE , CETEARYL ETHYLHEXANOATE, NIACINAMIDE, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, DIPOTASSIUM GLYCYRRHIZATE, HYDROGENATED LECITHIN, POTASSIUM PHOSPHATE, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, CETEARYL ALCOHOL, BEHENTRIMONIUM METHOSULFATE, DIMETHICONOL, LECITHIN, SODIUM CITRATE, RETINOL, SODIUM HYALURONATE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, PHENOXYETHANOL, ALCOHOL, ISOPROPYL MYRISTATE, CAPRYLYL GLYCOL, CITRIC ACID, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, PENTYLENE GLYCOL, PHYTOSPHINGOSINE, XANTHAN GUM, POLYSORBATE 20, ETHYLHEXYLGLYCERIN"""
+
+# --- Vitamin C ---
+# Klairs Freshly Juiced Vitamin Drop: dropped, klairscosmetics.com returned HTTP 500 on every request.
+# The Ordinary Vitamin C Suspension 23% covers L-ascorbic acid instead.
+
+[[product]]
+slug = "the-ordinary-vitamin-c-suspension-23-ha-spheres-2"
+brand = "The Ordinary"
+name = "Vitamin C Suspension 23% + HA Spheres 2%"
+market = "US"
+source_url = "https://theordinary.com/en-us/vitamin-c-suspension-23-ha-spheres-2-vitamin-c-100451.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Ascorbic Acid, Squalane, Isodecyl Neopentanoate, Isononyl Isononanoate, Coconut Alkanes, Ethylene/Propylene/Styrene Copolymer, Ethylhexyl Palmitate, Silica Dimethyl Silylate, Sodium Hyaluronate, Glucomannan, Coco-Caprylate/Caprate, Butylene/Ethylene/Styrene Copolymer, Acrylates/Ethylhexyl Acrylate Crosspolymer, Trihydroxystearin, Bht."""
+
+[[product]]
+slug = "the-ordinary-ascorbyl-glucoside-solution-12"
+brand = "The Ordinary"
+name = "Ascorbyl Glucoside Solution 12%"
+market = "US"
+source_url = "https://theordinary.com/en-us/ascorbyl-glucoside-solution-12-vitamin-c-100405.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Aqua (Water), Ascorbyl Glucoside, Propanediol, Aminomethyl Propanol, Triethanolamine, Isoceteth-20, Xanthan Gum, Dimethyl Isosorbide, Ethoxydiglycol, Trisodium Ethylenediamine Disuccinate, 1,2-Hexanediol, Caprylyl Glycol."""
+
+# --- Niacinamide ---
+
+[[product]]
+slug = "the-ordinary-niacinamide-10-zinc-1"
+brand = "The Ordinary"
+name = "Niacinamide 10% + Zinc 1%"
+market = "US"
+source_url = "https://theordinary.com/en-us/niacinamide-10-zinc-1-serum-100436.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Aqua (Water), Niacinamide, Pentylene Glycol, Zinc PCA, Dimethyl Isosorbide, Tamarindus Indica Seed Gum, Xanthan Gum, Isoceteth-20, Ethoxydiglycol, Phenoxyethanol, Chlorphenesin."""
+
+# List as shown on the Vietnamese page (the English translation embedded in the same page differs slightly
+# in order and omits a few items). Also contains Salicylic Acid.
+[[product]]
+slug = "cocoon-tinh-chat-bi-dao-n7"
+brand = "Cocoon"
+name = "Tinh chất bí đao N7 (Winter Melon Serum N7) 70ml"
+market = "VN"
+source_url = "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-70ml"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """AQUA/WATER, NIACINAMIDE, ACETYL GLUCOSAMINE, ETHOXYDIGLYCOL, BUTYLENE GLYCOL, PENTYLENE GLYCOL, COCAMIDOPROPYL DIMETHYLAMINE, PEG-40 HYDROGENATED CASTOR OIL, BENINCASA CERIFERA FRUIT EXTRACT, MADECASSIC ACID, ASIATIC ACID, ASIATICOSIDE, CENTELLA ASIATICA EXTRACT, FERULIC ACID, SALICYLIC ACID, ZINC PCA, PHELLODENDRON AMURENSE BARK EXTRACT, TOCOPHEROL, BISABOLOL, DIMETHYL ISOSORBIDE, GLYCERETH-26, HYDROXYACETOPHENONE, BIS-PEG-18 METHYL ETHER DIMETHYL SILANE, HYDROXYETHYLCELLULOSE, MELALEUCA ALTERNIFOLIA LEAF OIL, LAVANDULA ANGUSTIFOLIA FLOWER OIL, ROSMARINUS OFFICINALIS LEAF OIL, DISODIUM PHOSPHATE, POLYSORBATE 60, SODIUM PHOSPHATE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, CITRIC ACID, POTASSIUM SORBATE."""
+
+# --- Benzoyl peroxide ---
+# US OTC drug: the page prints "Active Ingredient : Benzoyl Peroxide 4%" then "Inactive Ingredients : ...".
+# Both are joined here, active first.
+[[product]]
+slug = "cerave-acne-foaming-cream-cleanser"
+brand = "CeraVe"
+name = "Acne Foaming Cream Cleanser"
+market = "US"
+source_url = "https://www.cerave.com/skincare/cleansers/acne-benzoyl-peroxide-cleanser"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Benzoyl Peroxide 4%, Water, Glycerin, Propylene Glycol, Cocamidopropyl Hydroxysultaine, Sodium C14-16 Olefin Sulfonate, Xanthan Gum, Potassium Hydroxide, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Niacinamide, Glycolic Acid, Sodium Chloride, Sodium Citrate, Sodium Hyaluronate, Sodium Lauroyl Lactylate, Sodium Hydroxide, Cholesterol, Phenoxyethanol, Propanediol, Citric Acid, Tetrasodium EDTA, Diethylhexyl Sodium Sulfosuccinate, Phytosphingosine, Ethylhexylglycerin, Benzoic Acid"""
+
+# --- Azelaic acid ---
+
+[[product]]
+slug = "the-ordinary-azelaic-acid-suspension-10"
+brand = "The Ordinary"
+name = "Azelaic Acid Suspension 10%"
+market = "US"
+source_url = "https://theordinary.com/en-us/azelaic-acid-suspension-10-exfoliator-100407.html"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """Aqua (Water), Isodecyl Neopentanoate, Dimethicone, Azelaic Acid, Dimethicone/Bis-Isobutyl Ppg-20 Crosspolymer, Dimethyl Isosorbide, Hydroxyethyl Acrylate/Sodium Acryloyldimethyl Taurate Copolymer, Polysilicone-11, Isohexadecane, Tocopherol, Trisodium Ethylenediamine Disuccinate, Isoceteth-20, Polysorbate 60, Triethanolamine, Ethoxydiglycol, Phenoxyethanol, Chlorphenesin."""
+
+# --- No strong actives ---
+# "Moisturising Lotion" outside the US. The page ends the list with "- (CODE F.I.L D215763/2)", omitted here.
+[[product]]
+slug = "cerave-daily-moisturizing-lotion"
+brand = "CeraVe"
+name = "Daily Moisturizing Lotion"
+market = "US"
+source_url = "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """AQUA / WATER / EAU, GLYCERIN,CAPRYLIC/CAPRIC TRIGLYCERIDE, CETEARYL ALCOHOL, CETYL ALCOHOL, DIMETHICONE, PHENOXYETHANOL, POLYSORBATE 20, CETEARETH-20,BEHENTRIMONIUM METHOSULFATE, POLYGLYCERYL-3 DIISOSTEARATE, SODIUM LAUROYL LACTYLATE, ETHYLHEXYLGLYCERIN, POTASSIUM PHOSPHATE, DISODIUM EDTA, DIPOTASSIUM PHOSPHATE, CERAMIDE NP, CERAMIDE AP, PHYTOSPHINGOSINE, CHOLESTEROL, XANTHAN GUM, CARBOMER, SODIUM HYALURONATE, TOCOPHEROL, CERAMIDE EOP"""
+
+# laroche-posay.us/.co.uk/.fr/.com.au/.ie return 403 to scripted requests; the India site serves the list
+# in its product JSON-LD.
+[[product]]
+slug = "la-roche-posay-anthelios-uvmune-400-invisible-fluid-spf50"
+brand = "La Roche-Posay"
+name = "Anthelios UVMune 400 Invisible Fluid SPF50+"
+market = "IN"
+source_url = "https://www.laroche-posay.co.in/anthelios/anthelios-uvmune-400-invisible-fluid-spf50"
+retrieved_at = 2026-10-22
+verification_status = "unverified"
+ingredients = """AQUA / WATER / EAU,ALCOHOL DENAT.,TRIETHYL CITRATE,DIISOPROPYL SEBACATE,SILICA,ETHYLHEXYL SALICYLATE,BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE,ETHYLHEXYL TRIAZONE,BUTYL METHOXYDIBENZOYLMETHANE,GLYCERIN,PROPANEDIOL,C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER,CI 77891 / TITANIUM DIOXIDE,METHOXYPROPYLAMINO CYCLOHEXENYLIDENE ETHOXYETHYLCYANOACETATE,PERLITE,TOCOPHEROL,CAPRYLIC/CAPRIC TRIGLYCERIDE,ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER,CAPRYLYL GLYCOL,CI 77491 / IRON OXIDES,CI 77492 / IRON OXIDES,CI 77499 / IRON OXIDES,DIETHYLAMINO HYDROXYBENZOYL HEXYL BENZOATE,DROMETRIZOLE TRISILOXANE,HYDROXYETHYLCELLULOSE,SODIUM STEAROYL GLUTAMATE,TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID,TRIETHANOLAMINE,TRISODIUM ETHYLENEDIAMINE DISUCCINATE,PARFUM / FRAGRANCE,"""

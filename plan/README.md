@@ -1,0 +1,28 @@
+# Kế hoạch và tiến độ
+
+Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và vào `main` bằng một PR. Cập nhật file này khi xong mỗi PR.
+
+| # | Giai đoạn | Thời gian | Trạng thái | Chi tiết |
+|---|---|---|---|---|
+| 0 | Dựng khung: FastAPI, PostgreSQL, React, test | 21–22/10 | ✅ Xong (PR #1) | [phase-0-scaffold.md](phase-0-scaffold.md) |
+| 1 | Dữ liệu thành phần: parser INCI, nhóm hoạt chất, sản phẩm mẫu | 23–27/10 | ✅ Xong, chờ duyệt từ điển | [phase-1-ingredients.md](phase-1-ingredients.md) |
+| 2 | Engine luật + script kiểm tra đoạn trích nguồn | 28/10–1/11 | ⏳ Tiếp theo | |
+| 3 | API: tìm sản phẩm, phân tích INCI, kiểm tra routine, myth | 2–3/11 | ⏳ | |
+| 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth | 3–7/11 | ⏳ | |
+| 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
+
+**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng.
+
+| Luật ứng viên (chưa có nguồn) | Loại | Trạng thái |
+|---|---|---|
+| Retinoid + AHA/BHA cùng buổi | conflict | Chưa tìm nguồn |
+| Retinoid + benzoyl peroxide cùng buổi | conflict | Chưa tìm nguồn |
+| Nhiều sản phẩm chứa acid tẩy da chết trong một buổi | duplicate | Chưa tìm nguồn |
+| Nhiều sản phẩm chứa retinoid trong một buổi | duplicate | Chưa tìm nguồn |
+| Vitamin C + niacinamide | myth | Chưa tìm nguồn |
+
+**Nếu còn thời gian sau giai đoạn 4:** nhập toàn bộ danh mục EU CosIng để nhận diện mọi thành phần và hiển thị chức năng (hướng B).
+
+**Nếu bị chậm, cắt theo thứ tự:** Open Beauty Facts → sản phẩm mẫu 30 xuống 15 → thẻ myth 3 xuống 2 → lịch theo thứ trong tuần chỉ còn sáng/tối. **Không cắt** kiểm tra nguồn và duyệt luật.
+
+Quyết định đã chốt và lý do: [decisions.md](decisions.md).
