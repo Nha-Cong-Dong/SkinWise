@@ -11,7 +11,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth, form gửi câu hỏi | 3–7/11 | ⏳ | |
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
 
-**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện: 4 luật đã bật, 0 thẻ myth (1 thẻ chờ duyệt).
+**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện: 4 luật + 1 thẻ myth đã bật; cần thêm 1–2 thẻ myth.
 
 | Luật ứng viên (chưa có nguồn) | Loại | Trạng thái |
 |---|---|---|
@@ -19,7 +19,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | Retinoid + benzoyl peroxide cùng buổi | conflict | ✅ Bật (2 bài tổng quan PMC, nhãn FDA) |
 | Nhiều sản phẩm chứa acid tẩy da chết trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
 | Nhiều sản phẩm chứa retinoid trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
-| Vitamin C + niacinamide | myth | ⏸ Có nguồn PMC nhưng bằng chứng chưa thống nhất; chờ người duyệt quyết định |
+| Vitamin C + niacinamide | myth | ✅ Bật (3 bài PMC; bằng chứng chưa thống nhất, mức info) |
 
 **Nếu còn thời gian sau giai đoạn 4:** nhập toàn bộ danh mục EU CosIng để nhận diện mọi thành phần và hiển thị chức năng (hướng B).
 

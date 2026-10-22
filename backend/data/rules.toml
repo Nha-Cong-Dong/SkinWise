@@ -141,7 +141,9 @@ group_a = "VITAMIN_C"
 group_b = "NIACINAMIDE"
 title_vi = "Vitamin C và niacinamide: chưa có bằng chứng cần tách riêng, nhưng cũng chưa chắc bổ trợ nhau"
 explanation_vi = "Lời đồn cho rằng vitamin C và niacinamide không được dùng chung. Một bài tổng quan khoa học (2021) liệt kê các nghiên cứu lâm sàng dùng sản phẩm chứa cả hai, ví dụ gel có 2% ascorbyl glucoside (một dạng vitamin C) và 3,5% niacinamide giúp giảm tăng sắc tố; tuy vậy các nghiên cứu này không tách được tác dụng của từng chất, nên chưa chứng minh được hai chất bổ trợ nhau. Ngược lại, thí nghiệm trong dung dịch nước cho thấy niacinamide có thể làm vitamin C (ascorbic acid) phân huỷ nhanh hơn, nhất là dưới tia UV; chưa rõ điều này ảnh hưởng thế nào đến sản phẩm bôi trên da. Bằng chứng hiện có còn ít và chưa thống nhất."
-published = false  # bằng chứng lẫn lộn, chờ người duyệt
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-22
 sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "The composite formulations additionally contain various active ingredients such as arbutin, kojic acid, ascorbic acid, ascorbyl glucoside, tranexamic acid" },
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "Significantly superior results were observed when the composite formulation (A gel containing 2% ascorbyl glucoside, and 3.5% nicotinamide) was applied with ultrasonic treatment, compared to either conventional application only or ultrasonic treatment only" },
