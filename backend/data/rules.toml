@@ -41,7 +41,9 @@ group_a = "RETINOID"
 group_b = "EXFOLIANT_ACID"
 title_vi = "Retinoid và acid tẩy tế bào chết trong cùng một buổi"
 explanation_vi = "Dùng retinoid cùng với sản phẩm chứa AHA/BHA (ví dụ glycolic acid, salicylic acid) có thể làm da khô và dễ kích ứng hơn. Nếu da bị kích ứng, có thể cân nhắc tạm ngưng sản phẩm chứa acid."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-22
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home", quote = "such as prescription retinoid creams or products containing retinol or benzoyl peroxide" },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home", quote = "Exfoliating while using these products may worsen dry skin or even cause acne breakouts." },
@@ -67,7 +69,9 @@ group_a = "RETINOID"
 group_b = "BENZOYL_PEROXIDE"
 title_vi = "Retinoid và benzoyl peroxide trong cùng một buổi"
 explanation_vi = "Benzoyl peroxide có thể oxy hoá và làm giảm tác dụng của tretinoin (dạng thông thường) khi bôi cùng lúc; adapalene, tazarotene và tretinoin dạng micronized không có hạn chế này. Dùng chung cũng có thể làm da khô, kích ứng hơn. Có thể cân nhắc dùng ở hai buổi khác nhau (ví dụ benzoyl peroxide buổi sáng, tretinoin buổi tối)."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-22
 sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5986265/", quote = "Coadministration of BP with tretinoin also leads to oxidation and inactivation of tretinoin; therefore, these agents should be applied at different times (i.e., BP in the morning, tretinoin at night)." },
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5986265/", quote = "The micronized tretinoin formation as well as adapalene and tazarotene do not have similar restrictions." },
@@ -84,11 +88,13 @@ key = "exfoliant-acid-duplicate-same-session"
 kind = "duplicate"
 severity = "caution"
 scope = "same_session"
-evidence_level = "expert_opinion"
+evidence_level = "low"  # nguồn gián tiếp (người duyệt hạ mức, 22/10)
 group_a = "EXFOLIANT_ACID"
 title_vi = "Nhiều sản phẩm chứa acid tẩy tế bào chết trong cùng một buổi"
 explanation_vi = "Nhiều sản phẩm cùng chứa AHA/BHA/PHA trong một buổi có thể khiến da bị tẩy quá mức, dẫn đến đỏ và kích ứng."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-22
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home", quote = "Generally, the more aggressive the exfoliation, the less often it needs to be done. Be careful not to over-exfoliate, as this could lead to skin that is red and irritated." },
 ]
@@ -101,11 +107,13 @@ key = "retinoid-duplicate-same-session"
 kind = "duplicate"
 severity = "caution"
 scope = "same_session"
-evidence_level = "expert_opinion"
+evidence_level = "low"  # nguồn gián tiếp (người duyệt hạ mức, 22/10)
 group_a = "RETINOID"
 title_vi = "Nhiều sản phẩm chứa retinoid trong cùng một buổi"
 explanation_vi = "Dùng nhiều sản phẩm chứa retinoid trong một buổi có thể làm tăng nguy cơ kích ứng mà không chắc tăng hiệu quả."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-22
 sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Using too much RETIN-A MICRO or using it too often will not give you faster or better results, and you may get skin redness, peeling, or discomfort." },
 ]
@@ -125,7 +133,7 @@ group_a = "VITAMIN_C"
 group_b = "NIACINAMIDE"
 title_vi = "Vitamin C và niacinamide: dùng chung được"
 explanation_vi = "Lời đồn cho rằng vitamin C và niacinamide không được dùng chung. Với sản phẩm skincare hiện nay, phần lớn trường hợp dùng chung được."
-published = false
+published = false  # chưa có nguồn
 sources = []
 
 # ======================================================================================
