@@ -84,9 +84,15 @@ CREATE TABLE IF NOT EXISTS rules (
   reviewed_at    timestamptz
 );
 
+-- Added in phase 2.
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS key text; -- stable key for seed upserts
+CREATE UNIQUE INDEX IF NOT EXISTS rules_key_key ON rules (key);
+
+-- One row per quote: a rule may quote several passages from the same source page.
 CREATE TABLE IF NOT EXISTS rule_sources (
   rule_id   integer NOT NULL REFERENCES rules(id) ON DELETE CASCADE,
+  position  integer NOT NULL,         -- order of the quote within the rule
   source_id integer NOT NULL REFERENCES sources(id),
   quote     text NOT NULL, -- verbatim passage supporting the rule; checked against the live page
-  PRIMARY KEY (rule_id, source_id)
+  PRIMARY KEY (rule_id, position)
 );

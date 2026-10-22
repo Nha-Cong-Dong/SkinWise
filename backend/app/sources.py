@@ -16,6 +16,17 @@ USER_AGENT = (
     "verifies ingredient lists and quotes against their source)"
 )
 _TAG = re.compile(r"<[^>]+>")
+# Bot-challenge pages (e.g. PMC serves reCAPTCHA after several quick fetches). Treating them
+# as the real page would report a genuine quote as missing.
+_CHALLENGE = re.compile(
+    r"grecaptcha|g-recaptcha|_f_combinedSignature|cf-challenge|challenge-platform", re.IGNORECASE
+)
+
+
+class BlockedError(Exception):
+    """The site answered with a bot-challenge page instead of the content."""
+
+
 _JSON_UNICODE = re.compile(r"\\u([0-9a-fA-F]{4})")
 
 
@@ -39,6 +50,8 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
             if attempt == retries:
                 raise
             time.sleep(3 * (attempt + 1))
+    if _CHALLENGE.search(page):
+        raise BlockedError(f"{url} returned a bot-challenge page; retry later")
     page = _JSON_UNICODE.sub(lambda m: chr(int(m.group(1), 16)), page).replace("\\/", "/")
     return html.unescape(_TAG.sub(" ", page))
 

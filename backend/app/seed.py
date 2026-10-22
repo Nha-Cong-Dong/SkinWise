@@ -10,6 +10,7 @@ from sqlalchemy.engine import Connection
 
 from app.inci import normalize_name, parse_inci
 from app.ingredients import resolve
+from app.rules import rule_problems
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
 
@@ -23,12 +24,29 @@ def seed(engine: Engine) -> dict[str, int]:
     groups = load_toml("functional_groups.toml")["group"]
     ingredients = load_toml("ingredients.toml")["ingredient"]
     products = load_toml("products.toml").get("product", [])
+    rules_data = load_toml("rules.toml")
+    sources, rules = rules_data.get("source", []), rules_data.get("rule", [])
+
+    known_urls = {s["url"] for s in sources}
+    problems = [f"{r['key']}: {p}" for r in rules for p in rule_problems(r, known_urls)]
+    if problems:
+        raise ValueError("rules.toml:\n  " + "\n  ".join(problems))
+
     with engine.begin() as conn:
         _seed_groups(conn, groups)
         _seed_ingredients(conn, ingredients)
         for product in products:
             _seed_product(conn, product)
-    return {"groups": len(groups), "ingredients": len(ingredients), "products": len(products)}
+        source_ids = {s["url"]: _seed_source(conn, s) for s in sources}
+        for rule in rules:
+            _seed_rule(conn, rule, source_ids)
+    return {
+        "groups": len(groups),
+        "ingredients": len(ingredients),
+        "products": len(products),
+        "rules": len(rules),
+        "published_rules": sum(1 for r in rules if r.get("published")),
+    }
 
 
 def _seed_groups(conn: Connection, groups: list[dict[str, Any]]) -> None:
@@ -141,4 +159,59 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
                 "ingredient_id": r.ingredient_id,
                 "raw_name": r.entry.raw,
             },
+        )
+
+
+def _seed_source(conn: Connection, s: dict[str, Any]) -> int:
+    return conn.execute(
+        text(
+            """
+            INSERT INTO sources (title, publisher, url, accessed_at)
+            VALUES (:title, :publisher, :url, :accessed_at)
+            ON CONFLICT (url) DO UPDATE SET title = excluded.title,
+              publisher = excluded.publisher, accessed_at = excluded.accessed_at
+            RETURNING id
+            """
+        ),
+        {k: s.get(k) for k in ("title", "publisher", "url", "accessed_at")},
+    ).scalar_one()
+
+
+def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) -> None:
+    rule_id = conn.execute(
+        text(
+            """
+            INSERT INTO rules (key, kind, severity, scope, evidence_level, group_a, group_b,
+                               title_vi, explanation_vi, published, reviewed_by, reviewed_at)
+            VALUES (:key, :kind, :severity, :scope, :evidence_level, :group_a, :group_b,
+                    :title_vi, :explanation_vi, :published, :reviewed_by, :reviewed_at)
+            ON CONFLICT (key) DO UPDATE SET
+              kind = excluded.kind, severity = excluded.severity, scope = excluded.scope,
+              evidence_level = excluded.evidence_level, group_a = excluded.group_a,
+              group_b = excluded.group_b, title_vi = excluded.title_vi,
+              explanation_vi = excluded.explanation_vi, published = excluded.published,
+              reviewed_by = excluded.reviewed_by, reviewed_at = excluded.reviewed_at
+            RETURNING id
+            """
+        ),
+        {
+            **{k: r[k] for k in ("key", "kind", "severity", "scope", "evidence_level")},
+            **{k: r[k] for k in ("group_a", "title_vi", "explanation_vi")},
+            "group_b": r.get("group_b"),
+            "published": bool(r.get("published")),
+            "reviewed_by": r.get("reviewed_by"),
+            "reviewed_at": r.get("reviewed_at"),
+        },
+    ).scalar_one()
+
+    conn.execute(text("DELETE FROM rule_sources WHERE rule_id = :id"), {"id": rule_id})
+    for position, s in enumerate(r.get("sources", []), start=1):
+        conn.execute(
+            text(
+                """
+                INSERT INTO rule_sources (rule_id, position, source_id, quote)
+                VALUES (:r, :pos, :s, :q)
+                """
+            ),
+            {"r": rule_id, "pos": position, "s": source_ids[s["url"]], "q": s["quote"]},
         )
