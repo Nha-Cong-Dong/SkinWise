@@ -9,7 +9,7 @@ import sys
 import urllib.error
 
 from app.seed import load_toml
-from app.sources import fetch_text, missing_on_page
+from app.sources import BlockedError, fetch_text, missing_on_page
 
 
 def main(keys: list[str]) -> int:
@@ -26,7 +26,7 @@ def main(keys: list[str]) -> int:
             try:
                 if url not in pages:
                     pages[url] = fetch_text(url)
-            except (urllib.error.URLError, TimeoutError) as e:
+            except (urllib.error.URLError, TimeoutError, BlockedError) as e:
                 print(f"FAIL  {rule['key']}: cannot fetch {url} ({e})")
                 failed += 1
                 continue

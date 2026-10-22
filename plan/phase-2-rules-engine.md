@@ -23,7 +23,7 @@
 | Retinoid + benzoyl peroxide | 2 bài tổng quan PMC; nhãn FDA tretinoin | Rõ với tretinoin dạng thường; retinol mỹ phẩm chỉ có phần kích ứng |
 | Trùng acid tẩy tế bào chết | AAD | **Gián tiếp**: nói về tẩy quá mức nói chung |
 | Trùng retinoid | Nhãn FDA tretinoin | **Gián tiếp**: nói về dùng quá nhiều một sản phẩm |
-| Myth vitamin C + niacinamide | Không có | Không tìm được nguồn chấp nhận được; đề xuất **chưa làm** thẻ này |
+| Myth vitamin C + niacinamide | 3 bài trên PMC (2 tổng quan MDPI, 1 bài ACS Omega) | **Chưa thống nhất**: đã được dùng chung trong sản phẩm có thử nghiệm, nhưng trong dung dịch nước / dưới UV niacinamide làm vitamin C phân huỷ nhanh hơn |
 
 ## Quy ước của engine
 - Luật chỉ so hai sản phẩm **khác nhau**; một sản phẩm chứa cả hai nhóm không bị cảnh báo với chính nó (phối hợp trong một công thức là việc của nhà sản xuất).

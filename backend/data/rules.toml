@@ -118,23 +118,38 @@ sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Using too much RETIN-A MICRO or using it too often will not give you faster or better results, and you may get skin redness, peeling, or discomfort." },
 ]
 
-# Nguồn: CHƯA TÌM ĐƯỢC nguồn chấp nhận được. Đã tìm trên AAD, DermNet, PMC (review vitamin C tại chỗ
-#   PMC5605218, PMC3673383; review niacinamide PMC11047333; DermNet "nicotinamide") — không trang nào bàn
-#   trực tiếp chuyện vitamin C + niacinamide dùng chung. Một review hoá học thực phẩm (PMC8773188) theo
-#   kết quả tìm kiếm còn nói niacinamide có thể làm giảm độ bền của ascorbic acid dưới ánh sáng — ngược
-#   chiều với "myth", cần cân nhắc. Giữ sources = [] cho đến khi có nguồn rõ ràng.
+# Nguồn: Antioxidants 2021 review (Boo, PMC8389214) — clinical studies of combination products list
+#   ascorbic acid / ascorbyl glucoside alongside nicotinamide; a gel with 2% ascorbyl glucoside + 3.5%
+#   nicotinamide (with ultrasound) reduced hyperpigmentation; but most such studies compare against vehicle,
+#   so individual contributions cannot be separated (no synergy shown).
+#   Antioxidants 2022 review (PMC8773188) — niacinamide accelerates UV photo-degradation of ascorbic acid.
+#   ACS Omega 2024 (PMC11223235) — ascorbic acid in water degrades more quickly in the presence of nicotinamide.
+# Lưu ý người duyệt: bằng chứng LẪN LỘN và GIÁN TIẾP. Không tìm được nguồn chấp nhận được nào nói thẳng
+#   "dùng chung được" hay bác bỏ chuyện tạo nicotinic acid/đỏ mặt; bài báo gốc thập niên 1960 không tìm
+#   thấy bản đọc được (bài 1944 trên ebm-journal.org chỉ có PDF). PubMed đang chặn tải tự động nên không
+#   dùng được trang tóm tắt (vd. Ahmad 2018, J Photochem Photobiol B, PMID 29660587 — nguồn gốc của ý
+#   "tăng phân huỷ dưới UV"). Hai nguồn "ngược chiều" là thí nghiệm trong dung dịch nước/UV, không phải
+#   trên da hay sản phẩm thành phẩm. Không có nguồn nào cho thấy hai chất "bổ trợ nhau".
+#   Đã đổi severity safe -> info, evidence_level moderate -> low. Bảng 3 của PMC8389214 không báo tác dụng phụ.
 [[rule]]
 key = "vitamin-c-niacinamide-myth"
 kind = "myth"
-severity = "safe"
+severity = "info"
 scope = "same_session"
-evidence_level = "moderate"
+evidence_level = "low"
 group_a = "VITAMIN_C"
 group_b = "NIACINAMIDE"
-title_vi = "Vitamin C và niacinamide: dùng chung được"
-explanation_vi = "Lời đồn cho rằng vitamin C và niacinamide không được dùng chung. Với sản phẩm skincare hiện nay, phần lớn trường hợp dùng chung được."
-published = false  # chưa có nguồn
-sources = []
+title_vi = "Vitamin C và niacinamide: chưa có bằng chứng cần tách riêng, nhưng cũng chưa chắc bổ trợ nhau"
+explanation_vi = "Lời đồn cho rằng vitamin C và niacinamide không được dùng chung. Một bài tổng quan khoa học (2021) liệt kê các nghiên cứu lâm sàng dùng sản phẩm chứa cả hai, ví dụ gel có 2% ascorbyl glucoside (một dạng vitamin C) và 3,5% niacinamide giúp giảm tăng sắc tố; tuy vậy các nghiên cứu này không tách được tác dụng của từng chất, nên chưa chứng minh được hai chất bổ trợ nhau. Ngược lại, thí nghiệm trong dung dịch nước cho thấy niacinamide có thể làm vitamin C (ascorbic acid) phân huỷ nhanh hơn, nhất là dưới tia UV; chưa rõ điều này ảnh hưởng thế nào đến sản phẩm bôi trên da. Bằng chứng hiện có còn ít và chưa thống nhất."
+published = false  # bằng chứng lẫn lộn, chờ người duyệt
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "The composite formulations additionally contain various active ingredients such as arbutin, kojic acid, ascorbic acid, ascorbyl glucoside, tranexamic acid" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "Significantly superior results were observed when the composite formulation (A gel containing 2% ascorbyl glucoside, and 3.5% nicotinamide) was applied with ultrasonic treatment, compared to either conventional application only or ultrasonic treatment only" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "In several other clinical studies, the combined formulation was compared with the vehicle formulation; thus, it is difficult to distinguish the contribution of individual components." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8773188/", quote = "Niacinamide, as a component of vitamin B-complex with vitamin C, acts as a photo-degradation accelerator to reduce the stability of ascorbic acid under UV-irradiation" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC11223235/", quote = "Moreover, the instability of ASC when dissolved in water poses a major problem in its quantification" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC11223235/", quote = "especially because it degrades more quickly in the presence of NIC" },
+]
 
 # ======================================================================================
 # Nguồn
@@ -168,4 +183,22 @@ accessed_at = 2026-10-22
 url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3080563/"
 title = "Management of acne"
 publisher = "CMAJ (Canadian Medical Association Journal, 2011), via PubMed Central"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/"
+title = "Mechanistic Basis and Clinical Evidence for the Applications of Nicotinamide (Niacinamide) to Control Skin Aging and Pigmentation"
+publisher = "Antioxidants (MDPI, 2021), via PubMed Central"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8773188/"
+title = "Chemical Stability of Ascorbic Acid Integrated into Commercial Products: A Review on Bioactivity and Delivery Technology"
+publisher = "Antioxidants (MDPI, 2022), via PubMed Central"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC11223235/"
+title = "First-Order Derivative Spectrophotometry for Simultaneous Determination of Vitamin C and Nicotinamide: Application in Quantitative Analysis of Cocrystals"
+publisher = "ACS Omega (American Chemical Society, 2024), via PubMed Central"
 accessed_at = 2026-10-22

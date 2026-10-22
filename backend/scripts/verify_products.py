@@ -9,7 +9,7 @@ import urllib.error
 
 from app.inci import parse_inci
 from app.seed import load_toml
-from app.sources import fetch_text, first_out_of_order, missing_on_page
+from app.sources import BlockedError, fetch_text, first_out_of_order, missing_on_page
 
 
 def main(slugs: list[str]) -> int:
@@ -21,7 +21,7 @@ def main(slugs: list[str]) -> int:
     for p in products:
         try:
             page = fetch_text(p["source_url"])
-        except (urllib.error.URLError, TimeoutError) as e:
+        except (urllib.error.URLError, TimeoutError, BlockedError) as e:
             print(f"FAIL  {p['slug']}: cannot fetch {p['source_url']} ({e})")
             failed += 1
             continue
