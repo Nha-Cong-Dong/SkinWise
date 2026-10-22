@@ -5,8 +5,8 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | # | Giai đoạn | Thời gian | Trạng thái | Chi tiết |
 |---|---|---|---|---|
 | 0 | Dựng khung: FastAPI, PostgreSQL, React, test | 21–22/10 | ✅ Xong (PR #1) | [phase-0-scaffold.md](phase-0-scaffold.md) |
-| 1 | Dữ liệu thành phần: parser INCI, nhóm hoạt chất, sản phẩm mẫu | 23–27/10 | ✅ Xong, chờ duyệt từ điển | [phase-1-ingredients.md](phase-1-ingredients.md) |
-| 2 | Engine luật + script kiểm tra đoạn trích nguồn | 28/10–1/11 | ⏳ Tiếp theo | |
+| 1 | Dữ liệu thành phần: parser INCI, nhóm hoạt chất, sản phẩm mẫu | 23–27/10 | ✅ Xong (PR #2) | [phase-1-ingredients.md](phase-1-ingredients.md) |
+| 2 | Engine luật + script kiểm tra đoạn trích nguồn | 28/10–1/11 | 🔄 Đang làm | [phase-2-rules-engine.md](phase-2-rules-engine.md) |
 | 3 | API: tìm sản phẩm, phân tích INCI, kiểm tra routine, myth | 2–3/11 | ⏳ | |
 | 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth | 3–7/11 | ⏳ | |
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |

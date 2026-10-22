@@ -1,0 +1,163 @@
+# Luật cảnh báo. Engine chỉ dùng luật có published = true.
+#
+# NGUYÊN TẮC: không có nguồn thì không có cảnh báo.
+# - Mỗi luật cần ít nhất một nguồn (sources = [{ url = "...", quote = "..." }]) với quote là đoạn trích NGUYÊN VĂN trên trang url.
+#   Kiểm tra: uv run python -m scripts.verify_quotes
+# - Chỉ đặt published = true sau khi một người đã đọc nguồn; khi đó điền reviewed_by và reviewed_at.
+#   Seed từ chối luật published thiếu nguồn hoặc thiếu người duyệt.
+# - Luật do AI soạn để published = false cho đến khi được duyệt.
+#
+# key: khoá ổn định của luật (không đổi sau khi đã seed).
+# kind: conflict (hai nhóm khác nhau) | duplicate (cùng một nhóm ở nhiều sản phẩm) | myth (kết hợp hay bị
+#       đồn là xấu nhưng thực ra ổn) | profile (chưa dùng trong MVP).
+# severity: avoid | caution | info | safe.
+# scope: same_step | same_session (cùng buổi sáng/tối) | same_day.
+# evidence_level: high | moderate | low | expert_opinion.
+# group_a, group_b: mã trong functional_groups.toml; duplicate chỉ dùng group_a.
+# INCI không có nồng độ, nên lời giải thích dùng "có thể".
+#
+# Mỗi nguồn khai báo một lần ở [[source]] (khoá là url), luật tham chiếu bằng url.
+
+# ======================================================================================
+# Ứng viên — chưa bật. Nguồn do Claude tìm, quote đã kiểm tra nguyên văn trên trang;
+# người duyệt vẫn phải tự đọc nguồn. Lời giải thích là bản nháp do Claude soạn.
+# ======================================================================================
+
+# Nguồn: AAD — exfoliating while using retinoid/retinol products may worsen dry skin; FDA labels for
+#   adapalene and tretinoin (Retin-A Micro) — caution with salicylic acid, avoid AHA/glycolic products,
+#   concomitant salicylic-acid acne products may increase irritation.
+# Đã sửa explanation_vi: bỏ "PHA" (không nguồn nào nhắc PHA) và thay lời khuyên "dùng xen kẽ" (không có
+#   trong nguồn) bằng lời khuyên trong nhãn thuốc: tạm ngưng sản phẩm acid nếu da kích ứng.
+# Lưu ý người duyệt: nguồn nói về "dùng đồng thời / trong thời gian dùng", không riêng "cùng buổi";
+#   nhãn thuốc chỉ áp dụng cho retinoid kê đơn (adapalene, tretinoin), không trực tiếp cho retinol mỹ phẩm.
+#   Nhãn adapalene nói AHA "should be avoided" (mạnh hơn caution) — giữ caution vì không biết nồng độ.
+[[rule]]
+key = "retinoid-exfoliant-acid-same-session"
+kind = "conflict"
+severity = "caution"
+scope = "same_session"
+evidence_level = "expert_opinion"
+group_a = "RETINOID"
+group_b = "EXFOLIANT_ACID"
+title_vi = "Retinoid và acid tẩy tế bào chết trong cùng một buổi"
+explanation_vi = "Dùng retinoid cùng với sản phẩm chứa AHA/BHA (ví dụ glycolic acid, salicylic acid) có thể làm da khô và dễ kích ứng hơn. Nếu da bị kích ứng, có thể cân nhắc tạm ngưng sản phẩm chứa acid."
+published = false
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home", quote = "such as prescription retinoid creams or products containing retinol or benzoyl peroxide" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home", quote = "Exfoliating while using these products may worsen dry skin or even cause acne breakouts." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=276f7cce-5f54-40f8-8321-9192d0e52a73", quote = "Particular caution should be exercised in using preparations containing sulfur, resorcinol, or salicylic acid in combination with adapalene cream." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=276f7cce-5f54-40f8-8321-9192d0e52a73", quote = "Moisturizers may be used if necessary, however, products containing alpha hydroxy or glycolic acids should be avoided." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Advise patients that concomitant use of topical over the counter (OTC) acne products containing benzoyl peroxide, sulfur, resorcinol, or salicylic acid with RETIN-A MICRO may increase the risk for local skin irritation including dryness, erythema, and peeling." },
+]
+
+# Nguồn: Int J Womens Dermatol review + CMAJ review (PMC) — benzoyl peroxide oxidizes/inactivates
+#   tretinoin, apply at different times (BP morning, tretinoin night); FDA label Retin-A Micro —
+#   concomitant BPO acne products may increase irritation.
+# Đã sửa explanation_vi: nêu rõ tretinoin (nguồn chỉ nói tretinoin) và thêm rằng adapalene, tazarotene,
+#   tretinoin dạng micronized không có hạn chế này (theo PMC5986265).
+# Lưu ý người duyệt: nhóm RETINOID còn gồm retinol/retinal mỹ phẩm — nguồn không nói gì về chúng.
+#   Phần "bất hoạt" chỉ đúng với tretinoin dạng thông thường; với retinoid khác chỉ còn phần kích ứng.
+[[rule]]
+key = "retinoid-benzoyl-peroxide-same-session"
+kind = "conflict"
+severity = "caution"
+scope = "same_session"
+evidence_level = "expert_opinion"
+group_a = "RETINOID"
+group_b = "BENZOYL_PEROXIDE"
+title_vi = "Retinoid và benzoyl peroxide trong cùng một buổi"
+explanation_vi = "Benzoyl peroxide có thể oxy hoá và làm giảm tác dụng của tretinoin (dạng thông thường) khi bôi cùng lúc; adapalene, tazarotene và tretinoin dạng micronized không có hạn chế này. Dùng chung cũng có thể làm da khô, kích ứng hơn. Có thể cân nhắc dùng ở hai buổi khác nhau (ví dụ benzoyl peroxide buổi sáng, tretinoin buổi tối)."
+published = false
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5986265/", quote = "Coadministration of BP with tretinoin also leads to oxidation and inactivation of tretinoin; therefore, these agents should be applied at different times (i.e., BP in the morning, tretinoin at night)." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5986265/", quote = "The micronized tretinoin formation as well as adapalene and tazarotene do not have similar restrictions." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3080563/", quote = "Benzoyl peroxide may oxidize a retinoid such as tretinoin if it is applied simultaneously." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Advise patients that concomitant use of topical over the counter (OTC) acne products containing benzoyl peroxide, sulfur, resorcinol, or salicylic acid with RETIN-A MICRO may increase the risk for local skin irritation including dryness, erythema, and peeling." },
+]
+
+# Nguồn: AAD — over-exfoliating can lead to red, irritated skin; more aggressive exfoliation should be done less often.
+# Lưu ý người duyệt: nguồn GIÁN TIẾP — AAD nói về tẩy tế bào chết quá mức nói chung, không nói cụ thể về
+#   việc chồng nhiều sản phẩm acid trong một buổi. Chưa tìm được nguồn chấp nhận được nói trực tiếp điều đó.
+# Đã sửa explanation_vi: thêm hậu quả "đỏ và kích ứng" theo đúng câu của AAD.
+[[rule]]
+key = "exfoliant-acid-duplicate-same-session"
+kind = "duplicate"
+severity = "caution"
+scope = "same_session"
+evidence_level = "expert_opinion"
+group_a = "EXFOLIANT_ACID"
+title_vi = "Nhiều sản phẩm chứa acid tẩy tế bào chết trong cùng một buổi"
+explanation_vi = "Nhiều sản phẩm cùng chứa AHA/BHA/PHA trong một buổi có thể khiến da bị tẩy quá mức, dẫn đến đỏ và kích ứng."
+published = false
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home", quote = "Generally, the more aggressive the exfoliation, the less often it needs to be done. Be careful not to over-exfoliate, as this could lead to skin that is red and irritated." },
+]
+
+# Nguồn: FDA label Retin-A Micro — using too much tretinoin or too often gives no faster/better results and may cause redness, peeling.
+# Lưu ý người duyệt: nguồn GIÁN TIẾP — nhãn nói về dùng quá nhiều MỘT sản phẩm tretinoin, không nói về
+#   chồng nhiều sản phẩm retinoid. Chưa tìm được nguồn chấp nhận được nói trực tiếp điều đó.
+[[rule]]
+key = "retinoid-duplicate-same-session"
+kind = "duplicate"
+severity = "caution"
+scope = "same_session"
+evidence_level = "expert_opinion"
+group_a = "RETINOID"
+title_vi = "Nhiều sản phẩm chứa retinoid trong cùng một buổi"
+explanation_vi = "Dùng nhiều sản phẩm chứa retinoid trong một buổi có thể làm tăng nguy cơ kích ứng mà không chắc tăng hiệu quả."
+published = false
+sources = [
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Using too much RETIN-A MICRO or using it too often will not give you faster or better results, and you may get skin redness, peeling, or discomfort." },
+]
+
+# Nguồn: CHƯA TÌM ĐƯỢC nguồn chấp nhận được. Đã tìm trên AAD, DermNet, PMC (review vitamin C tại chỗ
+#   PMC5605218, PMC3673383; review niacinamide PMC11047333; DermNet "nicotinamide") — không trang nào bàn
+#   trực tiếp chuyện vitamin C + niacinamide dùng chung. Một review hoá học thực phẩm (PMC8773188) theo
+#   kết quả tìm kiếm còn nói niacinamide có thể làm giảm độ bền của ascorbic acid dưới ánh sáng — ngược
+#   chiều với "myth", cần cân nhắc. Giữ sources = [] cho đến khi có nguồn rõ ràng.
+[[rule]]
+key = "vitamin-c-niacinamide-myth"
+kind = "myth"
+severity = "safe"
+scope = "same_session"
+evidence_level = "moderate"
+group_a = "VITAMIN_C"
+group_b = "NIACINAMIDE"
+title_vi = "Vitamin C và niacinamide: dùng chung được"
+explanation_vi = "Lời đồn cho rằng vitamin C và niacinamide không được dùng chung. Với sản phẩm skincare hiện nay, phần lớn trường hợp dùng chung được."
+published = false
+sources = []
+
+# ======================================================================================
+# Nguồn
+# ======================================================================================
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/safely-exfoliate-at-home"
+title = "How to safely exfoliate at home"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=276f7cce-5f54-40f8-8321-9192d0e52a73"
+title = "ADAPALENE cream — prescribing information (E. Fougera & Co.)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289"
+title = "RETIN-A MICRO (tretinoin) gel — prescribing information (Bausch Health US)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5986265/"
+title = "A review of diagnosis and treatment of acne in adult female patients"
+publisher = "International Journal of Women's Dermatology (2018), via PubMed Central"
+accessed_at = 2026-10-22
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3080563/"
+title = "Management of acne"
+publisher = "CMAJ (Canadian Medical Association Journal, 2011), via PubMed Central"
+accessed_at = 2026-10-22

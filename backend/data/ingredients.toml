@@ -164,7 +164,7 @@ groups = ["AZELAIC_ACID"]
 note = "Dẫn xuất tan trong nước của azelaic acid."
 
 # ======================================================================================
-# Mở rộng (23/10): biến thể của các nhóm đã có. Bản nháp, chờ người duyệt.
+# Mở rộng (22/10): biến thể của các nhóm đã có. Bản nháp, chờ người duyệt.
 # ======================================================================================
 
 [[ingredient]]

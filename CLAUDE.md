@@ -18,6 +18,7 @@ Backend (chạy trong `backend/`, quản lý bằng uv):
 - `uv run python -m scripts.init_db` — áp schema (`app/schema.sql`, chạy lặp lại không lỗi)
 - `uv run python -m scripts.seed` — áp schema rồi nạp `data/*.toml` vào DB (upsert, chạy lại an toàn)
 - `uv run python -m scripts.verify_products [slug ...]` — tải lại trang nguồn, xác nhận từng thành phần của sản phẩm mẫu có trên trang và đúng thứ tự
+- `uv run python -m scripts.verify_quotes [rule-key ...]` — tải trang nguồn của từng luật, xác nhận đoạn trích (`quote`) có nguyên văn trên trang
 - `uv run python -m scripts.unresolved` — liệt kê tên thành phần chưa nhận ra trong sản phẩm mẫu (để bắt hoạt chất bị sót)
 - `uv run uvicorn app.main:app --reload` — API tại `http://127.0.0.1:8000`
 - `uv run pytest` — test (DB `skinwise_test`, tự áp schema + seed); một test: `uv run pytest tests/test_inci.py::test_normalize_name`
@@ -33,6 +34,8 @@ Frontend (chạy trong `frontend/`):
 - `backend/app/db.py` — engine SQLAlchemy, dependency `get_session`, `init_schema()`. Schema là SQL thuần trong `app/schema.sql`, chưa dùng Alembic.
 - `backend/app/inci.py` — tách + chuẩn hoá bảng INCI, không cần DB. Mỗi dòng có nhiều `candidates` (tên đầy đủ trước, rồi các phần của `A (B)` và `A/B`); `app/ingredients.py` `resolve()` lấy tên đầu tiên có trong `ingredient_synonyms` → hoạt chất + nhóm. Thành phần không nhận ra vẫn giữ tên gốc.
 - `backend/data/*.toml` — dữ liệu seed, nguồn sự thật cho nhóm hoạt chất, từ điển hoạt chất và sản phẩm mẫu; sửa ở đây rồi chạy lại seed, không sửa thẳng trong DB. Seed upsert theo khoá tự nhiên (`code`, `inci_name`, `slug`) để id không đổi. Từ điển chỉ chứa hoạt chất; chất có mặt với `groups = []` (vd. Citric Acid, Bakuchiol) là cố ý không tính là hoạt chất.
+- `backend/app/engine.py` — engine kiểm tra routine, hàm thuần `check_routine(items, product_groups, rules)`. Luật chỉ so hai sản phẩm **khác nhau** cùng phạm vi (cùng bước / buổi / ngày); không bao giờ so một sản phẩm với chính nó. Mỗi (luật, cặp sản phẩm) ra một cảnh báo, kèm mọi ngày/buổi áp dụng.
+- `backend/app/rules.py` + `backend/data/rules.toml` — luật và nguồn. `rule_problems()` chặn seed luật `published` thiếu nguồn/đoạn trích hoặc thiếu `reviewed_by`/`reviewed_at`; `load_published_rules()` chỉ trả luật đã bật **và** có nguồn. Không tự đặt `published = true`: chỉ người dùng làm sau khi đọc nguồn.
 - `backend/app/sources.py` — tải trang nguồn và kiểm tra văn bản có trên trang; dùng chung cho kiểm tra sản phẩm và (giai đoạn 2) đoạn trích của luật.
 - `backend/scripts/` — điểm vào chạy tay, mỏng, gọi code trong `app/`.
 - `frontend/src/` — app React; gọi API qua đường dẫn `/api/...`.

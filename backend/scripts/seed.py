@@ -9,5 +9,6 @@ if __name__ == "__main__":
     counts = seed(engine)
     print(
         f"Seeded {counts['groups']} groups, {counts['ingredients']} ingredients, "
-        f"{counts['products']} products."
+        f"{counts['products']} products, {counts['rules']} rules "
+        f"({counts['published_rules']} published)."
     )
