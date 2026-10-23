@@ -6,9 +6,16 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.db import get_session
-from app.engine import SEVERITY_ORDER, RoutineItem, check_routine
+from app.engine import (
+    CHECKED_KINDS,
+    SEVERITY_ORDER,
+    RoutineItem,
+    Rule,
+    check_routine,
+    rule_matches,
+)
 from app.inci import parse_inci
-from app.ingredients import list_groups, product_groups, resolve
+from app.ingredients import list_groups, product_groups, resolve, with_ancestors
 from app.products import existing_product_ids, get_product, search_products
 from app.questions import add_question
 from app.rules import load_product_groups, load_published_rules
@@ -144,18 +151,27 @@ def rules(
     kind: Literal["conflict", "duplicate", "myth"] | None = None,
     groups: Annotated[list[str], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
 ) -> RulesResponse:
-    """Published rules. With `groups`, only rules that involve every given group: asking for
-    a pair returns the rule for that pair, whatever its kind."""
-    wanted = set(groups)
-    unknown = wanted - {g.code for g in list_groups(db)}
+    """Published rules, optionally of one kind. With one group: rules involving it. With two:
+    the rules that would fire for one product of each group, whatever their kind, matched the
+    way the routine engine matches. A group also counts as its umbrella groups (BHA is an
+    EXFOLIANT_ACID), so a rule written for the umbrella answers a question about a member."""
+    all_groups = list_groups(db)
+    unknown = set(groups) - {g.code for g in all_groups}
     if unknown:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
                             f"unknown group codes: {sorted(unknown)}")  # fmt: skip
-    matched = [
-        r
-        for r in load_published_rules(db)
-        if (kind is None or r.kind == kind) and wanted <= {r.group_a, r.group_b}
-    ]
+    expanded = [with_ancestors(code, all_groups) for code in dict.fromkeys(groups)]
+
+    def wanted(rule: Rule) -> bool:
+        if kind is not None and rule.kind != kind:
+            return False
+        if len(expanded) == 2:
+            return rule.kind in CHECKED_KINDS and rule_matches(rule, *expanded)
+        if len(expanded) == 1:
+            return bool(expanded[0] & {rule.group_a, rule.group_b})
+        return True
+
+    matched = [r for r in load_published_rules(db) if wanted(r)]
     matched.sort(key=lambda r: (SEVERITY_ORDER[r.severity], r.key))
     return RulesResponse(
         rules=[RuleOut.model_validate(r) for r in matched],

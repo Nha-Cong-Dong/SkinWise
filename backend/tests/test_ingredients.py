@@ -50,6 +50,17 @@ def test_every_ingredient_group_exists() -> None:
         assert set(ing.get("groups", [])) <= codes, ing["inci"]
 
 
+def test_every_member_of_a_group_is_in_its_parent() -> None:
+    groups = load_toml("functional_groups.toml")["group"]
+    codes = {g["code"] for g in groups}
+    parents = {g["code"]: g["parent"] for g in groups if "parent" in g}
+    assert set(parents.values()) <= codes
+    for ing in load_toml("ingredients.toml")["ingredient"]:
+        for code in ing.get("groups", []):
+            if code in parents:
+                assert parents[code] in ing["groups"], f"{ing['inci']}: {code} without parent"
+
+
 def test_reseeding_keeps_ids_stable(engine: Engine) -> None:
     query = text("SELECT inci_name, id FROM ingredients ORDER BY inci_name")
     with engine.connect() as conn:

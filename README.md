@@ -116,7 +116,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [x] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
 - [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth, gửi câu hỏi
-- [ ] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo
+- [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth, gửi câu hỏi
 - [ ] Hoàn thiện demo
 
 ## Nguồn dữ liệu và ghi công

@@ -62,6 +62,12 @@ def _seed_groups(conn: Connection, groups: list[dict[str, Any]]) -> None:
             ),
             {"code": g["code"], "name_vi": g["name_vi"], "description_vi": g.get("description_vi")},
         )
+    # Second pass: a parent may be listed after its children.
+    for g in groups:
+        conn.execute(
+            text("UPDATE functional_groups SET parent_code = :parent WHERE code = :code"),
+            {"code": g["code"], "parent": g.get("parent")},
+        )
 
 
 def _seed_ingredients(conn: Connection, ingredients: list[dict[str, Any]]) -> None:

@@ -162,9 +162,29 @@ def test_myth_cards(client: TestClient) -> None:
     assert all(r["kind"] == "myth" and r["sources"] for r in body["rules"])
 
 
+def lookup(client: TestClient, *groups: str) -> list[str]:
+    response = client.get("/rules", params={"groups": list(groups)})
+    assert response.status_code == 200
+    return [r["key"] for r in response.json()["rules"]]
+
+
 def test_pair_lookup_finds_any_kind(client: TestClient) -> None:
-    body = client.get("/rules", params={"groups": ["EXFOLIANT_ACID", "RETINOID"]}).json()
-    assert [r["key"] for r in body["rules"]] == ["retinoid-exfoliant-acid-same-session"]
+    assert lookup(client, "EXFOLIANT_ACID", "RETINOID") == ["retinoid-exfoliant-acid-same-session"]
+    assert lookup(client, "NIACINAMIDE", "VITAMIN_C") == ["vitamin-c-niacinamide-myth"]
+
+
+def test_pair_lookup_counts_a_group_as_its_umbrella(client: TestClient) -> None:
+    # The rule is written for EXFOLIANT_ACID; asking about BHA must not answer "no info".
+    assert lookup(client, "RETINOID", "BHA") == ["retinoid-exfoliant-acid-same-session"]
+    # Matched like the engine: an AHA product and a BHA product are two exfoliant acids.
+    assert lookup(client, "AHA", "BHA") == ["exfoliant-acid-duplicate-same-session"]
+
+
+def test_single_group_lookup_lists_rules_involving_it(client: TestClient) -> None:
+    assert set(lookup(client, "PHA")) == {
+        "exfoliant-acid-duplicate-same-session",
+        "retinoid-exfoliant-acid-same-session",
+    }
 
 
 def test_lookup_without_verified_rule_says_so(client: TestClient) -> None:

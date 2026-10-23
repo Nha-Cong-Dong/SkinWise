@@ -97,6 +97,10 @@ CREATE TABLE IF NOT EXISTS rule_sources (
   PRIMARY KEY (rule_id, position)
 );
 
+-- Added in phase 4: AHA/BHA/PHA belong to the umbrella EXFOLIANT_ACID. Rule lookups by group
+-- pair use it so a rule written for the umbrella also answers a question about a member.
+ALTER TABLE functional_groups ADD COLUMN IF NOT EXISTS parent_code text REFERENCES functional_groups(code);
+
 -- Added in phase 3. Questions and rumours users send in; a reviewer picks which ones become
 -- sourced myth cards. No contact details are stored.
 CREATE TABLE IF NOT EXISTS user_questions (

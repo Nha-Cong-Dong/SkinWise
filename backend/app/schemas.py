@@ -19,6 +19,7 @@ class GroupOut(FromAttributes):
     code: str
     name_vi: str
     description_vi: str | None
+    parent_code: str | None  # umbrella group, e.g. AHA -> EXFOLIANT_ACID
 
 
 class ProductSummary(FromAttributes):

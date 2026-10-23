@@ -57,8 +57,22 @@ class GroupRow:
     code: str
     name_vi: str
     description_vi: str | None
+    parent_code: str | None
 
 
 def list_groups(db: Session | Connection) -> list[GroupRow]:
-    query = text("SELECT code, name_vi, description_vi FROM functional_groups ORDER BY code")
+    query = text(
+        "SELECT code, name_vi, description_vi, parent_code FROM functional_groups ORDER BY code"
+    )
     return [GroupRow(*row) for row in db.execute(query)]
+
+
+def with_ancestors(code: str, groups: list[GroupRow]) -> set[str]:
+    """The group and every umbrella group above it, e.g. BHA -> {BHA, EXFOLIANT_ACID}."""
+    parents = {g.code: g.parent_code for g in groups}
+    result: set[str] = set()
+    current: str | None = code
+    while current is not None and current not in result:
+        result.add(current)
+        current = parents.get(current)
+    return result

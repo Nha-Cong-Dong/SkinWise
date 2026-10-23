@@ -77,7 +77,7 @@ def check_routine(
             for rule in rules:
                 if rule.scope != scope or rule.kind not in CHECKED_KINDS:
                     continue
-                if not _matches(
+                if not rule_matches(
                     rule,
                     product_groups.get(a.product_id, set()),
                     product_groups.get(b.product_id, set()),
@@ -111,7 +111,8 @@ def _scoped_groups(items: list[RoutineItem]):
         yield (day, session, scope), group
 
 
-def _matches(rule: Rule, groups_a: set[str], groups_b: set[str]) -> bool:
+def rule_matches(rule: Rule, groups_a: set[str], groups_b: set[str]) -> bool:
+    """Whether the rule fires for two different products with these active groups."""
     if rule.kind == "duplicate":
         return rule.group_a in groups_a and rule.group_a in groups_b
     assert rule.group_b is not None, f"rule {rule.key} needs group_b"
