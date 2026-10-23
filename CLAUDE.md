@@ -20,7 +20,8 @@ Backend (chạy trong `backend/`, quản lý bằng uv):
 - `uv run python -m scripts.verify_products [slug ...]` — tải lại trang nguồn, xác nhận từng thành phần của sản phẩm mẫu có trên trang và đúng thứ tự
 - `uv run python -m scripts.verify_quotes [rule-key ...]` — tải trang nguồn của từng luật, xác nhận đoạn trích (`quote`) có nguyên văn trên trang
 - `uv run python -m scripts.unresolved` — liệt kê tên thành phần chưa nhận ra trong sản phẩm mẫu (để bắt hoạt chất bị sót)
-- `uv run uvicorn app.main:app --reload` — API tại `http://127.0.0.1:8000`
+- `uv run python -m scripts.questions [--all]` — liệt kê câu hỏi người dùng gửi (mặc định chỉ câu `new`)
+- `uv run uvicorn app.main:app --reload` — API tại `http://127.0.0.1:8000`, tài liệu tại `/docs`
 - `uv run pytest` — test (DB `skinwise_test`, tự áp schema + seed); một test: `uv run pytest tests/test_inci.py::test_normalize_name`
 - `uv run ruff check` / `uv run ruff format`
 
@@ -30,7 +31,9 @@ Frontend (chạy trong `frontend/`):
 
 ## Cấu trúc
 
-- `backend/app/main.py` — `create_app()` khai báo route FastAPI; test thay `get_session` bằng `dependency_overrides` để trỏ sang DB test (`tests/conftest.py`).
+- `backend/app/main.py` — `create_app()` dựng app FastAPI; test thay `get_session` bằng `dependency_overrides` để trỏ sang DB test (`tests/conftest.py`).
+- `backend/app/api.py` — các route (`/groups`, `/products`, `/inci/analyze`, `/routine/check`, `/rules`, `/questions`), model Pydantic trong `app/schemas.py`. Kết quả rỗng của kiểm tra routine và tra cứu luật luôn kèm `notice_vi` (không có cảnh báo ≠ an toàn). Routine gửi lên gồm `products` (mỗi cái có `key` do frontend đặt, kèm `product_id` hoặc `inci` tự dán) và `items` tham chiếu `key`; route đổi `key` sang số nguyên cho engine rồi đổi ngược lại.
+- `backend/app/products.py` — tìm sản phẩm (`word_similarity` của `pg_trgm` trên `search_name` đã chuẩn hoá bằng `normalize_name`, cộng khớp chuỗi con) và chi tiết sản phẩm. `backend/app/questions.py` — bảng `user_questions`: chỉ lưu câu hỏi, id sản phẩm, mã nhóm, không lưu thông tin liên hệ; không có gì tự trả lời câu hỏi.
 - `backend/app/db.py` — engine SQLAlchemy, dependency `get_session`, `init_schema()`. Schema là SQL thuần trong `app/schema.sql`, chưa dùng Alembic.
 - `backend/app/inci.py` — tách + chuẩn hoá bảng INCI, không cần DB. Mỗi dòng có nhiều `candidates` (tên đầy đủ trước, rồi các phần của `A (B)` và `A/B`); `app/ingredients.py` `resolve()` lấy tên đầu tiên có trong `ingredient_synonyms` → hoạt chất + nhóm. Thành phần không nhận ra vẫn giữ tên gốc.
 - `backend/data/*.toml` — dữ liệu seed, nguồn sự thật cho nhóm hoạt chất, từ điển hoạt chất và sản phẩm mẫu; sửa ở đây rồi chạy lại seed, không sửa thẳng trong DB. Seed upsert theo khoá tự nhiên (`code`, `inci_name`, `slug`) để id không đổi. Từ điển chỉ chứa hoạt chất; chất có mặt với `groups = []` (vd. Citric Acid, Bakuchiol) là cố ý không tính là hoạt chất.

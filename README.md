@@ -95,8 +95,8 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    cd backend
    cp .env.example .env            # điền mật khẩu PostgreSQL
    uv sync
-   uv run python -m scripts.init_db
-   uv run uvicorn app.main:app --reload   # API tại http://127.0.0.1:8000 (kiểm tra: GET /health)
+   uv run python -m scripts.seed          # tạo bảng và nạp dữ liệu mẫu (chạy lại an toàn)
+   uv run uvicorn app.main:app --reload   # API tại http://127.0.0.1:8000, tài liệu API tại /docs
    uv run pytest                  # chạy test
    ```
 
@@ -114,8 +114,8 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 
 - [x] Khung dự án: API, cơ sở dữ liệu, test
 - [x] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
-- [ ] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
-- [ ] API: tìm sản phẩm, kiểm tra routine
+- [x] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
+- [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth, gửi câu hỏi
 - [ ] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo
 - [ ] Hoàn thiện demo
 

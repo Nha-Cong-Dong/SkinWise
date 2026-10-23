@@ -96,3 +96,15 @@ CREATE TABLE IF NOT EXISTS rule_sources (
   quote     text NOT NULL, -- verbatim passage supporting the rule; checked against the live page
   PRIMARY KEY (rule_id, position)
 );
+
+-- Added in phase 3. Questions and rumours users send in; a reviewer picks which ones become
+-- sourced myth cards. No contact details are stored.
+CREATE TABLE IF NOT EXISTS user_questions (
+  id          serial PRIMARY KEY,
+  question    text NOT NULL,
+  product_ids integer[] NOT NULL DEFAULT '{}', -- related products, if any
+  group_codes text[] NOT NULL DEFAULT '{}',    -- active groups the user looked up, if any
+  status      text NOT NULL DEFAULT 'new'
+    CHECK (status IN ('new', 'accepted', 'rejected', 'answered')),
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
