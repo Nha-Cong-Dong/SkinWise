@@ -50,3 +50,15 @@ def resolve(db: Session | Connection, entries: list[InciEntry]) -> list[Resolved
 
 def product_groups(resolved: list[ResolvedEntry]) -> set[str]:
     return {group for entry in resolved for group in entry.groups}
+
+
+@dataclass(frozen=True)
+class GroupRow:
+    code: str
+    name_vi: str
+    description_vi: str | None
+
+
+def list_groups(db: Session | Connection) -> list[GroupRow]:
+    query = text("SELECT code, name_vi, description_vi FROM functional_groups ORDER BY code")
+    return [GroupRow(*row) for row in db.execute(query)]
