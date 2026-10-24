@@ -24,8 +24,20 @@ export type ProductSummary = {
 export type Ingredient = {
   position: number
   raw_name: string
-  inci_name: string | null
+  inci_name: string | null // in the actives dictionary
   groups: string[]
+  eu_name: string | null // name in the EU lists
+  functions: string[] // codes of /functions
+  known: boolean
+  common_name_of: string[] // EU names an everyday name ("Rau má") may stand for
+  common_name_note: string | null
+}
+
+export type CosmeticFunction = {
+  code: string
+  name_vi: string
+  description_vi: string
+  definition_en: string | null
 }
 
 export type ProductDetail = ProductSummary & {
@@ -108,6 +120,7 @@ const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
 
 export const api = {
   groups: () => request<Group[]>('/groups'),
+  functions: () => request<CosmeticFunction[]>('/functions'),
   searchProducts: (q: string, signal?: AbortSignal) =>
     request<ProductSummary[]>(`/products?${new URLSearchParams({ q })}`, { signal }),
   product: (id: number) => request<ProductDetail>(`/products/${id}`),

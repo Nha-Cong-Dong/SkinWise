@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { api, type InciAnalysis, type ProductSummary } from '../api'
 import { productKeyFor, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
+import { IngredientList } from './IngredientList'
 
 type Props = { actions: RoutineActions }
 
@@ -190,18 +191,14 @@ function AnalysisPreview({ analysis }: { analysis: InciAnalysis }) {
       <div className="mt-1">
         <GroupChips codes={analysis.groups} empty="Không có hoạt chất nào trong danh sách SkinWise theo dõi." />
       </div>
-      <ol className="mt-3 flex flex-wrap gap-x-1 text-xs text-slate-500">
-        {analysis.ingredients.map((i) => (
-          <li key={i.position} className={i.groups.length ? 'font-semibold text-rose-700' : undefined}>
-            {i.raw_name}
-            {i.position < analysis.ingredients.length && ','}
-          </li>
-        ))}
-      </ol>
       <p className="mt-2 text-xs text-slate-500">
-        SkinWise chỉ nhận diện một số nhóm hoạt chất. {analysis.unresolved_count} thành phần không có trong từ
-        điển: phần lớn là chất nền, nhưng cũng có thể là hoạt chất SkinWise chưa biết.
+        Nhận ra {analysis.ingredients.length - analysis.unresolved_count}/{analysis.ingredients.length} thành phần.
+        {analysis.unresolved_count > 0 &&
+          ' Thành phần không nhận ra có thể do gõ sai, tên không theo chuẩn INCI, hoặc là chất SkinWise chưa biết.'}
       </p>
+      <div className="mt-2">
+        <IngredientList ingredients={analysis.ingredients} />
+      </div>
     </div>
   )
 }

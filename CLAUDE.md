@@ -20,6 +20,7 @@ Backend (chạy trong `backend/`, quản lý bằng uv):
 - `uv run python -m scripts.verify_products [slug ...]` — tải lại trang nguồn, xác nhận từng thành phần của sản phẩm mẫu có trên trang và đúng thứ tự
 - `uv run python -m scripts.verify_quotes [rule-key ...]` — tải trang nguồn của từng luật, xác nhận đoạn trích (`quote`) có nguyên văn trên trang
 - `uv run python -m scripts.unresolved` — liệt kê tên thành phần chưa nhận ra trong sản phẩm mẫu (để bắt hoạt chất bị sót)
+- `uv run python -m scripts.import_eu_lists` — tải lại danh sách thành phần EU (bảng chú giải 2025, danh mục 2006) từ CELLAR, ghi vào `data/eu_*` (chỉ chạy khi EU công bố bản mới)
 - `uv run python -m scripts.questions [--all]` — liệt kê câu hỏi người dùng gửi (mặc định chỉ câu `new`)
 - `uv run uvicorn app.main:app --reload` — API tại `http://127.0.0.1:8000`, tài liệu tại `/docs`
 - `uv run pytest` — test (DB `skinwise_test`, tự áp schema + seed); một test: `uv run pytest tests/test_inci.py::test_normalize_name`
@@ -36,6 +37,9 @@ Frontend (chạy trong `frontend/`):
 - `backend/app/products.py` — tìm sản phẩm (`word_similarity` của `pg_trgm` trên `search_name` đã chuẩn hoá bằng `normalize_name`, cộng khớp chuỗi con) và chi tiết sản phẩm. `backend/app/questions.py` — bảng `user_questions`: chỉ lưu câu hỏi, id sản phẩm, mã nhóm, không lưu thông tin liên hệ; không có gì tự trả lời câu hỏi.
 - `backend/app/db.py` — engine SQLAlchemy, dependency `get_session`, `init_schema()`. Schema là SQL thuần trong `app/schema.sql`, chưa dùng Alembic.
 - `backend/app/inci.py` — tách + chuẩn hoá bảng INCI, không cần DB. Mỗi dòng có nhiều `candidates` (tên đầy đủ trước, rồi các phần của `A (B)` và `A/B`); `app/ingredients.py` `resolve()` lấy tên đầu tiên có trong `ingredient_synonyms` → hoạt chất + nhóm. Thành phần không nhận ra vẫn giữ tên gốc.
+- `backend/app/eu_lists.py` + `backend/data/eu_*` — danh sách EU, sinh bằng `scripts.import_eu_lists`, không sửa tay: `eu_glossary.txt` (Quyết định (EU) 2025/1175, ~30.000 tên được phép ghi trên nhãn) và `eu_inventory_2006.tsv` + `eu_functions_2006.tsv` (Quyết định 2006/257/EC: chức năng thường gặp và định nghĩa chính thức; danh mục này hết hiệu lực từ 2020, chỉ dùng để mô tả). Seed vào bảng `inci_names` (COPY) và `cosmetic_functions`; tên tiếng Việt của chức năng ở `data/functions_vi.toml`. Tên EU chỉ để nhận diện và mô tả, **không bao giờ** quyết định nhóm hoạt chất.
+- `backend/data/common_names.toml` — tên thông dụng ("Rau má", "Axit salicylic", "Purified Water") → tên EU. Tên trỏ tới hoạt chất trong từ điển làm đổi cảnh báo nên phải duyệt như từ điển. `resolve()` tra theo thứ tự: từ điển hoạt chất → tên EU → tên thông dụng (bỏ tiền tố "chiết xuất", "tinh chất", "dịch chiết").
+- `backend/app/inci.py` `read_label_text()` — cho văn bản người dùng dán: nhận ra danh sách "thành phần nổi bật" dạng `tên: mô tả` (chỉ lấy tên) và trả mã lưu ý (`highlight_list`, `vietnamese_names`, `long_entries`, `few_entries`); API kèm lời giải thích tiếng Việt. Dữ liệu seed vẫn dùng `parse_inci()`.
 - `backend/data/*.toml` — dữ liệu seed, nguồn sự thật cho nhóm hoạt chất, từ điển hoạt chất và sản phẩm mẫu; sửa ở đây rồi chạy lại seed, không sửa thẳng trong DB. Seed upsert theo khoá tự nhiên (`code`, `inci_name`, `slug`) để id không đổi. Từ điển chỉ chứa hoạt chất; chất có mặt với `groups = []` (vd. Citric Acid, Bakuchiol) là cố ý không tính là hoạt chất. `parent` trong `functional_groups.toml` khai báo nhóm chung (AHA/BHA/PHA → EXFOLIANT_ACID); chất thuộc nhóm con phải ghi cả nhóm cha (có test).
 - `backend/app/engine.py` — engine kiểm tra routine, hàm thuần `check_routine(items, product_groups, rules)`. Luật chỉ so hai sản phẩm **khác nhau** cùng phạm vi (cùng bước / buổi / ngày); không bao giờ so một sản phẩm với chính nó. Mỗi (luật, cặp sản phẩm) ra một cảnh báo, kèm mọi ngày/buổi áp dụng.
 - `backend/app/rules.py` + `backend/data/rules.toml` — luật và nguồn. `rule_problems()` chặn seed luật `published` thiếu nguồn/đoạn trích hoặc thiếu `reviewed_by`/`reviewed_at`; `load_published_rules()` chỉ trả luật đã bật **và** có nguồn. Không tự đặt `published = true`: chỉ người dùng làm sau khi đọc nguồn.
@@ -57,7 +61,7 @@ Một lập trình viên, không có nền tảng y khoa, nên MVP cố tình h�
 
 ## Kiến trúc (thiết kế đã chốt — bám theo)
 
-Luồng: bảng INCI → tách + chuẩn hoá tên (chữ thường, bỏ dấu) → từ điển thành phần + từ đồng nghĩa (tham chiếu EU CosIng) → nhóm hoạt chất → routine (sản phẩm × buổi × ngày) → bộ luật → cảnh báo kèm giải thích + nguồn.
+Luồng: bảng INCI → tách + chuẩn hoá tên (chữ thường, bỏ dấu) → từ điển hoạt chất + từ đồng nghĩa, tên EU và tên thông dụng (tham chiếu danh sách thành phần của EU) → nhóm hoạt chất → routine (sản phẩm × buổi × ngày) → bộ luật → cảnh báo kèm giải thích + nguồn.
 
 - **Luật viết theo nhóm hoạt chất** (AHA, BHA, PHA, RETINOID, VITAMIN_C, NIACINAMIDE, BENZOYL_PEROXIDE, nhóm chung EXFOLIANT_ACID…; khoảng 10 nhóm), không theo từng chất. Một thành phần có thể thuộc nhiều nhóm. Citric Acid thường chỉ là chất chỉnh pH, không tính là AHA tẩy da chết.
 - Mỗi luật có loại (conflict / duplicate / profile / myth), mức độ (avoid / caution / info / safe), phạm vi (cùng bước / cùng buổi / cùng ngày) và mức bằng chứng. Luật "myth" (ví dụ vitamin C + niacinamide phần lớn dùng chung được) là tính năng có chủ đích.

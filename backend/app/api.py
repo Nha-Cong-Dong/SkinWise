@@ -65,8 +65,8 @@ TEXT_NOTICES_VI = {
     ),
     "vietnamese_names": (
         "Nhiều tên thành phần là tên tiếng Việt thông dụng, không phải tên INCI chuẩn. SkinWise "
-        "chỉ nhận ra một phần trong số đó; bảng INCI tiếng Anh trên bao bì cho kết quả chính "
-        "xác hơn."
+        "đối chiếu được một số tên thông dụng, nhưng một tên tiếng Việt có thể ứng với nhiều "
+        "chất khác nhau; bảng INCI tiếng Anh trên bao bì cho kết quả chính xác hơn."
     ),
     "long_entries": (
         "Một số dòng quá dài để là tên thành phần: văn bản dán vào có thể kèm mô tả hoặc câu "

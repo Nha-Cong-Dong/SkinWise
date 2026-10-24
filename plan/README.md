@@ -21,7 +21,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | Nhiều sản phẩm chứa retinoid trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
 | Vitamin C + niacinamide | myth | ✅ Bật (3 bài PMC; bằng chứng chưa thống nhất, mức info) |
 
-**Nếu còn thời gian sau giai đoạn 4:** nhập toàn bộ danh mục EU CosIng để nhận diện mọi thành phần và hiển thị chức năng (hướng B).
+**Hướng B (nhận diện mọi thành phần + chức năng):** làm sớm từ 24/10 bằng danh sách chính thức của EU thay cho CosIng, xem [phase-4b-ingredient-coverage.md](phase-4b-ingredient-coverage.md).
 
 **Nếu bị chậm, cắt theo thứ tự:** Open Beauty Facts → sản phẩm mẫu 30 xuống 15 → thẻ myth 3 xuống 2 → lịch theo thứ trong tuần chỉ còn sáng/tối. **Không cắt** kiểm tra nguồn và duyệt luật.
 

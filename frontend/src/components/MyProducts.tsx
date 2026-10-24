@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { api, type ProductDetail } from '../api'
+import { api, type InciAnalysis, type ProductDetail } from '../api'
 import { SESSION_LABELS, VERIFICATION_LABELS } from '../labels'
 import { maybeIncomplete, type MyProduct, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
+import { IngredientList } from './IngredientList'
 
 export function MyProducts({ actions }: { actions: RoutineActions }) {
   const { products, entries } = actions.routine
@@ -78,7 +79,7 @@ function ProductRow({ product, uses, actions }: { product: MyProduct; uses: numb
         (product.productId !== null ? (
           <SeededIngredients productId={product.productId} />
         ) : (
-          <p className="mt-2 rounded-md bg-slate-50 p-3 font-mono text-xs text-slate-600">{product.inci}</p>
+          <PastedIngredients inci={product.inci ?? ''} />
         ))}
     </li>
   )
@@ -96,15 +97,7 @@ function SeededIngredients({ productId }: { productId: number }) {
   if (!detail) return <p className="mt-2 text-sm text-slate-500">Đang tải…</p>
   return (
     <div className="mt-2 rounded-md bg-slate-50 p-3 text-xs text-slate-600">
-      <ol className="flex flex-wrap gap-x-1">
-        {detail.ingredients.map((i) => (
-          <li key={i.position} className={i.groups.length ? 'font-semibold text-rose-700' : undefined}>
-            {i.raw_name}
-            {i.position < detail.ingredients.length && ','}
-          </li>
-        ))}
-      </ol>
-      <p className="mt-2 text-slate-500">
+      <p className="mb-2 text-slate-500">
         {VERIFICATION_LABELS[detail.verification_status] ?? detail.verification_status}
         {detail.source_url && (
           <>
@@ -116,6 +109,24 @@ function SeededIngredients({ productId }: { productId: number }) {
           </>
         )}
       </p>
+      <IngredientList ingredients={detail.ingredients} />
+    </div>
+  )
+}
+
+function PastedIngredients({ inci }: { inci: string }) {
+  const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
+  const [error, setError] = useState(false)
+
+  useEffect(() => {
+    api.analyzeInci(inci).then(setAnalysis, () => setError(true))
+  }, [inci])
+
+  if (error) return <p className="mt-2 text-sm text-red-700">Không phân tích được bảng thành phần.</p>
+  if (!analysis) return <p className="mt-2 text-sm text-slate-500">Đang tải…</p>
+  return (
+    <div className="mt-2 rounded-md bg-slate-50 p-3">
+      <IngredientList ingredients={analysis.ingredients} />
     </div>
   )
 }

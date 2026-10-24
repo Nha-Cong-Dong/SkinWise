@@ -1,11 +1,11 @@
 import { useEffect, useState } from 'react'
-import { api, type Group, type Severity } from './api'
+import { api, type CosmeticFunction, type Group, type Severity } from './api'
 import { AddProduct } from './components/AddProduct'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { WarningsPanel } from './components/WarningsPanel'
-import { GroupsContext } from './groups'
+import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
 import { useRoutine, useRoutineCheck } from './routine'
 
@@ -16,6 +16,7 @@ const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 function App() {
   const [page, setPage] = useState<Page>('routine')
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
+  const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
   const check = useRoutineCheck(actions.routine)
 
@@ -23,6 +24,10 @@ function App() {
     api.groups().then(
       (list) => setGroups(new Map(list.map((g) => [g.code, g]))),
       () => {}, // chips fall back to group codes
+    )
+    api.functions().then(
+      (list) => setFunctions(new Map(list.map((f) => [f.code, f]))),
+      () => {}, // ingredient lists fall back to function codes
     )
   }, [])
 
@@ -40,6 +45,7 @@ function App() {
 
   return (
     <GroupsContext value={groups}>
+      <FunctionsContext value={functions}>
       <div className="min-h-screen bg-slate-50 text-slate-900">
         <header className="border-b border-slate-200 bg-white">
           <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
@@ -99,6 +105,7 @@ function App() {
           Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
         </footer>
       </div>
+      </FunctionsContext>
     </GroupsContext>
   )
 }
