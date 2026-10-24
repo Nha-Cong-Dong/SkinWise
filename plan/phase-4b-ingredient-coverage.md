@@ -12,6 +12,7 @@ Bắt đầu 24/10, nhánh `feat/ingredient-coverage` (tách từ `feat/ui`).
 - [x] `data/common_names.toml`: ~80 tên thông dụng tiếng Việt / tiếng Anh → tên EU
 - [x] Giao diện: danh sách thành phần có tên EU, chức năng tiếng Việt, "không nhận ra"
 - [x] Test (80 test)
+- [x] Rà 59 chất trong từ điển với chức năng EU và vị trí trong sản phẩm mẫu; người duyệt bỏ 3 muối/ester vitamin C khỏi nhóm dẫn xuất (xem `decisions.md`)
 - [ ] PR
 
 ## Cần bạn duyệt

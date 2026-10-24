@@ -21,12 +21,12 @@ groups = ["AHA", "EXFOLIANT_ACID"]
 [[ingredient]]
 inci = "Malic Acid"
 groups = ["AHA", "EXFOLIANT_ACID"]
-note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH."
+note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH. Vẫn tính là AHA (người duyệt 24/10): bỏ sót cảnh báo nguy hiểm hơn báo thừa, cảnh báo đã dùng 'có thể'."
 
 [[ingredient]]
 inci = "Tartaric Acid"
 groups = ["AHA", "EXFOLIANT_ACID"]
-note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH."
+note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH. Vẫn tính là AHA (người duyệt 24/10): bỏ sót cảnh báo nguy hiểm hơn báo thừa, cảnh báo đã dùng 'có thể'."
 
 [[ingredient]]
 inci = "Citric Acid"
@@ -138,7 +138,7 @@ groups = ["VITAMIN_C_DERIVATIVE"]
 [[ingredient]]
 inci = "Ascorbyl Palmitate"
 groups = []
-note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức (danh mục EU 2006 chỉ ghi chức năng ANTIOXIDANT); cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
+note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức (giữ dầu không bị ôi); cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 # --- Niacinamide ---
 [[ingredient]]
@@ -203,13 +203,13 @@ note = "Thuốc kê đơn."
 
 [[ingredient]]
 inci = "Sodium Ascorbate"
-groups = ["VITAMIN_C_DERIVATIVE"]
-note = "Muối của ascorbic acid; xếp vào dẫn xuất, không phải L-ascorbic acid nguyên chất."
+groups = []
+note = "Muối của ascorbic acid, hay dùng làm chất chống oxy hoá cho công thức; cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 [[ingredient]]
 inci = "Calcium Ascorbate"
-groups = ["VITAMIN_C_DERIVATIVE"]
-note = "Muối của ascorbic acid."
+groups = []
+note = "Muối của ascorbic acid, hay dùng làm chất chống oxy hoá cho công thức; cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 [[ingredient]]
 inci = "Aminopropyl Ascorbyl Phosphate"

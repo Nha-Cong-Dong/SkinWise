@@ -74,7 +74,7 @@ def test_look_alikes_are_not_counted_as_actives(engine: Engine) -> None:
     resolved = resolve_text(
         engine,
         "Ethylhexyl Salicylate, Willow Bark Extract, Sodium Lactate, Hyaluronic Acid, Niacin, "
-        "Ascorbyl Palmitate",
+        "Ascorbyl Palmitate, Sodium Ascorbate, Calcium Ascorbate",
     )
     assert all(r.ingredient_id is not None for r in resolved)
     assert product_groups(resolved) == set()

@@ -41,8 +41,12 @@ Danh sách "thành phần nổi bật" kèm mô tả trông giống bảng thàn
 ## Tên thông dụng tiếng Việt duyệt như từ điển hoạt chất (24/10)
 `common_names.toml` ánh xạ "rau má", "axit salicylic"… sang tên EU. Tên trỏ tới hoạt chất làm thay đổi cảnh báo nên cần người duyệt; tên mơ hồ (cúc La Mã, lô hội) ghi mọi tên EU có thể kèm ghi chú, tên đầu tiên được dùng để nhận diện.
 
-## Ascorbyl Palmitate không tính là dẫn xuất vitamin C (24/10)
-Người duyệt quyết định sau khi một sản phẩm phục hồi (Ascorbyl Palmitate ở vị trí 39/40, cạnh các loại dầu) bị gắn chip "Dẫn xuất vitamin C". Chất này chủ yếu dùng lượng nhỏ để chống oxy hoá cho công thức (danh mục EU 2006 chỉ ghi ANTIOXIDANT). Cùng cách xử lý như Citric Acid: vẫn nhận ra tên và chức năng, không xếp vào nhóm hoạt chất. Không đoán theo vị trí trong bảng vì INCI không cho biết ngưỡng 1%.
+## Rà từ điển hoạt chất: chất phụ trợ không tính là hoạt chất (24/10)
+Bắt đầu từ một sản phẩm phục hồi bị gắn chip "Dẫn xuất vitamin C" vì Ascorbyl Palmitate (vị trí 39/40, cạnh các loại dầu). Người duyệt quyết định:
+- Bỏ khỏi nhóm dẫn xuất vitamin C: Ascorbyl Palmitate, Sodium Ascorbate, Calcium Ascorbate. Chúng chủ yếu dùng lượng nhỏ để chống oxy hoá cho công thức. Cùng cách như Citric Acid: vẫn nhận ra tên và chức năng, không thuộc nhóm nào. Không ảnh hưởng cảnh báo (chưa có luật cho nhóm này).
+- Giữ AHA cho Malic Acid, Tartaric Acid; giữ nguyên Lactic/Glycolic/Salicylic Acid và các ester retinyl dù chúng cũng hay chỉ để chỉnh pH, bảo quản hoặc có lượng rất nhỏ: với app cảnh báo, bỏ sót nguy hiểm hơn báo thừa, và cảnh báo đã dùng "có thể".
+- Không đoán theo vị trí trong bảng vì INCI không cho biết ngưỡng 1%.
+- Chức năng trong danh mục EU 2006 **không** dùng làm tiêu chí phân loại hoạt chất: danh mục ghi vai trò mỹ phẩm rất hẹp (Glycolic Acid chỉ "BUFFERING", Niacinamide chỉ "SMOOTHING").
 
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.
