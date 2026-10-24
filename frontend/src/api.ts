@@ -31,6 +31,8 @@ export type Ingredient = {
   known: boolean
   common_name_of: string[] // EU names an everyday name ("Rau má") may stand for
   common_name_note: string | null
+  declared_concentration: string | null // printed with the entry, e.g. "10%"
+  at_most_one_percent: boolean // listed after an ingredient the EU caps at 1%
 }
 
 export type CosmeticFunction = {
@@ -45,6 +47,7 @@ export type ProductDetail = ProductSummary & {
   source_url: string | null
   source_retrieved_at: string | null
   ingredients: Ingredient[]
+  one_percent_marker: string | null
 }
 
 export type TextNotice = {
@@ -57,6 +60,7 @@ export type InciAnalysis = {
   groups: string[]
   unresolved_count: number
   notices: TextNotice[] // signs the text is not a full INCI list
+  one_percent_marker: string | null
 }
 
 export type Source = { title: string; publisher: string; url: string; quote: string }

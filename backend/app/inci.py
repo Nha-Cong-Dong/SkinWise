@@ -9,7 +9,11 @@ _LABEL_PREFIX = re.compile(r"^\s*(ingredients?|inci|thành phần|thanh phan)\s*
 _MAY_CONTAIN = re.compile(r"\bmay contain\b|\bpeut contenir\b|\+\s*/\s*-", re.IGNORECASE)
 _SEPARATORS = {",", ";", "\n", "•", "·"}
 _FOOTNOTE_MARKS = re.compile(r"[*†‡°]+")
-_PERCENT = re.compile(r"\s*\d+(?:[.,]\d+)?\s*%")
+# A concentration printed with an entry: "Niacinamide 10%", "Panthenol (4,000Ppm)".
+_CONCENTRATION = re.compile(r"(\d+(?:[.,]\d+)*)\s*(%|ppm)", re.IGNORECASE)
+_CONCENTRATION_TEXT = re.compile(
+    r"\s*[(\[]\s*\d+(?:[.,]\d+)*\s*(?:%|ppm)\s*[)\]]|\s*\d+(?:[.,]\d+)*\s*(?:%|ppm)", re.IGNORECASE
+)
 _DASHES = re.compile(r"[‐‑‒–—−]")
 _QUOTES = re.compile(r"[‘’`´]")
 _EDGE_PUNCT = " \t.,;:-"
@@ -22,6 +26,7 @@ class InciEntry:
     raw: str  # the label text for this entry, cleaned of footnote marks
     candidates: tuple[str, ...]  # normalized names to look up, most specific first
     may_contain: bool = False
+    declared: str | None = None  # concentration printed with the entry, e.g. "10%", "4,000 ppm"
 
 
 def normalize_name(name: str) -> str:
@@ -51,10 +56,19 @@ def parse_inci(text: str) -> list[InciEntry]:
     for section, may_contain in sections:
         for token in _split_top_level(section):
             raw = " ".join(_FOOTNOTE_MARKS.sub("", token).split()).strip(_EDGE_PUNCT)
-            candidates = _candidates(_PERCENT.sub("", raw))
+            candidates = _candidates(_CONCENTRATION_TEXT.sub("", raw))
             if candidates:
-                entries.append(InciEntry(len(entries) + 1, raw, candidates, may_contain))
+                position = len(entries) + 1
+                entries.append(InciEntry(position, raw, candidates, may_contain, _declared(raw)))
     return entries
+
+
+def _declared(raw: str) -> str | None:
+    match = _CONCENTRATION.search(raw)
+    if match is None:
+        return None
+    number, unit = match.groups()
+    return f"{number}%" if unit == "%" else f"{number} ppm"
 
 
 def _split_top_level(text: str) -> list[str]:

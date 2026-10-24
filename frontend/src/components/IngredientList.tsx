@@ -4,16 +4,46 @@ import { FunctionsContext } from '../groups'
 import { GroupChips } from './GroupChips'
 
 /** One row per label entry: actives, the EU name when it differs, and usual functions. */
-export function IngredientList({ ingredients }: { ingredients: Ingredient[] }) {
+// Same pattern the backend strips before looking a name up: "Niacinamide 5%", "(4,000Ppm)".
+const CONCENTRATION = /\s*[([]?\s*\d+(?:[.,]\d+)*\s*(?:%|ppm)\s*[)\]]?/i
+
+type Props = {
+  ingredients: Ingredient[]
+  /** The ingredient capped at 1% by EU law that marks the 1% line, if the list has one. */
+  onePercentMarker: string | null
+}
+
+export function IngredientList({ ingredients, onePercentMarker }: Props) {
   const functions = useContext(FunctionsContext)
+  const firstAtMostOne = ingredients.find((i) => i.at_most_one_percent)?.position
   return (
     <div>
       <ol className="divide-y divide-slate-200/70 text-xs">
         {ingredients.map((i) => {
-          const showEuName = i.eu_name && (i.common_name_of.length > 0 || i.eu_name.toLowerCase() !== i.raw_name.toLowerCase())
+          const name = i.raw_name.replace(CONCENTRATION, '').trim().toLowerCase()
+          const showEuName = i.eu_name && (i.common_name_of.length > 0 || i.eu_name.toLowerCase() !== name)
           return (
             <li key={i.position} className="flex flex-wrap items-baseline gap-x-2 gap-y-0.5 py-1">
+              {i.position === firstAtMostOne && (
+                <p className="mb-1 w-full border-t-2 border-dashed border-slate-300 pt-1 text-[11px] text-slate-500">
+                  Từ đây trở xuống (trừ chất tạo màu): mỗi chất ≤ 1%, vì đứng sau {onePercentMarker}, chất bảo quản bị
+                  luật EU giới hạn tối đa 1%. Lượng nhỏ không có nghĩa là không có tác dụng.
+                </p>
+              )}
               <span className={i.groups.length ? 'font-semibold text-rose-700' : 'text-slate-700'}>{i.raw_name}</span>
+              {i.declared_concentration && (
+                <span
+                  className="rounded bg-sky-50 px-1 font-medium text-sky-800 ring-1 ring-sky-200"
+                  title="Nồng độ ghi trên nhãn"
+                >
+                  {i.declared_concentration}
+                </span>
+              )}
+              {i.at_most_one_percent && (
+                <span className="text-slate-400" title={`Đứng sau ${onePercentMarker} nên tối đa 1%`}>
+                  ≤ 1%
+                </span>
+              )}
               {i.groups.length > 0 && <GroupChips codes={i.groups} />}
               {showEuName && (
                 <span className="text-slate-400" title={i.common_name_note ?? undefined}>

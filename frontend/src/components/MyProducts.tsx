@@ -109,7 +109,7 @@ function SeededIngredients({ productId }: { productId: number }) {
           </>
         )}
       </p>
-      <IngredientList ingredients={detail.ingredients} />
+      <IngredientList ingredients={detail.ingredients} onePercentMarker={detail.one_percent_marker} />
     </div>
   )
 }
@@ -126,7 +126,7 @@ function PastedIngredients({ inci }: { inci: string }) {
   if (!analysis) return <p className="mt-2 text-sm text-slate-500">Đang tải…</p>
   return (
     <div className="mt-2 rounded-md bg-slate-50 p-3">
-      <IngredientList ingredients={analysis.ingredients} />
+      <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
     </div>
   )
 }

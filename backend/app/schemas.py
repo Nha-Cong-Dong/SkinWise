@@ -43,6 +43,9 @@ class IngredientOut(BaseModel):
     # The label used an everyday name ("Rau má"): the EU names it may stand for, first one used.
     common_name_of: list[str]
     common_name_note: str | None
+    declared_concentration: str | None  # printed with the entry, e.g. "10%", "4,000 ppm"
+    # Listed after an ingredient the EU caps at 1% (see one_percent_marker): at most 1%.
+    at_most_one_percent: bool
 
 
 class FunctionOut(FromAttributes):
@@ -57,6 +60,7 @@ class ProductDetail(ProductSummary):
     source_url: str | None
     source_retrieved_at: datetime | None
     ingredients: list[IngredientOut]
+    one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
 class InciAnalyzeRequest(BaseModel):
@@ -78,6 +82,7 @@ class InciAnalysis(BaseModel):
     unresolved_count: int
     # Signs the text is not a full INCI list; a routine check on it may miss warnings.
     notices: list[TextNotice]
+    one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
 class SourceOut(FromAttributes):

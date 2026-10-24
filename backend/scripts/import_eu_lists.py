@@ -20,14 +20,12 @@ from app.eu_lists import (
     parse_inventory,
 )
 from app.seed import DATA_DIR
-from app.sources import USER_AGENT
-
-CELLAR = "http://publications.europa.eu/resource/celex/{celex}"
+from app.sources import CELLAR_URL, USER_AGENT
 
 
 def fetch_xhtml(celex: str) -> str:
     request = urllib.request.Request(
-        CELLAR.format(celex=celex),
+        CELLAR_URL.format(celex=celex),
         headers={
             "User-Agent": USER_AGENT,
             "Accept": "application/xhtml+xml",

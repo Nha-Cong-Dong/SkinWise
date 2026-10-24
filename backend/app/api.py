@@ -5,6 +5,7 @@ from typing import Annotated, Literal
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.concentration import OnePercentLine, one_percent_line
 from app.db import get_session
 from app.engine import (
     CHECKED_KINDS,
@@ -97,7 +98,7 @@ def functions(db: DbSession) -> list[FunctionOut]:
     return [FunctionOut.model_validate(f) for f in list_functions(db)]
 
 
-def ingredient_fields(r: ResolvedEntry) -> dict:
+def ingredient_fields(r: ResolvedEntry, line: OnePercentLine | None) -> dict:
     return {
         "position": r.entry.position,
         "raw_name": r.entry.raw,
@@ -108,6 +109,8 @@ def ingredient_fields(r: ResolvedEntry) -> dict:
         "known": r.known,
         "common_name_of": list(r.common_name_of),
         "common_name_note": r.common_name_note,
+        "declared_concentration": r.entry.declared,
+        "at_most_one_percent": line is not None and r.entry.position in line.positions,
     }
 
 
@@ -130,11 +133,14 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
     row = get_product(db, product_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
+    resolved = list(row.ingredients)
+    line = one_percent_line(resolved)
     return ProductDetail.model_validate(
         {
             **row.__dict__,
-            "groups": sorted(product_groups(list(row.ingredients))),
-            "ingredients": [IngredientOut(**ingredient_fields(r)) for r in row.ingredients],
+            "groups": sorted(product_groups(resolved)),
+            "ingredients": [IngredientOut(**ingredient_fields(r, line)) for r in resolved],
+            "one_percent_marker": line.marker if line else None,
         }
     )
 
@@ -143,14 +149,17 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
     label = read_label_text(body.text)
     resolved = resolve(db, label.entries)
+    # A key-ingredient list is not in label order, so it says nothing about amounts.
+    line = None if "highlight_list" in label.notices else one_percent_line(resolved)
     return InciAnalysis(
         ingredients=[
-            AnalyzedIngredient(**ingredient_fields(r), may_contain=r.entry.may_contain)
+            AnalyzedIngredient(**ingredient_fields(r, line), may_contain=r.entry.may_contain)
             for r in resolved
         ],
         groups=sorted(product_groups(resolved)),
         unresolved_count=sum(1 for r in resolved if not r.known),
         notices=[TextNotice(code=c, message_vi=TEXT_NOTICES_VI[c]) for c in label.notices],
+        one_percent_marker=line.marker if line else None,
     )
 
 

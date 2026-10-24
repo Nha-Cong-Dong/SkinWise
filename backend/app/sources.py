@@ -28,6 +28,8 @@ class BlockedError(Exception):
 
 
 _JSON_UNICODE = re.compile(r"\\u([0-9a-fA-F]{4})")
+_EUR_LEX_CELEX = re.compile(r"eur-lex\.europa\.eu/.*[?&]uri=CELEX(?::|%3A)(\w+)", re.IGNORECASE)
+CELLAR_URL = "http://publications.europa.eu/resource/celex/{celex}"
 
 
 def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
@@ -38,6 +40,18 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
     when several pages are fetched in a row. HTTP errors (403, 404, 500) are not retried.
     """
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    if celex := _EUR_LEX_CELEX.search(url):
+        # eur-lex.europa.eu answers scripts with a bot challenge; the same text is served
+        # for automated reuse by the Publications Office (CELLAR).
+        request = urllib.request.Request(
+            CELLAR_URL.format(celex=celex.group(1)),
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/xhtml+xml",
+                "Accept-Language": "eng",
+            },
+        )
+        timeout = max(timeout, 300)
     for attempt in range(retries + 1):
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:

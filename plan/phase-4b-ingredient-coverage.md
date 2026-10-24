@@ -13,6 +13,8 @@ Bắt đầu 24/10, nhánh `feat/ingredient-coverage` (tách từ `feat/ui`).
 - [x] Giao diện: danh sách thành phần có tên EU, chức năng tiếng Việt, "không nhận ra"
 - [x] Test (80 test)
 - [x] Rà 59 chất trong từ điển với chức năng EU và vị trí trong sản phẩm mẫu; người duyệt bỏ 3 muối/ester vitamin C khỏi nhóm dẫn xuất (xem `decisions.md`)
+- [x] Giữ nồng độ ghi trên nhãn (`10%`, `4,000Ppm`) và hiển thị
+- [x] "Đường 1%" sau phenoxyethanol (Điều 19 + Phụ lục V Quy định 1223/2009, đoạn trích qua `verify_quotes`); chỉ hiển thị, không đổi cảnh báo
 - [ ] PR
 
 ## Cần bạn duyệt

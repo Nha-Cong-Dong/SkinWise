@@ -48,5 +48,8 @@ Bắt đầu từ một sản phẩm phục hồi bị gắn chip "Dẫn xuất 
 - Không đoán theo vị trí trong bảng vì INCI không cho biết ngưỡng 1%.
 - Chức năng trong danh mục EU 2006 **không** dùng làm tiêu chí phân loại hoạt chất: danh mục ghi vai trò mỹ phẩm rất hẹp (Glycolic Acid chỉ "BUFFERING", Niacinamide chỉ "SMOOTHING").
 
+## Nồng độ chỉ để hiển thị, không tắt cảnh báo (24/10)
+Bảng INCI không cho biết chất nào là "chính". Hai tín hiệu đáng tin được hiển thị: nồng độ ghi trên nhãn, và "đường 1%" (theo Điều 19, mọi thành phần sau phenoxyethanol, chất bị Phụ lục V giới hạn 1%, đều ≤ 1%, trừ chất tạo màu). Không dùng để tắt cảnh báo vì ≤ 1% vẫn có thể có tác dụng (retinol) và chưa có nguồn cho ngưỡng nồng độ của từng luật. Không đoán "chính/phụ" theo vị trí. Cảnh báo kích ứng theo danh sách chất gây dị ứng hương liệu của EU để sau 31/10.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

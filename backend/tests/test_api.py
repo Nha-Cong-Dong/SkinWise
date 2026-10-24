@@ -80,7 +80,8 @@ def test_analyze_inci(client: TestClient) -> None:
     assert body["ingredients"][2] == {
         "position": 3, "raw_name": "Citric Acid", "inci_name": "Citric Acid", "groups": [],
         "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
-        "common_name_of": [], "common_name_note": None, "may_contain": False,
+        "common_name_of": [], "common_name_note": None, "declared_concentration": None,
+        "at_most_one_percent": False, "may_contain": False,
     }  # fmt: skip
     aqua = body["ingredients"][0]
     assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)
@@ -260,3 +261,39 @@ def test_question_rejects_bad_input(client: TestClient) -> None:
     assert client.post("/questions", json=unknown_product).status_code == 422
     unknown_group = {"question": "Câu hỏi hợp lệ?", "group_codes": ["NOPE"]}
     assert client.post("/questions", json=unknown_group).status_code == 422
+
+
+def test_analyze_marks_entries_after_a_one_percent_preservative(client: TestClient) -> None:
+    text = (
+        "Aqua, Glycerin, Niacinamide 5%, Phenoxyethanol, Retinol, Panthenol (4,000Ppm), "
+        "CI 77891, Iron Oxides"
+    )
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert body["one_percent_marker"] == "Phenoxyethanol"
+    marks = {i["raw_name"]: i["at_most_one_percent"] for i in body["ingredients"]}
+    assert marks == {
+        "Aqua": False, "Glycerin": False, "Niacinamide 5%": False, "Phenoxyethanol": False,
+        "Retinol": True, "Panthenol (4,000Ppm)": True,
+        "CI 77891": False, "Iron Oxides": False,  # colorants may be listed last at any amount
+    }  # fmt: skip
+    declared = {i["raw_name"]: i["declared_concentration"] for i in body["ingredients"]}
+    assert declared["Niacinamide 5%"] == "5%"
+    assert declared["Panthenol (4,000Ppm)"] == "4,000 ppm"
+    # The 1% line never changes which actives are found.
+    assert body["groups"] == ["NIACINAMIDE", "RETINOID"]
+
+
+def test_key_ingredient_lists_get_no_one_percent_line(client: TestClient) -> None:
+    text = "- Phenoxyethanol: bảo quản sản phẩm.\n- Retinol: chống lão hoá cho da."
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert body["one_percent_marker"] is None
+    assert not any(i["at_most_one_percent"] for i in body["ingredients"])
+
+
+def test_seeded_product_detail_has_the_one_percent_line(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    product = client.get(f"/products/{ids[LOTION]}").json()
+    assert product["one_percent_marker"] == "PHENOXYETHANOL"  # as printed on the CeraVe label
+    after = [i["raw_name"] for i in product["ingredients"] if i["at_most_one_percent"]]
+    assert "CERAMIDE NP" in after

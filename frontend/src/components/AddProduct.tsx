@@ -197,7 +197,7 @@ function AnalysisPreview({ analysis }: { analysis: InciAnalysis }) {
           ' Thành phần không nhận ra có thể do gõ sai, tên không theo chuẩn INCI, hoặc là chất SkinWise chưa biết.'}
       </p>
       <div className="mt-2">
-        <IngredientList ingredients={analysis.ingredients} />
+        <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
       </div>
     </div>
   )
