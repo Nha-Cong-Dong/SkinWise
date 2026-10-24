@@ -13,6 +13,7 @@ _PERCENT = re.compile(r"\s*\d+(?:[.,]\d+)?\s*%")
 _DASHES = re.compile(r"[‐‑‒–—−]")
 _QUOTES = re.compile(r"[‘’`´]")
 _EDGE_PUNCT = " \t.,;:-"
+_INNER_PAREN = re.compile(r"\s*[(\[][^)\]]*[)\]]\s*")
 
 
 @dataclass(frozen=True)
@@ -87,6 +88,10 @@ def _candidates(name: str) -> tuple[str, ...]:
     paren = re.fullmatch(r"(.*?)\s*[(\[](.*)[)\]]\s*", name)
     if paren:
         names += [paren.group(1), paren.group(2)]
+    # US-style "Simmondsia Chinensis (Jojoba) Seed Oil": the EU name drops the common name.
+    without = _INNER_PAREN.sub(" ", name)
+    if without != name:
+        names.append(without)
     for n in list(names):
         if "/" in n:
             names += n.split("/")

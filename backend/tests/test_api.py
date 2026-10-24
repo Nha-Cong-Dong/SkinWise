@@ -79,10 +79,28 @@ def test_analyze_inci(client: TestClient) -> None:
     assert body["groups"] == ["RETINOID"]
     assert body["ingredients"][2] == {
         "position": 3, "raw_name": "Citric Acid", "inci_name": "Citric Acid", "groups": [],
+        "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
         "may_contain": False,
     }  # fmt: skip
-    assert body["unresolved_count"] == 2  # Aqua and Foo Bar are not in the actives dictionary
+    aqua = body["ingredients"][0]
+    assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)
+    assert body["ingredients"][3]["known"] is False
+    assert body["unresolved_count"] == 1  # Foo Bar
     assert [n["code"] for n in body["notices"]] == ["few_entries"]
+
+
+def test_functions_have_vietnamese_names(client: TestClient) -> None:
+    functions = {f["code"]: f for f in client.get("/functions").json()}
+    assert functions["HUMECTANT"]["name_vi"] == "Giữ ẩm"
+    assert functions["HUMECTANT"]["definition_en"] == "Holds and retains moisture."
+    assert functions["FIRMING"]["definition_en"] is None
+
+
+def test_product_detail_lists_functions(client: TestClient, ids: dict[str, int]) -> None:
+    product = client.get(f"/products/{ids[RETINOL]}").json()
+    jojoba = next(i for i in product["ingredients"] if i["raw_name"].startswith("Simmondsia"))
+    assert jojoba["eu_name"] == "SIMMONDSIA CHINENSIS SEED OIL"
+    assert all(i["known"] for i in product["ingredients"])
 
 
 def test_analyze_flags_a_key_ingredient_list(client: TestClient) -> None:

@@ -101,6 +101,23 @@ CREATE TABLE IF NOT EXISTS rule_sources (
 -- pair use it so a rule written for the umbrella also answers a question about a member.
 ALTER TABLE functional_groups ADD COLUMN IF NOT EXISTS parent_code text REFERENCES functional_groups(code);
 
+-- Every ingredient name the EU lists know, with its usual functions (app/eu_lists.py,
+-- data/eu_*). Separate from `ingredients`, the reviewed actives dictionary: a name here is
+-- recognised and described, never counted as an active.
+CREATE TABLE IF NOT EXISTS inci_names (
+  normalized_name text PRIMARY KEY,
+  name            text NOT NULL,               -- as printed in the EU list (upper case)
+  in_glossary     boolean NOT NULL,            -- in the current glossary, Decision (EU) 2025/1175
+  functions       text[] NOT NULL DEFAULT '{}' -- from the 2006 inventory, Decision 2006/257/EC
+);
+
+CREATE TABLE IF NOT EXISTS cosmetic_functions (
+  code           text PRIMARY KEY, -- e.g. HUMECTANT, as in the 2006 inventory
+  definition_en  text,             -- official definition; null when the inventory gives none
+  name_vi        text NOT NULL,
+  description_vi text NOT NULL
+);
+
 -- Added in phase 3. Questions and rumours users send in; a reviewer picks which ones become
 -- sourced myth cards. No contact details are stored.
 CREATE TABLE IF NOT EXISTS user_questions (

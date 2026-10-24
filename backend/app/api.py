@@ -15,15 +15,24 @@ from app.engine import (
     rule_matches,
 )
 from app.inci import read_label_text
-from app.ingredients import list_groups, product_groups, resolve, with_ancestors
+from app.ingredients import (
+    ResolvedEntry,
+    list_functions,
+    list_groups,
+    product_groups,
+    resolve,
+    with_ancestors,
+)
 from app.products import existing_product_ids, get_product, search_products
 from app.questions import add_question
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
+    FunctionOut,
     GroupOut,
     InciAnalysis,
     InciAnalyzeRequest,
+    IngredientOut,
     OccurrenceOut,
     ProductDetail,
     ProductSummary,
@@ -83,6 +92,23 @@ def groups(db: DbSession) -> list[GroupOut]:
     return [GroupOut.model_validate(g) for g in list_groups(db)]
 
 
+@router.get("/functions")
+def functions(db: DbSession) -> list[FunctionOut]:
+    return [FunctionOut.model_validate(f) for f in list_functions(db)]
+
+
+def ingredient_fields(r: ResolvedEntry) -> dict:
+    return {
+        "position": r.entry.position,
+        "raw_name": r.entry.raw,
+        "inci_name": r.inci_name,
+        "groups": list(r.groups),
+        "eu_name": r.eu_name,
+        "functions": list(r.functions),
+        "known": r.known,
+    }
+
+
 @router.get("/products")
 def products(
     db: DbSession,
@@ -102,8 +128,13 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
     row = get_product(db, product_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
-    groups = sorted({g for ing in row.ingredients for g in ing.groups})
-    return ProductDetail.model_validate({**row.__dict__, "groups": groups})
+    return ProductDetail.model_validate(
+        {
+            **row.__dict__,
+            "groups": sorted(product_groups(list(row.ingredients))),
+            "ingredients": [IngredientOut(**ingredient_fields(r)) for r in row.ingredients],
+        }
+    )
 
 
 @router.post("/inci/analyze")
@@ -112,17 +143,11 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
     resolved = resolve(db, label.entries)
     return InciAnalysis(
         ingredients=[
-            AnalyzedIngredient(
-                position=r.entry.position,
-                raw_name=r.entry.raw,
-                inci_name=r.inci_name,
-                groups=list(r.groups),
-                may_contain=r.entry.may_contain,
-            )
+            AnalyzedIngredient(**ingredient_fields(r), may_contain=r.entry.may_contain)
             for r in resolved
         ],
         groups=sorted(product_groups(resolved)),
-        unresolved_count=sum(1 for r in resolved if r.ingredient_id is None),
+        unresolved_count=sum(1 for r in resolved if not r.known),
         notices=[TextNotice(code=c, message_vi=TEXT_NOTICES_VI[c]) for c in label.notices],
     )
 

@@ -32,11 +32,21 @@ class ProductSummary(FromAttributes):
     groups: list[str]
 
 
-class IngredientOut(FromAttributes):
+class IngredientOut(BaseModel):
     position: int
     raw_name: str  # as written on the label
-    inci_name: str | None  # None: not in the dictionary
+    inci_name: str | None  # None: not in the actives dictionary
     groups: list[str]
+    eu_name: str | None  # the name in the EU lists; None: unknown to them
+    functions: list[str]  # usual functions (codes of /functions), from the 2006 EU inventory
+    known: bool  # recognised by the actives dictionary or the EU lists
+
+
+class FunctionOut(FromAttributes):
+    code: str
+    name_vi: str
+    description_vi: str
+    definition_en: str | None  # official EU definition
 
 
 class ProductDetail(ProductSummary):
