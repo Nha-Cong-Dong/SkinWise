@@ -62,9 +62,15 @@ def seed(engine: Engine) -> dict[str, int]:
     if untranslated := used - {f["code"] for f in functions}:
         raise ValueError(f"functions_vi.toml is missing: {sorted(untranslated)}")
 
+    common_names = load_toml("common_names.toml")["name"]
+    if unknown := [n["name"] for n in common_names
+                   if any(normalize_name(i) not in eu_names for i in n["inci"])]:  # fmt: skip
+        raise ValueError(f"common_names.toml points to names not in the EU lists: {unknown}")
+
     with engine.begin() as conn:
         _seed_functions(conn, functions)
         _seed_eu_names(conn, eu_names)
+        _seed_common_names(conn, common_names)
         _seed_groups(conn, groups)
         _seed_ingredients(conn, ingredients)
         for product in products:
@@ -106,6 +112,26 @@ def _seed_eu_names(conn: Connection, names: dict[str, tuple[str, bool, list[str]
     ) as copy:
         for normalized, (name, in_glossary, functions) in names.items():
             copy.write_row((normalized, name, in_glossary, functions))
+
+
+def _seed_common_names(conn: Connection, names: list[dict[str, Any]]) -> None:
+    conn.execute(text("DELETE FROM common_names"))
+    for n in names:
+        conn.execute(
+            text(
+                """
+                INSERT INTO common_names (normalized_name, name, lang, inci_names, note)
+                VALUES (:normalized, :name, :lang, :inci, :note)
+                """
+            ),
+            {
+                "normalized": normalize_name(n["name"]),
+                "name": n["name"],
+                "lang": n["lang"],
+                "inci": n["inci"],
+                "note": n.get("note"),
+            },
+        )
 
 
 def _seed_groups(conn: Connection, groups: list[dict[str, Any]]) -> None:

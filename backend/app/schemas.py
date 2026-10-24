@@ -40,6 +40,9 @@ class IngredientOut(BaseModel):
     eu_name: str | None  # the name in the EU lists; None: unknown to them
     functions: list[str]  # usual functions (codes of /functions), from the 2006 EU inventory
     known: bool  # recognised by the actives dictionary or the EU lists
+    # The label used an everyday name ("Rau má"): the EU names it may stand for, first one used.
+    common_name_of: list[str]
+    common_name_note: str | None
 
 
 class FunctionOut(FromAttributes):

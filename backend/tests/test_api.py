@@ -80,7 +80,7 @@ def test_analyze_inci(client: TestClient) -> None:
     assert body["ingredients"][2] == {
         "position": 3, "raw_name": "Citric Acid", "inci_name": "Citric Acid", "groups": [],
         "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
-        "may_contain": False,
+        "common_name_of": [], "common_name_note": None, "may_contain": False,
     }  # fmt: skip
     aqua = body["ingredients"][0]
     assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)

@@ -118,6 +118,15 @@ CREATE TABLE IF NOT EXISTS cosmetic_functions (
   description_vi text NOT NULL
 );
 
+-- Everyday names ("rau má", "Purified Water") for EU names, from data/common_names.toml.
+CREATE TABLE IF NOT EXISTS common_names (
+  normalized_name text PRIMARY KEY,
+  name            text NOT NULL,
+  lang            text NOT NULL CHECK (lang IN ('vi', 'en')),
+  inci_names      text[] NOT NULL, -- EU names it may stand for; the first is used to resolve
+  note            text
+);
+
 -- Added in phase 3. Questions and rumours users send in; a reviewer picks which ones become
 -- sourced myth cards. No contact details are stored.
 CREATE TABLE IF NOT EXISTS user_questions (

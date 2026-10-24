@@ -1,0 +1,447 @@
+# Tên thông dụng (tiếng Việt, tiếng Anh thường ngày) -> tên trong danh sách EU (data/eu_glossary.txt).
+# Dùng khi bảng thành phần không ghi tên INCI, ví dụ "Rau má", "Axit Salicylic", "Purified Water".
+#
+# name: cách người ta hay viết (không phân biệt hoa thường, có dấu hay không).
+# lang: "vi" | "en".
+# inci: tên EU mà tên thông dụng có thể chỉ; tên đầu tiên được dùng để nhận diện (hoạt chất, chức năng),
+#       các tên sau chỉ để hiển thị "có thể là". Mọi tên phải có trong eu_glossary.txt (có test kiểm tra).
+# note: chỗ mơ hồ cần lưu ý.
+#
+# Khi tra, các tiền tố "chiết xuất", "tinh chất", "dịch chiết" được bỏ qua: "Chiết xuất rau má" = "Rau má".
+#
+# CẢNH BÁO: tên trỏ tới hoạt chất trong ingredients.toml (vd. "axit salicylic" -> Salicylic Acid) làm
+# thay đổi kết quả kiểm tra routine, nên phải được duyệt như từ điển hoạt chất.
+# BẢN NHÁP do Claude soạn (24/10) từ tên khoa học của từng loài; chưa có người duyệt.
+
+# --- Hoạt chất viết theo tiếng Việt (ảnh hưởng cảnh báo) ---
+
+[[name]]
+name = "Axit salicylic"
+lang = "vi"
+inci = ["SALICYLIC ACID"]
+
+[[name]]
+name = "Axit glycolic"
+lang = "vi"
+inci = ["GLYCOLIC ACID"]
+
+[[name]]
+name = "Axit lactic"
+lang = "vi"
+inci = ["LACTIC ACID"]
+
+[[name]]
+name = "Axit mandelic"
+lang = "vi"
+inci = ["MANDELIC ACID"]
+
+[[name]]
+name = "Axit azelaic"
+lang = "vi"
+inci = ["AZELAIC ACID"]
+
+[[name]]
+name = "Axit ascorbic"
+lang = "vi"
+inci = ["ASCORBIC ACID"]
+
+[[name]]
+name = "Vitamin A"
+lang = "vi"
+inci = ["RETINOL", "RETINYL PALMITATE", "RETINYL ACETATE"]
+note = "Nhãn ghi 'vitamin A' có thể là retinol hoặc ester retinyl; cả ba đều thuộc nhóm retinoid."
+
+# --- Chất không phải hoạt chất trong từ điển (chỉ để nhận diện và hiển thị chức năng) ---
+
+[[name]]
+name = "Axit hyaluronic"
+lang = "vi"
+inci = ["HYALURONIC ACID", "SODIUM HYALURONATE"]
+
+[[name]]
+name = "Axit tranexamic"
+lang = "vi"
+inci = ["TRANEXAMIC ACID"]
+
+[[name]]
+name = "Axit kojic"
+lang = "vi"
+inci = ["KOJIC ACID"]
+
+[[name]]
+name = "Axit citric"
+lang = "vi"
+inci = ["CITRIC ACID"]
+
+[[name]]
+name = "Axit ferulic"
+lang = "vi"
+inci = ["FERULIC ACID"]
+
+[[name]]
+name = "Vitamin B5"
+lang = "vi"
+inci = ["PANTHENOL"]
+
+[[name]]
+name = "Vitamin E"
+lang = "vi"
+inci = ["TOCOPHEROL", "TOCOPHERYL ACETATE"]
+
+[[name]]
+name = "Nước"
+lang = "vi"
+inci = ["AQUA"]
+
+[[name]]
+name = "Nước tinh khiết"
+lang = "vi"
+inci = ["AQUA"]
+
+[[name]]
+name = "Glyxerin"
+lang = "vi"
+inci = ["GLYCERIN"]
+
+[[name]]
+name = "Lưu huỳnh"
+lang = "vi"
+inci = ["SULFUR"]
+
+[[name]]
+name = "Kẽm oxit"
+lang = "vi"
+inci = ["ZINC OXIDE"]
+
+[[name]]
+name = "Than hoạt tính"
+lang = "vi"
+inci = ["CHARCOAL POWDER", "CHARCOAL"]
+
+[[name]]
+name = "Đất sét cao lanh"
+lang = "vi"
+inci = ["KAOLIN"]
+
+[[name]]
+name = "Sáp ong"
+lang = "vi"
+inci = ["CERA ALBA"]
+
+[[name]]
+name = "Mật ong"
+lang = "vi"
+inci = ["MEL"]
+
+[[name]]
+name = "Sữa ong chúa"
+lang = "vi"
+inci = ["ROYAL JELLY", "ROYAL JELLY EXTRACT"]
+
+[[name]]
+name = "Collagen"
+lang = "vi"
+inci = ["HYDROLYZED COLLAGEN", "SOLUBLE COLLAGEN"]
+note = "Nhãn chỉ ghi 'collagen' không cho biết dạng nào."
+
+[[name]]
+name = "Dịch nhầy ốc sên"
+lang = "vi"
+inci = ["SNAIL SECRETION FILTRATE"]
+
+[[name]]
+name = "Bột ngọc trai"
+lang = "vi"
+inci = ["PEARL POWDER"]
+
+# --- Thực vật ---
+
+[[name]]
+name = "Rau má"
+lang = "vi"
+inci = ["CENTELLA ASIATICA EXTRACT", "CENTELLA ASIATICA LEAF EXTRACT"]
+
+[[name]]
+name = "Trà xanh"
+lang = "vi"
+inci = ["CAMELLIA SINENSIS LEAF EXTRACT"]
+
+[[name]]
+name = "Bơ hạt mỡ"
+lang = "vi"
+inci = ["BUTYROSPERMUM PARKII BUTTER"]
+
+[[name]]
+name = "Bơ shea"
+lang = "vi"
+inci = ["BUTYROSPERMUM PARKII BUTTER"]
+
+[[name]]
+name = "Dầu hạt mắc ca"
+lang = "vi"
+inci = ["MACADAMIA INTEGRIFOLIA SEED OIL", "MACADAMIA TERNIFOLIA SEED OIL"]
+note = "Có hai loài mắc ca; nhãn tiếng Việt không cho biết loài nào."
+
+[[name]]
+name = "Vỏ liễu trắng"
+lang = "vi"
+inci = ["SALIX ALBA BARK EXTRACT"]
+note = "Chiết xuất vỏ liễu không được tính là BHA (xem ingredients.toml)."
+
+[[name]]
+name = "Cúc la mã"
+lang = "vi"
+inci = ["ANTHEMIS NOBILIS FLOWER EXTRACT", "CHAMOMILLA RECUTITA FLOWER EXTRACT"]
+note = "Mơ hồ: 'cúc La Mã' đúng nghĩa là Anthemis nobilis, nhưng nhãn Việt cũng dùng cho cúc Đức (Chamomilla recutita)."
+
+[[name]]
+name = "Lô hội"
+lang = "vi"
+inci = ["ALOE BARBADENSIS LEAF JUICE", "ALOE BARBADENSIS LEAF EXTRACT"]
+note = "Nhãn tiếng Việt không cho biết là nước ép hay chiết xuất lá."
+
+[[name]]
+name = "Nha đam"
+lang = "vi"
+inci = ["ALOE BARBADENSIS LEAF JUICE", "ALOE BARBADENSIS LEAF EXTRACT"]
+note = "Nhãn tiếng Việt không cho biết là nước ép hay chiết xuất lá."
+
+[[name]]
+name = "Tràm trà"
+lang = "vi"
+inci = ["MELALEUCA ALTERNIFOLIA LEAF OIL", "MELALEUCA ALTERNIFOLIA LEAF EXTRACT"]
+
+[[name]]
+name = "Tinh dầu tràm trà"
+lang = "vi"
+inci = ["MELALEUCA ALTERNIFOLIA LEAF OIL"]
+
+[[name]]
+name = "Rau sam"
+lang = "vi"
+inci = ["PORTULACA OLERACEA EXTRACT"]
+
+[[name]]
+name = "Nghệ"
+lang = "vi"
+inci = ["CURCUMA LONGA ROOT EXTRACT"]
+
+[[name]]
+name = "Bí đao"
+lang = "vi"
+inci = ["BENINCASA CERIFERA FRUIT EXTRACT"]
+
+[[name]]
+name = "Cam thảo"
+lang = "vi"
+inci = ["GLYCYRRHIZA GLABRA ROOT EXTRACT"]
+
+[[name]]
+name = "Diếp cá"
+lang = "vi"
+inci = ["HOUTTUYNIA CORDATA EXTRACT", "HOUTTUYNIA CORDATA LEAF EXTRACT"]
+
+[[name]]
+name = "Yến mạch"
+lang = "vi"
+inci = ["AVENA SATIVA KERNEL EXTRACT", "AVENA SATIVA KERNEL FLOUR"]
+
+[[name]]
+name = "Dầu dừa"
+lang = "vi"
+inci = ["COCOS NUCIFERA OIL"]
+
+[[name]]
+name = "Dầu ô liu"
+lang = "vi"
+inci = ["OLEA EUROPAEA FRUIT OIL"]
+
+[[name]]
+name = "Dầu hạnh nhân"
+lang = "vi"
+inci = ["PRUNUS AMYGDALUS DULCIS OIL"]
+
+[[name]]
+name = "Dầu jojoba"
+lang = "vi"
+inci = ["SIMMONDSIA CHINENSIS SEED OIL"]
+
+[[name]]
+name = "Dầu argan"
+lang = "vi"
+inci = ["ARGANIA SPINOSA KERNEL OIL"]
+
+[[name]]
+name = "Dầu hạt nho"
+lang = "vi"
+inci = ["VITIS VINIFERA SEED OIL"]
+
+[[name]]
+name = "Dầu hướng dương"
+lang = "vi"
+inci = ["HELIANTHUS ANNUUS SEED OIL"]
+
+[[name]]
+name = "Dầu thầu dầu"
+lang = "vi"
+inci = ["RICINUS COMMUNIS SEED OIL"]
+
+[[name]]
+name = "Dầu cám gạo"
+lang = "vi"
+inci = ["ORYZA SATIVA BRAN OIL"]
+
+[[name]]
+name = "Cám gạo"
+lang = "vi"
+inci = ["ORYZA SATIVA BRAN EXTRACT"]
+
+[[name]]
+name = "Bơ ca cao"
+lang = "vi"
+inci = ["THEOBROMA CACAO SEED BUTTER"]
+
+[[name]]
+name = "Cà phê"
+lang = "vi"
+inci = ["COFFEA ARABICA SEED EXTRACT"]
+note = "Nhãn tiếng Việt không cho biết là cà phê arabica hay loài khác."
+
+[[name]]
+name = "Bạc hà"
+lang = "vi"
+inci = ["MENTHA PIPERITA OIL", "MENTHA PIPERITA LEAF EXTRACT"]
+
+[[name]]
+name = "Oải hương"
+lang = "vi"
+inci = ["LAVANDULA ANGUSTIFOLIA OIL"]
+
+[[name]]
+name = "Cúc vạn thọ"
+lang = "vi"
+inci = ["CALENDULA OFFICINALIS FLOWER EXTRACT"]
+note = "Ở Việt Nam 'cúc vạn thọ' cũng dùng cho cây Tagetes; calendula đúng hơn là 'cúc kim tiền'."
+
+[[name]]
+name = "Cúc kim tiền"
+lang = "vi"
+inci = ["CALENDULA OFFICINALIS FLOWER EXTRACT"]
+
+[[name]]
+name = "Gừng"
+lang = "vi"
+inci = ["ZINGIBER OFFICINALE ROOT EXTRACT"]
+
+[[name]]
+name = "Chanh"
+lang = "vi"
+inci = ["CITRUS LIMON FRUIT EXTRACT"]
+
+[[name]]
+name = "Vỏ bưởi"
+lang = "vi"
+inci = ["CITRUS GRANDIS PEEL OIL", "CITRUS GRANDIS PEEL EXTRACT"]
+
+[[name]]
+name = "Lựu"
+lang = "vi"
+inci = ["PUNICA GRANATUM FRUIT EXTRACT"]
+
+[[name]]
+name = "Đu đủ"
+lang = "vi"
+inci = ["CARICA PAPAYA FRUIT EXTRACT"]
+
+[[name]]
+name = "Dưa leo"
+lang = "vi"
+inci = ["CUCUMIS SATIVUS FRUIT EXTRACT"]
+
+[[name]]
+name = "Dưa chuột"
+lang = "vi"
+inci = ["CUCUMIS SATIVUS FRUIT EXTRACT"]
+
+[[name]]
+name = "Hoa sen"
+lang = "vi"
+inci = ["NELUMBO NUCIFERA FLOWER EXTRACT"]
+
+[[name]]
+name = "Nhân sâm"
+lang = "vi"
+inci = ["PANAX GINSENG ROOT EXTRACT"]
+
+[[name]]
+name = "Tía tô"
+lang = "vi"
+inci = ["PERILLA FRUTESCENS LEAF EXTRACT"]
+
+[[name]]
+name = "Hoa hồng"
+lang = "vi"
+inci = ["ROSA DAMASCENA FLOWER WATER", "ROSA DAMASCENA FLOWER EXTRACT", "ROSA DAMASCENA FLOWER OIL"]
+note = "Có nhiều loài hồng; Rosa damascena là loài hay dùng nhất trong mỹ phẩm."
+
+[[name]]
+name = "Sả chanh"
+lang = "vi"
+inci = ["CYMBOPOGON CITRATUS LEAF OIL"]
+
+[[name]]
+name = "Đậu nành"
+lang = "vi"
+inci = ["GLYCINE SOJA EXTRACT"]
+
+# --- Tên tiếng Anh thông dụng (nhãn dịch, ví dụ từ nhãn Hàn) ---
+
+[[name]]
+name = "Purified Water"
+lang = "en"
+inci = ["AQUA"]
+
+[[name]]
+name = "Green Tea Extract"
+lang = "en"
+inci = ["CAMELLIA SINENSIS LEAF EXTRACT"]
+
+[[name]]
+name = "Tea Tree Leaf Water"
+lang = "en"
+inci = ["MELALEUCA ALTERNIFOLIA LEAF WATER"]
+
+[[name]]
+name = "Tea Tree Oil"
+lang = "en"
+inci = ["MELALEUCA ALTERNIFOLIA LEAF OIL"]
+
+[[name]]
+name = "Papaya Fruit Extract"
+lang = "en"
+inci = ["CARICA PAPAYA FRUIT EXTRACT"]
+
+[[name]]
+name = "Witch Hazel Extract"
+lang = "en"
+inci = ["HAMAMELIS VIRGINIANA EXTRACT"]
+
+[[name]]
+name = "Lotus Flower Extract"
+lang = "en"
+inci = ["NELUMBO NUCIFERA FLOWER EXTRACT"]
+
+[[name]]
+name = "Peppermint Oil"
+lang = "en"
+inci = ["MENTHA PIPERITA OIL"]
+
+[[name]]
+name = "Aloe Vera"
+lang = "en"
+inci = ["ALOE BARBADENSIS LEAF JUICE", "ALOE BARBADENSIS LEAF EXTRACT"]
+
+[[name]]
+name = "Shea Butter"
+lang = "en"
+inci = ["BUTYROSPERMUM PARKII BUTTER"]

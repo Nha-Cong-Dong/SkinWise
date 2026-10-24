@@ -85,3 +85,38 @@ def test_no_synonym_points_to_two_ingredients() -> None:
         for name in {normalize_name(n) for n in [ing["inci"], *ing.get("synonyms", [])]}:
             assert name not in owner, f"{name!r}: {owner.get(name)} and {ing['inci']}"
             owner[name] = ing["inci"]
+
+
+def test_everyday_vietnamese_names_resolve_to_eu_names(engine: Engine) -> None:
+    rau_ma, extract, cuc = resolve_text(engine, "Rau má, Chiết xuất rau má, Cúc La Mã")
+    assert rau_ma.eu_name == "CENTELLA ASIATICA EXTRACT"
+    assert rau_ma.common_name_of == ("CENTELLA ASIATICA EXTRACT", "CENTELLA ASIATICA LEAF EXTRACT")
+    assert extract.eu_name == rau_ma.eu_name
+    assert cuc.common_name_note and "Anthemis" in cuc.common_name_note
+
+
+def test_vietnamese_name_of_an_active_counts_as_the_active(engine: Engine) -> None:
+    (salicylic,) = resolve_text(engine, "Axit Salicylic")
+    assert salicylic.groups == ("BHA", "EXFOLIANT_ACID")
+    (willow,) = resolve_text(engine, "Vỏ liễu trắng")
+    assert willow.inci_name == "Salix Alba Bark Extract"
+    assert willow.groups == ()
+
+
+def test_inci_names_win_over_everyday_names(engine: Engine) -> None:
+    (aqua,) = resolve_text(engine, "Aqua")
+    assert aqua.common_name_of == ()
+
+
+def test_common_names_are_unique_and_do_not_shadow_the_dictionary() -> None:
+    dictionary = {
+        normalize_name(n)
+        for ing in load_toml("ingredients.toml")["ingredient"]
+        for n in [ing["inci"], *ing.get("synonyms", [])]
+    }
+    seen: set[str] = set()
+    for entry in load_toml("common_names.toml")["name"]:
+        name = normalize_name(entry["name"])
+        assert name not in seen, entry["name"]
+        assert name not in dictionary, f"{entry['name']} is already a dictionary name"
+        seen.add(name)

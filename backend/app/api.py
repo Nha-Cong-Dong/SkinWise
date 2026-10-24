@@ -106,6 +106,8 @@ def ingredient_fields(r: ResolvedEntry) -> dict:
         "eu_name": r.eu_name,
         "functions": list(r.functions),
         "known": r.known,
+        "common_name_of": list(r.common_name_of),
+        "common_name_note": r.common_name_note,
     }
 
 

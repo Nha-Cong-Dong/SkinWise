@@ -17,6 +17,10 @@ class ResolvedEntry:
     groups: tuple[str, ...]
     eu_name: str | None = None  # the name as listed by the EU; None: unknown to the EU lists
     functions: tuple[str, ...] = ()  # usual functions from the 2006 EU inventory
+    # When the label used an everyday name ("Rau má"): every EU name it may stand for, the
+    # first being the one resolved above, and what is ambiguous about it.
+    common_name_of: tuple[str, ...] = ()
+    common_name_note: str | None = None
 
     @property
     def known(self) -> bool:
@@ -40,39 +44,88 @@ _EU_LOOKUP = text(
     "SELECT normalized_name, name, functions FROM inci_names WHERE normalized_name IN :names"
 ).bindparams(bindparam("names", expanding=True))
 
+_COMMON_LOOKUP = text(
+    "SELECT normalized_name, inci_names, note FROM common_names WHERE normalized_name IN :names"
+).bindparams(bindparam("names", expanding=True))
+
+# "Chiết xuất rau má" is looked up as "rau má".
+_COMMON_PREFIXES = ("chiet xuat ", "tinh chat ", "dich chiet ")
+
 
 def resolve(db: Session | Connection, entries: list[InciEntry]) -> list[ResolvedEntry]:
     """Look up each entry's candidate names in order; the first known name wins.
 
     The actives dictionary decides groups; the EU lists only say the name is a real
-    ingredient name and what it is usually for.
+    ingredient name and what it is usually for. A name neither knows is tried as an everyday
+    name (data/common_names.toml), which stands for an EU name and is then resolved as one.
     """
     names = sorted({name for entry in entries for name in entry.candidates})
     if not names:
         return [ResolvedEntry(entry, None, None, ()) for entry in entries]
+    known, eu = _lookup(db, names)
+
+    unresolved = [e for e in entries if not any(n in known or n in eu for n in e.candidates)]
+    common_keys = {e.position: _common_keys(e.candidates) for e in unresolved}
+    all_keys = sorted({k for keys in common_keys.values() for k in keys})
+    common = (
+        {row.normalized_name: row for row in db.execute(_COMMON_LOOKUP, {"names": all_keys})}
+        if all_keys
+        else {}
+    )
+    targets = sorted({normalize_name(n) for row in common.values() for n in row.inci_names})
+    if targets:
+        more_known, more_eu = _lookup(db, targets)
+        known, eu = {**known, **more_known}, {**eu, **more_eu}
+
+    resolved = []
+    for entry in entries:
+        keys = common_keys.get(entry.position, ())
+        hit = next((common[k] for k in keys if k in common), None)
+        if hit is None:
+            resolved.append(_resolve_one(entry, entry.candidates, known, eu))
+        else:
+            candidates = tuple(normalize_name(n) for n in hit.inci_names)
+            one = _resolve_one(entry, candidates, known, eu)
+            resolved.append(_with_common(one, tuple(hit.inci_names), hit.note))
+    return resolved
+
+
+def _lookup(db: Session | Connection, names: list[str]) -> tuple[dict, dict]:
     known = {row.normalized_name: row for row in db.execute(_LOOKUP, {"names": names})}
     # A dictionary hit on a synonym ("vitamin c") is looked up in the EU lists by its INCI name.
     eu_names = names + sorted({normalize_name(row.inci_name) for row in known.values()})
     eu = {row.normalized_name: row for row in db.execute(_EU_LOOKUP, {"names": eu_names})}
+    return known, eu
 
-    resolved = []
-    for entry in entries:
-        row = next((known[name] for name in entry.candidates if name in known), None)
-        eu_candidates = (
-            (*entry.candidates, normalize_name(row.inci_name)) if row else entry.candidates
-        )
-        eu_row = next((eu[name] for name in eu_candidates if name in eu), None)
-        resolved.append(
-            ResolvedEntry(
-                entry,
-                row.id if row else None,
-                row.inci_name if row else None,
-                tuple(row.groups) if row else (),
-                eu_row.name if eu_row else None,
-                tuple(eu_row.functions) if eu_row else (),
-            )
-        )
-    return resolved
+
+def _resolve_one(
+    entry: InciEntry, candidates: tuple[str, ...], known: dict, eu: dict
+) -> ResolvedEntry:
+    row = next((known[name] for name in candidates if name in known), None)
+    eu_candidates = (*candidates, normalize_name(row.inci_name)) if row else candidates
+    eu_row = next((eu[name] for name in eu_candidates if name in eu), None)
+    return ResolvedEntry(
+        entry,
+        row.id if row else None,
+        row.inci_name if row else None,
+        tuple(row.groups) if row else (),
+        eu_row.name if eu_row else None,
+        tuple(eu_row.functions) if eu_row else (),
+    )
+
+
+def _with_common(r: ResolvedEntry, names: tuple[str, ...], note: str | None) -> ResolvedEntry:
+    return ResolvedEntry(
+        r.entry, r.ingredient_id, r.inci_name, r.groups, r.eu_name, r.functions, names, note
+    )
+
+
+def _common_keys(candidates: tuple[str, ...]) -> tuple[str, ...]:
+    keys: list[str] = []
+    for name in candidates:
+        keys.append(name)
+        keys += [name[len(p) :] for p in _COMMON_PREFIXES if name.startswith(p)]
+    return tuple(keys)
 
 
 def product_groups(resolved: list[ResolvedEntry]) -> set[str]:
