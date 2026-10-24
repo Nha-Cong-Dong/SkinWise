@@ -137,8 +137,8 @@ groups = ["VITAMIN_C_DERIVATIVE"]
 
 [[ingredient]]
 inci = "Ascorbyl Palmitate"
-groups = ["VITAMIN_C_DERIVATIVE"]
-note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức."
+groups = []
+note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức (danh mục EU 2006 chỉ ghi chức năng ANTIOXIDANT); cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 # --- Niacinamide ---
 [[ingredient]]

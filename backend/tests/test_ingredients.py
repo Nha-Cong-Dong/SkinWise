@@ -73,7 +73,8 @@ def test_reseeding_keeps_ids_stable(engine: Engine) -> None:
 def test_look_alikes_are_not_counted_as_actives(engine: Engine) -> None:
     resolved = resolve_text(
         engine,
-        "Ethylhexyl Salicylate, Willow Bark Extract, Sodium Lactate, Hyaluronic Acid, Niacin",
+        "Ethylhexyl Salicylate, Willow Bark Extract, Sodium Lactate, Hyaluronic Acid, Niacin, "
+        "Ascorbyl Palmitate",
     )
     assert all(r.ingredient_id is not None for r in resolved)
     assert product_groups(resolved) == set()
