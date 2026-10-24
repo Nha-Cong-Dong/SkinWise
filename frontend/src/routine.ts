@@ -2,7 +2,7 @@
 // key; entries are ordered, and an entry's step is its position within its session.
 
 import { useEffect, useState } from 'react'
-import { api, type RoutineCheckRequest, type RoutineCheckResponse, type Session } from './api'
+import { api, type RoutineCheckRequest, type RoutineCheckResponse, type Session, type TextNotice } from './api'
 import { ALL_DAYS } from './labels'
 
 export type MyProduct = {
@@ -12,6 +12,13 @@ export type MyProduct = {
   productId: number | null // seeded product
   inci: string | null // pasted ingredient list
   groups: string[]
+  /** Notices from analysing a pasted list (missing in routines saved before they existed). */
+  notices?: TextNotice[]
+}
+
+/** The pasted list may not be the whole label, so the check may miss warnings. */
+export function maybeIncomplete(product: MyProduct): boolean {
+  return (product.notices ?? []).some((n) => n.code !== 'vietnamese_names')
 }
 
 export type Entry = { id: string; productKey: string; session: Session; days: number[] }

@@ -14,7 +14,7 @@ from app.engine import (
     check_routine,
     rule_matches,
 )
-from app.inci import parse_inci
+from app.inci import read_label_text
 from app.ingredients import list_groups, product_groups, resolve, with_ancestors
 from app.products import existing_product_ids, get_product, search_products
 from app.questions import add_question
@@ -34,6 +34,7 @@ from app.schemas import (
     RoutineProductResult,
     RuleOut,
     RulesResponse,
+    TextNotice,
     WarningOut,
 )
 
@@ -46,6 +47,27 @@ NO_VERIFIED_INFO_VI = (
     "Chưa có thông tin đã kiểm chứng cho trường hợp này. Không có cảnh báo không có nghĩa là "
     "chắc chắn an toàn. Bạn có thể gửi câu hỏi để chúng tôi tìm nguồn."
 )
+TEXT_NOTICES_VI = {
+    "highlight_list": (
+        "Đây có vẻ là danh sách “thành phần nổi bật” do hãng chọn, không phải bảng thành phần "
+        "đầy đủ. Hoạt chất có thể nằm ở phần không được liệt kê, nên kết quả kiểm tra routine "
+        "có thể thiếu cảnh báo. Hãy dán bảng thành phần đầy đủ in trên bao bì (thường bắt đầu "
+        "bằng “Ingredients:”)."
+    ),
+    "vietnamese_names": (
+        "Nhiều tên thành phần là tên tiếng Việt thông dụng, không phải tên INCI chuẩn. SkinWise "
+        "chỉ nhận ra một phần trong số đó; bảng INCI tiếng Anh trên bao bì cho kết quả chính "
+        "xác hơn."
+    ),
+    "long_entries": (
+        "Một số dòng quá dài để là tên thành phần: văn bản dán vào có thể kèm mô tả hoặc câu "
+        "quảng cáo. Hãy chỉ dán phần bảng thành phần."
+    ),
+    "few_entries": (
+        "Danh sách chỉ có vài thành phần. Nếu đây chưa phải toàn bộ bảng thành phần, kết quả "
+        "kiểm tra có thể thiếu cảnh báo."
+    ),
+}
 QUESTION_RECEIVED_VI = (
     "Đã nhận câu hỏi của bạn. Người duyệt sẽ xem câu hỏi; nếu tìm được nguồn đáng tin cậy, "
     "câu trả lời sẽ được làm thành thẻ thông tin mới."
@@ -86,7 +108,8 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 
 @router.post("/inci/analyze")
 def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
-    resolved = resolve(db, parse_inci(body.text))
+    label = read_label_text(body.text)
+    resolved = resolve(db, label.entries)
     return InciAnalysis(
         ingredients=[
             AnalyzedIngredient(
@@ -100,6 +123,7 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
         ],
         groups=sorted(product_groups(resolved)),
         unresolved_count=sum(1 for r in resolved if r.ingredient_id is None),
+        notices=[TextNotice(code=c, message_vi=TEXT_NOTICES_VI[c]) for c in label.notices],
     )
 
 
@@ -119,7 +143,7 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
         ids[p.key]: (
             seeded_groups[p.product_id]
             if p.product_id is not None
-            else product_groups(resolve(db, parse_inci(p.inci or "")))
+            else product_groups(resolve(db, read_label_text(p.inci or "").entries))
         )
         for p in body.products
     }

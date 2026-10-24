@@ -82,6 +82,15 @@ def test_analyze_inci(client: TestClient) -> None:
         "may_contain": False,
     }  # fmt: skip
     assert body["unresolved_count"] == 2  # Aqua and Foo Bar are not in the actives dictionary
+    assert [n["code"] for n in body["notices"]] == ["few_entries"]
+
+
+def test_analyze_flags_a_key_ingredient_list(client: TestClient) -> None:
+    text = "THÀNH PHẦN NỔI BẬT\n- Betaine: Giữ nước cho da.\n- Allantoin: làm dịu da tấy đỏ."
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert [i["raw_name"] for i in body["ingredients"]] == ["Betaine", "Allantoin"]
+    assert body["notices"][0]["code"] == "highlight_list"
+    assert "không phải bảng thành phần đầy đủ" in body["notices"][0]["message_vi"]
 
 
 def test_analyze_rejects_empty_text(client: TestClient) -> None:

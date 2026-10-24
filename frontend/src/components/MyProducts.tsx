@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { api, type ProductDetail } from '../api'
 import { SESSION_LABELS, VERIFICATION_LABELS } from '../labels'
-import type { MyProduct, RoutineActions } from '../routine'
+import { maybeIncomplete, type MyProduct, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
 
 export function MyProducts({ actions }: { actions: RoutineActions }) {
@@ -38,6 +38,9 @@ function ProductRow({ product, uses, actions }: { product: MyProduct; uses: numb
             {product.name}
             {product.productId === null && <span className="ml-2 text-xs font-normal text-slate-400">tự nhập</span>}
           </p>
+          {maybeIncomplete(product) && (
+            <p className="text-xs text-amber-700">Bảng thành phần có thể chưa đầy đủ, cảnh báo có thể bị thiếu</p>
+          )}
           <div className="mt-1">
             <GroupChips codes={product.groups} empty="Không có hoạt chất trong danh sách theo dõi" />
           </div>

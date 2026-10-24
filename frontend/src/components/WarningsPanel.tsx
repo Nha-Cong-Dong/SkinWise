@@ -1,5 +1,5 @@
 import { SCOPE_LABELS, formatOccurrences } from '../labels'
-import type { CheckState, MyProduct } from '../routine'
+import { maybeIncomplete, type CheckState, type MyProduct } from '../routine'
 import { Notice } from './Notice'
 import { RuleCard } from './RuleCard'
 
@@ -8,6 +8,8 @@ type Props = { state: CheckState; products: MyProduct[] }
 export function WarningsPanel({ state, products }: Props) {
   const names = new Map(products.map((p) => [p.key, p.name]))
   const result = state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
+  const checked = new Set(result?.products.map((p) => p.key))
+  const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
 
   return (
     <section aria-live="polite">
@@ -22,6 +24,12 @@ export function WarningsPanel({ state, products }: Props) {
         {state.kind === 'error' && (
           <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800 ring-1 ring-red-200">
             Không kiểm tra được routine ({state.message}). Hãy thử lại sau.
+          </div>
+        )}
+        {incomplete.length > 0 && (
+          <div className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+            Bảng thành phần của {incomplete.map((p) => `“${p.name}”`).join(', ')} có thể chưa đầy đủ, nên kết quả
+            dưới đây có thể thiếu cảnh báo.
           </div>
         )}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}

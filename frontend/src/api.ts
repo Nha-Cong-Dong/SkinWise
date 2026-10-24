@@ -35,10 +35,16 @@ export type ProductDetail = ProductSummary & {
   ingredients: Ingredient[]
 }
 
+export type TextNotice = {
+  code: 'highlight_list' | 'vietnamese_names' | 'long_entries' | 'few_entries'
+  message_vi: string
+}
+
 export type InciAnalysis = {
   ingredients: (Ingredient & { may_contain: boolean })[]
   groups: string[]
   unresolved_count: number
+  notices: TextNotice[] // signs the text is not a full INCI list
 }
 
 export type Source = { title: string; publisher: string; url: string; quote: string }

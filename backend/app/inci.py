@@ -97,3 +97,63 @@ def _candidates(name: str) -> tuple[str, ...]:
         if normalized and normalized not in result:
             result.append(normalized)
     return tuple(result)
+
+
+# --- Text that is not a full INCI list --------------------------------------------------------
+# A pasted text can look like an ingredient list without being one: brands often publish only
+# "key ingredients" with what each does. Checking a routine against such a list misses every
+# active it leaves out, so the API flags it instead of silently treating it as complete.
+
+# "- Shea butter: moisturizes, soothes ..." (name, colon, a description of several words).
+_DESCRIBED_LINE = re.compile(r"^\s*[-•*+]?\s*([^:：\n]{1,60}?)\s*[:：]\s*(\S+(?:\s+\S+){2,}.*)$")
+# Section labels that legitimately precede an INCI list ("Inactive ingredients: ...").
+_SECTION_LABEL = re.compile(r"^((active|inactive|other)\s+)?ingredients?$|^inci$|^thanh phan$")
+_HIGHLIGHT_HEADING = re.compile(
+    r"\bthanh phan (noi bat|chinh|chu dao|dac biet|vang)\b"
+    r"|\b(key|hero|star|featured|highlighted) ingredients?\b"
+)
+MIN_FULL_LIST = 5  # full INCI lists rarely have fewer entries
+MAX_NAME_WORDS = 6  # INCI names longer than this are almost always a sentence
+
+
+@dataclass(frozen=True)
+class LabelText:
+    entries: list[InciEntry]
+    notices: list[str]  # codes, see describe_notice in the API
+
+
+def read_label_text(text: str) -> LabelText:
+    """Parse pasted text as an ingredient list and say how far it can be trusted as one.
+
+    Notice codes: "highlight_list" (key ingredients with descriptions, not the full list),
+    "vietnamese_names" (common Vietnamese names, not INCI), "long_entries" (sentences mixed
+    in), "few_entries" (too short to be a whole list).
+    """
+    highlights = _highlight_names(text)
+    entries = parse_inci("\n".join(highlights)) if highlights else parse_inci(text)
+
+    notices = []
+    if highlights or _HIGHLIGHT_HEADING.search(normalize_name(text)):
+        notices.append("highlight_list")
+    if entries and sum(_has_diacritics(e.raw) for e in entries) * 4 >= len(entries):
+        notices.append("vietnamese_names")
+    if not highlights and any(len(e.raw.split()) > MAX_NAME_WORDS for e in entries):
+        notices.append("long_entries")
+    if "highlight_list" not in notices and len(entries) < MIN_FULL_LIST:
+        notices.append("few_entries")
+    return LabelText(entries, notices)
+
+
+def _highlight_names(text: str) -> list[str] | None:
+    """The names of a "name: what it does" list, or None when the text is not one."""
+    names = []
+    for line in text.splitlines():
+        match = _DESCRIBED_LINE.match(line)
+        if match and not _SECTION_LABEL.match(normalize_name(match.group(1))):
+            names.append(match.group(1).strip())
+    return names if len(names) >= 2 else None
+
+
+def _has_diacritics(name: str) -> bool:
+    """Vietnamese marks never appear in INCI names (which are ASCII apart from rare cases)."""
+    return any(not ch.isascii() for ch in _FOOTNOTE_MARKS.sub("", name) if ch.isalpha())

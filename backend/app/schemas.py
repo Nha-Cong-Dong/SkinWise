@@ -54,10 +54,17 @@ class AnalyzedIngredient(IngredientOut):
     may_contain: bool  # listed after "May contain" / "+/-": only in some shades
 
 
+class TextNotice(BaseModel):
+    code: Literal["highlight_list", "vietnamese_names", "long_entries", "few_entries"]
+    message_vi: str
+
+
 class InciAnalysis(BaseModel):
     ingredients: list[AnalyzedIngredient]
     groups: list[str]
     unresolved_count: int
+    # Signs the text is not a full INCI list; a routine check on it may miss warnings.
+    notices: list[TextNotice]
 
 
 class SourceOut(FromAttributes):

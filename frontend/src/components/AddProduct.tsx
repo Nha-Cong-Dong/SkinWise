@@ -127,6 +127,7 @@ function PasteInci({ actions }: Props) {
       productId: null,
       inci: text.trim(),
       groups: analysis.groups,
+      notices: analysis.notices,
     })
     setName('')
     setText('')
@@ -180,6 +181,11 @@ function PasteInci({ actions }: Props) {
 function AnalysisPreview({ analysis }: { analysis: InciAnalysis }) {
   return (
     <div className="rounded-md bg-slate-50 p-3 text-sm">
+      {analysis.notices.map((n) => (
+        <p key={n.code} className="mb-2 rounded-md bg-amber-50 p-2 text-amber-900 ring-1 ring-amber-200">
+          {n.message_vi}
+        </p>
+      ))}
       <p className="font-medium text-slate-700">Hoạt chất nhận ra:</p>
       <div className="mt-1">
         <GroupChips codes={analysis.groups} empty="Không có hoạt chất nào trong danh sách SkinWise theo dõi." />
