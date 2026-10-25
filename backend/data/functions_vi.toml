@@ -3,7 +3,7 @@
 # description_vi: dịch sát định nghĩa chính thức bằng tiếng Anh trong eu_functions_2006.tsv, không thêm ý.
 # Câu về Phụ lục của Chỉ thị cũ trong COSMETIC COLORANT, PRESERVATIVE, UV FILTER được lược bỏ có chủ ý
 # (ghi chú pháp lý, không phải chức năng).
-# BẢN NHÁP do Claude dịch (24/10), sửa 25/10 theo một lượt rà độc lập; chưa có người duyệt.
+# Claude dịch (24/10), sửa 25/10 theo một lượt rà độc lập. Người duyệt: Vân Anh, 25/10.
 
 [[function]]
 code = "ABRASIVE"

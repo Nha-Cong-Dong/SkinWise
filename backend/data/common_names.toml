@@ -13,8 +13,8 @@
 #
 # CẢNH BÁO: tên trỏ tới hoạt chất trong ingredients.toml (vd. "Vitamin A" -> Retinol) làm thay đổi kết quả
 # kiểm tra routine, nên phải được duyệt như từ điển hoạt chất.
-# BẢN NHÁP do Claude soạn (24/10) từ tên khoa học của từng loài; sửa 25/10 theo một lượt rà độc lập.
-# Chưa có người duyệt.
+# Claude soạn (24/10) từ tên khoa học của từng loài; sửa 25/10 theo một lượt rà độc lập.
+# Người duyệt: Vân Anh, 25/10. Mục thêm sau ngày này cần được duyệt lại.
 
 # --- Tên trỏ tới hoạt chất (ảnh hưởng cảnh báo) ---
 

@@ -21,8 +21,8 @@ Bắt đầu 24/10, nhánh `feat/ingredient-coverage` (tách từ `feat/ui`).
 - [ ] PR
 
 ## Cần bạn duyệt
-- [ ] `data/functions_vi.toml`: bản dịch 64 chức năng (dịch sát định nghĩa EU). 25/10: đã sửa 15 mục theo một lượt rà độc lập (agent), chờ người duyệt
-- [ ] `data/common_names.toml`: 87 tên. 25/10: bỏ các mục "Axit …" (code tự đổi "Acid/Axit X" thành "X acid") và mục "Collagen" (trùng tên EU, không bao giờ được dùng); sửa cúc vạn thọ, chanh, cam thảo…; thêm 16 tên. Chỉ còn "Vitamin A" trỏ tới hoạt chất
+- [x] `data/functions_vi.toml`: bản dịch 64 chức năng (dịch sát định nghĩa EU). 25/10: sửa 15 mục theo một lượt rà độc lập; người duyệt (Vân Anh) duyệt 25/10
+- [x] `data/common_names.toml` (người duyệt Vân Anh, 25/10): 87 tên. 25/10: bỏ các mục "Axit …" (code tự đổi "Acid/Axit X" thành "X acid") và mục "Collagen" (trùng tên EU, không bao giờ được dùng); sửa cúc vạn thọ, chanh, cam thảo…; thêm 16 tên. Chỉ còn "Vitamin A" trỏ tới hoạt chất
 
 ## Kết quả đo (15 sản phẩm mẫu, 302 dòng)
 | | Trước | Sau |

@@ -341,7 +341,7 @@ def test_new_myth_cards_show_on_seeded_routines(client: TestClient, ids: dict[st
         ("vitamin-c-derivative-niacinamide-myth", ("glucoside", "niacinamide")),
     }
     cards = [r["key"] for r in client.get("/rules", params={"kind": "myth"}).json()["rules"]]
-    assert "azelaic-acid-retinoid-myth" not in cards  # still awaiting review
+    assert "azelaic-acid-retinoid-myth" in cards
 
 
 def test_drug_facts_paste_finds_the_active(client: TestClient) -> None:

@@ -238,7 +238,8 @@ sources = [
 ]
 
 # --- Ứng viên thẻ myth (25/10, lượt tìm sâu) ---
-# Người duyệt (Vân Anh, 25/10) bật thẻ dẫn xuất vitamin C + niacinamide; thẻ azelaic acid + retinoid CHƯA BẬT.
+# Người duyệt (Vân Anh, 25/10) bật thẻ dẫn xuất vitamin C + niacinamide và thẻ azelaic acid + retinoid
+# (giữ dạng myth mức info, nêu cả lợi ích ở nám lẫn kích ứng).
 
 # Nguồn: Barbosa et al., Clin Cosmet Investig Dermatol 2024 (Dove Medical Press) — thử nghiệm ngẫu nhiên, mù đôi,
 #   50 phụ nữ bị nám: sản phẩm chứa 10% nicotinamide + 5% magnesium ascorbyl phosphate (dẫn xuất vitamin C) + 5%
@@ -284,7 +285,9 @@ group_a = "AZELAIC_ACID"
 group_b = "RETINOID"
 title_vi = "Azelaic acid và retinoid: được dùng chung để trị nám, nhưng hay gây kích ứng"
 explanation_vi = "Lời đồn cho rằng không nên dùng azelaic acid cùng retinoid. Một bài tổng quan khoa học (2025) cho biết trong điều trị nám, kết hợp azelaic acid 20% với tretinoin 0,05% giúp giảm sắc tố nhanh và rõ hơn so với chỉ dùng azelaic acid. Tuy vậy, kích ứng là nhược điểm lớn của kết hợp này: trong một thử nghiệm 12 tuần, 40% người tham gia bị rát và 20% bị đỏ da. Các thử nghiệm dùng tretinoin (thuốc kê đơn); chưa rõ kết quả có giống với retinol trong mỹ phẩm hay không."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-25
 sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "Combining AzA with topical retinoids may yield additive or synergistic effects, especially in pigmentary disorders." },
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "in melasma treatment, 20% AzA cream combined with 0.05% tretinoin produced faster and more pronounced pigment reduction than AzA alone" },
