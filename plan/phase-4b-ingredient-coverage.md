@@ -17,11 +17,12 @@ Bắt đầu 24/10, nhánh `feat/ingredient-coverage` (tách từ `feat/ui`).
 - [x] "Đường 1%" sau phenoxyethanol (Điều 19 + Phụ lục V Quy định 1223/2009, đoạn trích qua `verify_quotes`); chỉ hiển thị, không đổi cảnh báo
 - [x] #20 Nhãn thuốc kiểu Mỹ (Drug Facts): chỉ đọc mục Active/Inactive ingredients — trước đây mất hoạt chất (vd. benzoyl peroxide trên nhãn CeraVe)
 - [x] #21 Gõ sai tên: gợi ý "có phải…?" (pg_trgm), người dùng bấm để sửa; kết quả kiểm tra routine nhắc hoạt chất có thể bị gõ sai
+- [x] Nhãn Việt viết "Acid salicylic" / "Axit malic" (tên acid đứng sau) — trước đây mất hoạt chất; phát hiện nhờ lượt rà độc lập
 - [ ] PR
 
 ## Cần bạn duyệt
-- [ ] `data/functions_vi.toml`: bản dịch 64 chức năng (dịch sát định nghĩa EU)
-- [ ] `data/common_names.toml`: nhất là 7 tên trỏ tới hoạt chất (axit salicylic, glycolic, lactic, mandelic, azelaic, ascorbic, vitamin A) vì chúng làm đổi cảnh báo; và các tên mơ hồ có `note`
+- [ ] `data/functions_vi.toml`: bản dịch 64 chức năng (dịch sát định nghĩa EU). 25/10: đã sửa 15 mục theo một lượt rà độc lập (agent), chờ người duyệt
+- [ ] `data/common_names.toml`: 87 tên. 25/10: bỏ các mục "Axit …" (code tự đổi "Acid/Axit X" thành "X acid") và mục "Collagen" (trùng tên EU, không bao giờ được dùng); sửa cúc vạn thọ, chanh, cam thảo…; thêm 16 tên. Chỉ còn "Vitamin A" trỏ tới hoạt chất
 
 ## Kết quả đo (15 sản phẩm mẫu, 302 dòng)
 | | Trước | Sau |

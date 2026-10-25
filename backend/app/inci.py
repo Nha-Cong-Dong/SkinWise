@@ -18,6 +18,7 @@ _DASHES = re.compile(r"[‐‑‒–—−]")
 _QUOTES = re.compile(r"[‘’`´]")
 _EDGE_PUNCT = " \t.,;:-"
 _INNER_PAREN = re.compile(r"\s*[(\[][^)\]]*[)\]]\s*")
+_VIETNAMESE_ACID = re.compile(r"(?:axit|acid) ([a-z0-9-]+)")
 
 
 @dataclass(frozen=True)
@@ -115,6 +116,10 @@ def _candidates(name: str) -> tuple[str, ...]:
         normalized = normalize_name(n)
         if normalized and normalized not in result:
             result.append(normalized)
+    # Vietnamese labels put "axit"/"acid" first: "Acid salicylic" is Salicylic Acid.
+    for n in list(result):
+        if (match := _VIETNAMESE_ACID.fullmatch(n)) and f"{match.group(1)} acid" not in result:
+            result.append(f"{match.group(1)} acid")
     return tuple(result)
 
 

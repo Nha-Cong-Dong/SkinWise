@@ -2,7 +2,7 @@ from sqlalchemy import Engine, text
 
 from app.inci import normalize_name, parse_inci
 from app.ingredients import product_groups, resolve
-from app.seed import load_toml, seed
+from app.seed import load_eu_names, load_toml, seed
 
 
 def resolve_text(engine: Engine, inci: str):
@@ -109,15 +109,31 @@ def test_inci_names_win_over_everyday_names(engine: Engine) -> None:
     assert aqua.common_name_of == ()
 
 
-def test_common_names_are_unique_and_do_not_shadow_the_dictionary() -> None:
+def test_common_names_are_unique_and_never_shadowed() -> None:
+    """A name the dictionary or the EU lists already know is looked up first, so a common
+    name entry for it would never be used."""
     dictionary = {
         normalize_name(n)
         for ing in load_toml("ingredients.toml")["ingredient"]
         for n in [ing["inci"], *ing.get("synonyms", [])]
     }
+    eu_names = load_eu_names()
     seen: set[str] = set()
     for entry in load_toml("common_names.toml")["name"]:
         name = normalize_name(entry["name"])
         assert name not in seen, entry["name"]
         assert name not in dictionary, f"{entry['name']} is already a dictionary name"
+        assert name not in eu_names, f"{entry['name']} is already an EU name"
         seen.add(name)
+
+
+def test_vietnamese_acid_word_order(engine: Engine) -> None:
+    """Vietnamese labels write "Acid salicylic" / "Axit malic"; missing them loses warnings."""
+    salicylic, glycolic, malic, hyaluronic = resolve_text(
+        engine, "Acid salicylic, Axít Glycolic, Axit malic, Acid hyaluronic"
+    )
+    assert salicylic.groups == ("BHA", "EXFOLIANT_ACID")
+    assert glycolic.groups == ("AHA", "EXFOLIANT_ACID")
+    assert malic.groups == ("AHA", "EXFOLIANT_ACID")
+    assert hyaluronic.inci_name == "Hyaluronic Acid"
+    assert hyaluronic.groups == ()
