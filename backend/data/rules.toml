@@ -235,6 +235,59 @@ sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "it is difficult to estimate the relative contribution of nicotinamide to the observed antiaging effects of the cosmetic regimen" },
 ]
 
+# --- Ứng viên thẻ myth (25/10, lượt tìm sâu) — CHƯA BẬT ---
+
+# Nguồn: Barbosa et al., Clin Cosmet Investig Dermatol 2024 (Dove Medical Press) — thử nghiệm ngẫu nhiên, mù đôi,
+#   50 phụ nữ bị nám: sản phẩm chứa 10% nicotinamide + 5% magnesium ascorbyl phosphate (dẫn xuất vitamin C) + 5%
+#   hyaluronic acid "safe and well-tolerated" (hiệu quả kém hơn hydroquinone 4%). Antioxidants 2021 (PMC8389214) —
+#   gel 2% ascorbyl glucoside + 3,5% nicotinamide (kèm siêu âm) giảm tăng sắc tố; khó tách đóng góp từng chất.
+# Lưu ý người duyệt: nhóm VITAMIN_C_DERIVATIVE, KHÁC thẻ đã bật (VITAMIN_C = L-ascorbic acid). Cả hai nguồn dùng
+#   sản phẩm phối hợp (hai chất trong cùng một sản phẩm), không phải hai sản phẩm dùng cùng buổi.
+#   Đề xuất severity = info, evidence_level = low; có thể cân nhắc moderate vì có thử nghiệm mù đôi.
+[[rule]]
+key = "vitamin-c-derivative-niacinamide-myth"
+kind = "myth"
+severity = "info"
+scope = "same_session"
+evidence_level = "low"
+group_a = "VITAMIN_C_DERIVATIVE"
+group_b = "NIACINAMIDE"
+title_vi = "Dẫn xuất vitamin C và niacinamide: đã được dùng chung trong thử nghiệm, dung nạp tốt"
+explanation_vi = "Lời đồn cho rằng vitamin C không được dùng chung với niacinamide. Với các dẫn xuất vitamin C (như magnesium ascorbyl phosphate, ascorbyl glucoside), một thử nghiệm ngẫu nhiên mù đôi trên 50 phụ nữ bị nám dùng sản phẩm chứa 10% niacinamide và 5% magnesium ascorbyl phosphate (kèm hyaluronic acid) kết luận sản phẩm an toàn và dung nạp tốt, dù hiệu quả kém hơn hydroquinone 4%. Một nghiên cứu khác dùng gel chứa ascorbyl glucoside và niacinamide cũng cho kết quả giảm tăng sắc tố. Các nghiên cứu này dùng sản phẩm phối hợp nhiều chất, nên chưa tách được tác dụng riêng của từng chất."
+published = false
+sources = [
+  { url = "https://www.dovepress.com/efficacy-and-safety-of-nicotinamide-10-associated-with-magnesium-ascor-peer-reviewed-fulltext-article-CCID", quote = "A randomized, double-blind trial involving women with facial melasma was conducted." },
+  { url = "https://www.dovepress.com/efficacy-and-safety-of-nicotinamide-10-associated-with-magnesium-ascor-peer-reviewed-fulltext-article-CCID", quote = "Of the initially included 50 patients" },
+  { url = "https://www.dovepress.com/efficacy-and-safety-of-nicotinamide-10-associated-with-magnesium-ascor-peer-reviewed-fulltext-article-CCID", quote = "The association of 10% nicotinamide, 5% magnesium ascorbyl phosphate, and 5% hyaluronic acid was safe and well-tolerated, although its overall clinical efficacy was numerically inferior to 4% hydroquinone." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "Significantly superior results were observed when the composite formulation (A gel containing 2% ascorbyl glucoside, and 3.5% nicotinamide) was applied with ultrasonic treatment, compared to either conventional application only or ultrasonic treatment only" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "In several other clinical studies, the combined formulation was compared with the vehicle formulation; thus, it is difficult to distinguish the contribution of individual components." },
+]
+
+# Nguồn: Petrovici et al., Pharmaceuticals (Basel) 2025 (PMC12472904) — tổng quan về azelaic acid: azelaic acid 20%
+#   + tretinoin 0,05% trị nám giảm sắc tố nhanh và rõ hơn azelaic acid đơn lẻ (thử nghiệm 6 tháng, 50 người); nhưng
+#   kích ứng là nhược điểm lớn (thử nghiệm 12 tuần ở Bangladesh: 40% rát, 20% đỏ da).
+# Lưu ý người duyệt: bằng chứng HAI CHIỀU — có lợi ở nám nhưng kích ứng nhiều. Các thử nghiệm dùng tretinoin (thuốc
+#   kê đơn); nhóm RETINOID của SkinWise còn gồm retinol mỹ phẩm. Nguồn là bài tổng quan tóm tắt các thử nghiệm nhỏ.
+#   Cân nhắc: giữ dạng myth mức info (như bản nháp), hoặc đổi thành conflict mức caution vì kích ứng.
+[[rule]]
+key = "azelaic-acid-retinoid-myth"
+kind = "myth"
+severity = "info"
+scope = "same_session"
+evidence_level = "low"
+group_a = "AZELAIC_ACID"
+group_b = "RETINOID"
+title_vi = "Azelaic acid và retinoid: được dùng chung để trị nám, nhưng hay gây kích ứng"
+explanation_vi = "Lời đồn cho rằng không nên dùng azelaic acid cùng retinoid. Một bài tổng quan khoa học (2025) cho biết trong điều trị nám, kết hợp azelaic acid 20% với tretinoin 0,05% giúp giảm sắc tố nhanh và rõ hơn so với chỉ dùng azelaic acid. Tuy vậy, kích ứng là nhược điểm lớn của kết hợp này: trong một thử nghiệm 12 tuần, 40% người tham gia bị rát và 20% bị đỏ da. Các thử nghiệm dùng tretinoin (thuốc kê đơn); chưa rõ kết quả có giống với retinol trong mỹ phẩm hay không."
+published = false
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "Combining AzA with topical retinoids may yield additive or synergistic effects, especially in pigmentary disorders." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "in melasma treatment, 20% AzA cream combined with 0.05% tretinoin produced faster and more pronounced pigment reduction than AzA alone" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "the combination led to a more rapid decline in MASI scores at 3 months" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "Despite only moderate objective efficacy, irritation remains a major drawback." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/", quote = "evaluating the same combination, 40% of participants reported burning, and 20% developed erythema" },
+]
+
 # ======================================================================================
 # Nguồn
 # ======================================================================================
@@ -309,4 +362,16 @@ accessed_at = 2026-10-25
 url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9928536/"
 title = "Benefits of the Dermocosmetic Mineral 89 Probiotic Fractions Adjunct to Topical Retinoids for Anti-Aging Benefits"
 publisher = "Clinical, Cosmetic and Investigational Dermatology (2023), via PubMed Central"
+accessed_at = 2026-10-25
+
+[[source]]
+url = "https://www.dovepress.com/efficacy-and-safety-of-nicotinamide-10-associated-with-magnesium-ascor-peer-reviewed-fulltext-article-CCID"
+title = "Efficacy and Safety of Nicotinamide 10%, Associated with Magnesium Ascorbyl Phosphate 5% and Hyaluronic Acid 5%, Compared to Hydroquinone 4% in Women with Facial Melasma: A Randomized, Double-Blind, Controlled Clinical Trial"
+publisher = "Clinical, Cosmetic and Investigational Dermatology (2024), Dove Medical Press"
+accessed_at = 2026-10-25
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/"
+title = "A Comprehensive Review of Azelaic Acid Pharmacological Properties, Clinical Applications, and Innovative Topical Formulations"
+publisher = "Pharmaceuticals (MDPI, 2025), via PubMed Central"
 accessed_at = 2026-10-25

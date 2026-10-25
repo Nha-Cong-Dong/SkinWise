@@ -11,7 +11,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth, form gửi câu hỏi | 3–7/11 | 🔄 Đang làm (bắt đầu 23/10) | [phase-4-ui.md](phase-4-ui.md) | |
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
 
-**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 1 thẻ myth đã bật; thẻ myth retinoid + niacinamide có nguồn, chờ duyệt; cần thêm ít nhất 1 thẻ myth.
+**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 1 thẻ myth đã bật; 3 thẻ myth có nguồn, chờ duyệt (retinoid + niacinamide, dẫn xuất vitamin C + niacinamide, azelaic acid + retinoid); cần bật ít nhất 1.
 
 | Luật ứng viên | Loại | Trạng thái |
 |---|---|---|
@@ -23,9 +23,11 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | Benzoyl peroxide + BHA cùng buổi | conflict | ✅ Bật 25/10 (nhãn FDA OTC: CeraVe Acne Foaming Cleanser, Clinique SA gel) |
 | Nhiều sản phẩm chứa benzoyl peroxide trong một buổi | duplicate | ✅ Bật 25/10 (nhãn FDA OTC CeraVe, nguồn trực tiếp) |
 | Retinoid + niacinamide | myth | 🟡 Có nguồn, chờ duyệt (RCT Br J Dermatol 2010 + 2 bài PMC; gián tiếp, đề xuất mức info / evidence low) |
+| Dẫn xuất vitamin C + niacinamide | myth | 🟡 Có nguồn, chờ duyệt (RCT mù đôi CCID 2024 + PMC8389214; sản phẩm phối hợp) |
+| Azelaic acid + retinoid | myth | 🟡 Có nguồn, chờ duyệt (tổng quan Pharmaceuticals 2025: hiệu quả hơn ở nám nhưng kích ứng nhiều) |
 | Benzoyl peroxide + vitamin C | conflict | ❌ Bỏ: chỉ có blog / trang thương mại, không có bài bình duyệt |
-| Niacinamide + AHA/BHA | myth | ❌ Bỏ: không có bài bình duyệt về chuyển hoá thành niacin trong sản phẩm thật |
-| Vitamin C + retinol | myth | ❌ Bỏ: một thử nghiệm không đối chứng, và hai chất dùng ở hai buổi khác nhau |
+| Niacinamide + AHA/BHA | myth | ❌ Bỏ: không có bài bình duyệt về chuyển hoá thành niacin trong sản phẩm thật (bài động học thuỷ phân duy nhất đo ở 89 °C, chỉ có tóm tắt) |
+| Vitamin C + retinol | myth | ❌ Bỏ: một thử nghiệm không đối chứng, và hai chất dùng ở hai buổi khác nhau; tìm sâu 25/10 vẫn không có bài bình duyệt trên PMC |
 | Azelaic acid + niacinamide | myth | ❌ Bỏ: không tìm được nghiên cứu đã công bố |
 
 **Hướng B (nhận diện mọi thành phần + chức năng):** làm sớm từ 24/10 bằng danh sách chính thức của EU thay cho CosIng, xem [phase-4b-ingredient-coverage.md](phase-4b-ingredient-coverage.md).
