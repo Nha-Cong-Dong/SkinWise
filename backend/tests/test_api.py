@@ -315,3 +315,30 @@ def test_benzoyl_peroxide_rules_fire_on_seeded_products(
     assert ("benzoyl-peroxide-bha-same-session", ("bha", "bp-wash")) in fired
     assert ("benzoyl-peroxide-bha-same-session", ("bha", "bp-gel")) in fired
     assert ("benzoyl-peroxide-duplicate-same-session", ("bp-gel", "bp-wash")) in fired
+
+
+def test_new_myth_cards_show_on_seeded_routines(client: TestClient, ids: dict[str, int]) -> None:
+    body = {
+        "products": [
+            {"key": "retinol", "product_id": ids[RETINOL]},
+            {"key": "niacinamide", "product_id": ids["the-ordinary-niacinamide-10-zinc-1"]},
+            {"key": "glucoside", "product_id": ids["the-ordinary-ascorbyl-glucoside-solution-12"]},
+        ],
+        "items": [
+            entry("glucoside", step=1),
+            entry("niacinamide", step=2),
+            entry("retinol", step=3),
+        ],
+    }
+    result = client.post("/routine/check", json=body).json()
+    myths = {
+        (w["rule"]["key"], tuple(sorted(w["product_keys"])))
+        for w in result["warnings"]
+        if w["rule"]["kind"] == "myth"
+    }
+    assert myths == {
+        ("retinoid-niacinamide-myth", ("niacinamide", "retinol")),
+        ("vitamin-c-derivative-niacinamide-myth", ("glucoside", "niacinamide")),
+    }
+    cards = [r["key"] for r in client.get("/rules", params={"kind": "myth"}).json()["rules"]]
+    assert "azelaic-acid-retinoid-myth" not in cards  # still awaiting review

@@ -16,7 +16,8 @@
 - [ ] Thêm 1–3 luật / 2–3 thẻ myth nếu tìm được nguồn mạnh (chuyển sang việc song song)
   - [x] 25/10: 3 ứng viên có nguồn, 11/11 đoạn trích qua `verify_quotes` (BP + BHA, trùng BP, myth retinoid + niacinamide); 4 ứng viên bị loại vì thiếu nguồn — xem `plan/README.md`
   - [x] Người duyệt (Vân Anh, 25/10) bật 2 luật benzoyl peroxide
-  - [ ] 3 thẻ myth chờ duyệt: retinoid + niacinamide, dẫn xuất vitamin C + niacinamide, azelaic acid + retinoid (41/41 đoạn trích qua `verify_quotes`)
+  - [x] Người duyệt (Vân Anh, 25/10) bật 2 thẻ myth: retinoid + niacinamide, dẫn xuất vitamin C + niacinamide (41/41 đoạn trích qua `verify_quotes`)
+  - [ ] Thẻ myth azelaic acid + retinoid: chờ duyệt
 - [x] PR vào `main`
 
 ## Tình trạng nguồn (cần bạn đọc trước khi bật)

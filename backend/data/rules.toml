@@ -155,7 +155,7 @@ sources = [
 
 # ======================================================================================
 # Ứng viên mới (25/10). Nguồn do Claude tìm, lời giải thích là bản nháp do Claude soạn.
-# Người duyệt (Vân Anh, 25/10) bật 2 luật benzoyl peroxide; thẻ myth retinoid + niacinamide vẫn CHƯA BẬT.
+# Người duyệt (Vân Anh, 25/10) bật 2 luật benzoyl peroxide và thẻ myth retinoid + niacinamide.
 # ======================================================================================
 
 # Nguồn: nhãn thuốc OTC (FDA) của CeraVe Acne Foaming Cleanser (benzoyl peroxide) và Clinique Acne Solutions
@@ -223,7 +223,9 @@ group_a = "RETINOID"
 group_b = "NIACINAMIDE"
 title_vi = "Retinoid và niacinamide: đã được dùng chung trong nghiên cứu, chưa thấy lý do phải tách riêng"
 explanation_vi = "Lời đồn cho rằng không nên dùng retinoid cùng niacinamide. Một thử nghiệm ngẫu nhiên trên 196 phụ nữ dùng bộ sản phẩm chứa niacinamide và retinyl propionate (một dạng retinoid) thấy bộ sản phẩm này được dung nạp tốt hơn tretinoin theo mọi tiêu chí đo trong 8 tuần; người bị kích ứng thường chỉ ở mức nhẹ. Một nghiên cứu khác trên 38 phụ nữ dùng tretinoin cho thấy sản phẩm có niacinamide dùng kèm giúp giảm kích ứng do retinoid. Tuy vậy, sản phẩm trong cả hai nghiên cứu đều chứa nhiều thành phần khác, nên chưa tách được tác dụng riêng của niacinamide. SkinWise chưa tìm thấy nguồn nào cho thấy dùng chung gây hại."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-25
 sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/", quote = "An 8-week, randomized, parallel-group study was conducted in 196 women with moderate to moderately severe periorbital wrinkles." },
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/", quote = "a targeted wrinkle product containing niacinamide, peptides and 0·3% retinyl propionate" },
@@ -235,7 +237,8 @@ sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "it is difficult to estimate the relative contribution of nicotinamide to the observed antiaging effects of the cosmetic regimen" },
 ]
 
-# --- Ứng viên thẻ myth (25/10, lượt tìm sâu) — CHƯA BẬT ---
+# --- Ứng viên thẻ myth (25/10, lượt tìm sâu) ---
+# Người duyệt (Vân Anh, 25/10) bật thẻ dẫn xuất vitamin C + niacinamide; thẻ azelaic acid + retinoid CHƯA BẬT.
 
 # Nguồn: Barbosa et al., Clin Cosmet Investig Dermatol 2024 (Dove Medical Press) — thử nghiệm ngẫu nhiên, mù đôi,
 #   50 phụ nữ bị nám: sản phẩm chứa 10% nicotinamide + 5% magnesium ascorbyl phosphate (dẫn xuất vitamin C) + 5%
@@ -254,7 +257,9 @@ group_a = "VITAMIN_C_DERIVATIVE"
 group_b = "NIACINAMIDE"
 title_vi = "Dẫn xuất vitamin C và niacinamide: đã được dùng chung trong thử nghiệm, dung nạp tốt"
 explanation_vi = "Lời đồn cho rằng vitamin C không được dùng chung với niacinamide. Với các dẫn xuất vitamin C (như magnesium ascorbyl phosphate, ascorbyl glucoside), một thử nghiệm ngẫu nhiên mù đôi trên 50 phụ nữ bị nám dùng sản phẩm chứa 10% niacinamide và 5% magnesium ascorbyl phosphate (kèm hyaluronic acid) kết luận sản phẩm an toàn và dung nạp tốt, dù hiệu quả kém hơn hydroquinone 4%. Một nghiên cứu khác dùng gel chứa ascorbyl glucoside và niacinamide cũng cho kết quả giảm tăng sắc tố. Các nghiên cứu này dùng sản phẩm phối hợp nhiều chất, nên chưa tách được tác dụng riêng của từng chất."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-25
 sources = [
   { url = "https://www.dovepress.com/efficacy-and-safety-of-nicotinamide-10-associated-with-magnesium-ascor-peer-reviewed-fulltext-article-CCID", quote = "A randomized, double-blind trial involving women with facial melasma was conducted." },
   { url = "https://www.dovepress.com/efficacy-and-safety-of-nicotinamide-10-associated-with-magnesium-ascor-peer-reviewed-fulltext-article-CCID", quote = "Of the initially included 50 patients" },
