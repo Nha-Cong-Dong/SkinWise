@@ -7,7 +7,8 @@ from sqlalchemy import bindparam, text
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 
-from app.inci import normalize_name
+from app.inci import normalize_name, parse_inci
+from app.ingredients import ResolvedEntry, resolve
 
 # word_similarity compares the query with the best-matching part of "brand name", so a
 # query naming only the product still scores high. 0.3 tolerates a typo per word or so.
@@ -25,19 +26,11 @@ class ProductRow:
 
 
 @dataclass(frozen=True)
-class ProductIngredientRow:
-    position: int
-    raw_name: str
-    inci_name: str | None
-    groups: tuple[str, ...]
-
-
-@dataclass(frozen=True)
 class ProductDetailRow(ProductRow):
     ingredients_source: str
     source_url: str | None
     source_retrieved_at: datetime | None
-    ingredients: tuple[ProductIngredientRow, ...]
+    ingredients: tuple[ResolvedEntry, ...]
 
 
 _COLUMNS = "p.id, p.slug, p.brand, p.name, p.market, p.verification_status"
@@ -68,35 +61,20 @@ def search_products(db: Session | Connection, query: str, limit: int) -> list[Pr
 
 _DETAIL = text(
     f"""
-    SELECT {_COLUMNS}, p.ingredients_source, p.source_url, p.source_retrieved_at
+    SELECT {_COLUMNS}, p.ingredients_source, p.source_url, p.source_retrieved_at,
+           p.ingredients_raw
     FROM products p WHERE p.id = :id
-    """
-)
-
-_INGREDIENTS = text(
-    """
-    SELECT pi.position, pi.raw_name, i.inci_name,
-           coalesce(array_agg(g.group_code ORDER BY g.group_code)
-                    FILTER (WHERE g.group_code IS NOT NULL), '{}') AS groups
-    FROM product_ingredients pi
-    LEFT JOIN ingredients i ON i.id = pi.ingredient_id
-    LEFT JOIN ingredient_groups g ON g.ingredient_id = pi.ingredient_id
-    WHERE pi.product_id = :id
-    GROUP BY pi.position, pi.raw_name, i.inci_name
-    ORDER BY pi.position
     """
 )
 
 
 def get_product(db: Session | Connection, product_id: int) -> ProductDetailRow | None:
+    """The product with its ingredient list resolved the same way as a pasted list."""
     row = db.execute(_DETAIL, {"id": product_id}).first()
     if row is None:
         return None
-    ingredients = tuple(
-        ProductIngredientRow(r.position, r.raw_name, r.inci_name, tuple(r.groups))
-        for r in db.execute(_INGREDIENTS, {"id": product_id})
-    )
-    return ProductDetailRow(*row, ingredients=ingredients)
+    *columns, raw = row
+    return ProductDetailRow(*columns, ingredients=tuple(resolve(db, parse_inci(raw or ""))))
 
 
 _EXISTING = text("SELECT id FROM products WHERE id IN :ids").bindparams(

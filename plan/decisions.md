@@ -29,5 +29,33 @@ Mở rộng từ điển theo biến thể của các nhóm đã có và ghi rõ
 ## Lời đồn ngoài bộ myth cố định: nói rõ + thu câu hỏi, không để AI trả lời (22/10)
 Bộ myth là danh sách cố định có nguồn. Khi không có thông tin, app nói rõ là chưa có thông tin đã kiểm chứng thay vì im lặng (im lặng dễ bị hiểu là an toàn). Người dùng gửi câu hỏi qua `POST /questions`; người duyệt chọn câu đáng làm và tạo thẻ theo quy trình nguồn như luật. Không cho AI trả lời trực tiếp trong MVP vì trái nguyên tắc "cảnh báo không do AI tạo"; sau hackathon có thể cân nhắc AI soạn bản nháp có trích dẫn, server kiểm tra đoạn trích, gắn nhãn "chưa kiểm duyệt" và người duyệt quyết định.
 
+## Nhóm hoạt chất có nhóm cha; tra cặp khớp như engine (23/10)
+Chạy thử giao diện thấy tra "Retinoid + BHA" trả "chưa có thông tin" dù có luật Retinoid + EXFOLIANT_ACID: kiểu im lặng dễ hiểu thành an toàn. Khai báo `parent` (AHA/BHA/PHA → EXFOLIANT_ACID) trong `functional_groups.toml` thay vì suy ra từ dữ liệu, để người duyệt thấy rõ; test bắt chất thuộc nhóm con mà thiếu nhóm cha. `/rules` với hai nhóm dùng chính `rule_matches` của engine nên kết quả tra cứu khớp với kết quả kiểm tra routine (vd. AHA + BHA ra luật trùng acid).
+
+## Nhận diện thành phần bằng danh sách EU trên EUR-Lex, không dùng API CosIng (24/10)
+CosIng không có file tải về chính thức; trang tra cứu dùng API nội bộ với khoá của chính trang, dùng khoá đó để tải hàng loạt là lạm dụng nên không làm. EUR-Lex chặn script bằng trang kiểm tra bot, nên tải qua CELLAR của Văn phòng Xuất bản EU (kênh dành cho tái sử dụng tự động). Tên lấy từ bảng chú giải hiện hành (2025/1175); chức năng lấy từ danh mục 2006/257/EC, đã hết hiệu lực nên giao diện ghi "để tham khảo". Đo trên 15 sản phẩm mẫu: nhận ra 97,7% dòng, 72,5% có chức năng. Healthline không dùng làm nguồn (không thuộc danh sách nguồn uy tín, không có tài liệu tham khảo, có lỗi như gọi Citric Acid là AHA).
+
+## Văn bản dán vào không phải bảng thành phần đầy đủ thì nói rõ (24/10)
+Danh sách "thành phần nổi bật" kèm mô tả trông giống bảng thành phần nhưng bỏ sót phần lớn chất, kể cả hoạt chất. API nhận ra dạng `tên: mô tả`, chỉ lấy tên và trả lưu ý; giao diện gắn nhãn sản phẩm và nhắc trong kết quả kiểm tra rằng cảnh báo có thể thiếu. Không chặn hẳn vì người dùng vẫn cần biết từng chất là gì.
+
+## Tên thông dụng tiếng Việt duyệt như từ điển hoạt chất (24/10)
+`common_names.toml` ánh xạ "rau má", "axit salicylic"… sang tên EU. Tên trỏ tới hoạt chất làm thay đổi cảnh báo nên cần người duyệt; tên mơ hồ (cúc La Mã, lô hội) ghi mọi tên EU có thể kèm ghi chú, tên đầu tiên được dùng để nhận diện.
+
+## Rà từ điển hoạt chất: chất phụ trợ không tính là hoạt chất (24/10)
+Bắt đầu từ một sản phẩm phục hồi bị gắn chip "Dẫn xuất vitamin C" vì Ascorbyl Palmitate (vị trí 39/40, cạnh các loại dầu). Người duyệt quyết định:
+- Bỏ khỏi nhóm dẫn xuất vitamin C: Ascorbyl Palmitate, Sodium Ascorbate, Calcium Ascorbate. Chúng chủ yếu dùng lượng nhỏ để chống oxy hoá cho công thức. Cùng cách như Citric Acid: vẫn nhận ra tên và chức năng, không thuộc nhóm nào. Không ảnh hưởng cảnh báo (chưa có luật cho nhóm này).
+- Giữ AHA cho Malic Acid, Tartaric Acid; giữ nguyên Lactic/Glycolic/Salicylic Acid và các ester retinyl dù chúng cũng hay chỉ để chỉnh pH, bảo quản hoặc có lượng rất nhỏ: với app cảnh báo, bỏ sót nguy hiểm hơn báo thừa, và cảnh báo đã dùng "có thể".
+- Không đoán theo vị trí trong bảng vì INCI không cho biết ngưỡng 1%.
+- Chức năng trong danh mục EU 2006 **không** dùng làm tiêu chí phân loại hoạt chất: danh mục ghi vai trò mỹ phẩm rất hẹp (Glycolic Acid chỉ "BUFFERING", Niacinamide chỉ "SMOOTHING").
+
+## Nồng độ chỉ để hiển thị, không tắt cảnh báo (24/10)
+Bảng INCI không cho biết chất nào là "chính". Hai tín hiệu đáng tin được hiển thị: nồng độ ghi trên nhãn, và "đường 1%" (theo Điều 19, mọi thành phần sau phenoxyethanol, chất bị Phụ lục V giới hạn 1%, đều ≤ 1%, trừ chất tạo màu). Không dùng để tắt cảnh báo vì ≤ 1% vẫn có thể có tác dụng (retinol) và chưa có nguồn cho ngưỡng nồng độ của từng luật. Không đoán "chính/phụ" theo vị trí. Cảnh báo kích ứng theo danh sách chất gây dị ứng hương liệu của EU để sau 31/10.
+
+## Gõ sai tên hoạt chất: gợi ý, không tự sửa (25/10)
+Gõ sai ("Salicilic Acid") làm mất hoạt chất và mất cảnh báo. Không tự nhận tên gần đúng là hoạt chất vì có thể sai (vd. "salicilic acid" cũng gần "malic acid"), trái nguyên tắc engine tất định. App gợi ý tên gần đúng, người dùng bấm để sửa chính văn bản; kết quả kiểm tra nhắc rõ sản phẩm có thể đang thiếu cảnh báo.
+
+## Duyệt từ điển hoạt chất (25/10)
+Người duyệt duyệt toàn bộ 59 chất. Bỏ từ đồng nghĩa "BHA" của Salicylic Acid: trên nhãn, BHA là tên INCI của butylated hydroxyanisole (chất chống oxy hoá), nên sản phẩm có chất này bị cảnh báo như có acid tẩy tế bào chết. Test chặn từ đồng nghĩa trùng tên INCI của chất khác. Sodium Salicylate không tính BHA (chất bảo quản); ammonium lactate/glycolate vẫn là AHA.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

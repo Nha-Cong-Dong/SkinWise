@@ -1,0 +1,326 @@
+# Tên tiếng Việt cho chức năng thành phần trong danh mục EU 2006 (data/eu_functions_2006.tsv).
+# code: tên chức năng trong danh mục EU (chữ hoa). name_vi: nhãn ngắn hiển thị trên giao diện.
+# description_vi: dịch sát định nghĩa chính thức bằng tiếng Anh trong eu_functions_2006.tsv, không thêm ý.
+# Câu về Phụ lục của Chỉ thị cũ trong COSMETIC COLORANT, PRESERVATIVE, UV FILTER được lược bỏ có chủ ý
+# (ghi chú pháp lý, không phải chức năng).
+# Claude dịch (24/10), sửa 25/10 theo một lượt rà độc lập. Người duyệt: Vân Anh, 25/10.
+
+[[function]]
+code = "ABRASIVE"
+name_vi = "Hạt mài"
+description_vi = "Loại bỏ chất bám trên bề mặt cơ thể, hỗ trợ làm sạch răng cơ học hoặc làm tăng độ bóng."
+
+[[function]]
+code = "ABSORBENT"
+name_vi = "Hấp thụ"
+description_vi = "Hút các chất tan trong nước và/hoặc dầu, hoặc các chất phân tán mịn."
+
+[[function]]
+code = "ANTICAKING"
+name_vi = "Chống vón cục"
+description_vi = "Giúp hạt rắn rời nhau, tránh để mỹ phẩm dạng bột vón thành cục."
+
+[[function]]
+code = "ANTICORROSIVE"
+name_vi = "Chống ăn mòn bao bì"
+description_vi = "Ngăn bao bì bị ăn mòn."
+
+[[function]]
+code = "ANTIDANDRUFF"
+name_vi = "Trị gàu"
+description_vi = "Giúp kiểm soát gàu."
+
+[[function]]
+code = "ANTIFOAMING"
+name_vi = "Chống tạo bọt"
+description_vi = "Hạn chế bọt trong quá trình sản xuất hoặc giảm khả năng tạo bọt của sản phẩm."
+
+[[function]]
+code = "ANTIMICROBIAL"
+name_vi = "Kháng khuẩn"
+description_vi = "Giúp kiểm soát sự phát triển của vi sinh vật trên da."
+
+[[function]]
+code = "ANTIOXIDANT"
+name_vi = "Chống oxy hoá"
+description_vi = "Ức chế các phản ứng do oxy thúc đẩy, nhờ đó tránh bị oxy hoá và ôi."
+
+[[function]]
+code = "ANTIPERSPIRANT"
+name_vi = "Giảm tiết mồ hôi"
+description_vi = "Làm giảm tiết mồ hôi."
+
+[[function]]
+code = "ANTIPLAQUE"
+name_vi = "Chống mảng bám răng"
+description_vi = "Giúp chống mảng bám trên răng."
+
+[[function]]
+code = "ANTISEBORRHOEIC"
+name_vi = "Kiểm soát dầu"
+description_vi = "Giúp kiểm soát sự tiết bã nhờn."
+
+[[function]]
+code = "ANTISTATIC"
+name_vi = "Chống tĩnh điện"
+description_vi = "Giảm tĩnh điện bằng cách trung hoà điện tích trên bề mặt."
+
+[[function]]
+code = "ASTRINGENT"
+name_vi = "Làm se da"
+description_vi = "Làm da co lại."
+
+[[function]]
+code = "BINDING"
+name_vi = "Kết dính"
+description_vi = "Giúp các thành phần trong mỹ phẩm liên kết với nhau."
+
+[[function]]
+code = "BLEACHING"
+name_vi = "Làm sáng màu"
+description_vi = "Làm sáng màu tóc hoặc da."
+
+[[function]]
+code = "BUFFERING"
+name_vi = "Ổn định pH"
+description_vi = "Giữ ổn định độ pH của mỹ phẩm."
+
+[[function]]
+code = "BULKING"
+name_vi = "Chất độn"
+description_vi = "Làm giảm tỷ trọng khối của mỹ phẩm."
+
+[[function]]
+code = "CHELATING"
+name_vi = "Tạo phức kim loại"
+description_vi = "Phản ứng và tạo phức với các ion kim loại có thể ảnh hưởng đến độ ổn định và/hoặc vẻ ngoài của mỹ phẩm."
+
+[[function]]
+code = "CLEANSING"
+name_vi = "Làm sạch"
+description_vi = "Giúp giữ bề mặt cơ thể sạch sẽ."
+
+[[function]]
+code = "COSMETIC COLORANT"
+name_vi = "Chất tạo màu"
+description_vi = "Tạo màu cho mỹ phẩm và/hoặc cho da và các phần phụ của da."
+
+[[function]]
+code = "DENATURANT"
+name_vi = "Chất làm biến tính"
+description_vi = "Làm mỹ phẩm có vị khó chịu. Chủ yếu được thêm vào mỹ phẩm chứa cồn ethanol."
+
+[[function]]
+code = "DEODORANT"
+name_vi = "Khử mùi"
+description_vi = "Giảm hoặc che mùi cơ thể khó chịu."
+
+[[function]]
+code = "DEPILATORY"
+name_vi = "Tẩy lông"
+description_vi = "Loại bỏ lông không mong muốn."
+
+[[function]]
+code = "DETANGLING"
+name_vi = "Gỡ rối tóc"
+description_vi = "Giảm hoặc loại bỏ tình trạng tóc bị rối do bề mặt sợi tóc thay đổi hoặc hư tổn, nhờ đó giúp dễ chải."
+
+[[function]]
+code = "EMOLLIENT"
+name_vi = "Làm mềm da"
+description_vi = "Làm da mềm và mịn."
+
+[[function]]
+code = "EMULSIFYING"
+name_vi = "Nhũ hoá"
+description_vi = "Giúp tạo hỗn hợp đồng nhất từ các chất lỏng không trộn lẫn được với nhau, bằng cách thay đổi sức căng bề mặt phân cách giữa chúng."
+
+[[function]]
+code = "EMULSION STABILISING"
+name_vi = "Ổn định nhũ tương"
+description_vi = "Hỗ trợ quá trình nhũ hoá, cải thiện độ ổn định và thời hạn sử dụng của nhũ tương."
+
+[[function]]
+code = "FILM FORMING"
+name_vi = "Tạo màng"
+description_vi = "Khi thoa, tạo một lớp màng liên tục trên da, tóc hoặc móng."
+
+[[function]]
+code = "FIRMING"
+name_vi = "Làm săn chắc"
+description_vi = "Danh mục EU 2006 ghi chức năng này nhưng không đưa ra định nghĩa."
+
+[[function]]
+code = "FOAMING"
+name_vi = "Tạo bọt"
+description_vi = "Giữ nhiều bọt khí nhỏ trong chất lỏng bằng cách thay đổi sức căng bề mặt."
+
+[[function]]
+code = "FOAM BOOSTING"
+name_vi = "Tăng bọt"
+description_vi = "Cải thiện bọt: tăng lượng bọt, độ mịn và/hoặc độ bền của bọt."
+
+[[function]]
+code = "GEL FORMING"
+name_vi = "Tạo gel"
+description_vi = "Làm chất lỏng có độ sệt của gel (dạng bán rắn, hơi đàn hồi)."
+
+[[function]]
+code = "HAIR CONDITIONING"
+name_vi = "Dưỡng tóc"
+description_vi = "Giúp tóc dễ chải, mềm mượt, bóng và/hoặc tạo độ phồng, nhẹ."
+
+[[function]]
+code = "HAIR DYEING"
+name_vi = "Nhuộm tóc"
+description_vi = "Tạo màu cho tóc."
+
+[[function]]
+code = "HAIR FIXING"
+name_vi = "Giữ nếp tóc"
+description_vi = "Giúp giữ kiểu tóc."
+
+[[function]]
+code = "HAIR WAVING OR STRAIGHTENING"
+name_vi = "Uốn hoặc duỗi tóc"
+description_vi = "Thay đổi cấu trúc hoá học của tóc để tạo kiểu mong muốn."
+
+[[function]]
+code = "HUMECTANT"
+name_vi = "Giữ ẩm"
+description_vi = "Giữ và duy trì độ ẩm."
+
+[[function]]
+code = "HYDROTROPE"
+name_vi = "Tăng độ tan"
+description_vi = "Tăng độ hoà tan của chất vốn ít tan trong nước."
+
+[[function]]
+code = "KERATOLYTIC"
+name_vi = "Tiêu sừng"
+description_vi = "Giúp loại bỏ tế bào chết ở lớp sừng."
+
+[[function]]
+code = "MASKING"
+name_vi = "Che mùi vị"
+description_vi = "Giảm hoặc che mùi, vị gốc của sản phẩm."
+
+[[function]]
+code = "MOISTURISING"
+name_vi = "Dưỡng ẩm"
+description_vi = "Tăng lượng nước trong da, giúp da mềm và mịn."
+
+[[function]]
+code = "NAIL CONDITIONING"
+name_vi = "Dưỡng móng"
+description_vi = "Cải thiện các đặc tính thẩm mỹ của móng."
+
+[[function]]
+code = "OPACIFYING"
+name_vi = "Làm đục"
+description_vi = "Giảm độ trong của mỹ phẩm."
+
+[[function]]
+code = "ORAL CARE"
+name_vi = "Chăm sóc răng miệng"
+description_vi = "Tác dụng mỹ phẩm trong khoang miệng, ví dụ làm sạch, khử mùi, bảo vệ."
+
+[[function]]
+code = "OXIDISING"
+name_vi = "Chất oxy hoá"
+description_vi = "Thay đổi bản chất hoá học của chất khác bằng cách thêm oxy hoặc lấy bớt hydro."
+
+[[function]]
+code = "PEARLESCENT"
+name_vi = "Tạo ánh ngọc trai"
+description_vi = "Tạo vẻ óng ánh như ngọc trai cho mỹ phẩm."
+
+[[function]]
+code = "PLASTICISER"
+name_vi = "Hoá dẻo"
+description_vi = "Làm mềm, dẻo một chất khác vốn khó biến dạng hoặc khó tán đều."
+
+[[function]]
+code = "PRESERVATIVE"
+name_vi = "Bảo quản"
+description_vi = "Chủ yếu ức chế vi sinh vật phát triển trong mỹ phẩm."
+
+[[function]]
+code = "PROPELLANT"
+name_vi = "Khí đẩy"
+description_vi = "Tạo áp suất trong bình xịt để đẩy sản phẩm ra khi mở van. Một số khí đẩy hoá lỏng cũng có thể làm dung môi."
+
+[[function]]
+code = "REDUCING"
+name_vi = "Chất khử"
+description_vi = "Thay đổi bản chất hoá học của chất khác bằng cách thêm hydro hoặc lấy bớt oxy."
+
+[[function]]
+code = "REFATTING"
+name_vi = "Bổ sung lipid"
+description_vi = "Bù lại lipid cho tóc hoặc các lớp trên cùng của da."
+
+[[function]]
+code = "REFRESHING"
+name_vi = "Tạo cảm giác tươi mát"
+description_vi = "Tạo cảm giác tươi mát dễ chịu cho da."
+
+[[function]]
+code = "SKIN CONDITIONING"
+name_vi = "Dưỡng da"
+description_vi = "Giữ da ở tình trạng tốt."
+
+[[function]]
+code = "SKIN PROTECTING"
+name_vi = "Bảo vệ da"
+description_vi = "Giúp tránh tác hại từ các yếu tố bên ngoài lên da."
+
+[[function]]
+code = "SMOOTHING"
+name_vi = "Làm mịn da"
+description_vi = "Nhằm làm bề mặt da đều hơn bằng cách giảm độ sần sùi hoặc chỗ không đều."
+
+[[function]]
+code = "SOLVENT"
+name_vi = "Dung môi"
+description_vi = "Hoà tan các chất khác."
+
+[[function]]
+code = "SOOTHING"
+name_vi = "Làm dịu"
+description_vi = "Giúp giảm cảm giác khó chịu trên da hoặc da đầu."
+
+[[function]]
+code = "STABILISING"
+name_vi = "Ổn định công thức"
+description_vi = "Cải thiện độ ổn định và thời hạn sử dụng của thành phần hoặc công thức."
+
+[[function]]
+code = "SURFACTANT"
+name_vi = "Chất hoạt động bề mặt"
+description_vi = "Giảm sức căng bề mặt của mỹ phẩm và giúp sản phẩm phân bố đều khi dùng."
+
+[[function]]
+code = "TANNING"
+name_vi = "Làm nâu da"
+description_vi = "Làm da sẫm màu, có hoặc không cần tiếp xúc tia UV."
+
+[[function]]
+code = "TONIC"
+name_vi = "Tạo cảm giác dễ chịu"
+description_vi = "Tạo cảm giác dễ chịu cho da và tóc."
+
+[[function]]
+code = "UV ABSORBER"
+name_vi = "Bảo vệ sản phẩm khỏi UV"
+description_vi = "Bảo vệ chính sản phẩm mỹ phẩm khỏi tác động của tia UV."
+
+[[function]]
+code = "UV FILTER"
+name_vi = "Lọc tia UV"
+description_vi = "Lọc một số tia UV để bảo vệ da hoặc tóc khỏi tác hại của chúng."
+
+[[function]]
+code = "VISCOSITY CONTROLLING"
+name_vi = "Điều chỉnh độ đặc"
+description_vi = "Làm tăng hoặc giảm độ đặc của mỹ phẩm."

@@ -79,9 +79,37 @@ def test_analyze_inci(client: TestClient) -> None:
     assert body["groups"] == ["RETINOID"]
     assert body["ingredients"][2] == {
         "position": 3, "raw_name": "Citric Acid", "inci_name": "Citric Acid", "groups": [],
-        "may_contain": False,
+        "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
+        "common_name_of": [], "common_name_note": None, "declared_concentration": None,
+        "at_most_one_percent": False, "suggestions": [], "may_contain": False,
     }  # fmt: skip
-    assert body["unresolved_count"] == 2  # Aqua and Foo Bar are not in the actives dictionary
+    aqua = body["ingredients"][0]
+    assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)
+    assert body["ingredients"][3]["known"] is False
+    assert body["unresolved_count"] == 1  # Foo Bar
+    assert [n["code"] for n in body["notices"]] == ["few_entries"]
+
+
+def test_functions_have_vietnamese_names(client: TestClient) -> None:
+    functions = {f["code"]: f for f in client.get("/functions").json()}
+    assert functions["HUMECTANT"]["name_vi"] == "Giữ ẩm"
+    assert functions["HUMECTANT"]["definition_en"] == "Holds and retains moisture."
+    assert functions["FIRMING"]["definition_en"] is None
+
+
+def test_product_detail_lists_functions(client: TestClient, ids: dict[str, int]) -> None:
+    product = client.get(f"/products/{ids[RETINOL]}").json()
+    jojoba = next(i for i in product["ingredients"] if i["raw_name"].startswith("Simmondsia"))
+    assert jojoba["eu_name"] == "SIMMONDSIA CHINENSIS SEED OIL"
+    assert all(i["known"] for i in product["ingredients"])
+
+
+def test_analyze_flags_a_key_ingredient_list(client: TestClient) -> None:
+    text = "THÀNH PHẦN NỔI BẬT\n- Betaine: Giữ nước cho da.\n- Allantoin: làm dịu da tấy đỏ."
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert [i["raw_name"] for i in body["ingredients"]] == ["Betaine", "Allantoin"]
+    assert body["notices"][0]["code"] == "highlight_list"
+    assert "không phải bảng thành phần đầy đủ" in body["notices"][0]["message_vi"]
 
 
 def test_analyze_rejects_empty_text(client: TestClient) -> None:
@@ -162,9 +190,29 @@ def test_myth_cards(client: TestClient) -> None:
     assert all(r["kind"] == "myth" and r["sources"] for r in body["rules"])
 
 
+def lookup(client: TestClient, *groups: str) -> list[str]:
+    response = client.get("/rules", params={"groups": list(groups)})
+    assert response.status_code == 200
+    return [r["key"] for r in response.json()["rules"]]
+
+
 def test_pair_lookup_finds_any_kind(client: TestClient) -> None:
-    body = client.get("/rules", params={"groups": ["EXFOLIANT_ACID", "RETINOID"]}).json()
-    assert [r["key"] for r in body["rules"]] == ["retinoid-exfoliant-acid-same-session"]
+    assert lookup(client, "EXFOLIANT_ACID", "RETINOID") == ["retinoid-exfoliant-acid-same-session"]
+    assert lookup(client, "NIACINAMIDE", "VITAMIN_C") == ["vitamin-c-niacinamide-myth"]
+
+
+def test_pair_lookup_counts_a_group_as_its_umbrella(client: TestClient) -> None:
+    # The rule is written for EXFOLIANT_ACID; asking about BHA must not answer "no info".
+    assert lookup(client, "RETINOID", "BHA") == ["retinoid-exfoliant-acid-same-session"]
+    # Matched like the engine: an AHA product and a BHA product are two exfoliant acids.
+    assert lookup(client, "AHA", "BHA") == ["exfoliant-acid-duplicate-same-session"]
+
+
+def test_single_group_lookup_lists_rules_involving_it(client: TestClient) -> None:
+    assert set(lookup(client, "PHA")) == {
+        "exfoliant-acid-duplicate-same-session",
+        "retinoid-exfoliant-acid-same-session",
+    }
 
 
 def test_lookup_without_verified_rule_says_so(client: TestClient) -> None:
@@ -213,3 +261,128 @@ def test_question_rejects_bad_input(client: TestClient) -> None:
     assert client.post("/questions", json=unknown_product).status_code == 422
     unknown_group = {"question": "Câu hỏi hợp lệ?", "group_codes": ["NOPE"]}
     assert client.post("/questions", json=unknown_group).status_code == 422
+
+
+def test_analyze_marks_entries_after_a_one_percent_preservative(client: TestClient) -> None:
+    text = (
+        "Aqua, Glycerin, Niacinamide 5%, Phenoxyethanol, Retinol, Panthenol (4,000Ppm), "
+        "CI 77891, Iron Oxides"
+    )
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert body["one_percent_marker"] == "Phenoxyethanol"
+    marks = {i["raw_name"]: i["at_most_one_percent"] for i in body["ingredients"]}
+    assert marks == {
+        "Aqua": False, "Glycerin": False, "Niacinamide 5%": False, "Phenoxyethanol": False,
+        "Retinol": True, "Panthenol (4,000Ppm)": True,
+        "CI 77891": False, "Iron Oxides": False,  # colorants may be listed last at any amount
+    }  # fmt: skip
+    declared = {i["raw_name"]: i["declared_concentration"] for i in body["ingredients"]}
+    assert declared["Niacinamide 5%"] == "5%"
+    assert declared["Panthenol (4,000Ppm)"] == "4,000 ppm"
+    # The 1% line never changes which actives are found.
+    assert body["groups"] == ["NIACINAMIDE", "RETINOID"]
+
+
+def test_key_ingredient_lists_get_no_one_percent_line(client: TestClient) -> None:
+    text = "- Phenoxyethanol: bảo quản sản phẩm.\n- Retinol: chống lão hoá cho da."
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert body["one_percent_marker"] is None
+    assert not any(i["at_most_one_percent"] for i in body["ingredients"])
+
+
+def test_seeded_product_detail_has_the_one_percent_line(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    product = client.get(f"/products/{ids[LOTION]}").json()
+    assert product["one_percent_marker"] == "PHENOXYETHANOL"  # as printed on the CeraVe label
+    after = [i["raw_name"] for i in product["ingredients"] if i["at_most_one_percent"]]
+    assert "CERAMIDE NP" in after
+
+
+def test_benzoyl_peroxide_rules_fire_on_seeded_products(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    body = {
+        "products": [
+            {"key": "bp-wash", "product_id": ids["cerave-acne-foaming-cream-cleanser"]},
+            {"key": "bha", "product_id": ids[BHA]},
+            {"key": "bp-gel", "inci": "Benzoyl Peroxide 2.5%, Aqua, Carbomer"},
+        ],
+        "items": [entry("bp-wash", step=1), entry("bha", step=2), entry("bp-gel", step=3)],
+    }
+    result = client.post("/routine/check", json=body).json()
+    fired = {(w["rule"]["key"], tuple(sorted(w["product_keys"]))) for w in result["warnings"]}
+    assert ("benzoyl-peroxide-bha-same-session", ("bha", "bp-wash")) in fired
+    assert ("benzoyl-peroxide-bha-same-session", ("bha", "bp-gel")) in fired
+    assert ("benzoyl-peroxide-duplicate-same-session", ("bp-gel", "bp-wash")) in fired
+
+
+def test_new_myth_cards_show_on_seeded_routines(client: TestClient, ids: dict[str, int]) -> None:
+    body = {
+        "products": [
+            {"key": "retinol", "product_id": ids[RETINOL]},
+            {"key": "niacinamide", "product_id": ids["the-ordinary-niacinamide-10-zinc-1"]},
+            {"key": "glucoside", "product_id": ids["the-ordinary-ascorbyl-glucoside-solution-12"]},
+        ],
+        "items": [
+            entry("glucoside", step=1),
+            entry("niacinamide", step=2),
+            entry("retinol", step=3),
+        ],
+    }
+    result = client.post("/routine/check", json=body).json()
+    myths = {
+        (w["rule"]["key"], tuple(sorted(w["product_keys"])))
+        for w in result["warnings"]
+        if w["rule"]["kind"] == "myth"
+    }
+    assert myths == {
+        ("retinoid-niacinamide-myth", ("niacinamide", "retinol")),
+        ("vitamin-c-derivative-niacinamide-myth", ("glucoside", "niacinamide")),
+    }
+    cards = [r["key"] for r in client.get("/rules", params={"kind": "myth"}).json()["rules"]]
+    assert "azelaic-acid-retinoid-myth" in cards
+
+
+def test_drug_facts_paste_finds_the_active(client: TestClient) -> None:
+    text = (
+        "Active ingredient Benzoyl peroxide 4% Purpose Acne treatment Use for acne Warnings For "
+        "external use only Inactive ingredients water, glycerin, phenoxyethanol, niacinamide "
+        "Questions or comments? 1-888"
+    )
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert body["groups"] == ["BENZOYL_PEROXIDE", "NIACINAMIDE"]
+    assert [n["code"] for n in body["notices"]] == ["drug_facts"]
+    # Drug Facts lists are not in order of weight: no 1% line.
+    assert body["one_percent_marker"] is None
+
+
+def test_unrecognised_names_get_suggestions_but_never_count(client: TestClient) -> None:
+    body = client.post(
+        "/inci/analyze", json={"text": "Aqua, Salicilic Acid, Glycerine, Foo Bar, Niacinamide"}
+    ).json()
+    by_name = {i["raw_name"]: i for i in body["ingredients"]}
+    first = by_name["Salicilic Acid"]["suggestions"][0]
+    assert first == {"name": "Salicylic Acid", "groups": ["BHA", "EXFOLIANT_ACID"]}
+    assert by_name["Glycerine"]["suggestions"][0]["name"] == "GLYCERIN"
+    assert by_name["Foo Bar"]["suggestions"] == []
+    assert by_name["Niacinamide"]["suggestions"] == []  # recognised: nothing to suggest
+    assert body["groups"] == ["NIACINAMIDE"]  # the misspelled BHA is not counted
+
+
+def test_routine_check_flags_possible_misspelled_actives(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    body = {
+        "products": [
+            {"key": "mine", "inci": "Aqua, Benzoil Peroxide, Glycerin, Carbomer, Aqua"},
+            {"key": "retinol", "product_id": ids[RETINOL]},
+        ],
+        "items": [entry("mine", step=1), entry("retinol", step=2)],
+    }
+    result = client.post("/routine/check", json=body).json()
+    products = {p["key"]: p for p in result["products"]}
+    assert products["mine"]["groups"] == []
+    assert products["mine"]["possible_actives"] == ["Benzoyl Peroxide"]
+    assert products["retinol"]["possible_actives"] == []
+    assert result["warnings"] == []  # suggestions never create warnings

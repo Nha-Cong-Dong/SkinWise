@@ -20,7 +20,7 @@
 
 ## Cần bạn duyệt
 - [x] Danh sách sản phẩm (xem bảng dưới) — duyệt cùng kế hoạch giai đoạn 1
-- [ ] `backend/data/ingredients.toml`: hoạt chất nào thuộc nhóm nào (bản nháp, có `note` ở chỗ dễ nhầm)
+- [x] `backend/data/ingredients.toml`: hoạt chất nào thuộc nhóm nào — người duyệt (Vân Anh) duyệt 25/10; bỏ từ đồng nghĩa "BHA" (là tên INCI của chất chống oxy hoá butylated hydroxyanisole), xác nhận Sodium Salicylate không tính BHA, giữ ammonium lactate/glycolate là AHA
 
 | Nhóm cần phủ | Sản phẩm |
 |---|---|

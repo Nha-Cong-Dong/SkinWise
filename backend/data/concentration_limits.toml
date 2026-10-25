@@ -1,0 +1,21 @@
+# Căn cứ để đánh dấu thành phần "≤ 1%" trong bảng thành phần (app/concentration.py).
+#
+# Quy định mỹ phẩm EU (1223/2009, Điều 19): thành phần xếp theo khối lượng giảm dần; thành phần dưới 1%
+# được xếp theo thứ tự bất kỳ, SAU các thành phần trên 1%. Vì vậy một chất bị luật giới hạn tối đa 1%
+# là "mốc": mọi thành phần đứng sau nó không thể quá 1% (trừ chất tạo màu, được xếp cuối bất kể hàm lượng).
+# Chỉ dùng để HIỂN THỊ thông tin; không bao giờ tắt cảnh báo (≤ 1% vẫn có thể có tác dụng, vd. retinol).
+#
+# Đoạn trích kiểm tra bằng: uv run python -m scripts.verify_quotes
+
+[ordering_rule]
+url = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223"
+quote = "The list of ingredients shall be established in descending order of weight of the ingredients at the time they are added to the cosmetic product. Ingredients in concentrations of less than 1 % may be listed in any order after those in concentrations of more than 1 %."
+colorant_quote = "Colorants other than colorants intended to colour the hair may be listed in any order after the other cosmetic ingredients."
+
+# Chất bị giới hạn tối đa ≤ 1% cho mọi loại sản phẩm (Phụ lục V: chất bảo quản).
+# Trích từ bản gốc 2009 của Quy định; dòng của Phụ lục V được tách ô thành chữ liền nhau.
+[[limit]]
+inci = "Phenoxyethanol"
+max_percent = 1.0
+url = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223"
+quote = "29 2-Phenoxyethanol Phenoxyethanol 122-99-6 204-589-7 1,0 %"

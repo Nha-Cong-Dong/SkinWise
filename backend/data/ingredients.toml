@@ -2,7 +2,8 @@
 # inci: tên INCI chuẩn (đối chiếu EU CosIng). synonyms: cách viết khác hay gặp trên nhãn.
 # groups: mã trong functional_groups.toml; để trống = có trong từ điển nhưng KHÔNG tính là hoạt chất.
 # note: chỗ dễ nhầm hoặc giới hạn — người duyệt đọc kỹ các mục có note.
-# TRẠNG THÁI: bản nháp do Claude soạn, chờ người duyệt.
+# TRẠNG THÁI: Claude soạn; người duyệt: Vân Anh, 25/10. Mục thêm hoặc sửa sau ngày này cần được duyệt lại.
+# Không dùng từ đồng nghĩa trùng tên INCI của chất khác (vd. "BHA" là butylated hydroxyanisole) — có test.
 
 # --- AHA ---
 [[ingredient]]
@@ -21,12 +22,12 @@ groups = ["AHA", "EXFOLIANT_ACID"]
 [[ingredient]]
 inci = "Malic Acid"
 groups = ["AHA", "EXFOLIANT_ACID"]
-note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH."
+note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH. Vẫn tính là AHA (người duyệt 24/10): bỏ sót cảnh báo nguy hiểm hơn báo thừa, cảnh báo đã dùng 'có thể'."
 
 [[ingredient]]
 inci = "Tartaric Acid"
 groups = ["AHA", "EXFOLIANT_ACID"]
-note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH."
+note = "Thường có lượng nhỏ, có thể chỉ để chỉnh pH. Vẫn tính là AHA (người duyệt 24/10): bỏ sót cảnh báo nguy hiểm hơn báo thừa, cảnh báo đã dùng 'có thể'."
 
 [[ingredient]]
 inci = "Citric Acid"
@@ -36,7 +37,8 @@ note = "Thường là chất chỉnh pH; cố ý KHÔNG tính là AHA tẩy tế
 # --- BHA ---
 [[ingredient]]
 inci = "Salicylic Acid"
-synonyms = ["BHA", "Beta Hydroxy Acid"]
+synonyms = ["Beta Hydroxy Acid"]
+note = "Không dùng \"BHA\" làm từ đồng nghĩa: trên nhãn, BHA là tên INCI của butylated hydroxyanisole (chất chống oxy hoá; người duyệt bỏ 25/10)."
 groups = ["BHA", "EXFOLIANT_ACID"]
 
 [[ingredient]]
@@ -137,8 +139,8 @@ groups = ["VITAMIN_C_DERIVATIVE"]
 
 [[ingredient]]
 inci = "Ascorbyl Palmitate"
-groups = ["VITAMIN_C_DERIVATIVE"]
-note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức."
+groups = []
+note = "Hay dùng lượng nhỏ làm chất chống oxy hoá cho công thức (giữ dầu không bị ôi); cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 # --- Niacinamide ---
 [[ingredient]]
@@ -170,12 +172,12 @@ note = "Dẫn xuất tan trong nước của azelaic acid."
 [[ingredient]]
 inci = "Ammonium Lactate"
 groups = ["AHA", "EXFOLIANT_ACID"]
-note = "Lactic acid đã trung hoà một phần; dùng như AHA trong kem dưỡng thể. Kém chắc chắn hơn lactic acid."
+note = "Lactic acid đã trung hoà một phần; dùng như AHA trong kem dưỡng thể. Kém chắc chắn hơn lactic acid; vẫn tính là AHA (người duyệt 25/10)."
 
 [[ingredient]]
 inci = "Ammonium Glycolate"
 groups = ["AHA", "EXFOLIANT_ACID"]
-note = "Glycolic acid đã trung hoà một phần (đệm pH); vẫn tính là AHA, cảnh báo dùng 'có thể'."
+note = "Glycolic acid đã trung hoà một phần (đệm pH); vẫn tính là AHA (người duyệt 25/10), cảnh báo dùng 'có thể'."
 
 [[ingredient]]
 inci = "Maltobionic Acid"
@@ -203,13 +205,13 @@ note = "Thuốc kê đơn."
 
 [[ingredient]]
 inci = "Sodium Ascorbate"
-groups = ["VITAMIN_C_DERIVATIVE"]
-note = "Muối của ascorbic acid; xếp vào dẫn xuất, không phải L-ascorbic acid nguyên chất."
+groups = []
+note = "Muối của ascorbic acid, hay dùng làm chất chống oxy hoá cho công thức; cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 [[ingredient]]
 inci = "Calcium Ascorbate"
-groups = ["VITAMIN_C_DERIVATIVE"]
-note = "Muối của ascorbic acid."
+groups = []
+note = "Muối của ascorbic acid, hay dùng làm chất chống oxy hoá cho công thức; cố ý KHÔNG tính là dẫn xuất vitamin C (người duyệt quyết định 24/10)."
 
 [[ingredient]]
 inci = "Aminopropyl Ascorbyl Phosphate"
@@ -247,7 +249,7 @@ note = "Thành phần hương liệu, không phải BHA."
 [[ingredient]]
 inci = "Sodium Salicylate"
 groups = []
-note = "Chủ yếu dùng làm chất bảo quản; không tính là BHA. Cần người duyệt xác nhận."
+note = "Chủ yếu dùng làm chất bảo quản (danh mục EU 2006 chỉ ghi PRESERVATIVE); không tính là BHA (người duyệt xác nhận 25/10)."
 
 [[ingredient]]
 inci = "Salix Alba Bark Extract"

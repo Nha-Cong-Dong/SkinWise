@@ -64,6 +64,8 @@ Routine (sản phẩm × buổi × ngày)  ──►  Bộ luật  ──►  C�
 ```
 
 - **Luật viết theo nhóm hoạt chất**, không theo từng chất riêng lẻ. Ví dụ: một luật "RETINOID + EXFOLIANT_ACID cùng buổi → thận trọng" áp dụng cho mọi sản phẩm chứa retinol, adapalene, glycolic acid, salicylic acid…
+- **Nhận diện gần như mọi tên thành phần.** Ngoài các hoạt chất, SkinWise nhận ra tên theo bảng chú giải của EU (khoảng 30.000 tên) và một số tên thông dụng tiếng Việt như "rau má", "trà xanh", kèm chức năng thường gặp (giữ ẩm, làm mềm da, bảo quản…). Phần này chỉ để giải thích, không tạo cảnh báo.
+- **Nói rõ khi văn bản dán vào không phải bảng thành phần đầy đủ**, ví dụ danh sách "thành phần nổi bật" của hãng: hoạt chất có thể nằm ở phần không được liệt kê, nên kết quả kiểm tra có thể thiếu.
 - **Không suy diễn nồng độ.** Bảng INCI không ghi nồng độ nên cảnh báo luôn dùng từ "có thể".
 - **Tránh nhận diện nhầm.** Ví dụ: Citric Acid thường chỉ là chất điều chỉnh pH, không được tính là AHA tẩy da chết.
 
@@ -116,11 +118,13 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [x] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
 - [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth, gửi câu hỏi
-- [ ] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo
+- [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth, gửi câu hỏi
 - [ ] Hoàn thiện demo
 
 ## Nguồn dữ liệu và ghi công
 
-- [EU CosIng](https://single-market-economy.ec.europa.eu/sectors/cosmetics/cosmetic-ingredient-database_en): từ điển thành phần mỹ phẩm của Liên minh châu Âu
+- Bảng chú giải tên thành phần mỹ phẩm của EU, [Quyết định (EU) 2025/1175](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32025D1175): nhận diện tên thành phần trên nhãn. © Liên minh châu Âu, https://eur-lex.europa.eu
+- Danh mục thành phần mỹ phẩm của EU năm 2006, [Quyết định 2006/257/EC](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006D0257): chức năng thường gặp của thành phần và định nghĩa từng chức năng. Danh mục này không còn hiệu lực pháp lý, chỉ dùng để tham khảo. © Liên minh châu Âu, https://eur-lex.europa.eu
+- [EU CosIng](https://single-market-economy.ec.europa.eu/sectors/cosmetics/cosmetic-ingredient-database_en): tham chiếu khi lập từ điển hoạt chất
 - [Open Beauty Facts](https://world.openbeautyfacts.org) (dự kiến): dữ liệu sản phẩm mở, giấy phép [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)
 - Nguồn y khoa cho từng luật được liệt kê ngay trong cảnh báo tương ứng

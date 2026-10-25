@@ -1,18 +1,23 @@
 # Nhóm hoạt chất. Luật cảnh báo viết theo các mã này, không theo từng chất.
 # Mô tả chỉ để giải thích cho người dùng; không chứa khuyến cáo (khuyến cáo nằm trong luật có nguồn).
+# parent: nhóm chung chứa nhóm này. Mọi chất thuộc nhóm con phải thuộc cả nhóm cha (có test kiểm tra);
+# tra cứu theo cặp nhóm dùng parent để luật viết cho nhóm chung cũng khớp khi hỏi nhóm con.
 
 [[group]]
 code = "AHA"
+parent = "EXFOLIANT_ACID"
 name_vi = "AHA (alpha hydroxy acid)"
 description_vi = "Nhóm acid tẩy tế bào chết tan trong nước, ví dụ glycolic acid, lactic acid, mandelic acid."
 
 [[group]]
 code = "BHA"
+parent = "EXFOLIANT_ACID"
 name_vi = "BHA (beta hydroxy acid)"
 description_vi = "Acid tẩy tế bào chết tan trong dầu, chủ yếu là salicylic acid và các dẫn xuất."
 
 [[group]]
 code = "PHA"
+parent = "EXFOLIANT_ACID"
 name_vi = "PHA (polyhydroxy acid)"
 description_vi = "Acid tẩy tế bào chết có phân tử lớn hơn AHA, ví dụ gluconolactone, lactobionic acid."
 

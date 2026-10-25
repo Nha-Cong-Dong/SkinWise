@@ -19,6 +19,7 @@ class GroupOut(FromAttributes):
     code: str
     name_vi: str
     description_vi: str | None
+    parent_code: str | None  # umbrella group, e.g. AHA -> EXFOLIANT_ACID
 
 
 class ProductSummary(FromAttributes):
@@ -31,11 +32,35 @@ class ProductSummary(FromAttributes):
     groups: list[str]
 
 
-class IngredientOut(FromAttributes):
+class SuggestionOut(FromAttributes):
+    name: str
+    groups: list[str]  # non-empty when the suggested name is a tracked active
+
+
+class IngredientOut(BaseModel):
     position: int
     raw_name: str  # as written on the label
-    inci_name: str | None  # None: not in the dictionary
+    inci_name: str | None  # None: not in the actives dictionary
     groups: list[str]
+    eu_name: str | None  # the name in the EU lists; None: unknown to them
+    functions: list[str]  # usual functions (codes of /functions), from the 2006 EU inventory
+    known: bool  # recognised by the actives dictionary or the EU lists
+    # The label used an everyday name ("Rau má"): the EU names it may stand for, first one used.
+    common_name_of: list[str]
+    common_name_note: str | None
+    declared_concentration: str | None  # printed with the entry, e.g. "10%", "4,000 ppm"
+    # Listed after an ingredient the EU caps at 1% (see one_percent_marker): at most 1%.
+    at_most_one_percent: bool
+    # For an unrecognised name: close known names ("Salicilic Acid" -> Salicylic Acid).
+    # Offered to the user only; never used to find actives.
+    suggestions: list[SuggestionOut]
+
+
+class FunctionOut(FromAttributes):
+    code: str
+    name_vi: str
+    description_vi: str
+    definition_en: str | None  # official EU definition
 
 
 class ProductDetail(ProductSummary):
@@ -43,6 +68,7 @@ class ProductDetail(ProductSummary):
     source_url: str | None
     source_retrieved_at: datetime | None
     ingredients: list[IngredientOut]
+    one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
 class InciAnalyzeRequest(BaseModel):
@@ -53,10 +79,18 @@ class AnalyzedIngredient(IngredientOut):
     may_contain: bool  # listed after "May contain" / "+/-": only in some shades
 
 
+class TextNotice(BaseModel):
+    code: Literal["drug_facts", "highlight_list", "vietnamese_names", "long_entries", "few_entries"]
+    message_vi: str
+
+
 class InciAnalysis(BaseModel):
     ingredients: list[AnalyzedIngredient]
     groups: list[str]
     unresolved_count: int
+    # Signs the text is not a full INCI list; a routine check on it may miss warnings.
+    notices: list[TextNotice]
+    one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
 class SourceOut(FromAttributes):
@@ -126,6 +160,9 @@ class RoutineCheckRequest(BaseModel):
 class RoutineProductResult(BaseModel):
     key: str
     groups: list[str]
+    # Pasted lists only: actives that unrecognised (likely misspelled) names may be. They
+    # are not checked, so the routine may be missing warnings for them.
+    possible_actives: list[str]
 
 
 class OccurrenceOut(FromAttributes):

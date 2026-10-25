@@ -2,7 +2,7 @@ from sqlalchemy import Engine, text
 
 from app.inci import normalize_name, parse_inci
 from app.ingredients import product_groups, resolve
-from app.seed import load_toml, seed
+from app.seed import load_eu_names, load_toml, seed
 
 
 def resolve_text(engine: Engine, inci: str):
@@ -50,6 +50,17 @@ def test_every_ingredient_group_exists() -> None:
         assert set(ing.get("groups", [])) <= codes, ing["inci"]
 
 
+def test_every_member_of_a_group_is_in_its_parent() -> None:
+    groups = load_toml("functional_groups.toml")["group"]
+    codes = {g["code"] for g in groups}
+    parents = {g["code"]: g["parent"] for g in groups if "parent" in g}
+    assert set(parents.values()) <= codes
+    for ing in load_toml("ingredients.toml")["ingredient"]:
+        for code in ing.get("groups", []):
+            if code in parents:
+                assert parents[code] in ing["groups"], f"{ing['inci']}: {code} without parent"
+
+
 def test_reseeding_keeps_ids_stable(engine: Engine) -> None:
     query = text("SELECT inci_name, id FROM ingredients ORDER BY inci_name")
     with engine.connect() as conn:
@@ -62,7 +73,8 @@ def test_reseeding_keeps_ids_stable(engine: Engine) -> None:
 def test_look_alikes_are_not_counted_as_actives(engine: Engine) -> None:
     resolved = resolve_text(
         engine,
-        "Ethylhexyl Salicylate, Willow Bark Extract, Sodium Lactate, Hyaluronic Acid, Niacin",
+        "Ethylhexyl Salicylate, Willow Bark Extract, Sodium Lactate, Hyaluronic Acid, Niacin, "
+        "Ascorbyl Palmitate, Sodium Ascorbate, Calcium Ascorbate",
     )
     assert all(r.ingredient_id is not None for r in resolved)
     assert product_groups(resolved) == set()
@@ -74,3 +86,78 @@ def test_no_synonym_points_to_two_ingredients() -> None:
         for name in {normalize_name(n) for n in [ing["inci"], *ing.get("synonyms", [])]}:
             assert name not in owner, f"{name!r}: {owner.get(name)} and {ing['inci']}"
             owner[name] = ing["inci"]
+
+
+def test_everyday_vietnamese_names_resolve_to_eu_names(engine: Engine) -> None:
+    rau_ma, extract, cuc = resolve_text(engine, "Rau má, Chiết xuất rau má, Cúc La Mã")
+    assert rau_ma.eu_name == "CENTELLA ASIATICA EXTRACT"
+    assert rau_ma.common_name_of == ("CENTELLA ASIATICA EXTRACT", "CENTELLA ASIATICA LEAF EXTRACT")
+    assert extract.eu_name == rau_ma.eu_name
+    assert cuc.common_name_note and "Anthemis" in cuc.common_name_note
+
+
+def test_vietnamese_name_of_an_active_counts_as_the_active(engine: Engine) -> None:
+    (salicylic,) = resolve_text(engine, "Axit Salicylic")
+    assert salicylic.groups == ("BHA", "EXFOLIANT_ACID")
+    (willow,) = resolve_text(engine, "Vỏ liễu trắng")
+    assert willow.inci_name == "Salix Alba Bark Extract"
+    assert willow.groups == ()
+
+
+def test_inci_names_win_over_everyday_names(engine: Engine) -> None:
+    (aqua,) = resolve_text(engine, "Aqua")
+    assert aqua.common_name_of == ()
+
+
+def test_common_names_are_unique_and_never_shadowed() -> None:
+    """A name the dictionary or the EU lists already know is looked up first, so a common
+    name entry for it would never be used."""
+    dictionary = {
+        normalize_name(n)
+        for ing in load_toml("ingredients.toml")["ingredient"]
+        for n in [ing["inci"], *ing.get("synonyms", [])]
+    }
+    eu_names = load_eu_names()
+    seen: set[str] = set()
+    for entry in load_toml("common_names.toml")["name"]:
+        name = normalize_name(entry["name"])
+        assert name not in seen, entry["name"]
+        assert name not in dictionary, f"{entry['name']} is already a dictionary name"
+        assert name not in eu_names, f"{entry['name']} is already an EU name"
+        seen.add(name)
+
+
+# Synonyms that are also EU names, checked to be the same substance as their entry.
+SAME_SUBSTANCE_EU_NAMES = {
+    "retinoic acid",  # = tretinoin
+    "ascorbyl tetraisopalmitate",  # older INCI name of tetrahexyldecyl ascorbate
+    "3-glyceryl ascorbate",  # a glyceryl ascorbate isomer
+}
+
+
+def test_no_synonym_is_another_substances_inci_name() -> None:
+    """ "BHA" on a label is butylated hydroxyanisole, an antioxidant: as a synonym of
+    Salicylic Acid it raised exfoliant warnings for products without any acid."""
+    eu_names = load_eu_names()
+    for ing in load_toml("ingredients.toml")["ingredient"]:
+        for synonym in ing.get("synonyms", []):
+            name = normalize_name(synonym)
+            if name in eu_names and name != normalize_name(ing["inci"]):
+                assert name in SAME_SUBSTANCE_EU_NAMES, f"{ing['inci']}: {synonym}"
+
+
+def test_bha_on_a_label_is_the_antioxidant(engine: Engine) -> None:
+    (bha,) = resolve_text(engine, "BHA")
+    assert (bha.groups, bha.eu_name, bha.functions) == ((), "BHA", ("ANTIOXIDANT",))
+
+
+def test_vietnamese_acid_word_order(engine: Engine) -> None:
+    """Vietnamese labels write "Acid salicylic" / "Axit malic"; missing them loses warnings."""
+    salicylic, glycolic, malic, hyaluronic = resolve_text(
+        engine, "Acid salicylic, Axít Glycolic, Axit malic, Acid hyaluronic"
+    )
+    assert salicylic.groups == ("BHA", "EXFOLIANT_ACID")
+    assert glycolic.groups == ("AHA", "EXFOLIANT_ACID")
+    assert malic.groups == ("AHA", "EXFOLIANT_ACID")
+    assert hyaluronic.inci_name == "Hyaluronic Acid"
+    assert hyaluronic.groups == ()

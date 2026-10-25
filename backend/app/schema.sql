@@ -97,6 +97,41 @@ CREATE TABLE IF NOT EXISTS rule_sources (
   PRIMARY KEY (rule_id, position)
 );
 
+-- Added in phase 4: AHA/BHA/PHA belong to the umbrella EXFOLIANT_ACID. Rule lookups by group
+-- pair use it so a rule written for the umbrella also answers a question about a member.
+ALTER TABLE functional_groups ADD COLUMN IF NOT EXISTS parent_code text REFERENCES functional_groups(code);
+
+-- Every ingredient name the EU lists know, with its usual functions (app/eu_lists.py,
+-- data/eu_*). Separate from `ingredients`, the reviewed actives dictionary: a name here is
+-- recognised and described, never counted as an active.
+CREATE TABLE IF NOT EXISTS inci_names (
+  normalized_name text PRIMARY KEY,
+  name            text NOT NULL,               -- as printed in the EU list (upper case)
+  in_glossary     boolean NOT NULL,            -- in the current glossary, Decision (EU) 2025/1175
+  functions       text[] NOT NULL DEFAULT '{}' -- from the 2006 inventory, Decision 2006/257/EC
+);
+
+-- Trigram indexes for "did you mean" suggestions on names nobody recognised (typos).
+CREATE INDEX IF NOT EXISTS inci_names_trgm ON inci_names USING gin (normalized_name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS ingredient_synonyms_trgm
+  ON ingredient_synonyms USING gin (normalized_name gin_trgm_ops);
+
+CREATE TABLE IF NOT EXISTS cosmetic_functions (
+  code           text PRIMARY KEY, -- e.g. HUMECTANT, as in the 2006 inventory
+  definition_en  text,             -- official definition; null when the inventory gives none
+  name_vi        text NOT NULL,
+  description_vi text NOT NULL
+);
+
+-- Everyday names ("rau má", "Purified Water") for EU names, from data/common_names.toml.
+CREATE TABLE IF NOT EXISTS common_names (
+  normalized_name text PRIMARY KEY,
+  name            text NOT NULL,
+  lang            text NOT NULL CHECK (lang IN ('vi', 'en')),
+  inci_names      text[] NOT NULL, -- EU names it may stand for; the first is used to resolve
+  note            text
+);
+
 -- Added in phase 3. Questions and rumours users send in; a reviewer picks which ones become
 -- sourced myth cards. No contact details are stored.
 CREATE TABLE IF NOT EXISTS user_questions (

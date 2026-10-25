@@ -28,6 +28,13 @@ class BlockedError(Exception):
 
 
 _JSON_UNICODE = re.compile(r"\\u([0-9a-fA-F]{4})")
+_EUR_LEX_CELEX = re.compile(r"eur-lex\.europa\.eu/.*[?&]uri=CELEX(?::|%3A)(\w+)", re.IGNORECASE)
+CELLAR_URL = "http://publications.europa.eu/resource/celex/{celex}"
+_PMC_ARTICLE = re.compile(r"pmc\.ncbi\.nlm\.nih\.gov/articles/(PMC\d+)", re.IGNORECASE)
+
+
+def _europe_pmc(match: re.Match[str]) -> str:
+    return f"https://www.ebi.ac.uk/europepmc/webservices/rest/{match.group(1)}/fullTextXML"
 
 
 def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
@@ -38,6 +45,18 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
     when several pages are fetched in a row. HTTP errors (403, 404, 500) are not retried.
     """
     request = urllib.request.Request(url, headers={"User-Agent": USER_AGENT})
+    if celex := _EUR_LEX_CELEX.search(url):
+        # eur-lex.europa.eu answers scripts with a bot challenge; the same text is served
+        # for automated reuse by the Publications Office (CELLAR).
+        request = urllib.request.Request(
+            CELLAR_URL.format(celex=celex.group(1)),
+            headers={
+                "User-Agent": USER_AGENT,
+                "Accept": "application/xhtml+xml",
+                "Accept-Language": "eng",
+            },
+        )
+        timeout = max(timeout, 300)
     for attempt in range(retries + 1):
         try:
             with urllib.request.urlopen(request, timeout=timeout) as response:
@@ -51,6 +70,14 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
                 raise
             time.sleep(3 * (attempt + 1))
     if _CHALLENGE.search(page):
+        if pmcid := _PMC_ARTICLE.search(url):
+            # PMC challenges scripts after a few quick fetches; Europe PMC serves the same
+            # open-access article text through an API meant for automated use (not every
+            # PMC article is in its open-access set, hence the fallthrough).
+            try:
+                return fetch_text(_europe_pmc(pmcid), timeout, retries)
+            except urllib.error.URLError:
+                pass
         raise BlockedError(f"{url} returned a bot-challenge page; retry later")
     page = _JSON_UNICODE.sub(lambda m: chr(int(m.group(1), 16)), page).replace("\\/", "/")
     return html.unescape(_TAG.sub(" ", page))

@@ -1,4 +1,4 @@
-"""Load backend/data/*.toml into the database. Upserts on natural keys, so it is safe to rerun
+"""Load backend/data/* into the database. Upserts on natural keys, so it is safe to rerun
 and product ids stay stable (routines saved in the browser refer to them)."""
 
 import tomllib
@@ -20,6 +20,31 @@ def load_toml(name: str) -> dict[str, Any]:
         return tomllib.load(f)
 
 
+def data_lines(name: str) -> list[str]:
+    """Non-comment lines of a generated data file (eu_*.txt / eu_*.tsv)."""
+    with (DATA_DIR / name).open(encoding="utf-8") as f:
+        return [line.rstrip("\n") for line in f if line.strip() and not line.startswith("#")]
+
+
+def load_eu_names() -> dict[str, tuple[str, bool, list[str]]]:
+    """normalized name -> (name as printed, in current glossary, usual functions)."""
+    names: dict[str, tuple[str, bool, list[str]]] = {}
+    for name in data_lines("eu_glossary.txt"):
+        names.setdefault(normalize_name(name), (name, True, []))
+    for line in data_lines("eu_inventory_2006.tsv"):
+        name, codes = line.split("\t")
+        printed, in_glossary, functions = names.get(normalize_name(name), (name, False, []))
+        merged = functions + [c for c in codes.split("|") if c and c not in functions]
+        names[normalize_name(name)] = (printed, in_glossary, merged)
+    return names
+
+
+def load_functions() -> list[dict[str, Any]]:
+    definitions = dict(line.split("\t") for line in data_lines("eu_functions_2006.tsv"))
+    functions = load_toml("functions_vi.toml")["function"]
+    return [{**f, "definition_en": definitions.get(f["code"])} for f in functions]
+
+
 def seed(engine: Engine) -> dict[str, int]:
     groups = load_toml("functional_groups.toml")["group"]
     ingredients = load_toml("ingredients.toml")["ingredient"]
@@ -32,7 +57,20 @@ def seed(engine: Engine) -> dict[str, int]:
     if problems:
         raise ValueError("rules.toml:\n  " + "\n  ".join(problems))
 
+    eu_names, functions = load_eu_names(), load_functions()
+    used = {code for _, _, codes in eu_names.values() for code in codes}
+    if untranslated := used - {f["code"] for f in functions}:
+        raise ValueError(f"functions_vi.toml is missing: {sorted(untranslated)}")
+
+    common_names = load_toml("common_names.toml")["name"]
+    if unknown := [n["name"] for n in common_names
+                   if any(normalize_name(i) not in eu_names for i in n["inci"])]:  # fmt: skip
+        raise ValueError(f"common_names.toml points to names not in the EU lists: {unknown}")
+
     with engine.begin() as conn:
+        _seed_functions(conn, functions)
+        _seed_eu_names(conn, eu_names)
+        _seed_common_names(conn, common_names)
         _seed_groups(conn, groups)
         _seed_ingredients(conn, ingredients)
         for product in products:
@@ -43,10 +81,57 @@ def seed(engine: Engine) -> dict[str, int]:
     return {
         "groups": len(groups),
         "ingredients": len(ingredients),
+        "eu_names": len(eu_names),
         "products": len(products),
         "rules": len(rules),
         "published_rules": sum(1 for r in rules if r.get("published")),
     }
+
+
+def _seed_functions(conn: Connection, functions: list[dict[str, Any]]) -> None:
+    for f in functions:
+        conn.execute(
+            text(
+                """
+                INSERT INTO cosmetic_functions (code, definition_en, name_vi, description_vi)
+                VALUES (:code, :definition_en, :name_vi, :description_vi)
+                ON CONFLICT (code) DO UPDATE SET definition_en = excluded.definition_en,
+                  name_vi = excluded.name_vi, description_vi = excluded.description_vi
+                """
+            ),
+            {k: f[k] for k in ("code", "definition_en", "name_vi", "description_vi")},
+        )
+
+
+def _seed_eu_names(conn: Connection, names: dict[str, tuple[str, bool, list[str]]]) -> None:
+    """Replaced wholesale with COPY: ~30,000 rows and nothing refers to them by id."""
+    conn.execute(text("DELETE FROM inci_names"))
+    cursor = conn.connection.driver_connection.cursor()
+    with cursor.copy(
+        "COPY inci_names (normalized_name, name, in_glossary, functions) FROM STDIN"
+    ) as copy:
+        for normalized, (name, in_glossary, functions) in names.items():
+            copy.write_row((normalized, name, in_glossary, functions))
+
+
+def _seed_common_names(conn: Connection, names: list[dict[str, Any]]) -> None:
+    conn.execute(text("DELETE FROM common_names"))
+    for n in names:
+        conn.execute(
+            text(
+                """
+                INSERT INTO common_names (normalized_name, name, lang, inci_names, note)
+                VALUES (:normalized, :name, :lang, :inci, :note)
+                """
+            ),
+            {
+                "normalized": normalize_name(n["name"]),
+                "name": n["name"],
+                "lang": n["lang"],
+                "inci": n["inci"],
+                "note": n.get("note"),
+            },
+        )
 
 
 def _seed_groups(conn: Connection, groups: list[dict[str, Any]]) -> None:
@@ -61,6 +146,12 @@ def _seed_groups(conn: Connection, groups: list[dict[str, Any]]) -> None:
                 """
             ),
             {"code": g["code"], "name_vi": g["name_vi"], "description_vi": g.get("description_vi")},
+        )
+    # Second pass: a parent may be listed after its children.
+    for g in groups:
+        conn.execute(
+            text("UPDATE functional_groups SET parent_code = :parent WHERE code = :code"),
+            {"code": g["code"], "parent": g.get("parent")},
         )
 
 
