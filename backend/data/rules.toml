@@ -154,6 +154,84 @@ sources = [
 ]
 
 # ======================================================================================
+# Ứng viên mới (25/10) — CHƯA BẬT. Nguồn do Claude tìm, lời giải thích là bản nháp do Claude soạn.
+# Người duyệt cần tự đọc nguồn trước khi đặt published = true.
+# ======================================================================================
+
+# Nguồn: nhãn thuốc OTC (FDA) của CeraVe Acne Foaming Cleanser (benzoyl peroxide) và Clinique Acne Solutions
+#   Clinical Advanced Clearing Gel (salicylic acid): cả hai đều ghi "skin irritation and dryness is more likely to
+#   occur if you use another topical acne medication at the same time". Câu này là câu cảnh báo bắt buộc của
+#   chuyên khảo thuốc trị mụn không kê đơn của FDA, nên có trên nhãn của các sản phẩm cùng loại.
+# Lưu ý người duyệt:
+#   - Nguồn nói "cùng lúc" (at the same time), không riêng "cùng buổi" — giống luật retinoid + acid.
+#   - Cảnh báo áp dụng cho THUỐC trị mụn (benzoyl peroxide, salicylic acid ở nồng độ thuốc). Nhóm BHA của SkinWise còn
+#     gồm betaine salicylate, capryloyl salicylic acid (không phải thuốc trị mụn theo FDA) và salicylic acid lượng nhỏ
+#     làm chất bảo quản -> có thể báo thừa; lời giải thích đã dùng "có thể".
+#   - CeraVe Acne Foaming Cleanser là sữa rửa mặt (rửa trôi) nhưng nhãn vẫn có cảnh báo này.
+[[rule]]
+key = "benzoyl-peroxide-bha-same-session"
+kind = "conflict"
+severity = "caution"
+scope = "same_session"
+evidence_level = "expert_opinion"
+group_a = "BENZOYL_PEROXIDE"
+group_b = "BHA"
+title_vi = "Benzoyl peroxide và salicylic acid (BHA) trong cùng một buổi"
+explanation_vi = "Benzoyl peroxide và salicylic acid đều là hoạt chất trị mụn. Nhãn thuốc của cả hai loại (theo quy định của FDA Mỹ) ghi rằng dùng cùng lúc với một sản phẩm trị mụn bôi khác có thể làm da khô và kích ứng hơn. Nếu da bị kích ứng, nhãn khuyên chỉ dùng một sản phẩm trị mụn mỗi lần."
+published = false
+sources = [
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=2f743f0d-06ca-873c-e063-6394a90a5697", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
+]
+
+# Nguồn: nhãn thuốc OTC của CeraVe Acne Foaming Cleanser (benzoyl peroxide), như luật trên.
+# Hỗ trợ TRỰC TIẾP: hai sản phẩm benzoyl peroxide là hai "topical acne medication" dùng cùng lúc.
+# Lưu ý người duyệt: nguồn nói "cùng lúc", không riêng "cùng buổi".
+[[rule]]
+key = "benzoyl-peroxide-duplicate-same-session"
+kind = "duplicate"
+severity = "caution"
+scope = "same_session"
+evidence_level = "expert_opinion"
+group_a = "BENZOYL_PEROXIDE"
+title_vi = "Nhiều sản phẩm chứa benzoyl peroxide trong cùng một buổi"
+explanation_vi = "Dùng hai sản phẩm chứa benzoyl peroxide trong cùng một buổi có thể làm da khô và kích ứng hơn. Nhãn thuốc benzoyl peroxide (theo quy định của FDA Mỹ) khuyên: nếu da bị kích ứng, chỉ dùng một sản phẩm trị mụn mỗi lần."
+published = false
+sources = [
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
+]
+
+# Nguồn: Fu et al., Br J Dermatol 2010 (PMC2841824) — thử nghiệm ngẫu nhiên 196 phụ nữ: bộ sản phẩm có niacinamide
+#   và retinyl propionate (cả hai nằm chung trong một sản phẩm trị nếp nhăn) dung nạp tốt hơn tretinoin 0,02% theo mọi
+#   tiêu chí trong 8 tuần. Clin Cosmet Investig Dermatol 2023 (PMC9928536) — 38 phụ nữ dùng tretinoin: sản phẩm có
+#   niacinamide giảm kích ứng do retinoid. Antioxidants 2021 (PMC8389214) — khó tách đóng góp riêng của niacinamide.
+# Lưu ý người duyệt: bằng chứng GIÁN TIẾP — sản phẩm trong cả hai nghiên cứu chứa nhiều thành phần khác (peptide,
+#   chất chống oxy hoá, hyaluronic acid...), nên không chứng minh riêng niacinamide. Kiểm tra mục tài trợ / xung đột
+#   lợi ích trong hai bài (sản phẩm của nhà sản xuất). Không tìm thấy nguồn nào nói dùng chung gây hại.
+#   Đề xuất severity = info, evidence_level = low, như thẻ vitamin C + niacinamide.
+[[rule]]
+key = "retinoid-niacinamide-myth"
+kind = "myth"
+severity = "info"
+scope = "same_session"
+evidence_level = "low"
+group_a = "RETINOID"
+group_b = "NIACINAMIDE"
+title_vi = "Retinoid và niacinamide: đã được dùng chung trong nghiên cứu, chưa thấy lý do phải tách riêng"
+explanation_vi = "Lời đồn cho rằng không nên dùng retinoid cùng niacinamide. Một thử nghiệm ngẫu nhiên trên 196 phụ nữ dùng bộ sản phẩm chứa niacinamide và retinyl propionate (một dạng retinoid) thấy bộ sản phẩm này được dung nạp tốt hơn tretinoin theo mọi tiêu chí đo trong 8 tuần; người bị kích ứng thường chỉ ở mức nhẹ. Một nghiên cứu khác trên 38 phụ nữ dùng tretinoin cho thấy sản phẩm có niacinamide dùng kèm giúp giảm kích ứng do retinoid. Tuy vậy, sản phẩm trong cả hai nghiên cứu đều chứa nhiều thành phần khác, nên chưa tách được tác dụng riêng của niacinamide. SkinWise chưa tìm thấy nguồn nào cho thấy dùng chung gây hại."
+published = false
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/", quote = "An 8-week, randomized, parallel-group study was conducted in 196 women with moderate to moderately severe periorbital wrinkles." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/", quote = "a targeted wrinkle product containing niacinamide, peptides and 0·3% retinyl propionate" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/", quote = "The cosmetic regimen was significantly better tolerated than tretinoin through 8 weeks by all measures." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/", quote = "Subjects in the NPP regimen group who reported any irritation at any time point generally reported experiencing it only a ‘slight amount’." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9928536/", quote = "The study included 38 women, aged 44–60 years" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9928536/", quote = "hyaluronic acid, niacinamide and tocopherol was developed to fulfill the need for adjunctive products that can reinforce skin barrier and manage retinoid induced irritation" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9928536/", quote = "M89PF reduced retinoid induced irritation with a good tolerability profile" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8389214/", quote = "it is difficult to estimate the relative contribution of nicotinamide to the observed antiaging effects of the cosmetic regimen" },
+]
+
+# ======================================================================================
 # Nguồn
 # ======================================================================================
 
@@ -204,3 +282,27 @@ url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC11223235/"
 title = "First-Order Derivative Spectrophotometry for Simultaneous Determination of Vitamin C and Nicotinamide: Application in Quantitative Analysis of Cocrystals"
 publisher = "ACS Omega (American Chemical Society, 2024), via PubMed Central"
 accessed_at = 2026-10-22
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd"
+title = "CERAVE ACNE FOAMING CLEANSER (benzoyl peroxide) cream — OTC drug label (L'Oreal USA Products Inc)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-25
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=2f743f0d-06ca-873c-e063-6394a90a5697"
+title = "ACNE SOLUTIONS CLINICAL ADVANCED CLEARING GEL (salicylic acid) gel — OTC drug label (Clinique Laboratories)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-25
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2841824/"
+title = "A randomized, controlled comparative study of the wrinkle reduction benefits of a cosmetic niacinamide/peptide/retinyl propionate product regimen vs. a prescription 0·02% tretinoin product regimen"
+publisher = "The British Journal of Dermatology (2010), via PubMed Central"
+accessed_at = 2026-10-25
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9928536/"
+title = "Benefits of the Dermocosmetic Mineral 89 Probiotic Fractions Adjunct to Topical Retinoids for Anti-Aging Benefits"
+publisher = "Clinical, Cosmetic and Investigational Dermatology (2023), via PubMed Central"
+accessed_at = 2026-10-25

@@ -14,6 +14,8 @@
 - [x] Sửa schema: một luật có thể trích nhiều đoạn từ cùng một nguồn (`rule_sources.position`)
 - [x] Người duyệt (Vân Anh, 22/10) đọc nguồn và bật 4 luật; luật 3–4 hạ `evidence_level = "low"` vì nguồn gián tiếp; thẻ myth vitamin C + niacinamide để tắt (không có nguồn)
 - [ ] Thêm 1–3 luật / 2–3 thẻ myth nếu tìm được nguồn mạnh (chuyển sang việc song song)
+  - [x] 25/10: 3 ứng viên có nguồn, 11/11 đoạn trích qua `verify_quotes` (BP + BHA, trùng BP, myth retinoid + niacinamide); 4 ứng viên bị loại vì thiếu nguồn — xem `plan/README.md`
+  - [ ] Người duyệt đọc nguồn và quyết định bật
 - [x] PR vào `main`
 
 ## Tình trạng nguồn (cần bạn đọc trước khi bật)

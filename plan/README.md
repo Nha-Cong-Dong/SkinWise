@@ -13,13 +13,20 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 
 **Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện: 4 luật + 1 thẻ myth đã bật; cần thêm 1–2 thẻ myth.
 
-| Luật ứng viên (chưa có nguồn) | Loại | Trạng thái |
+| Luật ứng viên | Loại | Trạng thái |
 |---|---|---|
 | Retinoid + AHA/BHA cùng buổi | conflict | ✅ Bật (AAD, nhãn FDA) |
 | Retinoid + benzoyl peroxide cùng buổi | conflict | ✅ Bật (2 bài tổng quan PMC, nhãn FDA) |
 | Nhiều sản phẩm chứa acid tẩy da chết trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
 | Nhiều sản phẩm chứa retinoid trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
 | Vitamin C + niacinamide | myth | ✅ Bật (3 bài PMC; bằng chứng chưa thống nhất, mức info) |
+| Benzoyl peroxide + BHA cùng buổi | conflict | 🟡 Có nguồn, chờ duyệt (nhãn FDA OTC: CeraVe Acne Foaming Cleanser, Clinique SA gel) |
+| Nhiều sản phẩm chứa benzoyl peroxide trong một buổi | duplicate | 🟡 Có nguồn trực tiếp, chờ duyệt (nhãn FDA OTC CeraVe) |
+| Retinoid + niacinamide | myth | 🟡 Có nguồn, chờ duyệt (RCT Br J Dermatol 2010 + 2 bài PMC; gián tiếp, đề xuất mức info / evidence low) |
+| Benzoyl peroxide + vitamin C | conflict | ❌ Bỏ: chỉ có blog / trang thương mại, không có bài bình duyệt |
+| Niacinamide + AHA/BHA | myth | ❌ Bỏ: không có bài bình duyệt về chuyển hoá thành niacin trong sản phẩm thật |
+| Vitamin C + retinol | myth | ❌ Bỏ: một thử nghiệm không đối chứng, và hai chất dùng ở hai buổi khác nhau |
+| Azelaic acid + niacinamide | myth | ❌ Bỏ: không tìm được nghiên cứu đã công bố |
 
 **Hướng B (nhận diện mọi thành phần + chức năng):** làm sớm từ 24/10 bằng danh sách chính thức của EU thay cho CosIng, xem [phase-4b-ingredient-coverage.md](phase-4b-ingredient-coverage.md).
 
