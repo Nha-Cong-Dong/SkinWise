@@ -127,6 +127,30 @@ def test_common_names_are_unique_and_never_shadowed() -> None:
         seen.add(name)
 
 
+# Synonyms that are also EU names, checked to be the same substance as their entry.
+SAME_SUBSTANCE_EU_NAMES = {
+    "retinoic acid",  # = tretinoin
+    "ascorbyl tetraisopalmitate",  # older INCI name of tetrahexyldecyl ascorbate
+    "3-glyceryl ascorbate",  # a glyceryl ascorbate isomer
+}
+
+
+def test_no_synonym_is_another_substances_inci_name() -> None:
+    """ "BHA" on a label is butylated hydroxyanisole, an antioxidant: as a synonym of
+    Salicylic Acid it raised exfoliant warnings for products without any acid."""
+    eu_names = load_eu_names()
+    for ing in load_toml("ingredients.toml")["ingredient"]:
+        for synonym in ing.get("synonyms", []):
+            name = normalize_name(synonym)
+            if name in eu_names and name != normalize_name(ing["inci"]):
+                assert name in SAME_SUBSTANCE_EU_NAMES, f"{ing['inci']}: {synonym}"
+
+
+def test_bha_on_a_label_is_the_antioxidant(engine: Engine) -> None:
+    (bha,) = resolve_text(engine, "BHA")
+    assert (bha.groups, bha.eu_name, bha.functions) == ((), "BHA", ("ANTIOXIDANT",))
+
+
 def test_vietnamese_acid_word_order(engine: Engine) -> None:
     """Vietnamese labels write "Acid salicylic" / "Axit malic"; missing them loses warnings."""
     salicylic, glycolic, malic, hyaluronic = resolve_text(

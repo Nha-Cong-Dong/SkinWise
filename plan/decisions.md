@@ -54,5 +54,8 @@ Bảng INCI không cho biết chất nào là "chính". Hai tín hiệu đáng t
 ## Gõ sai tên hoạt chất: gợi ý, không tự sửa (25/10)
 Gõ sai ("Salicilic Acid") làm mất hoạt chất và mất cảnh báo. Không tự nhận tên gần đúng là hoạt chất vì có thể sai (vd. "salicilic acid" cũng gần "malic acid"), trái nguyên tắc engine tất định. App gợi ý tên gần đúng, người dùng bấm để sửa chính văn bản; kết quả kiểm tra nhắc rõ sản phẩm có thể đang thiếu cảnh báo.
 
+## Duyệt từ điển hoạt chất (25/10)
+Người duyệt duyệt toàn bộ 59 chất. Bỏ từ đồng nghĩa "BHA" của Salicylic Acid: trên nhãn, BHA là tên INCI của butylated hydroxyanisole (chất chống oxy hoá), nên sản phẩm có chất này bị cảnh báo như có acid tẩy tế bào chết. Test chặn từ đồng nghĩa trùng tên INCI của chất khác. Sodium Salicylate không tính BHA (chất bảo quản); ammonium lactate/glycolate vẫn là AHA.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.
