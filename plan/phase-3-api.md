@@ -14,7 +14,7 @@
 - [x] Không có luật nào áp dụng → trả `notice_vi` "chưa có thông tin đã kiểm chứng" (routine và tra cứu)
 - [x] `POST /questions` + bảng `user_questions`; `scripts/questions.py` liệt kê câu hỏi cho người duyệt
 - [x] Test API; cập nhật `CLAUDE.md`, README
-- [ ] PR vào `main`
+- [x] PR vào `main` (#4, đã merge)
 
 ## Thiết kế
 - Backend không có tiền tố `/api` (Vite bỏ tiền tố khi proxy).
