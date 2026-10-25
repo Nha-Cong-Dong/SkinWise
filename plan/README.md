@@ -11,7 +11,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth, form gửi câu hỏi | 3–7/11 | 🔄 Đang làm (bắt đầu 23/10) | [phase-4-ui.md](phase-4-ui.md) | |
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
 
-**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện: 4 luật + 1 thẻ myth đã bật; cần thêm 1–2 thẻ myth.
+**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 1 thẻ myth đã bật; thẻ myth retinoid + niacinamide có nguồn, chờ duyệt; cần thêm ít nhất 1 thẻ myth.
 
 | Luật ứng viên | Loại | Trạng thái |
 |---|---|---|
@@ -20,8 +20,8 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | Nhiều sản phẩm chứa acid tẩy da chết trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
 | Nhiều sản phẩm chứa retinoid trong một buổi | duplicate | ✅ Bật, nguồn gián tiếp (evidence low) |
 | Vitamin C + niacinamide | myth | ✅ Bật (3 bài PMC; bằng chứng chưa thống nhất, mức info) |
-| Benzoyl peroxide + BHA cùng buổi | conflict | 🟡 Có nguồn, chờ duyệt (nhãn FDA OTC: CeraVe Acne Foaming Cleanser, Clinique SA gel) |
-| Nhiều sản phẩm chứa benzoyl peroxide trong một buổi | duplicate | 🟡 Có nguồn trực tiếp, chờ duyệt (nhãn FDA OTC CeraVe) |
+| Benzoyl peroxide + BHA cùng buổi | conflict | ✅ Bật 25/10 (nhãn FDA OTC: CeraVe Acne Foaming Cleanser, Clinique SA gel) |
+| Nhiều sản phẩm chứa benzoyl peroxide trong một buổi | duplicate | ✅ Bật 25/10 (nhãn FDA OTC CeraVe, nguồn trực tiếp) |
 | Retinoid + niacinamide | myth | 🟡 Có nguồn, chờ duyệt (RCT Br J Dermatol 2010 + 2 bài PMC; gián tiếp, đề xuất mức info / evidence low) |
 | Benzoyl peroxide + vitamin C | conflict | ❌ Bỏ: chỉ có blog / trang thương mại, không có bài bình duyệt |
 | Niacinamide + AHA/BHA | myth | ❌ Bỏ: không có bài bình duyệt về chuyển hoá thành niacin trong sản phẩm thật |

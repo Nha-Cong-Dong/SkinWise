@@ -154,8 +154,8 @@ sources = [
 ]
 
 # ======================================================================================
-# Ứng viên mới (25/10) — CHƯA BẬT. Nguồn do Claude tìm, lời giải thích là bản nháp do Claude soạn.
-# Người duyệt cần tự đọc nguồn trước khi đặt published = true.
+# Ứng viên mới (25/10). Nguồn do Claude tìm, lời giải thích là bản nháp do Claude soạn.
+# Người duyệt (Vân Anh, 25/10) bật 2 luật benzoyl peroxide; thẻ myth retinoid + niacinamide vẫn CHƯA BẬT.
 # ======================================================================================
 
 # Nguồn: nhãn thuốc OTC (FDA) của CeraVe Acne Foaming Cleanser (benzoyl peroxide) và Clinique Acne Solutions
@@ -178,7 +178,9 @@ group_a = "BENZOYL_PEROXIDE"
 group_b = "BHA"
 title_vi = "Benzoyl peroxide và salicylic acid (BHA) trong cùng một buổi"
 explanation_vi = "Benzoyl peroxide và salicylic acid đều là hoạt chất trị mụn. Nhãn thuốc của cả hai loại (theo quy định của FDA Mỹ) ghi rằng dùng cùng lúc với một sản phẩm trị mụn bôi khác có thể làm da khô và kích ứng hơn. Nếu da bị kích ứng, nhãn khuyên chỉ dùng một sản phẩm trị mụn mỗi lần."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-25
 sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=2f743f0d-06ca-873c-e063-6394a90a5697", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
@@ -196,7 +198,9 @@ evidence_level = "expert_opinion"
 group_a = "BENZOYL_PEROXIDE"
 title_vi = "Nhiều sản phẩm chứa benzoyl peroxide trong cùng một buổi"
 explanation_vi = "Dùng hai sản phẩm chứa benzoyl peroxide trong cùng một buổi có thể làm da khô và kích ứng hơn. Nhãn thuốc benzoyl peroxide (theo quy định của FDA Mỹ) khuyên: nếu da bị kích ứng, chỉ dùng một sản phẩm trị mụn mỗi lần."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-25
 sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
 ]

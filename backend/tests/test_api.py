@@ -297,3 +297,21 @@ def test_seeded_product_detail_has_the_one_percent_line(
     assert product["one_percent_marker"] == "PHENOXYETHANOL"  # as printed on the CeraVe label
     after = [i["raw_name"] for i in product["ingredients"] if i["at_most_one_percent"]]
     assert "CERAMIDE NP" in after
+
+
+def test_benzoyl_peroxide_rules_fire_on_seeded_products(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    body = {
+        "products": [
+            {"key": "bp-wash", "product_id": ids["cerave-acne-foaming-cream-cleanser"]},
+            {"key": "bha", "product_id": ids[BHA]},
+            {"key": "bp-gel", "inci": "Benzoyl Peroxide 2.5%, Aqua, Carbomer"},
+        ],
+        "items": [entry("bp-wash", step=1), entry("bha", step=2), entry("bp-gel", step=3)],
+    }
+    result = client.post("/routine/check", json=body).json()
+    fired = {(w["rule"]["key"], tuple(sorted(w["product_keys"]))) for w in result["warnings"]}
+    assert ("benzoyl-peroxide-bha-same-session", ("bha", "bp-wash")) in fired
+    assert ("benzoyl-peroxide-bha-same-session", ("bha", "bp-gel")) in fired
+    assert ("benzoyl-peroxide-duplicate-same-session", ("bp-gel", "bp-wash")) in fired
