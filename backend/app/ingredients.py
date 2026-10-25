@@ -171,3 +171,50 @@ def list_functions(db: Session | Connection) -> list[FunctionRow]:
         "SELECT code, name_vi, description_vi, definition_en FROM cosmetic_functions ORDER BY code"
     )
     return [FunctionRow(*row) for row in db.execute(query)]
+
+
+# A label name nothing recognised may be a typo of an active ("Salicilic Acid"). Losing an
+# active loses its warnings, so close names are offered back to the user, who decides.
+# Never applied automatically: the engine still only sees names that matched exactly.
+SUGGESTION_THRESHOLD = 0.45  # pg_trgm similarity; "azeliac acid" ~ "azelaic acid" is 0.50
+MAX_SUGGESTIONS = 3
+
+
+@dataclass(frozen=True)
+class Suggestion:
+    name: str  # dictionary INCI name for an active, else the EU list name
+    groups: tuple[str, ...]
+
+
+_SUGGEST = text(
+    """
+    WITH candidates AS (
+      SELECT s.normalized_name, i.inci_name AS name, i.id AS ingredient_id
+      FROM ingredient_synonyms s JOIN ingredients i ON i.id = s.ingredient_id
+      WHERE s.normalized_name % :q
+      UNION ALL
+      SELECT n.normalized_name, n.name, NULL FROM inci_names n WHERE n.normalized_name % :q
+    )
+    SELECT c.name, similarity(c.normalized_name, :q) AS score,
+           coalesce(array_agg(g.group_code ORDER BY g.group_code)
+                    FILTER (WHERE g.group_code IS NOT NULL), '{}') AS groups
+    FROM candidates c
+    LEFT JOIN ingredient_groups g ON g.ingredient_id = c.ingredient_id
+    GROUP BY c.name, c.normalized_name
+    ORDER BY score DESC, c.name
+    LIMIT 20
+    """
+)
+
+
+def suggest(db: Session | Connection, name: str) -> list[Suggestion]:
+    """Known names close to `name` (already normalized), actives first among equals."""
+    rows = [r for r in db.execute(_SUGGEST, {"q": name}) if r.score >= SUGGESTION_THRESHOLD]
+    best: dict[str, Suggestion] = {}
+    for r in sorted(rows, key=lambda r: (-r.score, not r.groups)):
+        key = normalize_name(r.name)
+        if key not in best:
+            best[key] = Suggestion(r.name, tuple(r.groups))
+        elif r.groups and not best[key].groups:
+            best[key] = Suggestion(r.name, tuple(r.groups))  # prefer the dictionary entry
+    return list(best.values())[:MAX_SUGGESTIONS]

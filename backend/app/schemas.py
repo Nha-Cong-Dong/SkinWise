@@ -32,6 +32,11 @@ class ProductSummary(FromAttributes):
     groups: list[str]
 
 
+class SuggestionOut(FromAttributes):
+    name: str
+    groups: list[str]  # non-empty when the suggested name is a tracked active
+
+
 class IngredientOut(BaseModel):
     position: int
     raw_name: str  # as written on the label
@@ -46,6 +51,9 @@ class IngredientOut(BaseModel):
     declared_concentration: str | None  # printed with the entry, e.g. "10%", "4,000 ppm"
     # Listed after an ingredient the EU caps at 1% (see one_percent_marker): at most 1%.
     at_most_one_percent: bool
+    # For an unrecognised name: close known names ("Salicilic Acid" -> Salicylic Acid).
+    # Offered to the user only; never used to find actives.
+    suggestions: list[SuggestionOut]
 
 
 class FunctionOut(FromAttributes):
@@ -72,7 +80,7 @@ class AnalyzedIngredient(IngredientOut):
 
 
 class TextNotice(BaseModel):
-    code: Literal["highlight_list", "vietnamese_names", "long_entries", "few_entries"]
+    code: Literal["drug_facts", "highlight_list", "vietnamese_names", "long_entries", "few_entries"]
     message_vi: str
 
 
@@ -152,6 +160,9 @@ class RoutineCheckRequest(BaseModel):
 class RoutineProductResult(BaseModel):
     key: str
     groups: list[str]
+    # Pasted lists only: actives that unrecognised (likely misspelled) names may be. They
+    # are not checked, so the routine may be missing warnings for them.
+    possible_actives: list[str]
 
 
 class OccurrenceOut(FromAttributes):

@@ -81,7 +81,7 @@ def test_analyze_inci(client: TestClient) -> None:
         "position": 3, "raw_name": "Citric Acid", "inci_name": "Citric Acid", "groups": [],
         "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
         "common_name_of": [], "common_name_note": None, "declared_concentration": None,
-        "at_most_one_percent": False, "may_contain": False,
+        "at_most_one_percent": False, "suggestions": [], "may_contain": False,
     }  # fmt: skip
     aqua = body["ingredients"][0]
     assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)
@@ -342,3 +342,47 @@ def test_new_myth_cards_show_on_seeded_routines(client: TestClient, ids: dict[st
     }
     cards = [r["key"] for r in client.get("/rules", params={"kind": "myth"}).json()["rules"]]
     assert "azelaic-acid-retinoid-myth" not in cards  # still awaiting review
+
+
+def test_drug_facts_paste_finds_the_active(client: TestClient) -> None:
+    text = (
+        "Active ingredient Benzoyl peroxide 4% Purpose Acne treatment Use for acne Warnings For "
+        "external use only Inactive ingredients water, glycerin, phenoxyethanol, niacinamide "
+        "Questions or comments? 1-888"
+    )
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    assert body["groups"] == ["BENZOYL_PEROXIDE", "NIACINAMIDE"]
+    assert [n["code"] for n in body["notices"]] == ["drug_facts"]
+    # Drug Facts lists are not in order of weight: no 1% line.
+    assert body["one_percent_marker"] is None
+
+
+def test_unrecognised_names_get_suggestions_but_never_count(client: TestClient) -> None:
+    body = client.post(
+        "/inci/analyze", json={"text": "Aqua, Salicilic Acid, Glycerine, Foo Bar, Niacinamide"}
+    ).json()
+    by_name = {i["raw_name"]: i for i in body["ingredients"]}
+    first = by_name["Salicilic Acid"]["suggestions"][0]
+    assert first == {"name": "Salicylic Acid", "groups": ["BHA", "EXFOLIANT_ACID"]}
+    assert by_name["Glycerine"]["suggestions"][0]["name"] == "GLYCERIN"
+    assert by_name["Foo Bar"]["suggestions"] == []
+    assert by_name["Niacinamide"]["suggestions"] == []  # recognised: nothing to suggest
+    assert body["groups"] == ["NIACINAMIDE"]  # the misspelled BHA is not counted
+
+
+def test_routine_check_flags_possible_misspelled_actives(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    body = {
+        "products": [
+            {"key": "mine", "inci": "Aqua, Benzoil Peroxide, Glycerin, Carbomer, Aqua"},
+            {"key": "retinol", "product_id": ids[RETINOL]},
+        ],
+        "items": [entry("mine", step=1), entry("retinol", step=2)],
+    }
+    result = client.post("/routine/check", json=body).json()
+    products = {p["key"]: p for p in result["products"]}
+    assert products["mine"]["groups"] == []
+    assert products["mine"]["possible_actives"] == ["Benzoyl Peroxide"]
+    assert products["retinol"]["possible_actives"] == []
+    assert result["warnings"] == []  # suggestions never create warnings

@@ -18,10 +18,12 @@ from app.engine import (
 from app.inci import read_label_text
 from app.ingredients import (
     ResolvedEntry,
+    Suggestion,
     list_functions,
     list_groups,
     product_groups,
     resolve,
+    suggest,
     with_ancestors,
 )
 from app.products import existing_product_ids, get_product, search_products
@@ -44,6 +46,7 @@ from app.schemas import (
     RoutineProductResult,
     RuleOut,
     RulesResponse,
+    SuggestionOut,
     TextNotice,
     WarningOut,
 )
@@ -58,6 +61,11 @@ NO_VERIFIED_INFO_VI = (
     "chắc chắn an toàn. Bạn có thể gửi câu hỏi để chúng tôi tìm nguồn."
 )
 TEXT_NOTICES_VI = {
+    "drug_facts": (
+        "Đây là nhãn thuốc kiểu Mỹ (Drug Facts). SkinWise chỉ đọc mục hoạt chất (Active "
+        "ingredients) và thành phần khác (Inactive ingredients); thứ tự trên nhãn thuốc "
+        "không theo hàm lượng."
+    ),
     "highlight_list": (
         "Đây có vẻ là danh sách “thành phần nổi bật” do hãng chọn, không phải bảng thành phần "
         "đầy đủ. Hoạt chất có thể nằm ở phần không được liệt kê, nên kết quả kiểm tra routine "
@@ -98,7 +106,14 @@ def functions(db: DbSession) -> list[FunctionOut]:
     return [FunctionOut.model_validate(f) for f in list_functions(db)]
 
 
-def ingredient_fields(r: ResolvedEntry, line: OnePercentLine | None) -> dict:
+def suggestions_for(db: Session, resolved: list[ResolvedEntry]) -> dict[int, list[Suggestion]]:
+    """Close known names for each entry nothing recognised, by position."""
+    return {r.entry.position: suggest(db, r.entry.candidates[0]) for r in resolved if not r.known}
+
+
+def ingredient_fields(
+    r: ResolvedEntry, line: OnePercentLine | None, suggestions: dict[int, list[Suggestion]]
+) -> dict:
     return {
         "position": r.entry.position,
         "raw_name": r.entry.raw,
@@ -111,6 +126,9 @@ def ingredient_fields(r: ResolvedEntry, line: OnePercentLine | None) -> dict:
         "common_name_note": r.common_name_note,
         "declared_concentration": r.entry.declared,
         "at_most_one_percent": line is not None and r.entry.position in line.positions,
+        "suggestions": [
+            SuggestionOut.model_validate(s) for s in suggestions.get(r.entry.position, [])
+        ],
     }
 
 
@@ -135,11 +153,14 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
     resolved = list(row.ingredients)
     line = one_percent_line(resolved)
+    suggestions = suggestions_for(db, resolved)
     return ProductDetail.model_validate(
         {
             **row.__dict__,
             "groups": sorted(product_groups(resolved)),
-            "ingredients": [IngredientOut(**ingredient_fields(r, line)) for r in resolved],
+            "ingredients": [
+                IngredientOut(**ingredient_fields(r, line, suggestions)) for r in resolved
+            ],
             "one_percent_marker": line.marker if line else None,
         }
     )
@@ -149,11 +170,15 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
     label = read_label_text(body.text)
     resolved = resolve(db, label.entries)
-    # A key-ingredient list is not in label order, so it says nothing about amounts.
-    line = None if "highlight_list" in label.notices else one_percent_line(resolved)
+    # Key-ingredient lists and Drug Facts labels are not in order of weight.
+    unordered = {"highlight_list", "drug_facts"} & set(label.notices)
+    line = None if unordered else one_percent_line(resolved)
+    suggestions = suggestions_for(db, resolved)
     return InciAnalysis(
         ingredients=[
-            AnalyzedIngredient(**ingredient_fields(r, line), may_contain=r.entry.may_contain)
+            AnalyzedIngredient(
+                **ingredient_fields(r, line, suggestions), may_contain=r.entry.may_contain
+            )
             for r in resolved
         ],
         groups=sorted(product_groups(resolved)),
@@ -175,14 +200,16 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
     # The engine works on integer ids; client keys map to 1..n and back.
     ids = {p.key: n for n, p in enumerate(body.products, start=1)}
     keys = {n: key for key, n in ids.items()}
-    groups_by_id = {
-        ids[p.key]: (
-            seeded_groups[p.product_id]
-            if p.product_id is not None
-            else product_groups(resolve(db, read_label_text(p.inci or "").entries))
-        )
-        for p in body.products
-    }
+    groups_by_id: dict[int, set[str]] = {}
+    possible_actives: dict[str, list[str]] = {}
+    for p in body.products:
+        if p.product_id is not None:
+            groups_by_id[ids[p.key]] = seeded_groups[p.product_id]
+            continue
+        resolved = resolve(db, read_label_text(p.inci or "").entries)
+        groups_by_id[ids[p.key]] = product_groups(resolved)
+        names = [s.name for ss in suggestions_for(db, resolved).values() for s in ss if s.groups]
+        possible_actives[p.key] = list(dict.fromkeys(names))
     items = [
         RoutineItem(ids[i.product_key], i.session, frozenset(i.days), i.step) for i in body.items
     ]
@@ -198,7 +225,11 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
             for w in warnings
         ],
         products=[
-            RoutineProductResult(key=p.key, groups=sorted(groups_by_id[ids[p.key]]))
+            RoutineProductResult(
+                key=p.key,
+                groups=sorted(groups_by_id[ids[p.key]]),
+                possible_actives=possible_actives.get(p.key, []),
+            )
             for p in body.products
         ],
         notice_vi=None if warnings else NO_ROUTINE_WARNING_VI,

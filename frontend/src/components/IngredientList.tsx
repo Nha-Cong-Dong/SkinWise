@@ -3,7 +3,6 @@ import type { Ingredient } from '../api'
 import { FunctionsContext } from '../groups'
 import { GroupChips } from './GroupChips'
 
-/** One row per label entry: actives, the EU name when it differs, and usual functions. */
 // Same pattern the backend strips before looking a name up: "Niacinamide 5%", "(4,000Ppm)".
 const CONCENTRATION = /\s*[([]?\s*\d+(?:[.,]\d+)*\s*(?:%|ppm)\s*[)\]]?/i
 
@@ -11,9 +10,12 @@ type Props = {
   ingredients: Ingredient[]
   /** The ingredient capped at 1% by EU law that marks the 1% line, if the list has one. */
   onePercentMarker: string | null
+  /** Replace a misspelled entry with a suggested name; without it suggestions are text only. */
+  onSuggest?: (rawName: string, suggestion: string) => void
 }
 
-export function IngredientList({ ingredients, onePercentMarker }: Props) {
+/** One row per label entry: actives, the EU name when it differs, and usual functions. */
+export function IngredientList({ ingredients, onePercentMarker, onSuggest }: Props) {
   const functions = useContext(FunctionsContext)
   const firstAtMostOne = ingredients.find((i) => i.at_most_one_percent)?.position
   return (
@@ -53,6 +55,28 @@ export function IngredientList({ ingredients, onePercentMarker }: Props) {
                 </span>
               )}
               {!i.known && <span className="text-amber-700 italic">không nhận ra</span>}
+              {i.suggestions.length > 0 && (
+                <span className="text-amber-800">
+                  — có phải{' '}
+                  {i.suggestions.map((s, n) => (
+                    <span key={s.name}>
+                      {n > 0 && ' / '}
+                      {onSuggest ? (
+                        <button
+                          onClick={() => onSuggest(i.raw_name, s.name)}
+                          className={`underline hover:text-rose-700 ${s.groups.length ? 'font-semibold' : ''}`}
+                          title="Bấm để sửa tên trong bảng thành phần"
+                        >
+                          {s.name}
+                        </button>
+                      ) : (
+                        <span className={s.groups.length ? 'font-semibold' : undefined}>{s.name}</span>
+                      )}
+                    </span>
+                  ))}
+                  ?
+                </span>
+              )}
               {i.functions.length > 0 && (
                 <span className="text-slate-500">
                   ·{' '}

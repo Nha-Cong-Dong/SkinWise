@@ -111,6 +111,11 @@ CREATE TABLE IF NOT EXISTS inci_names (
   functions       text[] NOT NULL DEFAULT '{}' -- from the 2006 inventory, Decision 2006/257/EC
 );
 
+-- Trigram indexes for "did you mean" suggestions on names nobody recognised (typos).
+CREATE INDEX IF NOT EXISTS inci_names_trgm ON inci_names USING gin (normalized_name gin_trgm_ops);
+CREATE INDEX IF NOT EXISTS ingredient_synonyms_trgm
+  ON ingredient_synonyms USING gin (normalized_name gin_trgm_ops);
+
 CREATE TABLE IF NOT EXISTS cosmetic_functions (
   code           text PRIMARY KEY, -- e.g. HUMECTANT, as in the 2006 inventory
   definition_en  text,             -- official definition; null when the inventory gives none

@@ -33,6 +33,7 @@ export type Ingredient = {
   common_name_note: string | null
   declared_concentration: string | null // printed with the entry, e.g. "10%"
   at_most_one_percent: boolean // listed after an ingredient the EU caps at 1%
+  suggestions: { name: string; groups: string[] }[] // close names for an unrecognised entry
 }
 
 export type CosmeticFunction = {
@@ -51,7 +52,7 @@ export type ProductDetail = ProductSummary & {
 }
 
 export type TextNotice = {
-  code: 'highlight_list' | 'vietnamese_names' | 'long_entries' | 'few_entries'
+  code: 'drug_facts' | 'highlight_list' | 'vietnamese_names' | 'long_entries' | 'few_entries'
   message_vi: string
 }
 
@@ -93,7 +94,7 @@ export type Warning = {
 
 export type RoutineCheckResponse = {
   warnings: Warning[]
-  products: { key: string; groups: string[] }[]
+  products: { key: string; groups: string[]; possible_actives: string[] }[]
   notice_vi: string | null
 }
 

@@ -10,6 +10,7 @@ export function WarningsPanel({ state, products }: Props) {
   const result = state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
   const checked = new Set(result?.products.map((p) => p.key))
   const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
+  const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0)
 
   return (
     <section aria-live="polite">
@@ -32,6 +33,13 @@ export function WarningsPanel({ state, products }: Props) {
             dưới đây có thể thiếu cảnh báo.
           </div>
         )}
+        {misspelled.map((p) => (
+          <div key={p.key} className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+            “{names.get(p.key) ?? p.key}” có thành phần không nhận ra, có thể là hoạt chất bị gõ sai:{' '}
+            <strong>{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất này; hãy sửa bảng thành
+            phần nếu đúng là gõ sai.
+          </div>
+        ))}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
         {result?.warnings.map((w) => (
           <RuleCard key={`${w.rule.key}:${w.product_keys.join('+')}`} rule={w.rule}>

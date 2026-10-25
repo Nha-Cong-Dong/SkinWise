@@ -109,10 +109,10 @@ function PasteInci({ actions }: Props) {
   const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
   const [state, setState] = useState<'idle' | 'loading' | 'error' | 'added'>('idle')
 
-  const analyze = () => {
+  const analyze = (input = text) => {
     setState('loading')
     api
-      .analyzeInci(text)
+      .analyzeInci(input)
       .then((a) => {
         setAnalysis(a)
         setState('idle')
@@ -157,7 +157,7 @@ function PasteInci({ actions }: Props) {
       />
       <div className="flex gap-2">
         <button
-          onClick={analyze}
+          onClick={() => analyze()}
           disabled={!text.trim() || state === 'loading'}
           className="rounded-md border border-rose-300 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
         >
@@ -174,12 +174,28 @@ function PasteInci({ actions }: Props) {
       </div>
       {state === 'error' && <p className="text-sm text-red-700">Không phân tích được bảng thành phần.</p>}
       {state === 'added' && <p className="text-sm text-emerald-700">Đã thêm vào “Sản phẩm của tôi”.</p>}
-      {analysis && <AnalysisPreview analysis={analysis} />}
+      {analysis && (
+        <AnalysisPreview
+          analysis={analysis}
+          onSuggest={(rawName, suggestion) => {
+            const fixed = text.replace(rawName, suggestion)
+            setText(fixed)
+            analyze(fixed)
+          }}
+        />
+      )}
     </div>
   )
 }
 
-function AnalysisPreview({ analysis }: { analysis: InciAnalysis }) {
+function AnalysisPreview({
+  analysis,
+  onSuggest,
+}: {
+  analysis: InciAnalysis
+  onSuggest: (rawName: string, suggestion: string) => void
+}) {
+  const misspelledActives = analysis.ingredients.filter((i) => i.suggestions.some((s) => s.groups.length))
   return (
     <div className="rounded-md bg-slate-50 p-3 text-sm">
       {analysis.notices.map((n) => (
@@ -196,8 +212,19 @@ function AnalysisPreview({ analysis }: { analysis: InciAnalysis }) {
         {analysis.unresolved_count > 0 &&
           ' Thành phần không nhận ra có thể do gõ sai, tên không theo chuẩn INCI, hoặc là chất SkinWise chưa biết.'}
       </p>
+      {misspelledActives.length > 0 && (
+        <p className="mt-2 rounded-md bg-amber-50 p-2 text-xs text-amber-900 ring-1 ring-amber-200">
+          {misspelledActives.map((i) => `“${i.raw_name}”`).join(', ')} không có trong danh sách, nhưng gần giống tên
+          hoạt chất. Nếu gõ sai, hãy bấm vào tên gợi ý bên dưới để sửa; SkinWise không tự sửa và chưa tính chất này
+          khi kiểm tra.
+        </p>
+      )}
       <div className="mt-2">
-        <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
+        <IngredientList
+          ingredients={analysis.ingredients}
+          onePercentMarker={analysis.one_percent_marker}
+          onSuggest={onSuggest}
+        />
       </div>
     </div>
   )

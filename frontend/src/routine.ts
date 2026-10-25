@@ -16,9 +16,11 @@ export type MyProduct = {
   notices?: TextNotice[]
 }
 
+const INFORMATIONAL: TextNotice['code'][] = ['vietnamese_names', 'drug_facts']
+
 /** The pasted list may not be the whole label, so the check may miss warnings. */
 export function maybeIncomplete(product: MyProduct): boolean {
-  return (product.notices ?? []).some((n) => n.code !== 'vietnamese_names')
+  return (product.notices ?? []).some((n) => !INFORMATIONAL.includes(n.code))
 }
 
 export type Entry = { id: string; productKey: string; session: Session; days: number[] }

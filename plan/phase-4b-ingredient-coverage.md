@@ -15,6 +15,8 @@ Bắt đầu 24/10, nhánh `feat/ingredient-coverage` (tách từ `feat/ui`).
 - [x] Rà 59 chất trong từ điển với chức năng EU và vị trí trong sản phẩm mẫu; người duyệt bỏ 3 muối/ester vitamin C khỏi nhóm dẫn xuất (xem `decisions.md`)
 - [x] Giữ nồng độ ghi trên nhãn (`10%`, `4,000Ppm`) và hiển thị
 - [x] "Đường 1%" sau phenoxyethanol (Điều 19 + Phụ lục V Quy định 1223/2009, đoạn trích qua `verify_quotes`); chỉ hiển thị, không đổi cảnh báo
+- [x] #20 Nhãn thuốc kiểu Mỹ (Drug Facts): chỉ đọc mục Active/Inactive ingredients — trước đây mất hoạt chất (vd. benzoyl peroxide trên nhãn CeraVe)
+- [x] #21 Gõ sai tên: gợi ý "có phải…?" (pg_trgm), người dùng bấm để sửa; kết quả kiểm tra routine nhắc hoạt chất có thể bị gõ sai
 - [ ] PR
 
 ## Cần bạn duyệt

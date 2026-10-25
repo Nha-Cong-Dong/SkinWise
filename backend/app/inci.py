@@ -144,10 +144,19 @@ class LabelText:
 def read_label_text(text: str) -> LabelText:
     """Parse pasted text as an ingredient list and say how far it can be trusted as one.
 
-    Notice codes: "highlight_list" (key ingredients with descriptions, not the full list),
+    Notice codes: "drug_facts" (a US Drug Facts label: only its active and inactive
+    ingredient sections were read, and their order says nothing about amounts),
+    "highlight_list" (key ingredients with descriptions, not the full list),
     "vietnamese_names" (common Vietnamese names, not INCI), "long_entries" (sentences mixed
     in), "few_entries" (too short to be a whole list).
     """
+    if (drug_facts := drug_facts_ingredients(text)) is not None:
+        entries = parse_inci(drug_facts)
+        notices = ["drug_facts"]
+        if any(len(e.raw.split()) > MAX_NAME_WORDS for e in entries):
+            notices.append("long_entries")
+        return LabelText(entries, notices)
+
     highlights = _highlight_names(text)
     entries = parse_inci("\n".join(highlights)) if highlights else parse_inci(text)
 
@@ -176,3 +185,57 @@ def _highlight_names(text: str) -> list[str] | None:
 def _has_diacritics(name: str) -> bool:
     """Vietnamese marks never appear in INCI names (which are ASCII apart from rare cases)."""
     return any(not ch.isascii() for ch in _FOOTNOTE_MARKS.sub("", name) if ch.isalpha())
+
+
+# --- US Drug Facts labels -------------------------------------------------------------------
+# OTC drugs (acne washes, sunscreens) print the active ingredient apart from the others:
+#   Active ingredient            Purpose
+#   Benzoyl peroxide 4% ........ Acne treatment
+#   Use ... Warnings ... Directions ...
+#   Inactive ingredients water, glycerin, ...
+# Read as one list, the active is lost in "Active ingredient Benzoyl peroxide 4% Purpose ..."
+# and every warning sentence becomes an "ingredient". Only the two ingredient sections count.
+
+_ACTIVE_HEADING = re.compile(r"(?<![a-z])active ingredients?(?:\s*\([^)]*\))?\s*:?", re.IGNORECASE)
+_INACTIVE_HEADING = re.compile(r"\binactive ingredients?\s*:?", re.IGNORECASE)
+_PURPOSE_HEADING = re.compile(r"\bpurposes?\b\s*:?", re.IGNORECASE)
+# Headings that end an ingredient section.
+_SECTION_END = re.compile(
+    r"\b(?:uses?|warnings?|directions|other information|questions(?: or comments)?|"
+    r"purposes?|inactive ingredients?|drug facts|principal display panel)\b",
+    re.IGNORECASE,
+)
+_LEADER = re.compile(r"\s*(?:\.{2,}|…+).*$")  # "Benzoyl peroxide 4% ........ Acne treatment"
+_AFTER_PERCENT = re.compile(r"(\d\s*%)\s+(?=[A-Za-z])")  # "Avobenzone 3% Homosalate 10%"
+
+
+def drug_facts_ingredients(text: str) -> str | None:
+    """The active and inactive ingredients of a Drug Facts label as one list, or None."""
+    inactive = _INACTIVE_HEADING.search(text)
+    active = _ACTIVE_HEADING.search(text)
+    if inactive is None or active is None:
+        return None
+
+    actives = _section(text, active.end(), stop_at_purpose=False)
+    # Flattened ("Benzoyl peroxide 4% Purpose Acne treatment"): actives come before Purpose.
+    # Table header ("Active ingredient Purpose" then lines with leader dots): after it.
+    purpose = _PURPOSE_HEADING.search(actives)
+    if purpose and actives[: purpose.start()].strip():
+        actives = actives[: purpose.start()]
+    else:
+        actives = _PURPOSE_HEADING.sub(" ", actives)
+    actives = "\n".join(_LEADER.sub("", line) for line in actives.splitlines())
+    actives = _AFTER_PERCENT.sub(r"\1\n", actives)
+
+    inactives = _section(text, inactive.end(), stop_at_purpose=True)
+    return f"{actives}\n{inactives}"
+
+
+def _section(text: str, start: int, stop_at_purpose: bool) -> str:
+    rest = text[start:]
+    for match in _SECTION_END.finditer(rest):
+        heading = match.group(0).lower()
+        if not stop_at_purpose and heading.startswith("purpose"):
+            continue  # handled by the caller
+        return rest[: match.start()]
+    return rest
