@@ -18,7 +18,7 @@ Bắt đầu 24/10, nhánh `feat/ingredient-coverage` (tách từ `feat/ui`).
 - [x] #20 Nhãn thuốc kiểu Mỹ (Drug Facts): chỉ đọc mục Active/Inactive ingredients — trước đây mất hoạt chất (vd. benzoyl peroxide trên nhãn CeraVe)
 - [x] #21 Gõ sai tên: gợi ý "có phải…?" (pg_trgm), người dùng bấm để sửa; kết quả kiểm tra routine nhắc hoạt chất có thể bị gõ sai
 - [x] Nhãn Việt viết "Acid salicylic" / "Axit malic" (tên acid đứng sau) — trước đây mất hoạt chất; phát hiện nhờ lượt rà độc lập
-- [ ] PR
+- [x] PR (#5, chung với giai đoạn 4, chờ review)
 
 ## Cần bạn duyệt
 - [x] `data/functions_vi.toml`: bản dịch 64 chức năng (dịch sát định nghĩa EU). 25/10: sửa 15 mục theo một lượt rà độc lập; người duyệt (Vân Anh) duyệt 25/10

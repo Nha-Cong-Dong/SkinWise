@@ -16,7 +16,7 @@
 - [x] Lời nhắc "không thay thế tư vấn bác sĩ" luôn hiển thị
 - [x] `npm run build` + `npm run lint`; chạy thử trên trình duyệt (Chrome headless, cả màn hình điện thoại); cập nhật `CLAUDE.md`, README
 - [x] Sửa lỗi phát hiện khi chạy thử: tra cặp "Retinoid + BHA" ra "chưa có thông tin" → thêm nhóm cha (xem `decisions.md`)
-- [ ] PR vào `main`
+- [x] PR vào `main` (#5, chờ review)
 
 ## Thiết kế
 - Không thêm thư viện: một trang, chuyển giữa "Routine" và "Sự thật hay myth" bằng state, không dùng router.
