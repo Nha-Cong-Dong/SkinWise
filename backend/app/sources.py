@@ -32,6 +32,13 @@ class BlockedError(Exception):
     """The site answered with a bot-challenge page instead of the content."""
 
 
+def has_challenge_marker(page_text: str) -> bool:
+    """The text still carries a bot-challenge marker (scripts are kept by fetch_text). A long
+    page with one passes as real content, so a quote missing from it may only mean the
+    challenge was not recognised."""
+    return bool(_CHALLENGE.search(page_text))
+
+
 def _is_challenge(page: str) -> bool:
     if not _CHALLENGE.search(page):
         return False

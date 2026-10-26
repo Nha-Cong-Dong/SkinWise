@@ -78,15 +78,8 @@ def get_product(db: Session | Connection, product_id: int) -> ProductDetailRow |
     return ProductDetailRow(*columns, ingredients=tuple(resolve(db, parse_inci(raw or ""))))
 
 
-_EXISTING = text("SELECT id FROM products WHERE id IN :ids").bindparams(
-    bindparam("ids", expanding=True)
-)
-
-
 def existing_product_ids(db: Session | Connection, product_ids: list[int]) -> set[int]:
-    if not product_ids:
-        return set()
-    return set(db.execute(_EXISTING, {"ids": product_ids}).scalars())
+    return set(product_applications(db, product_ids))
 
 
 _APPLICATIONS = text("SELECT id, application FROM products WHERE id IN :ids").bindparams(

@@ -45,7 +45,8 @@ function PairLookup({ products }: { products: MyProduct[] }) {
   const [error, setError] = useState(false)
 
   const lookup = () => {
-    const codes = [...new Set([a, b])].filter(Boolean)
+    // The same group twice asks about two products of it, so it is sent twice.
+    const codes = [a, b].filter(Boolean)
     setError(false)
     api.rules({ groups: codes }).then((response) => setResult({ codes, response }), () => setError(true))
   }

@@ -92,8 +92,10 @@ def resolve(db: Session | Connection, entries: list[InciEntry]) -> list[Resolved
         else:
             candidates = tuple(normalize_name(n) for n in hit.inci_names)
             one = _resolve_one(entry, candidates, known, eu)
-            resolved.append(_with_common(one, tuple(hit.inci_names), hit.note))
-    return _mark_allergens(db, resolved)
+            resolved.append(
+                replace(one, common_name_of=tuple(hit.inci_names), common_name_note=hit.note)
+            )
+    return resolved
 
 
 def _lookup(db: Session | Connection, names: list[str]) -> tuple[dict, dict]:
@@ -132,18 +134,15 @@ def _pick(candidates: tuple[str, ...], known: dict):
     return known[(own_name or parts)[0]] if parts else None
 
 
-def _with_common(r: ResolvedEntry, names: tuple[str, ...], note: str | None) -> ResolvedEntry:
-    return ResolvedEntry(
-        r.entry, r.ingredient_id, r.inci_name, r.groups, r.eu_name, r.functions, names, note
-    )
-
-
 def _names_of(r: ResolvedEntry) -> set[str]:
     return {*r.entry.candidates, *(normalize_name(n) for n in (r.eu_name, r.inci_name) if n)}
 
 
-def _mark_allergens(db: Session | Connection, resolved: list[ResolvedEntry]) -> list[ResolvedEntry]:
-    """Flag entries the EU fragrance allergen list names, by the label name or the EU name."""
+def mark_allergens(db: Session | Connection, resolved: list[ResolvedEntry]) -> list[ResolvedEntry]:
+    """Flag entries the EU fragrance allergen list names, by the label name or the EU name.
+
+    Display only, so only the routes that show an ingredient list call it; checking a routine
+    never needs it."""
     names = sorted({n for r in resolved for n in _names_of(r)})
     if not names:
         return resolved

@@ -89,9 +89,13 @@ def write_fragrance_allergens(glossary: list[str]) -> dict[str, list[str]]:
 
 
 if __name__ == "__main__":
-    if sys.argv[1:] == ["allergens"]:
+    args = sys.argv[1:]
+    if args == ["allergens"]:
         # Only the allergens, against the glossary already in data/.
         allergens = write_fragrance_allergens(data_lines("eu_glossary.txt"))
         print(f"Wrote {len(allergens)} fragrance allergens.")
-    else:
+    elif not args:
         main()
+    else:
+        # A typo must not re-download and overwrite every data/eu_* file.
+        sys.exit("usage: python -m scripts.import_eu_lists [allergens]")

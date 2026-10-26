@@ -28,14 +28,21 @@ LABEL_IT = (
     "in the list of ingredients referred to in Article 19(1), point (g), when the concentration "
     "of the substance or substances exceeds: — 0,001 % in leave-on products — 0,01 % in rinse-off"
 )
-# Annex III rows: an allergen whose isomer continues on a row without the reference number, an
-# allergen without a label name, an entry that is not an allergen; then Annex V, where "70" is
-# another substance.
+# Annex III rows: Benzyl Alcohol, labelled only when it is not the preservative; an allergen
+# whose isomers continue on rows without the reference number, one printed as "Rose ketone 4
+# (Damascenone)" where the glossary writes ROSE KETONE-4; an allergen without a label name; an
+# entry that is not an allergen; then Annex V, where "70" is another substance.
 ANNEX_III = f"""<table>
-<tr><td rowspan="2"><p>70</p></td><td>3,7-Dimethyl-2,6-octadienal</td><td><p>Citral</p></td>
+<tr><td><p>45</p></td><td>Benzyl alcohol</td><td><p>Benzyl Alcohol</p></td><td></td><td></td>
+<td></td><td></td><td>For purposes other than inhibiting the development of microorganisms.
+The presence of the substance shall be indicated {LABEL_IT}</td><td></td></tr>
+<tr><td rowspan="4"><p>70</p></td><td>3,7-Dimethyl-2,6-octadienal</td><td><p>Citral</p></td>
 <td>5392-40-5</td><td>226-394-6</td><td></td><td></td>
 <td>The presence shall be indicated as ‘Citral’ {LABEL_IT}</td><td></td></tr>
 <tr><td>(Z)-3,7-dimethylocta-2,6-dienal</td><td>Neral</td><td>106-26-3</td></tr>
+<tr><td>(E)-2-methoxy-4-(prop-1-enyl)phenol; (trans-Isoeugenol)</td><td></td><td></td></tr>
+<tr><td>1-(2,6,6-Trimethyl cyclohexa-1,3-dien-1-yl)-2-buten-1-one</td>
+<td>Rose ketone 4 (Damascenone)</td><td>23696-85-7</td></tr>
 <tr><td><p>88</p></td><td>dl-limonene</td><td><p>Limonene</p></td><td></td><td></td><td></td>
 <td></td><td>The presence must be indicated {LABEL_IT}</td><td></td></tr>
 <tr><td><p>98</p></td><td>Salicylic acid</td><td><p>Salicylic Acid</p></td><td></td><td></td>
@@ -46,9 +53,11 @@ ANNEX_III = f"""<table>
 
 
 def test_parse_fragrance_allergens() -> None:
-    glossary = ["CITRAL", "LIMONENE", "NERAL", "SALICYLIC ACID", "PHENOXYETHANOL"]
+    # PHENOL ends a chemical name with parentheses above; it must not be taken as a substance.
+    glossary = ["BENZYL ALCOHOL", "CITRAL", "LIMONENE", "NERAL", "ROSE KETONE-4", "DAMASCENONE",
+                "SALICYLIC ACID", "PHENOXYETHANOL", "PHENOL"]  # fmt: skip
     assert parse_fragrance_allergens(ANNEX_III, glossary) == {
-        "70": ["Citral", "Neral"],
+        "70": ["Citral", "NERAL", "ROSE KETONE-4", "DAMASCENONE"],
         "88": ["Limonene"],
     }
 
@@ -58,7 +67,8 @@ def test_fragrance_allergen_list_has_the_2023_additions() -> None:
     entries = {entry for _, entry in allergens}
     names = {normalize_name(name) for name, _ in allergens}
     assert len(entries) >= 80  # 24 before Regulation (EU) 2023/1545, 56 added by it
-    assert {"limonene", "linalool", "citral", "menthol", "rose ketones"} <= names
+    assert {"limonene", "linalool", "citral", "menthol", "rose ketones", "rose ketone-4"} <= names
+    assert "benzyl alcohol" not in names  # labelled only when it is not the preservative
 
 
 def test_parse_glossary_keeps_numbered_rows_only() -> None:

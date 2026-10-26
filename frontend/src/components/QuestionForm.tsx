@@ -54,7 +54,7 @@ export function QuestionForm({ groupCodes, products }: Props) {
       </div>
       {groupCodes.length > 0 && (
         <div className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
-          Liên quan: <GroupChips codes={groupCodes} />
+          Liên quan: <GroupChips codes={[...new Set(groupCodes)]} />
         </div>
       )}
       <textarea

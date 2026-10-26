@@ -12,7 +12,7 @@ import sys
 import urllib.error
 
 from app.seed import load_toml
-from app.sources import BlockedError, fetch_text, missing_on_page
+from app.sources import BlockedError, fetch_text, has_challenge_marker, missing_on_page
 
 
 def quotes_to_check(keys: list[str]) -> list[tuple[str, str | None, str | None]]:
@@ -55,7 +55,12 @@ def main(keys: list[str]) -> int:
             failed += 1
             continue
         if missing_on_page(pages[url], [quote]):
-            print(f"FAIL  {label}: quote not found on {url}")
+            hint = (
+                " (page has bot-challenge markers; retry later)"
+                if has_challenge_marker(pages[url])
+                else ""
+            )
+            print(f"FAIL  {label}: quote not found on {url}{hint}")
             failed += 1
         else:
             print(f"OK    {label}: {url}")

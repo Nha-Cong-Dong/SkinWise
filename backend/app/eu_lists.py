@@ -11,6 +11,8 @@
   presence must be named on the label above 0.001 % (leave-on) / 0.01 % (rinse-off).
   Consolidated texts are documentation only; Regulation (EU) 2023/1545 is the legal basis
   for the current list. Used only to label an ingredient, never to raise a warning.
+  Entries whose labelling applies only when the substance is not used as a preservative
+  (Benzyl Alcohol) are left out: an ingredient list does not say what it is used for.
 
 All are fetched from the EU Publications Office (CELLAR) as XHTML: scripts/import_eu_lists.py.
 """
@@ -18,6 +20,8 @@ All are fetched from the EU Publications Office (CELLAR) as XHTML: scripts/impor
 import html
 import re
 from collections.abc import Iterable
+
+from app.inci import normalize_name
 
 GLOSSARY_CELEX = "32025D1175"
 INVENTORY_CELEX = "32006D0257"
@@ -29,6 +33,9 @@ _ROW = re.compile(r"<tr.*?</tr>", re.S)
 _CELL = re.compile(r"<t[dh][ >].*?</t[dh]>", re.S)
 _TAG = re.compile(r"<[^>]+>")
 _PARAGRAPH = re.compile(r"<p[ >].*?</p>", re.S)
+# "Rose ketone 4 (Damascenone)": a name and its alias. Chemical names also have parentheses,
+# but never after a space ("(E)-2-methoxy-4-(prop-1-enyl)phenol"), so they are not split.
+_ALIAS = re.compile(r"^(.*\S)\s+\(([^()]+)\)$")
 
 # Spelling slips and combined entries in the 2006 inventory's function column.
 FUNCTION_ALIASES = {
@@ -115,6 +122,9 @@ _ALLERGEN_LABELLING = re.compile(
 )
 # 'shall be indicated as "Citral" in the list of ingredients': the name the label must use.
 _LABELLED_AS = re.compile(r"indicated as \W(.+?)\W in the list of ingredients")
+# Benzyl Alcohol (entry 45): the labelling applies only "For purposes other than inhibiting
+# the development of microorganisms", i.e. not when it is the product's preservative.
+_NOT_AS_PRESERVATIVE = re.compile(r"other than inhibiting the development of micro-?organisms")
 
 
 def _names(cell: str) -> list[str]:
@@ -124,8 +134,14 @@ def _names(cell: str) -> list[str]:
     return [n.strip() for part in parts for n in part.split(";") if n.strip()]
 
 
+def _aliases(name: str) -> list[str]:
+    match = _ALIAS.match(name)
+    return list(match.groups()) if match else [name.removeprefix("(").removesuffix(")")]
+
+
 def _key(name: str) -> str:
-    return " ".join(name.split()).casefold()
+    """Spaces and hyphens ignored: the Annex prints "Rose ketone 4" for glossary "ROSE KETONE-4"."""
+    return re.sub(r"[\s-]+", "", normalize_name(name))
 
 
 def parse_fragrance_allergens(xhtml: str, glossary: Iterable[str]) -> dict[str, list[str]]:
@@ -136,10 +152,11 @@ def parse_fragrance_allergens(xhtml: str, glossary: Iterable[str]) -> dict[str, 
     An entry's first row has nine cells: reference number, chemical name, glossary name, CAS,
     EC, product type, maximum concentration, other (labelling), wording of warnings. An entry
     with several substances continues on rows without the reference number, and the source's
-    row spans are not reliable enough to tell their columns apart; a cell of those rows that
-    is a glossary name is taken as one of the entry's substances.
+    row spans are not reliable enough to tell their columns apart; a name in those rows (a
+    cell, or a part in parentheses: "Rose ketone 4 (Damascenone)") that is a glossary name is
+    taken as one of the entry's substances, spelled as in the glossary.
     """
-    known = {_key(n) for n in glossary}
+    known = {_key(n): n for n in glossary}
     allergens: dict[str, list[str]] = {}
     for table in _TABLE.findall(xhtml):
         entries: list[tuple[str, list[list[str]]]] = []  # (reference, rows of raw cells)
@@ -151,11 +168,18 @@ def parse_fragrance_allergens(xhtml: str, glossary: Iterable[str]) -> dict[str, 
                 entries[-1][1].append(cells)
         for ref, (first, *more) in entries:
             other = _text(first[7])
-            if not _ALLERGEN_LABELLING.search(other):
+            if not _ALLERGEN_LABELLING.search(other) or _NOT_AS_PRESERVATIVE.search(other):
                 continue
             names = [re.sub(r"\s*/\s*", "/", n) for n in _LABELLED_AS.findall(other)]
             names += _names(first[2])
-            names += [n for row in more for cell in row for n in _names(cell) if _key(n) in known]
+            names += [
+                known[_key(part)]
+                for row in more
+                for cell in row
+                for name in _names(cell)
+                for part in _aliases(name)
+                if _key(part) in known
+            ]
             unique: dict[str, str] = {}
             for name in names:
                 unique.setdefault(_key(name), name)

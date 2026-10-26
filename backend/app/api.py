@@ -21,6 +21,7 @@ from app.ingredients import (
     Suggestion,
     list_functions,
     list_groups,
+    mark_allergens,
     product_groups,
     resolve,
     suggest,
@@ -157,7 +158,7 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
     row = get_product(db, product_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
-    resolved = list(row.ingredients)
+    resolved = mark_allergens(db, list(row.ingredients))
     line = one_percent_line(resolved)
     suggestions = suggestions_for(db, resolved)
     return ProductDetail.model_validate(
@@ -175,7 +176,7 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 @router.post("/inci/analyze")
 def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
     label = read_label_text(body.text)
-    resolved = resolve(db, label.entries)
+    resolved = mark_allergens(db, resolve(db, label.entries))
     # Key-ingredient lists and Drug Facts labels are not in order of weight.
     unordered = {"highlight_list", "drug_facts"} & set(label.notices)
     line = None if unordered else one_percent_line(resolved)
@@ -260,7 +261,9 @@ def rules(
     if unknown:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
                             f"unknown group codes: {sorted(unknown)}")  # fmt: skip
-    expanded = [with_ancestors(code, all_groups) for code in dict.fromkeys(groups)]
+    # The same group twice asks about two products of that group (a duplicate rule), not
+    # about the group alone.
+    expanded = [with_ancestors(code, all_groups) for code in groups]
 
     def wanted(rule: Rule) -> bool:
         if kind is not None and rule.kind != kind:

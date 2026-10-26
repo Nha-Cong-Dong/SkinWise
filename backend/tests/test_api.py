@@ -229,6 +229,12 @@ def test_pair_lookup_counts_a_group_as_its_umbrella(client: TestClient) -> None:
     assert lookup(client, "AHA", "BHA") == ["exfoliant-acid-duplicate-same-session"]
 
 
+def test_pair_lookup_of_one_group_twice_asks_about_two_products(client: TestClient) -> None:
+    # "Can I use two retinoid products together?" is the duplicate rule, not every rule
+    # involving retinoids.
+    assert lookup(client, "RETINOID", "RETINOID") == ["retinoid-duplicate-same-session"]
+
+
 def test_single_group_lookup_lists_rules_involving_it(client: TestClient) -> None:
     assert set(lookup(client, "PHA")) == {
         "exfoliant-acid-duplicate-same-session",
