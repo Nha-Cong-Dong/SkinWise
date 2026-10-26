@@ -20,7 +20,7 @@ Mọi hướng mở rộng vẫn giữ nguyên tắc: **không có nguồn thì 
 | E | Giao diện duyệt câu hỏi + AI soạn nháp thẻ myth | M | A | Biến câu hỏi người dùng thành thẻ myth nhanh hơn |
 | F | Hồ sơ da (luật `profile`) | L | A, người duyệt có chuyên môn | Rủi ro y khoa cao nhất |
 | G | Chụp ảnh nhãn (OCR) | M | D | Chỉ còn cần cho sản phẩm không có trên Open Beauty Facts |
-| H | Tài khoản + đồng bộ | L | A, B | Xuất/nhập ở B đã giải quyết phần lớn nhu cầu |
+| H | Tài khoản + đồng bộ | L | A, B, tư vấn pháp lý | Xuất/nhập ở B đã giải quyết phần lớn nhu cầu; có tài khoản là phát sinh nghĩa vụ theo Luật Bảo vệ dữ liệu cá nhân 2025 |
 
 Cỡ: S ≈ vài ngày, M ≈ 1–2 tuần, L ≈ hơn 2 tuần (một người làm).
 
@@ -28,7 +28,8 @@ Cỡ: S ≈ vài ngày, M ≈ 1–2 tuần, L ≈ hơn 2 tuần (một người 
 
 Hiện app chỉ chạy trên máy: frontend gọi backend qua proxy Vite, PostgreSQL cài trực tiếp, chưa có CI (không có `.github/`).
 
-- [ ] Chọn nơi chạy: PostgreSQL 17 có sẵn `pg_trgm` + `unaccent` (kiểm tra trước khi chọn), backend FastAPI, frontend tĩnh; HTTPS
+- [ ] Chọn nơi chạy: PostgreSQL 17 có sẵn `pg_trgm` + `unaccent` (kiểm tra trước khi chọn), backend FastAPI, frontend tĩnh; HTTPS. Đặt tại Việt Nam nếu sau này có tài khoản (hướng H, chốt 26/10)
+- [ ] Tự lưu font trên máy chủ thay vì tải từ Google Fonts, để trình duyệt người xem không gửi IP ra nước ngoài
 - [ ] Frontend gọi API khác origin: cấu hình CORS cho đúng domain, thay cho proxy `/api` lúc dev
 - [ ] Giới hạn tần suất `POST /questions` (giới hạn đã biết của giai đoạn 3) và độ dài câu hỏi
 - [ ] Migration: chuyển sang Alembic trước lần đổi schema đầu tiên sau khi `user_questions` có dữ liệu thật; `schema.sql` chạy lặp lại được nhưng không đổi được kiểu cột hay xoá cột
@@ -72,6 +73,7 @@ Rà lại 26/10: mọi ý dưới đây đã đối chiếu với ngữ cảnh t
   - Retinoid: nhãn thuốc áp dụng cho thuốc ở nồng độ cố định. Thẻ myth nêu nồng độ của sản phẩm trong nghiên cứu (vd. azelaic acid 20% + tretinoin 0,05%) như bối cảnh, không phải ngưỡng
   - Nồng độ ghi trên nhãn và "đường 1%" vẫn chỉ để hiển thị (quyết định 24/10). Xem lại khi thêm luật có nguồn nêu ngưỡng
 - [x] Luật cho một nhóm hoạt chất: loại `usage` ("Lưu ý khi dùng", phạm vi `routine`). Mỗi luật ra một thẻ, liệt kê mọi sản phẩm trong routine có nhóm đó và mọi ngày/buổi dùng; trong cùng mức độ, thẻ này đứng sau cảnh báo về cặp sản phẩm; tra cặp nhóm ở trang myth không trả luật này. `rule_problems()` chặn luật `usage` có `group_b` hoặc phạm vi khác `routine`
+- [ ] Trước khi bật luật `usage`: giao diện mới (`App.tsx`) đang đếm thẻ "Lưu ý khi dùng" vào chip mức độ trên lịch dùng và thanh đếm như cảnh báo về cặp sản phẩm, nên mọi bước có AHA/retinoid sẽ hiện "Thận trọng" dù dùng một mình (code review 26/10). Cần tách hai loại trước
 - [ ] **Cần bạn duyệt:** 4 luật nhạy nắng ứng viên trong `rules.toml`, chưa bật. Lời giải thích đã sửa theo lượt rà (bỏ chỗ nói quá nguồn, thêm đoạn trích); đoạn trích qua `verify_quotes`
   - [ ] `aha-sun-sensitivity` (caution / moderate): hướng dẫn ghi nhãn AHA của FDA (2005), trang AHA của FDA, PMC3047947. Nghiên cứu chỉ dùng glycolic acid. Không áp dụng cho Citric Acid vì SkinWise không tính là AHA, vd. toner Some By Mi "AHA-BHA-PHA" có AHA duy nhất là Citric Acid
   - [ ] `benzoyl-peroxide-sun-protection` (caution / moderate, hoặc expert_opinion cho nhất quán với các luật dựa trên nhãn): 21 CFR 333.350, quy tắc FDA 2010, nhãn CeraVe; áp dụng cả sữa rửa mặt
@@ -80,7 +82,7 @@ Rà lại 26/10: mọi ý dưới đây đã đối chiếu với ngữ cảnh t
 
 ### Luật và thẻ myth
 - [ ] Tìm lại nguồn cho 4 ứng viên đã bỏ (benzoyl peroxide + vitamin C, niacinamide + AHA/BHA, vitamin C + retinol, azelaic acid + niacinamide; lý do ở [README.md](README.md)). Chỉ thêm khi có bài bình duyệt. 26/10: tìm lại, vẫn chưa có nguồn đủ mạnh; làm lại định kỳ
-- [x] Chất gây dị ứng hương liệu của EU (Phụ lục III, 81 mục gồm 56 chất thêm bởi Quy định (EU) 2023/1545): nhãn "dị ứng hương liệu" trên từng thành phần + ngưỡng ghi nhãn có đoạn trích, chỉ hiển thị (26/10)
+- [x] Chất gây dị ứng hương liệu của EU (Phụ lục III, 80 mục gồm 56 chất thêm bởi Quy định (EU) 2023/1545; bỏ Benzyl Alcohol vì luật chỉ áp dụng khi nó không phải chất bảo quản): nhãn "dị ứng hương liệu" trên từng thành phần + ngưỡng ghi nhãn có đoạn trích, chỉ hiển thị (26/10)
 - [ ] Cảnh báo theo danh sách đó: chỉ khi có hồ sơ "da nhạy cảm" (hướng F) và nguồn cho luật
 - [ ] Nhóm hoạt chất mới chỉ thêm cùng luật có nguồn (quyết định 22/10)
 
@@ -159,12 +161,12 @@ Hiện câu hỏi chỉ xem được bằng `scripts.questions`; không lưu th�
 
 ## F. Hồ sơ da (luật `profile`)
 
-Engine đã có loại luật `profile` nhưng bỏ qua (`CHECKED_KINDS` trong `app/engine.py`).
+Engine đã có loại luật `profile` nhưng bỏ qua (chỉ chạy luật trong `PAIR_KINDS` và luật `usage`, xem `app/engine.py`).
 
 - [ ] **Điều kiện trước:** có người duyệt có chuyên môn (bác sĩ da liễu hoặc dược sĩ). Cảnh báo cho người mang thai, cho con bú hoặc đang dùng thuốc có rủi ro cao hơn hẳn luật hiện có, mà người làm không có nền tảng y khoa
 - [ ] Chọn hồ sơ: mang thai / cho con bú, da nhạy cảm, đang dùng thuốc trị mụn kê đơn
 - [ ] Tìm nguồn cho từng luật. Ứng viên (chưa kiểm tra): mục dùng trong thai kỳ trên nhãn FDA của retinoid kê đơn, hướng dẫn của hội sản phụ khoa
-- [ ] Quyền riêng tư: tình trạng mang thai là dữ liệu sức khoẻ, thuộc loại dữ liệu cá nhân nhạy cảm theo quy định Việt Nam (Nghị định 13/2023/NĐ-CP và luật bảo vệ dữ liệu cá nhân mới; cần đọc trước khi làm). Đề xuất: hồ sơ chỉ lưu trên trình duyệt, gửi kèm mỗi lần kiểm tra, server không lưu và không ghi log
+- [ ] Quyền riêng tư: tình trạng mang thai là thông tin sức khoẻ. Danh mục dữ liệu nhạy cảm do Chính phủ ban hành theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 (hiệu lực 01/01/2026); Nghị định hướng dẫn 356/2025/NĐ-CP thay Nghị định 13/2023/NĐ-CP. Cần đọc trước khi làm. Bên trực tiếp xử lý dữ liệu nhạy cảm không được miễn theo Đ.38 (xem [h-accounts.md](h-accounts.md) mục 2). Đề xuất: hồ sơ chỉ lưu trên trình duyệt, gửi kèm mỗi lần kiểm tra, server không lưu và không ghi log
 - [ ] Lời cảnh báo hồ sơ luôn kết thúc bằng lời khuyên hỏi bác sĩ; không có luật thì nói rõ "chưa có thông tin", như kết quả rỗng hiện nay
 
 ## G. Chụp ảnh nhãn (OCR)
@@ -178,6 +180,26 @@ Engine đã có loại luật `profile` nhưng bỏ qua (`CHECKED_KINDS` trong `
 
 ## H. Tài khoản + đồng bộ
 
-- [ ] Chỉ làm nếu xuất/nhập routine (hướng B) không đủ
-- [ ] Đăng nhập không mật khẩu (link qua email hoặc passkey); bảng routine trên server; xung đột giữa hai máy: bản sửa sau thắng
-- [ ] Chính sách quyền riêng tư, xoá tài khoản và dữ liệu; hồ sơ da (hướng F) vẫn chỉ lưu trên máy trừ khi người dùng đồng ý riêng
+Thiết kế chi tiết (26/10): [h-accounts.md](h-accounts.md). Chưa viết code.
+
+Người duyệt đã chốt (26/10):
+- làm sau B, chỉ khi người dùng thật vẫn cần đồng bộ;
+- bên kiểm soát dữ liệu là cá nhân người làm dự án;
+- máy chủ và dịch vụ email đặt tại Việt Nam, nên không phải lập hồ sơ chuyển dữ liệu ra nước ngoài (Đ.20);
+- kiểm phiên bản thay cho "bản sửa sau thắng";
+- xoá tài khoản không dùng sau 24 tháng, giữ bản sao lưu 30 ngày;
+- chỉ mã hoá đầu-cuối nếu routine bị coi là dữ liệu nhạy cảm.
+
+- [ ] Chỉ làm khi hướng A đã xong và hướng B (xuất/nhập routine) đã chạy mà người dùng thật vẫn cần đồng bộ
+- [ ] **Trước khi viết code:** trả lời 3 câu hỏi pháp lý theo Luật Bảo vệ dữ liệu cá nhân 91/2025/QH15 (hiệu lực 01/01/2026) và Nghị định 356/2025/NĐ-CP. Chưa có ai được giao trả lời:
+  - cá nhân làm bên kiểm soát dữ liệu có phải làm đủ Đ.21, Đ.22, khoản 2 Đ.33 không (Đ.38 chỉ miễn cho doanh nghiệp nhỏ, khởi nghiệp, hộ kinh doanh);
+  - routine gắn với email có là dữ liệu sức khoẻ không;
+  - nội dung bắt buộc của thông báo và văn bản đồng ý.
+- [x] Chọn cách đăng nhập: link qua email (người duyệt, 26/10). Token dùng một lần, hạn 15 phút, chỉ lưu hash; link mở trang có nút bấm để trình quét thư không đốt mất token; phiên bằng cookie `HttpOnly; Secure; SameSite=Lax`
+- [ ] Bảng `users`, `consents`, `login_tokens`, `sessions`, `routines` (qua Alembic). Chỉ thu email và routine
+- [ ] Đồng bộ: kiểm phiên bản (409 khi lệch, hỏi người dùng chọn bản) thay cho "bản sửa sau thắng", vì cách cũ âm thầm xoá thay đổi của máy kia
+- [ ] Quyền của người dùng: xem, xuất JSON, xoá tài khoản ngay, rút lại đồng ý; chính sách quyền riêng tư có phiên bản; xoá tài khoản không dùng sau 24 tháng (báo trước 30 ngày), bản sao lưu giữ 30 ngày
+- [ ] Hồ sơ da (hướng F) không đồng bộ; câu hỏi người dùng không gắn với tài khoản
+- [ ] Đồng bộ mã hoá đầu-cuối: chỉ làm nếu tư vấn kết luận routine là dữ liệu nhạy cảm
+
+Ước lượng 3–4 tuần một người (cỡ L), chưa tính thời gian chờ tư vấn pháp lý.
