@@ -1,6 +1,6 @@
 import type { Severity, Warning } from '../api'
 import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
-import { maybeIncomplete, type CheckState, type MyProduct } from '../routine'
+import { currentResult, isUsageNote, maybeIncomplete, type CheckState, type MyProduct } from '../routine'
 import { SeverityBadge } from './Icons'
 import { DataNote, Notice } from './Notice'
 import { RuleCard } from './RuleCard'
@@ -9,16 +9,16 @@ type Props = { state: CheckState; products: MyProduct[] }
 
 export function WarningsPanel({ state, products }: Props) {
   const names = new Map(products.map((p) => [p.key, p.name]))
-  const result = state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
+  const result = currentResult(state)
   const checked = new Set(result?.products.map((p) => p.key))
   const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
   const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0)
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
-    <section aria-labelledby="ket-qua-title" aria-live="polite">
+    <section aria-labelledby="results-title" aria-live="polite">
       <div className="flex items-baseline justify-between gap-3">
-        <h2 id="ket-qua-title" className="text-xl font-bold">
+        <h2 id="results-title" className="text-xl font-bold">
           Kết quả kiểm tra
         </h2>
         {state.kind === 'loading' && <span className="text-xs text-ink-mute">Đang kiểm tra…</span>}
@@ -86,18 +86,24 @@ export function WarningsPanel({ state, products }: Props) {
   )
 }
 
-/** "1 Nên tránh, 2 Thận trọng": how many warnings at each severity, most severe first. */
+/**
+ * "1 Nên tránh, 2 Thận trọng": how many combination warnings at each severity, most severe
+ * first; "Lưu ý khi dùng" notes are counted on their own, not as warnings.
+ */
 export function SeverityCounts({ warnings, className }: { warnings: Warning[]; className?: string }) {
+  const combinations = warnings.filter((w) => !isUsageNote(w))
+  const notes = warnings.length - combinations.length
   const counts = (Object.keys(SEVERITY) as Severity[])
-    .map((severity) => [severity, warnings.filter((w) => w.rule.severity === severity).length] as const)
+    .map((severity) => [severity, combinations.filter((w) => w.rule.severity === severity).length] as const)
     .filter(([, n]) => n > 0)
   return (
-    <p className={`flex flex-wrap gap-1.5 ${className ?? ''}`}>
+    <p className={`flex flex-wrap items-center gap-1.5 ${className ?? ''}`}>
       {counts.map(([severity, n]) => (
         <SeverityBadge key={severity} severity={severity}>
           {n} {SEVERITY[severity].label.toLowerCase()}
         </SeverityBadge>
       ))}
+      {notes > 0 && <span className="text-xs opacity-80">{notes} lưu ý khi dùng</span>}
     </p>
   )
 }

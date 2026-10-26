@@ -9,7 +9,14 @@ import { RoutineBoard } from './components/RoutineBoard'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
-import { EMPTY_ADD_DRAFT, useRoutine, useRoutineCheck, type CheckState } from './routine'
+import {
+  EMPTY_ADD_DRAFT,
+  currentResult,
+  isUsageNote,
+  useRoutine,
+  useRoutineCheck,
+  type CheckState,
+} from './routine'
 
 type Page = 'routine' | 'myths'
 
@@ -35,10 +42,9 @@ function App() {
     )
   }, [])
 
-  // Most severe warning per product; keeps the previous result while a new check runs.
+  // Most severe combination warning per product; keeps the previous result while a new check runs.
   const flagged = new Map<string, Severity>()
-  const result = check.kind === 'done' ? check.result : check.kind === 'loading' ? check.previous : null
-  for (const w of result?.warnings ?? []) {
+  for (const w of (currentResult(check)?.warnings ?? []).filter((w) => !isUsageNote(w))) {
     for (const key of w.product_keys) {
       const current = flagged.get(key)
       if (!current || SEVERITY_RANK.indexOf(w.rule.severity) < SEVERITY_RANK.indexOf(current)) {
@@ -143,21 +149,21 @@ function ResultsAside({ check, children }: { check: CheckState; children: ReactN
     return () => observer.disconnect()
   }, [])
 
-  const result = check.kind === 'done' ? check.result : check.kind === 'loading' ? check.previous : null
+  const result = currentResult(check)
   const warnings = result?.warnings ?? []
 
   return (
     <>
       <aside
         ref={ref}
-        id="ket-qua"
+        id="results"
         className="scroll-mt-4 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain xl:col-start-3 xl:row-span-1"
       >
         {children}
       </aside>
       {check.kind !== 'empty' && !inView && (
         <a
-          href="#ket-qua"
+          href="#results"
           className="fixed inset-x-3 bottom-3 z-20 flex items-center gap-3 rounded-2xl bg-night py-2.5 pr-4 pl-3 text-sm text-night-text shadow-xl shadow-ink/30 lg:hidden"
         >
           <span className="min-w-0 flex-1">
@@ -168,7 +174,8 @@ function ResultsAside({ check, children }: { check: CheckState; children: ReactN
             ) : check.kind === 'loading' && !result ? (
               'Đang kiểm tra…'
             ) : (
-              'Chưa thấy cảnh báo nào'
+              // Silence reads as "safe", so even this short line says what it does not mean.
+              'Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn'
             )}
           </span>
           <span className="shrink-0 font-semibold text-moon">Xem kết quả</span>

@@ -12,8 +12,8 @@ type Props = {
 
 export function RoutineBoard({ actions, flagged }: Props) {
   return (
-    <section aria-labelledby="lich-dung-title">
-      <h2 id="lich-dung-title" className="text-xl font-bold">
+    <section aria-labelledby="schedule-title">
+      <h2 id="schedule-title" className="text-xl font-bold">
         Lịch dùng
       </h2>
       <p className="mt-1 text-sm text-ink-mute">
@@ -176,18 +176,18 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
             )
           })}
         </div>
-        <div className="text-xs">
-          {entry.days.length === 0 ? (
-            <span className={tone.warn}>Chưa chọn ngày nào</span>
-          ) : (
-            entry.days.length < 7 && (
-              <button
-                onClick={() => actions.setDays(entry.id, [...ALL_DAYS])}
-                className={`underline-offset-2 hover:underline ${tone.mute}`}
-              >
-                Cả tuần
-              </button>
-            )
+        <div className="flex flex-wrap items-baseline gap-x-2 text-xs">
+          {/* toCheckRequest leaves out a step with no days, so say so. */}
+          {entry.days.length === 0 && (
+            <span className={tone.warn}>Chưa chọn ngày nào, nên bước này chưa được kiểm tra</span>
+          )}
+          {entry.days.length < 7 && (
+            <button
+              onClick={() => actions.setDays(entry.id, [...ALL_DAYS])}
+              className={`underline-offset-2 hover:underline ${tone.mute}`}
+            >
+              Cả tuần
+            </button>
           )}
         </div>
       </div>

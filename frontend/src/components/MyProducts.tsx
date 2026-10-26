@@ -14,9 +14,9 @@ export function MyProducts({ actions, onAdd }: Props) {
   const { products, entries } = actions.routine
   const [viewing, setViewing] = useState<MyProduct | null>(null)
   return (
-    <section aria-labelledby="san-pham-title" className="@container">
+    <section aria-labelledby="products-title" className="@container">
       <div className="flex items-center justify-between gap-3">
-        <h2 id="san-pham-title" className="text-xl font-bold">
+        <h2 id="products-title" className="text-xl font-bold">
           Sản phẩm của tôi
         </h2>
         {products.length > 0 && (

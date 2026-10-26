@@ -9,6 +9,7 @@ import {
   type RoutineCheckResponse,
   type Session,
   type TextNotice,
+  type Warning,
 } from './api'
 import { ALL_DAYS } from './labels'
 
@@ -156,6 +157,19 @@ export type CheckState =
   | { kind: 'loading'; previous: RoutineCheckResponse | null }
   | { kind: 'done'; result: RoutineCheckResponse }
   | { kind: 'error'; message: string }
+
+/** The result to show: the last finished check, kept while a newer one runs. */
+export function currentResult(state: CheckState): RoutineCheckResponse | null {
+  return state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
+}
+
+/**
+ * A "Lưu ý khi dùng" note is about one product's active group, not a combination, so it does
+ * not mark products on the schedule or count among the warnings.
+ */
+export function isUsageNote(w: Warning): boolean {
+  return w.rule.kind === 'usage'
+}
 
 /** Re-check the routine whenever it changes (debounced; a newer check cancels an older one). */
 export function useRoutineCheck(routine: Routine): CheckState {
