@@ -54,7 +54,7 @@ Mở rộng nhỏ:
 - [x] Xuất/nhập routine (26/10): nút "Lưu & chia sẻ" ở khung Lịch dùng. Tải / mở file `.json`, hoặc link chia sẻ mang routine sau dấu `#` (nén deflate, trình duyệt không gửi phần này lên máy chủ, SkinWise không lưu gì). File và link chỉ mang khoá sản phẩm, thứ tự bước, ngày dùng, tên tự đặt, bảng thành phần tự dán; tên hãng, nhóm hoạt chất, lưu ý được lấy lại từ máy chủ khi mở. Luôn hỏi trước khi thay routine hiện tại; sản phẩm mẫu không còn trên máy chủ bị bỏ kèm thông báo. Kiểm tra trên Chrome: 18 tình huống (`src/share.ts`, `components/ShareRoutine.tsx`)
 - [ ] Nút "báo cảnh báo sai" trên từng thẻ cảnh báo: lưu vào `user_questions` kèm mã luật, để người duyệt đọc lại nguồn
 
-Sửa theo bản đánh giá sản phẩm (26/10, mục "Làm ngay"; đo bằng Lighthouse và Chrome DevTools trên bản build):
+Sửa theo bản đánh giá sản phẩm (26/10, mục "Làm ngay", PR #8; đo bằng Lighthouse và Chrome DevTools trên bản build):
 - [x] Nút "Thử với routine mẫu" ở trạng thái rỗng: 4 sản phẩm bán ở Việt Nam, ra 1 cảnh báo kết hợp, 1 thẻ myth, 3 lưu ý khi dùng; ghi rõ không phải gợi ý cách dùng (`sampleRoutine()` trong `routine.ts`)
 - [x] Lời giải thích dài trong khung kết quả chỉ hiện 4 dòng, có "Xem thêm" / "Thu gọn"; chỉ ẩn bằng CSS, văn bản vẫn đủ nguyên văn trong trang. Trang myth giữ nguyên
 - [x] Xoá sản phẩm: thông báo "Hoàn tác" 8 giây, trả sản phẩm và các bước về đúng chỗ; thay cho hộp hỏi `confirm()`
