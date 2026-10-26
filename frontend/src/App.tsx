@@ -9,7 +9,7 @@ import { RoutineBoard } from './components/RoutineBoard'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
-import { useRoutine, useRoutineCheck, type CheckState } from './routine'
+import { EMPTY_ADD_DRAFT, useRoutine, useRoutineCheck, type CheckState } from './routine'
 
 type Page = 'routine' | 'myths'
 
@@ -18,6 +18,7 @@ const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 function App() {
   const [page, setPage] = useState<Page>('routine')
   const [adding, setAdding] = useState(false)
+  const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
@@ -118,7 +119,7 @@ function App() {
           onClose={() => setAdding(false)}
           title={<h2 className="text-xl font-bold">Thêm sản phẩm</h2>}
         >
-          <AddProduct actions={actions} />
+          <AddProduct actions={actions} draft={addDraft} setDraft={setAddDraft} />
         </Dialog>
       </FunctionsContext>
     </GroupsContext>

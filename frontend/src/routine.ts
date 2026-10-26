@@ -2,7 +2,14 @@
 // key; entries are ordered, and an entry's step is its position within its session.
 
 import { useEffect, useState } from 'react'
-import { api, type RoutineCheckRequest, type RoutineCheckResponse, type Session, type TextNotice } from './api'
+import {
+  api,
+  type InciAnalysis,
+  type RoutineCheckRequest,
+  type RoutineCheckResponse,
+  type Session,
+  type TextNotice,
+} from './api'
 import { ALL_DAYS } from './labels'
 
 export type MyProduct = {
@@ -22,6 +29,14 @@ const INFORMATIONAL: TextNotice['code'][] = ['vietnamese_names', 'drug_facts']
 export function maybeIncomplete(product: MyProduct): boolean {
   return (product.notices ?? []).some((n) => !INFORMATIONAL.includes(n.code))
 }
+
+/**
+ * What the "add product" dialog keeps while it is closed. The dialog unmounts its content, and a
+ * pasted list must survive closing it (Esc, a stray click) or switching tabs.
+ */
+export type AddDraft = { tab: 'search' | 'paste'; name: string; text: string; analysis: InciAnalysis | null }
+
+export const EMPTY_ADD_DRAFT: AddDraft = { tab: 'search', name: '', text: '', analysis: null }
 
 export type Entry = { id: string; productKey: string; session: Session; days: number[] }
 

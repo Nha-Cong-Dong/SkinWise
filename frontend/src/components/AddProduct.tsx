@@ -1,19 +1,21 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { api, type InciAnalysis, type ProductSummary } from '../api'
 import { APPLICATION_LABELS } from '../labels'
-import { productKeyFor, type RoutineActions } from '../routine'
+import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
 
 type Props = { actions: RoutineActions }
 
+type DraftProps = Props & { draft: AddDraft; setDraft: Dispatch<SetStateAction<AddDraft>> }
+
 const field =
   'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
 
 /** Content of the "add product" dialog: search the catalogue or paste an ingredient list. */
-export function AddProduct({ actions }: Props) {
-  const [tab, setTab] = useState<'search' | 'paste'>('search')
+export function AddProduct({ actions, draft, setDraft }: DraftProps) {
+  const tab = draft.tab
   return (
     <div>
       <div className="flex gap-1 rounded-full bg-paper p-1 text-sm" role="tablist">
@@ -27,14 +29,18 @@ export function AddProduct({ actions }: Props) {
             key={value}
             role="tab"
             aria-selected={tab === value}
-            onClick={() => setTab(value)}
+            onClick={() => setDraft((d) => ({ ...d, tab: value }))}
             className={`flex-1 rounded-full px-3 py-1.5 ${tab === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
           >
             {label}
           </button>
         ))}
       </div>
-      {tab === 'search' ? <SearchProducts actions={actions} /> : <PasteInci actions={actions} />}
+      {tab === 'search' ? (
+        <SearchProducts actions={actions} />
+      ) : (
+        <PasteInci actions={actions} draft={draft} setDraft={setDraft} />
+      )}
     </div>
   )
 }
@@ -113,18 +119,18 @@ function SearchProducts({ actions }: Props) {
   )
 }
 
-function PasteInci({ actions }: Props) {
-  const [name, setName] = useState('')
-  const [text, setText] = useState('')
-  const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
+function PasteInci({ actions, draft, setDraft }: DraftProps) {
+  const { name, text, analysis } = draft
   const [state, setState] = useState<'idle' | 'loading' | 'error' | 'added'>('idle')
+  const update = (change: Partial<AddDraft>) => setDraft((d) => ({ ...d, ...change }))
 
   const analyze = (input = text) => {
     setState('loading')
     api
       .analyzeInci(input)
       .then((a) => {
-        setAnalysis(a)
+        // Kept only if the list was not edited meanwhile; lands even if the dialog was closed.
+        setDraft((d) => (d.text === input ? { ...d, analysis: a } : d))
         setState('idle')
       })
       .catch(() => setState('error'))
@@ -140,9 +146,7 @@ function PasteInci({ actions }: Props) {
       groups: analysis.groups,
       notices: analysis.notices,
     })
-    setName('')
-    setText('')
-    setAnalysis(null)
+    update({ name: '', text: '', analysis: null })
     setState('added')
   }
 
@@ -150,7 +154,7 @@ function PasteInci({ actions }: Props) {
     <div className="mt-4 space-y-3">
       <input
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => update({ name: e.target.value })}
         placeholder="Tên sản phẩm (để bạn dễ nhận ra)"
         aria-label="Tên sản phẩm"
         className={field}
@@ -158,8 +162,7 @@ function PasteInci({ actions }: Props) {
       <textarea
         value={text}
         onChange={(e) => {
-          setText(e.target.value)
-          setAnalysis(null)
+          update({ text: e.target.value, analysis: null })
           setState('idle')
         }}
         rows={6}
@@ -188,7 +191,7 @@ function PasteInci({ actions }: Props) {
           analysis={analysis}
           onSuggest={(rawName, suggestion) => {
             const fixed = text.replace(rawName, suggestion)
-            setText(fixed)
+            update({ text: fixed })
             analyze(fixed)
           }}
         />
