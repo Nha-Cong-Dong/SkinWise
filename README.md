@@ -48,6 +48,8 @@ Mọi cảnh báo đều:
 - Hồ sơ da: da nhạy cảm, đang mang thai…
 - Tài khoản người dùng, đồng bộ routine giữa các thiết bị
 
+Chi tiết và thứ tự ưu tiên: [plan/after-mvp.md](plan/after-mvp.md).
+
 ## Cách hoạt động
 
 ```
@@ -66,6 +68,8 @@ Routine (sản phẩm × buổi × ngày)  ──►  Bộ luật  ──►  C�
 - **Luật viết theo nhóm hoạt chất**, không theo từng chất riêng lẻ. Ví dụ: một luật "RETINOID + EXFOLIANT_ACID cùng buổi → thận trọng" áp dụng cho mọi sản phẩm chứa retinol, adapalene, glycolic acid, salicylic acid…
 - **Nhận diện gần như mọi tên thành phần.** Ngoài các hoạt chất, SkinWise nhận ra tên theo bảng chú giải của EU (khoảng 30.000 tên) và một số tên thông dụng tiếng Việt như "rau má", "trà xanh", kèm chức năng thường gặp (giữ ẩm, làm mềm da, bảo quản…). Phần này chỉ để giải thích, không tạo cảnh báo.
 - **Nói rõ khi văn bản dán vào không phải bảng thành phần đầy đủ**, ví dụ danh sách "thành phần nổi bật" của hãng: hoạt chất có thể nằm ở phần không được liệt kê, nên kết quả kiểm tra có thể thiếu.
+- **Đánh dấu chất gây dị ứng hương liệu** theo danh sách của EU (khoảng 80 chất, như limonene, linalool), kèm ngưỡng EU bắt buộc ghi riêng trên nhãn. Phần này chỉ để thông tin, không tạo cảnh báo.
+- **Ghi rõ sản phẩm rửa trôi hay để lại trên da** với sản phẩm có sẵn. Các nguồn hiện có không miễn cảnh báo cho sữa rửa mặt, nên SkinWise áp dụng luật như nhau cho hai loại và nói rõ điều đó.
 - **Không suy diễn nồng độ.** Bảng INCI không ghi nồng độ nên cảnh báo luôn dùng từ "có thể".
 - **Tránh nhận diện nhầm.** Ví dụ: Citric Acid thường chỉ là chất điều chỉnh pH, không được tính là AHA tẩy da chết.
 
@@ -125,6 +129,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 
 - Bảng chú giải tên thành phần mỹ phẩm của EU, [Quyết định (EU) 2025/1175](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32025D1175): nhận diện tên thành phần trên nhãn. © Liên minh châu Âu, https://eur-lex.europa.eu
 - Danh mục thành phần mỹ phẩm của EU năm 2006, [Quyết định 2006/257/EC](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006D0257): chức năng thường gặp của thành phần và định nghĩa từng chức năng. Danh mục này không còn hiệu lực pháp lý, chỉ dùng để tham khảo. © Liên minh châu Âu, https://eur-lex.europa.eu
+- Phụ lục III của [Quy định (EC) 1223/2009](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223) (bản hợp nhất), đã sửa đổi bởi [Quy định (EU) 2023/1545](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R1545): danh sách chất gây dị ứng hương liệu phải ghi riêng trên nhãn. © Liên minh châu Âu, https://eur-lex.europa.eu
 - [EU CosIng](https://single-market-economy.ec.europa.eu/sectors/cosmetics/cosmetic-ingredient-database_en): tham chiếu khi lập từ điển hoạt chất
 - [Open Beauty Facts](https://world.openbeautyfacts.org) (dự kiến): dữ liệu sản phẩm mở, giấy phép [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)
 - Nguồn y khoa cho từng luật được liệt kê ngay trong cảnh báo tương ứng

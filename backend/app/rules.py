@@ -16,6 +16,10 @@ def rule_problems(rule: dict[str, Any], known_urls: set[str]) -> list[str]:
         problems.append("duplicate rules use group_a only")
     if rule["kind"] in {"conflict", "myth"} and not rule.get("group_b"):
         problems.append(f"{rule['kind']} rules need group_b")
+    if rule["kind"] == "usage" and rule.get("group_b"):
+        problems.append("usage rules use group_a only")
+    if (rule["kind"] == "usage") != (rule.get("scope") == "routine"):
+        problems.append('usage rules, and only they, have scope = "routine"')
     for s in rule.get("sources", []):
         if s["url"] not in known_urls:
             problems.append(f"source {s['url']} has no [[source]] block")

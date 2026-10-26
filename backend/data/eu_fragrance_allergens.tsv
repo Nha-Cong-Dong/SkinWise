@@ -1,0 +1,84 @@
+# EU fragrance allergens to be named on the label (Annex III, Regulation 1223/2009)
+# Source: CELEX 02009R1223-20260518, https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:02009R1223-20260518
+# Retrieved 2026-10-26 via scripts/import_eu_lists.py. © European Union, https://eur-lex.europa.eu. Do not edit by hand.
+45	Benzyl Alcohol
+46	6-Methyl Coumarin
+67	Amyl cinnamal
+69	Cinnamyl alcohol
+70	Citral|Geranial
+71	Eugenol
+72	Hydroxycitronellal
+73	Isoeugenol
+74	Amylcinnamyl alcohol
+75	Benzyl Salicylate
+76	Cinnamal
+77	Coumarin
+78	Geraniol
+80	Anise alcohol
+81	Benzyl cinnamate
+82	Farnesol
+84	Linalool
+85	Benzyl benzoate
+86	Citronellol
+87	Hexyl cinnamal
+88	Limonene
+89	Methyl 2-Octynoate
+90	alpha-Isomethyl ionone
+91	Evernia prunastri extract
+92	Evernia furfuracea extract
+109	Pinus Mugo|Pinus Mugo Leaf Oil|Pinus Mugo Twig Leaf Extract|Pinus Mugo Twig Oil
+114	Pinus Pumila|Pinus Pumila Needle Extract|Pinus Pumila Twig Leaf Extract|Pinus Pumila Twig Leaf Oil
+122	Cedrus Atlantica Oil/Extract|Cedrus Atlantica Bark Extract|Cedrus Atlantica Bark Oil|Cedrus Atlantica Bark Water|Cedrus Atlantica Leaf Extract|Cedrus Atlantica Wood Extract|Cedrus Atlantica Wood Oil
+124	Turpentine
+131	Alpha-Terpinene
+133	Terpinolene
+154	Myroxylon Pereirae Oil/Extract|Myroxylon Balsamum Pereirae Balsam Extract|Myroxylon Balsamum Pereirae Balsam Oil|Myroxylon Pereirae Oil|Myroxylon Pereirae Resin Extract|Myroxylon Pereirae Resin
+157	Rose Ketones|Alpha-Damascone
+175	3-Propylidenephthalide
+196	Lippia citriodora absolute
+324	Methyl Salicylate
+327	Acetyl Cedrene
+328	Amyl Salicylate
+329	Anethole
+330	Benzaldehyde
+331	Camphor
+332	Beta-Caryophyllene
+333	Carvone
+334	Dimethyl Phenethyl Acetate
+335	Hexadecanolactone
+336	Hexamethylindanopyran
+337	Linalyl Acetate
+338	Menthol
+339	Trimethylcyclopentenyl Methylisopentenol
+340	Salicylaldehyde
+341	Santalol
+342	Sclareol
+343	Terpineol
+344	Tetramethyl acetyloctahydronaphthalenes
+345	Trimethylbenzenepropanol
+346	Vanillin
+347	Cananga Odorata Oil/Extract|Cananga Odorata Flower Extract|Cananga Odorata Flower Oil
+348	Cinnamomum Cassia Leaf Oil
+349	Cinnamomum Zeylanicum Bark Oil
+350	Citrus Aurantium Flower Oil|Citrus Aurantium Amara Flower Oil|Citrus Aurantium Dulcis Flower Oil
+351	Citrus Aurantium Peel Oil|Citrus Aurantium Amara Peel Oil|Citrus Aurantium Dulcis Peel Oil|Citrus Sinensis Peel Oil
+352	Citrus Aurantium Bergamia Peel Oil
+353	Citrus Limon Peel Oil
+354	Lemongrass Oil|Cymbopogon Schoenanthus Oil|Cymbopogon Flexuosus Oil|Cymbopogon Citratus Leaf Oil
+355	Eucalyptus Globulus Oil|Eucalyptus Globulus Leaf Oil|Eucalyptus Globulus Leaf/Twig Oil
+356	Eugenia Caryophyllus Oil|Eugenia Caryophyllus Leaf Oil|Eugenia Caryophyllus Flower Oil|Eugenia Caryophyllus Stem oil|Eugenia Caryophyllus Bud oil
+357	Jasmine Oil/Extract|Jasminum Grandiflorum Flower Extract|Jasminum Officinale Oil|Jasminum Officinale Flower Extract
+358	Juniperus Virginiana Oil|Juniperus Virginiana Wood Oil
+359	Laurus Nobilis Leaf Oil
+360	Lavandula Hybrida Oil|Lavandula Hybrida Extract|Lavandula Hybrida Flower Extract|Lavandula Intermedia Flower/Leaf/Stem Extract|Lavandula Intermedia Flower/Leaf/Stem Oil|Lavandula Intermedia Oil|Lavandula Angustifolia Oil|Lavandula Angustifolia Flower/Leaf/Stem Extract
+361	Mentha Piperita Oil
+362	Mentha Viridis Leaf Oil
+363	Narcissus Extract|Narcissus Poeticus Extract|Narcissus Pseudonarcissus Flower Extract|Narcissus Jonquilla Extract|Narcissus Tazetta Extract
+364	Pelargonium Graveolens Oil|Pelargonium Graveolens Flower Oil|Pelargonium Graveolens Leaf Oil
+365	Pogostemon Cablin Oil|Pogostemon Cablin Leaf Oil
+366	Rose Flower Oil/Extract|Rosa Damascena Flower Oil|Rosa Damascena Flower Extract|Rosa Alba Flower Oil|Rosa Alba Flower Extract|Rosa canina flower oil|Rosa Centifolia Flower Oil|Rosa Centifolia Flower Extract|Rosa gallica flower oil|Rosa moschata flower oil|Rosa Rugosa Flower Oil
+367	Santalum Album Oil
+368	Eugenyl Acetate
+369	Geranyl Acetate
+370	Isoeugenyl Acetate
+371	Pinene

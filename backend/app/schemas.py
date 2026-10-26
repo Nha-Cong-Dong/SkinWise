@@ -29,6 +29,8 @@ class ProductSummary(FromAttributes):
     name: str
     market: str | None
     verification_status: str
+    # Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only.
+    application: Literal["rinse_off", "leave_on"] | None
     groups: list[str]
 
 
@@ -54,6 +56,8 @@ class IngredientOut(BaseModel):
     # For an unrecognised name: close known names ("Salicilic Acid" -> Salicylic Acid).
     # Offered to the user only; never used to find actives.
     suggestions: list[SuggestionOut]
+    # Named in the EU fragrance allergen list (Annex III, Regulation 1223/2009). Shown only.
+    fragrance_allergen: bool
 
 
 class FunctionOut(FromAttributes):
@@ -163,6 +167,7 @@ class RoutineProductResult(BaseModel):
     # Pasted lists only: actives that unrecognised (likely misspelled) names may be. They
     # are not checked, so the routine may be missing warnings for them.
     possible_actives: list[str]
+    application: Literal["rinse_off", "leave_on"] | None  # seeded products only
 
 
 class OccurrenceOut(FromAttributes):
@@ -172,7 +177,7 @@ class OccurrenceOut(FromAttributes):
 
 class WarningOut(BaseModel):
     rule: RuleOut
-    product_keys: tuple[str, str]
+    product_keys: list[str]  # two for a pair rule; every product it is about for a usage rule
     occurrences: list[OccurrenceOut]
 
 

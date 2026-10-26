@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.concentration import OnePercentLine, one_percent_line
 from app.db import get_session
 from app.engine import (
-    CHECKED_KINDS,
+    PAIR_KINDS,
     SEVERITY_ORDER,
     RoutineItem,
     Rule,
@@ -26,7 +26,12 @@ from app.ingredients import (
     suggest,
     with_ancestors,
 )
-from app.products import existing_product_ids, get_product, search_products
+from app.products import (
+    existing_product_ids,
+    get_product,
+    product_applications,
+    search_products,
+)
 from app.questions import add_question
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
@@ -129,6 +134,7 @@ def ingredient_fields(
         "suggestions": [
             SuggestionOut.model_validate(s) for s in suggestions.get(r.entry.position, [])
         ],
+        "fragrance_allergen": r.fragrance_allergen,
     }
 
 
@@ -191,7 +197,8 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
 @router.post("/routine/check")
 def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
     seeded_ids = [p.product_id for p in body.products if p.product_id is not None]
-    missing = set(seeded_ids) - existing_product_ids(db, seeded_ids)
+    applications = product_applications(db, seeded_ids)
+    missing = set(seeded_ids) - applications.keys()
     if missing:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
                             f"unknown product ids: {sorted(missing)}")  # fmt: skip
@@ -219,7 +226,7 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
         warnings=[
             WarningOut(
                 rule=RuleOut.model_validate(w.rule),
-                product_keys=(keys[w.product_ids[0]], keys[w.product_ids[1]]),
+                product_keys=[keys[i] for i in w.product_ids],
                 occurrences=[OccurrenceOut.model_validate(o) for o in w.occurrences],
             )
             for w in warnings
@@ -229,6 +236,7 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
                 key=p.key,
                 groups=sorted(groups_by_id[ids[p.key]]),
                 possible_actives=possible_actives.get(p.key, []),
+                application=applications.get(p.product_id) if p.product_id else None,
             )
             for p in body.products
         ],
@@ -239,13 +247,14 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
 @router.get("/rules")
 def rules(
     db: DbSession,
-    kind: Literal["conflict", "duplicate", "myth"] | None = None,
+    kind: Literal["conflict", "duplicate", "myth", "usage"] | None = None,
     groups: Annotated[list[str], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
 ) -> RulesResponse:
     """Published rules, optionally of one kind. With one group: rules involving it. With two:
-    the rules that would fire for one product of each group, whatever their kind, matched the
-    way the routine engine matches. A group also counts as its umbrella groups (BHA is an
-    EXFOLIANT_ACID), so a rule written for the umbrella answers a question about a member."""
+    the pair rules that would fire for one product of each group, whatever their kind, matched
+    the way the routine engine matches (usage rules are about one group, not the pair). A group
+    also counts as its umbrella groups (BHA is an EXFOLIANT_ACID), so a rule written for the
+    umbrella answers a question about a member."""
     all_groups = list_groups(db)
     unknown = set(groups) - {g.code for g in all_groups}
     if unknown:
@@ -257,7 +266,7 @@ def rules(
         if kind is not None and rule.kind != kind:
             return False
         if len(expanded) == 2:
-            return rule.kind in CHECKED_KINDS and rule_matches(rule, *expanded)
+            return rule.kind in PAIR_KINDS and rule_matches(rule, *expanded)
         if len(expanded) == 1:
             return bool(expanded[0] & {rule.group_a, rule.group_b})
         return True

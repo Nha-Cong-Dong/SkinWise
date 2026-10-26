@@ -6,6 +6,9 @@
 # inci: tên EU mà tên thông dụng có thể chỉ; tên đầu tiên được dùng để nhận diện (hoạt chất, chức năng),
 #       các tên sau chỉ để hiển thị "có thể là". Mọi tên phải có trong eu_glossary.txt (có test kiểm tra).
 # note: chỗ mơ hồ cần lưu ý.
+# sources: bằng chứng trên nhãn, [{ url, quote }]: trang chính hãng in tên này cạnh tên INCI (hoặc nêu nó là thành
+#   phần chính trong khi bảng INCI cùng trang chỉ có đúng một chất khớp), quote là nguyên văn trên trang.
+#   Bắt buộc với mục thêm từ 26/10; kiểm tra: uv run python -m scripts.verify_quotes
 #
 # Khi tra, các tiền tố "chiết xuất", "tinh chất", "dịch chiết" được bỏ qua: "Chiết xuất rau má" = "Rau má".
 # Không cần thêm "Axit/Acid + tên": code tự thử dạng "tên + acid" ("Acid salicylic" = Salicylic Acid).
@@ -472,3 +475,328 @@ inci = ["ZINC OXIDE"]
 name = "Chanh vàng"
 lang = "vi"
 inci = ["CITRUS LIMON FRUIT EXTRACT"]
+
+# --- Thêm 26/10 từ nhãn tiếng Việt trên trang chính hãng (Cocoon, Cỏ Mềm, Hada Labo, Acnes, Vichy). CHƯA DUYỆT. ---
+# Chỉ các mục có bằng chứng mạnh: cùng một trang in tên tiếng Việt cạnh tên INCI, hoặc tên tiếng Việt là thành phần chính
+# và bảng INCI cùng trang chỉ có đúng một chất khớp. Không mục nào trỏ tới hoạt chất. Bằng chứng từng mục và các đề xuất
+# bằng chứng vừa / trỏ tới hoạt chất (chưa thêm): plan/vn-names-2026-10-26.md.
+
+[[name]]
+name = "Lá nha đam"
+lang = "vi"
+inci = ["ALOE VERA LEAF EXTRACT", "ALOE BARBADENSIS LEAF EXTRACT"]
+sources = [
+  { url = "https://comem.vn/sp/active-toner-to-tam", quote = "Aloe Vera leaf extract (Chiết xuất lá Nha Đam)" },
+]
+
+[[name]]
+name = "Tơ tằm thủy phân"
+lang = "vi"
+inci = ["HYDROLYZED SILK"]
+sources = [
+  { url = "https://comem.vn/sp/mat-na-cap-am-phuc-hoi-to-tam", quote = "Hydrolyzed Silk (Tinh chất Tơ tằm thủy phân)" },
+  { url = "https://comem.vn/sp/nuoc-tay-trang-cho-moi-loai-da", quote = "Hydrolyzed silk (Tơ Tằm thủy phân)" },
+]
+
+[[name]]
+name = "Tinh dầu oải hương"
+lang = "vi"
+inci = ["LAVANDULA ANGUSTIFOLIA OIL", "LAVANDULA ANGUSTIFOLIA FLOWER OIL"]
+sources = [
+  { url = "https://comem.vn/sp/active-toner-to-tam", quote = "Lavandula Angustifolia Essential Oil (Tinh dầu Oải Hương)" },
+]
+
+[[name]]
+name = "Tinh dầu nghệ"
+lang = "vi"
+inci = ["CURCUMA LONGA ROOT OIL"]
+sources = [
+  { url = "https://comem.vn/sp/serum-hoang-lan", quote = "Tinh dầu Nghệ (Curcuma longa essential oil)" },
+  { url = "https://comem.vn/sp/kem-duong-am-kiem-dau-cho-da-dau-mun", quote = "Curcuma Longa essential oil (Tinh dầu Nghệ)" },
+]
+
+[[name]]
+name = "Dầu nghệ"
+lang = "vi"
+inci = ["CURCUMA LONGA ROOT OIL"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/nuoc-nghe-hung-yen-310ml", quote = "Dầu nghệ giàu turmerone" },
+  { url = "https://cocoonvietnam.com/san-pham/nuoc-nghe-hung-yen-310ml", quote = "CURCUMA LONGA ROOT OIL" },
+]
+
+[[name]]
+name = "Bột đậu đỏ"
+lang = "vi"
+inci = ["VIGNA ANGULARIS SEED POWDER"]
+sources = [
+  { url = "https://comem.vn/sp/bot-rua-mat-taptap", quote = "Bột Đậu đỏ (Vigna angularis seed powder)" },
+]
+
+[[name]]
+name = "Bột trà xanh"
+lang = "vi"
+inci = ["CAMELLIA SINENSIS LEAF POWDER"]
+sources = [
+  { url = "https://comem.vn/sp/bot-rua-mat-taptap", quote = "Bột Trà xanh (Camellia sinensis leaf powder)" },
+]
+
+[[name]]
+name = "Bột bạch chỉ"
+lang = "vi"
+inci = ["ANGELICA DAHURICA ROOT POWDER"]
+sources = [
+  { url = "https://comem.vn/sp/bot-rua-mat-taptap", quote = "Bột Bạch chỉ (Angelica dahurica root powder)" },
+]
+
+[[name]]
+name = "Dầu quả bơ"
+lang = "vi"
+inci = ["PERSEA GRATISSIMA OIL"]
+sources = [
+  { url = "https://comem.vn/sp/dau-rua-mat-3s", quote = "Dầu Quả bơ (Persea gratissima oil)" },
+]
+
+[[name]]
+name = "Dầu nụ tầm xuân"
+lang = "vi"
+inci = ["ROSA MOSCHATA OIL", "ROSA MOSCHATA SEED OIL"]
+sources = [
+  { url = "https://comem.vn/sp/serum-hoang-lan", quote = "Dầu Nụ tầm xuân (Rosa moschata oil)" },
+]
+
+[[name]]
+name = "Dầu hạt hướng dương"
+lang = "vi"
+inci = ["HELIANTHUS ANNUUS SEED OIL"]
+sources = [
+  { url = "https://comem.vn/sp/kem-duong-cap-am-da-tang-cho-moi-loai-da", quote = "Helianthus Annuus (Sunflower) Seed Oil (Dầu hạt Hướng Durong)" },
+]
+
+[[name]]
+name = "Dầu squalane"
+lang = "vi"
+inci = ["SQUALANE"]
+sources = [
+  { url = "https://comem.vn/sp/serum-sam-cang-min-cho-da-lao-hoa", quote = "Dầu Squalane" },
+]
+
+[[name]]
+name = "Protein sữa ong chúa"
+lang = "vi"
+inci = ["HYDROLYZED ROYAL JELLY PROTEIN"]
+sources = [
+  { url = "https://comem.vn/sp/kem-duong-cap-am-da-tang-cho-moi-loai-da", quote = "Hydrolyzed royal jelly protein (Protein Sữa ong chúa)" },
+]
+
+[[name]]
+name = "Hạt mộc qua"
+lang = "vi"
+inci = ["PYRUS CYDONIA SEED EXTRACT"]
+sources = [
+  { url = "https://comem.vn/sp/kem-duong-am-kiem-dau-cho-da-dau-mun", quote = "Pyrus Cydonia Seed Extract (Chiết xuất hạt Mộc qua)" },
+]
+
+[[name]]
+name = "Xơ mướp"
+lang = "vi"
+inci = ["LUFFA CYLINDRICA FRUIT"]
+sources = [
+  { url = "https://comem.vn/sp/mat-na-cap-am-phuc-hoi-to-tam", quote = "Luffa Cylindrica Fruit (Xơ mướp)" },
+]
+
+[[name]]
+name = "Đất sét trắng"
+lang = "vi"
+inci = ["KAOLIN"]
+sources = [
+  { url = "https://comem.vn/sp/mat-na-ngua-mun-rau-ma-cho-da-dau", quote = "Kaolin (Đất sét trắng)" },
+]
+
+[[name]]
+name = "Nano bạc"
+lang = "vi"
+inci = ["SILVER"]
+sources = [
+  { url = "https://comem.vn/sp/xit-khoang-hoa-hong", quote = "Silver (Nano bạc)" },
+]
+
+[[name]]
+name = "Tảo cầu vồng"
+lang = "vi"
+inci = ["CYSTOSEIRA TAMARISCIFOLIA EXTRACT"]
+sources = [
+  { url = "https://comem.vn/sp/serum-sang-da-cho-da-sam-nam", quote = "Chiết xuất Tảo cầu vồng (Cystoseira tamariscifolia extract)" },
+]
+
+[[name]]
+name = "Quả sơ-ri"
+lang = "vi"
+inci = ["MALPIGHIA EMARGINATA FRUIT EXTRACT"]
+sources = [
+  { url = "https://comem.vn/sp/serum-sang-da-cho-da-sam-nam", quote = "Chiết xuất quả Sơ-ri (Malpighia Emarginata(Acerola) Fruit Extract)" },
+]
+
+[[name]]
+name = "Sơ-ri"
+lang = "vi"
+inci = ["MALPIGHIA EMARGINATA FRUIT EXTRACT"]
+sources = [
+  { url = "https://comem.vn/sp/mat-na-sang-da", quote = "Chiết xuất Sơ-ri" },
+  { url = "https://comem.vn/sp/serum-sang-da-cho-da-sam-nam", quote = "Chiết xuất quả Sơ-ri (Malpighia Emarginata(Acerola) Fruit Extract)" },
+]
+
+[[name]]
+name = "Nấm linh chi"
+lang = "vi"
+inci = ["GANODERMA LUCIDUM EXTRACT"]
+sources = [
+  { url = "https://comem.vn/sp/mat-na-cho-da-lao-hoa", quote = "Chiết xuất Nấm linh chi (Pentylene Glycol, Ganoderma Lucidum (Mushroom) Extract)" },
+]
+
+[[name]]
+name = "Bơ murumuru"
+lang = "vi"
+inci = ["ASTROCARYUM MURUMURU SEED BUTTER"]
+sources = [
+  { url = "https://comem.vn/sp/kem-duong-sang-da-cho-da-sam-nam", quote = "Bơ Murumuru" },
+  { url = "https://comem.vn/sp/kem-duong-sang-da-cho-da-sam-nam", quote = "Bơ từ hạt Murumuru (Astrocaryum Murumuru Seed Butter)" },
+]
+
+[[name]]
+name = "Hạt ý dĩ"
+lang = "vi"
+inci = ["COIX LACRYMA-JOBI MA-YUEN SEED EXTRACT"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cho-da-mun-nhay-cam/", quote = "chiết xuất Hạt Ý Dĩ, Rau Diếp Cá và Cúc La Mã" },
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cho-da-mun-nhay-cam/", quote = "Coix Lacryma-Jobi Ma-yuen (Job's Tears) Seed Extract, Chamomilla Recutita (Matricaria) Flower Extract, Houttuynia Cordata Extract" },
+]
+
+[[name]]
+name = "Hạt ý dĩ lên men"
+lang = "vi"
+inci = ["SACCHAROMYCES/COIX LACRYMA-JOBI MA-YUEN SEED FERMENT FILTRATE"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-trang-hada-labo-perfect-white/", quote = "chiết xuất Hạt Ý Dĩ lên men tự nhiên" },
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-trang-hada-labo-perfect-white/", quote = "Saccharomyces/Coix Lacryma-Jobi Ma-Yuen Seed Ferment Filtrate" },
+]
+
+[[name]]
+name = "Rau diếp cá"
+lang = "vi"
+inci = ["HOUTTUYNIA CORDATA EXTRACT", "HOUTTUYNIA CORDATA LEAF EXTRACT"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cho-da-mun-nhay-cam/", quote = "hạt ý dĩ, rau diếp cá và cúc la mã" },
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cho-da-mun-nhay-cam/", quote = "Houttuynia Cordata Extract" },
+]
+
+[[name]]
+name = "Dầu hạt chia"
+lang = "vi"
+inci = ["SALVIA HISPANICA SEED OIL"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cai-thien-dau-hieu-lao-hoa-hada-labo-pro-aging-retinol-b3-cleanser/", quote = "3 loại Ceramide & Dầu hạt chia" },
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cai-thien-dau-hieu-lao-hoa-hada-labo-pro-aging-retinol-b3-cleanser/", quote = "Salvia Hispanica Seed Oil" },
+]
+
+[[name]]
+name = "Rễ cam thảo"
+lang = "vi"
+inci = ["GLYCYRRHIZA GLABRA ROOT EXTRACT", "GLYCYRRHIZA URALENSIS ROOT EXTRACT"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/sua-chong-nang-vo-co-sen-hau-giang-50ml-tone-up-beige", quote = "rễ cam thảo, cánh hoa sen" },
+  { url = "https://cocoonvietnam.com/san-pham/sua-chong-nang-vo-co-sen-hau-giang-50ml-tone-up-beige", quote = "GLYCYRRHIZA GLABRA ROOT EXTRACT" },
+]
+
+[[name]]
+name = "Cà rốt"
+lang = "vi"
+inci = ["DAUCUS CAROTA SATIVA ROOT EXTRACT"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/sua-rua-mat-nghe-hung-yen-310ml", quote = "Chiết xuất cà rốt" },
+  { url = "https://cocoonvietnam.com/san-pham/sua-rua-mat-nghe-hung-yen-310ml", quote = "Carrot extract" },
+  { url = "https://cocoonvietnam.com/san-pham/sua-rua-mat-nghe-hung-yen-310ml", quote = "DAUCUS CAROTA SATIVA ROOT EXTRACT" },
+]
+
+[[name]]
+name = "Cánh hoa sen"
+lang = "vi"
+inci = ["NELUMBO NUCIFERA FLOWER EXTRACT"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/sua-chong-nang-vo-co-sen-hau-giang-50ml-tone-up-beige", quote = "rễ cam thảo, cánh hoa sen" },
+  { url = "https://cocoonvietnam.com/san-pham/sua-chong-nang-vo-co-sen-hau-giang-50ml-tone-up-beige", quote = "NELUMBO NUCIFERA FLOWER EXTRACT" },
+]
+
+[[name]]
+name = "IPMP"
+lang = "en"
+inci = ["O-CYMEN-5-OL"]
+sources = [
+  { url = "https://comem.vn/sp/mat-na-cho-da-dau-mun", quote = "O-Cymen-5-Ol (IPMP)" },
+  { url = "https://comem.vn/sp/mat-na-cho-da-dau-mun", quote = "IPMP" },
+]
+
+[[name]]
+name = "NAG"
+lang = "en"
+inci = ["ACETYL GLUCOSAMINE"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/tinh-chat-nghe-hung-yen-x2-2-22-vitamin-c-30ml", quote = "2% Acetyl Glucosamine (NAG)" },
+]
+
+[[name]]
+name = "Super HA"
+lang = "en"
+inci = ["SODIUM ACETYLATED HYALURONATE"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-am-cho-da-mun-nhay-cam-hada-labo-acne-care-calming-serum/", quote = "Sodium Acetylated Hyaluronate (Super HA)" },
+]
+
+[[name]]
+name = "Nano HA"
+lang = "en"
+inci = ["HYDROLYZED HYALURONIC ACID", "HYDROLYZED SODIUM HYALURONATE"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-trang-hada-labo-perfect-white/", quote = "Hydrolyzed Hyaluronic Acid (Nano HA)" },
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-am-cho-da-mun-nhay-cam-hada-labo-acne-care-calming-serum/", quote = "Hydrolyzed Sodium Hyaluronate (Nano HA)" },
+]
+note = "Hada Labo dùng 'Nano HA' cho cả hai chất."
+
+[[name]]
+name = "Coix Seed Extract"
+lang = "en"
+inci = ["COIX LACRYMA-JOBI MA-YUEN SEED EXTRACT"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-am-cho-da-mun-nhay-cam-hada-labo-acne-care-calming-serum/", quote = "Coix Lacryma-Jobi Ma-yuen Seed Extract (Coix Seed Extract)" },
+]
+
+[[name]]
+name = "Quince Seed Extract"
+lang = "en"
+inci = ["PYRUS CYDONIA SEED EXTRACT"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/serum-duong-am-cho-da-mun-nhay-cam-hada-labo-acne-care-calming-serum/", quote = "Pyrus Cydonia Seed Extract (Quince Seed Extract)" },
+]
+
+[[name]]
+name = "Lipochroman"
+lang = "en"
+inci = ["DIMETHYLMETHOXY CHROMANOL"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-n15-70ml", quote = "Lipochroman (INCI Name: Dimethylmethoxy Chromanol)" },
+]
+
+[[name]]
+name = "Synoxyl AZ"
+lang = "en"
+inci = ["ACETYL ZINGERONE"]
+sources = [
+  { url = "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-n15-70ml", quote = "Synoxyl AZ (INCI Name: Acetyl Zingerone)" },
+]
+
+[[name]]
+name = "Fruit Ceramide"
+lang = "en"
+inci = ["CITRUS JUNOS FRUIT EXTRACT"]
+sources = [
+  { url = "https://hadalabo.com.vn/san-pham/kem-rua-mat-cai-thien-dau-hieu-lao-hoa-hada-labo-pro-aging-retinol-b3-cleanser/", quote = "Citrus Junos Fruit Extract (Fruit Ceramide)" },
+]

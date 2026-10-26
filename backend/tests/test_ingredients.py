@@ -161,3 +161,32 @@ def test_vietnamese_acid_word_order(engine: Engine) -> None:
     assert malic.groups == ("AHA", "EXFOLIANT_ACID")
     assert hyaluronic.inci_name == "Hyaluronic Acid"
     assert hyaluronic.groups == ()
+
+
+def test_an_actives_own_name_beats_a_generic_synonym(engine: Engine) -> None:
+    """Vietnamese labels say "Vitamin C" for derivatives: "22% Vitamin C (3-O-Ethyl Ascorbic
+    Acid)". The synonym must not turn the derivative into pure ascorbic acid."""
+    derivative, reversed_order, plain = resolve_text(
+        engine,
+        "Vitamin C (3-O-Ethyl Ascorbic Acid), Vitamin C (Ascorbyl Glucoside), Vitamin C",
+    )
+    assert derivative.inci_name == "3-O-Ethyl Ascorbic Acid"
+    assert derivative.groups == ("VITAMIN_C_DERIVATIVE",)
+    assert reversed_order.groups == ("VITAMIN_C_DERIVATIVE",)
+    assert plain.groups == ("VITAMIN_C",)  # a bare "Vitamin C" still means ascorbic acid
+
+
+# Everyday names reviewed on 25/10 were mapped from species names, without a label source.
+# Every name added since must cite a label page (checked by scripts.verify_quotes), so the
+# number without one may only go down.
+COMMON_NAMES_WITHOUT_SOURCE_25_10 = 87
+
+
+def test_new_common_names_cite_a_label_page() -> None:
+    names = load_toml("common_names.toml")["name"]
+    without = [n["name"] for n in names if not n.get("sources")]
+    assert len(without) <= COMMON_NAMES_WITHOUT_SOURCE_25_10
+    for entry in names:
+        for source in entry.get("sources", []):
+            assert source["url"].startswith("https://"), entry["name"]
+            assert source["quote"].strip(), entry["name"]

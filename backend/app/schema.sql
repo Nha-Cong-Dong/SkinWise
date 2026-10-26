@@ -56,6 +56,10 @@ ALTER TABLE products ADD COLUMN IF NOT EXISTS slug text;            -- stable ke
 ALTER TABLE products ADD COLUMN IF NOT EXISTS market text;          -- formulas differ by market
 ALTER TABLE products ADD COLUMN IF NOT EXISTS ingredients_raw text; -- verbatim list, re-checked against source_url
 CREATE UNIQUE INDEX IF NOT EXISTS products_slug_key ON products (slug);
+-- Added after the MVP: rinse-off (cleanser) or leave-on (serum, cream), as the EU defines them.
+-- Shown only; no rule uses it until a source says rinse-off products change the warning.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS application text
+  CHECK (application IN ('rinse_off', 'leave_on'));
 
 CREATE INDEX IF NOT EXISTS products_search_name_trgm
   ON products USING gin (search_name gin_trgm_ops);
@@ -87,6 +91,16 @@ CREATE TABLE IF NOT EXISTS rules (
 -- Added in phase 2.
 ALTER TABLE rules ADD COLUMN IF NOT EXISTS key text; -- stable key for seed upserts
 CREATE UNIQUE INDEX IF NOT EXISTS rules_key_key ON rules (key);
+
+-- Added after the MVP: "usage" rules are about one group, shown for every routine product that
+-- contains it (scope "routine"), e.g. sun sensitivity. Dropped and re-added so the check
+-- follows the values listed here on existing databases too.
+ALTER TABLE rules DROP CONSTRAINT IF EXISTS rules_kind_check;
+ALTER TABLE rules ADD CONSTRAINT rules_kind_check
+  CHECK (kind IN ('conflict', 'duplicate', 'profile', 'myth', 'usage'));
+ALTER TABLE rules DROP CONSTRAINT IF EXISTS rules_scope_check;
+ALTER TABLE rules ADD CONSTRAINT rules_scope_check
+  CHECK (scope IN ('same_step', 'same_session', 'same_day', 'routine'));
 
 -- One row per quote: a rule may quote several passages from the same source page.
 CREATE TABLE IF NOT EXISTS rule_sources (
@@ -121,6 +135,14 @@ CREATE TABLE IF NOT EXISTS cosmetic_functions (
   definition_en  text,             -- official definition; null when the inventory gives none
   name_vi        text NOT NULL,
   description_vi text NOT NULL
+);
+
+-- Fragrance allergens the EU requires to be named on the label (Annex III of Regulation
+-- 1223/2009, data/eu_fragrance_allergens.tsv). Shown on the ingredient only, never a warning.
+CREATE TABLE IF NOT EXISTS fragrance_allergens (
+  normalized_name text PRIMARY KEY,
+  name            text NOT NULL,
+  annex_entry     integer NOT NULL -- reference number in Annex III
 );
 
 -- Everyday names ("rau má", "Purified Water") for EU names, from data/common_names.toml.

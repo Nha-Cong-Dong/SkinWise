@@ -36,8 +36,10 @@ def test_product_search_tolerates_typos_and_case(client: TestClient) -> None:
 
 
 def test_product_search_ignores_vietnamese_diacritics(client: TestClient) -> None:
-    assert search(client, "bí đao")[0] == "cocoon-tinh-chat-bi-dao-n7"
-    assert search(client, "bi dao")[0] == "cocoon-tinh-chat-bi-dao-n7"
+    winter_melon = {"cocoon-tinh-chat-bi-dao-n7", "cocoon-gel-bi-dao-rua-mat"}
+    assert set(search(client, "bí đao")[:2]) == winter_melon
+    assert set(search(client, "bi dao")[:2]) == winter_melon
+    assert search(client, "tinh chat bi dao")[0] == "cocoon-tinh-chat-bi-dao-n7"
 
 
 def test_product_search_without_query_lists_products_with_groups(client: TestClient) -> None:
@@ -61,6 +63,23 @@ def test_product_detail(client: TestClient, ids: dict[str, int]) -> None:
     salicylic = next(i for i in product["ingredients"] if i["raw_name"] == "Salicylic Acid")
     assert salicylic["inci_name"] == "Salicylic Acid"
     assert [i["position"] for i in product["ingredients"]][:3] == [1, 2, 3]
+    assert product["application"] == "leave_on"
+
+
+def test_products_say_rinse_off_or_leave_on(client: TestClient) -> None:
+    products = {p["slug"]: p for p in client.get("/products").json()}
+    assert products["cerave-renewing-sa-cleanser"]["application"] == "rinse_off"
+    assert products[LOTION]["application"] == "leave_on"
+
+
+def test_analyze_marks_fragrance_allergens(client: TestClient) -> None:
+    text = "Aqua, Linalool, Citrus Aurantium Dulcis (Orange) Peel Oil, Retinol, Parfum"
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    # Orange peel oil is listed by its name without the parenthesis.
+    assert [i["fragrance_allergen"] for i in body["ingredients"]] == [
+        False, True, True, False, False
+    ]  # fmt: skip
+    assert body["groups"] == ["RETINOID"]  # never an active, never a warning
 
 
 def test_unknown_product_is_404(client: TestClient) -> None:
@@ -82,6 +101,7 @@ def test_analyze_inci(client: TestClient) -> None:
         "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
         "common_name_of": [], "common_name_note": None, "declared_concentration": None,
         "at_most_one_percent": False, "suggestions": [], "may_contain": False,
+        "fragrance_allergen": False,
     }  # fmt: skip
     aqua = body["ingredients"][0]
     assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)
@@ -137,6 +157,7 @@ def test_routine_check_warns_with_sources(client: TestClient, ids: dict[str, int
         w for w in result["warnings"] if w["rule"]["key"] == "retinoid-exfoliant-acid-same-session"
     ]
     assert set(warning["product_keys"]) == {"bha", "retinol"}
+    assert {p["key"]: p["application"] for p in result["products"]}["bha"] == "leave_on"
     assert warning["occurrences"] == [{"day": d, "session": "PM"} for d in EVERY_DAY]
     assert all(s["quote"] and s["url"] for s in warning["rule"]["sources"])
     assert {p["key"]: p["groups"] for p in result["products"]}["lotion"] == []

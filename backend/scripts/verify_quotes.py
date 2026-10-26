@@ -1,10 +1,11 @@
 """Check every quote against its live source page:
 uv run python -m scripts.verify_quotes [rule-key ...]
 
-Covers rule quotes in data/rules.toml and the legal basis in data/concentration_limits.toml
-(skipped when rule keys are given). A quote must appear verbatim on the page (case,
-whitespace, dash and quote variants ignored). Exit code 1 if any quote fails, so it can
-gate a PR.
+Covers rule quotes in data/rules.toml; when no rule keys are given, also the legal basis in
+data/concentration_limits.toml and data/legal_basis.toml and the label evidence of everyday
+names in data/common_names.toml. A quote must appear verbatim on
+the page (case, whitespace, dash and quote variants ignored). Exit code 1 if any quote fails,
+so it can gate a PR.
 """
 
 import sys
@@ -30,6 +31,11 @@ def quotes_to_check(keys: list[str]) -> list[tuple[str, str | None, str | None]]
         items += [("ordering-rule", order["url"], order["quote"])]
         items += [("ordering-rule colorants", order["url"], order["colorant_quote"])]
         items += [(f"limit {x['inci']}", x["url"], x["quote"]) for x in limits["limit"]]
+        for name, basis in load_toml("legal_basis.toml").items():
+            items += [(f"legal basis {name}", basis["url"], q) for q in basis["quotes"]]
+        for entry in load_toml("common_names.toml")["name"]:
+            label = f"common name {entry['name']}"
+            items += [(label, s["url"], s["quote"]) for s in entry.get("sources", [])]
     return items
 
 

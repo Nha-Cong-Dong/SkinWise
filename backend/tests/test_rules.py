@@ -37,6 +37,15 @@ def test_rule_problems() -> None:
     assert rule_problems({**DRAFT, "group_b": None}, set()) == ["conflict rules need group_b"]
 
 
+def test_usage_rule_problems() -> None:
+    usage = {**DRAFT, "kind": "usage", "group_b": None, "scope": "routine"}
+    only_usage = 'usage rules, and only they, have scope = "routine"'
+    assert rule_problems(usage, set()) == []
+    assert rule_problems({**usage, "group_b": "AHA"}, set()) == ["usage rules use group_a only"]
+    assert rule_problems({**usage, "scope": "same_session"}, set()) == [only_usage]
+    assert rule_problems({**DRAFT, "scope": "routine"}, set()) == [only_usage]
+
+
 def test_rules_toml_is_valid() -> None:
     data = load_toml("rules.toml")
     urls = {s["url"] for s in data.get("source", [])}
@@ -52,18 +61,33 @@ def conn(engine: Engine) -> Iterator[Connection]:
         tx.rollback()
 
 
-def add_rule(conn: Connection, key: str, published: bool, with_source: bool = True) -> None:
+def add_rule(
+    conn: Connection,
+    key: str,
+    published: bool,
+    with_source: bool = True,
+    kind: str = "conflict",
+    scope: str = "same_session",
+    groups: tuple[str, str | None] = ("RETINOID", "EXFOLIANT_ACID"),
+) -> None:
     rule_id = conn.execute(
         text(
             """
             INSERT INTO rules (key, kind, severity, scope, evidence_level, group_a, group_b,
                                title_vi, explanation_vi, published)
-            VALUES (:key, 'conflict', 'caution', 'same_session', 'moderate', 'RETINOID',
-                    'EXFOLIANT_ACID', 'tiêu đề', 'giải thích', :published)
+            VALUES (:key, :kind, 'caution', :scope, 'moderate', :group_a, :group_b,
+                    'tiêu đề', 'giải thích', :published)
             RETURNING id
             """
         ),
-        {"key": key, "published": published},
+        {
+            "key": key,
+            "published": published,
+            "kind": kind,
+            "scope": scope,
+            "group_a": groups[0],
+            "group_b": groups[1],
+        },
     ).scalar_one()
     if with_source:
         source_id = conn.execute(
@@ -118,3 +142,18 @@ def test_seeded_products_trigger_a_published_rule(conn: Connection) -> None:
     warnings = [w for w in check_routine(routine, groups, load_published_rules(conn))
                 if w.rule.key == "test-published"]  # fmt: skip
     assert [w.product_ids for w in warnings] == [tuple(sorted((bha, retinol)))]
+
+
+def test_usage_rule_fires_for_seeded_products(conn: Connection) -> None:
+    add_rule(conn, "test-usage", True, kind="usage", scope="routine", groups=("AHA", None))
+    lactic = product_id(conn, "the-ordinary-lactic-acid-10-ha")
+    bha = product_id(conn, "paulas-choice-skin-perfecting-2-bha-liquid-exfoliant")
+    routine = [
+        RoutineItem(lactic, "PM", frozenset({0}), 1),
+        RoutineItem(bha, "AM", frozenset({1}), 1),
+    ]
+    groups = load_product_groups(conn, [lactic, bha])
+
+    warnings = [w for w in check_routine(routine, groups, load_published_rules(conn))
+                if w.rule.key == "test-usage"]  # fmt: skip
+    assert [w.product_ids for w in warnings] == [(lactic,)]

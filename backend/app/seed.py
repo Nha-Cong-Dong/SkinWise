@@ -39,6 +39,15 @@ def load_eu_names() -> dict[str, tuple[str, bool, list[str]]]:
     return names
 
 
+def load_fragrance_allergens() -> list[tuple[str, int]]:
+    """(label name, Annex III entry) for every name that identifies a fragrance allergen."""
+    rows = []
+    for line in data_lines("eu_fragrance_allergens.tsv"):
+        entry, names = line.split("\t")
+        rows += [(name, int(entry)) for name in names.split("|")]
+    return rows
+
+
 def load_functions() -> list[dict[str, Any]]:
     definitions = dict(line.split("\t") for line in data_lines("eu_functions_2006.tsv"))
     functions = load_toml("functions_vi.toml")["function"]
@@ -71,6 +80,7 @@ def seed(engine: Engine) -> dict[str, int]:
         _seed_functions(conn, functions)
         _seed_eu_names(conn, eu_names)
         _seed_common_names(conn, common_names)
+        _seed_fragrance_allergens(conn, load_fragrance_allergens())
         _seed_groups(conn, groups)
         _seed_ingredients(conn, ingredients)
         for product in products:
@@ -131,6 +141,20 @@ def _seed_common_names(conn: Connection, names: list[dict[str, Any]]) -> None:
                 "inci": n["inci"],
                 "note": n.get("note"),
             },
+        )
+
+
+def _seed_fragrance_allergens(conn: Connection, allergens: list[tuple[str, int]]) -> None:
+    conn.execute(text("DELETE FROM fragrance_allergens"))
+    for name, entry in allergens:
+        conn.execute(
+            text(
+                """
+                INSERT INTO fragrance_allergens (normalized_name, name, annex_entry)
+                VALUES (:normalized, :name, :entry) ON CONFLICT (normalized_name) DO NOTHING
+                """
+            ),
+            {"normalized": normalize_name(name), "name": name, "entry": entry},
         )
 
 
@@ -208,13 +232,14 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
     product_id = conn.execute(
         text(
             """
-            INSERT INTO products (slug, brand, name, market, search_name, ingredients_source,
-                                  source_url, source_retrieved_at, verification_status,
-                                  ingredients_raw)
-            VALUES (:slug, :brand, :name, :market, :search_name, 'seed',
+            INSERT INTO products (slug, brand, name, market, application, search_name,
+                                  ingredients_source, source_url, source_retrieved_at,
+                                  verification_status, ingredients_raw)
+            VALUES (:slug, :brand, :name, :market, :application, :search_name, 'seed',
                     :source_url, :retrieved_at, :verification_status, :ingredients_raw)
             ON CONFLICT (slug) DO UPDATE SET
               brand = excluded.brand, name = excluded.name, market = excluded.market,
+              application = excluded.application,
               search_name = excluded.search_name, source_url = excluded.source_url,
               source_retrieved_at = excluded.source_retrieved_at,
               verification_status = excluded.verification_status,
@@ -227,6 +252,7 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
             "brand": p["brand"],
             "name": p["name"],
             "market": p.get("market"),
+            "application": p["application"],
             "search_name": normalize_name(f"{p['brand']} {p['name']}"),
             "source_url": p["source_url"],
             "retrieved_at": p["retrieved_at"],
