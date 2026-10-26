@@ -7,9 +7,11 @@ import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
 import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
+import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
+import { useIncomingRoutine } from './share'
 import {
   EMPTY_ADD_DRAFT,
   currentResult,
@@ -30,6 +32,8 @@ function App() {
   const [page, setPage] = useState<Page>(pageFromHash)
   const [adding, setAdding] = useState(false)
   const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
+  const [sharing, setSharing] = useState(false)
+  const { incoming, dismiss } = useIncomingRoutine() // a shared routine link was opened
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
@@ -116,7 +120,7 @@ function App() {
                   <MyProducts actions={actions} onAdd={() => setAdding(true)} />
                 </div>
                 <div className="lg:col-start-1 lg:row-start-2 xl:col-start-2 xl:row-start-1">
-                  <RoutineBoard actions={actions} flagged={flagged} />
+                  <RoutineBoard actions={actions} flagged={flagged} onShare={() => setSharing(true)} />
                 </div>
                 <ResultsAside check={check}>
                   <WarningsPanel state={check} products={actions.routine.products} />
@@ -144,6 +148,34 @@ function App() {
           title={<h2 className="text-xl font-bold">Thêm sản phẩm</h2>}
         >
           <AddProduct actions={actions} draft={addDraft} setDraft={setAddDraft} />
+        </Dialog>
+
+        <Dialog
+          open={sharing}
+          onClose={() => setSharing(false)}
+          title={<h2 className="text-xl font-bold">Lưu & chia sẻ routine</h2>}
+        >
+          <ShareRoutine actions={actions} onDone={() => setSharing(false)} />
+        </Dialog>
+
+        <Dialog
+          open={incoming !== null}
+          onClose={dismiss}
+          title={<h2 className="text-xl font-bold">Routine được chia sẻ với bạn</h2>}
+        >
+          {incoming?.kind === 'loading' && <p className="text-sm text-ink-mute">Đang mở routine…</p>}
+          {incoming?.kind === 'error' && <p className="text-sm text-avoid-ink">{incoming.message}</p>}
+          {incoming?.kind === 'ready' && (
+            <ReplaceConfirm
+              incoming={incoming}
+              current={actions.routine}
+              onAccept={() => {
+                actions.replace(incoming.routine)
+                dismiss()
+              }}
+              onCancel={dismiss}
+            />
+          )}
         </Dialog>
       </FunctionsContext>
     </GroupsContext>

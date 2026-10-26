@@ -6,16 +6,27 @@ import { Glyph, MoonIcon, SeverityBadge, SunIcon } from './Icons'
 
 type Props = {
   actions: RoutineActions
+  /** Opens the "save and share" dialog. */
+  onShare: () => void
   /** Most severe warning each product key is part of. */
   flagged: Map<string, Severity>
 }
 
-export function RoutineBoard({ actions, flagged }: Props) {
+export function RoutineBoard({ actions, flagged, onShare }: Props) {
   return (
     <section aria-labelledby="schedule-title">
-      <h2 id="schedule-title" className="text-xl font-bold">
-        Lịch dùng
-      </h2>
+      <div className="flex items-center justify-between gap-3">
+        <h2 id="schedule-title" className="text-xl font-bold">
+          Lịch dùng
+        </h2>
+        <button
+          onClick={onShare}
+          className="inline-flex shrink-0 items-center gap-1.5 rounded-full py-1.5 pr-3.5 pl-2.5 text-sm font-medium text-ink ring-1 ring-line hover:bg-surface"
+        >
+          <Glyph name="share" className="size-4" />
+          Lưu & chia sẻ
+        </button>
+      </div>
       <p className="mt-1 text-sm text-ink-mute">
         Thứ tự từ trên xuống là thứ tự các bước. Bấm vào thứ trong tuần để bật/tắt ngày dùng.
       </p>
@@ -52,7 +63,7 @@ const TONE = {
   },
 }
 
-function SessionPanel({ session, actions, flagged }: Props & { session: Session }) {
+function SessionPanel({ session, actions, flagged }: Omit<Props, 'onShare'> & { session: Session }) {
   const entries = sessionEntries(actions.routine, session)
   const products = new Map(actions.routine.products.map((p) => [p.key, p]))
   const tone = TONE[session]

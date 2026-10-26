@@ -46,7 +46,7 @@ export type Routine = { products: MyProduct[]; entries: Entry[] }
 const STORAGE_KEY = 'skinwise.routine.v1'
 const EMPTY: Routine = { products: [], entries: [] }
 
-function newId(): string {
+export function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`
 }
 
@@ -107,6 +107,10 @@ export function useRoutine() {
       const key = product.key ?? (product.productId !== null ? productKeyFor(product.productId) : `c${newId()}`)
       setRoutine((r) => (r.products.some((p) => p.key === key) ? r : { ...r, products: [...r.products, { ...product, key }] }))
       return key
+    },
+    /** Replace the whole routine (opening a file or a shared link, after the user agreed). */
+    replace(next: Routine) {
+      setRoutine(next)
     },
     removeProduct(key: string) {
       setRoutine((r) => ({

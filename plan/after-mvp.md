@@ -50,7 +50,7 @@ Từ [phase-4-ui.md](phase-4-ui.md):
 - [ ] Câu hỏi chỉ đính kèm được sản phẩm có id: cho đính kèm bảng thành phần tự dán (văn bản nhãn, không phải thông tin cá nhân)
 
 Mở rộng nhỏ:
-- [ ] Xuất/nhập routine (file JSON hoặc link chia sẻ mã hoá routine trong URL): chuyển máy, gửi cho người khác xem mà chưa cần tài khoản
+- [x] Xuất/nhập routine (26/10): nút "Lưu & chia sẻ" ở khung Lịch dùng. Tải / mở file `.json`, hoặc link chia sẻ mang routine sau dấu `#` (nén deflate, trình duyệt không gửi phần này lên máy chủ, SkinWise không lưu gì). File và link chỉ mang khoá sản phẩm, thứ tự bước, ngày dùng, tên tự đặt, bảng thành phần tự dán; tên hãng, nhóm hoạt chất, lưu ý được lấy lại từ máy chủ khi mở. Luôn hỏi trước khi thay routine hiện tại; sản phẩm mẫu không còn trên máy chủ bị bỏ kèm thông báo. Kiểm tra trên Chrome: 18 tình huống (`src/share.ts`, `components/ShareRoutine.tsx`)
 - [ ] Nút "báo cảnh báo sai" trên từng thẻ cảnh báo: lưu vào `user_questions` kèm mã luật, để người duyệt đọc lại nguồn
 
 ## C. Độ chính xác dữ liệu và engine

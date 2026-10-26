@@ -91,5 +91,8 @@ Làm hướng E (sau MVP), chi tiết ở [e-review.md](e-review.md). Mở rộn
 - Mô hình mặc định `claude-opus-5-5` (đổi bằng `DRAFT_MODEL`), kèm `fallbacks: "default"` khi mô hình từ chối.
 - Chưa làm phần tuỳ chọn "AI diễn đạt lại `explanation_vi`": cần thêm cột cho luật và đổi `RuleCard` trong lúc nhánh `feat/accuracy` đang sửa mô hình luật (loại `usage`). Làm sau khi nhánh đó vào `main`, theo cùng cách: người duyệt duyệt bản diễn đạt trong `rules.toml`, giao diện luôn hiện kèm bản gốc.
 
+## Xuất/nhập routine không cần tài khoản (hướng B, 26/10)
+Làm trước hướng H như đã chốt. Link chia sẻ mang routine trong phần sau `#` của URL: trình duyệt không gửi phần này lên máy chủ, nên SkinWise không lưu routine của ai. File và link chỉ mang dữ liệu riêng của người dùng (khoá sản phẩm, thứ tự bước, ngày, tên tự đặt, bảng thành phần tự dán); tên hãng, nhóm hoạt chất và lưu ý được lấy lại từ máy chủ khi mở, nên file hay link bị sửa tay không làm hiện sai chip hoạt chất. Mở file hoặc link luôn hỏi trước khi thay routine hiện tại, có nút tải routine hiện tại về trước. Giới hạn giống `/routine/check` (50 sản phẩm, 200 bước, bảng dán 10.000 ký tự); link nén deflate, giải nén có trần 1 MB.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

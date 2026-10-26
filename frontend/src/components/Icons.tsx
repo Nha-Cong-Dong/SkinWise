@@ -80,6 +80,7 @@ const glyphs = {
   close: 'M6.5 6.5l11 11M17.5 6.5l-11 11',
   plus: 'M12 5.5v13M5.5 12h13',
   info: 'M12 11v5.5M12 7.6v.1',
+  share: 'M12 14.5V4.5M8 8.5l4-4 4 4M6.5 12v6a1.5 1.5 0 0 0 1.5 1.5h8a1.5 1.5 0 0 0 1.5-1.5v-6',
 }
 
 export function Glyph({ name, className }: IconProps & { name: keyof typeof glyphs }) {
