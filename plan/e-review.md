@@ -1,6 +1,6 @@
 # Hướng E: duyệt câu hỏi + AI soạn nháp thẻ myth
 
-Làm 26/10/2026 trên nhánh `feat/review`, trước hướng A (mở công khai) dù kế hoạch [after-mvp.md](after-mvp.md) xếp sau A: chạy được trên máy, chưa cần triển khai. Quyết định và lý do: [decisions.md](decisions.md), mục 26/10.
+Làm 26/10/2026 trên nhánh `feat/review`, PR #6 (chờ review + merge), trước hướng A (mở công khai) dù kế hoạch [after-mvp.md](after-mvp.md) xếp sau A: chạy được trên máy, chưa cần triển khai. Quyết định và lý do: [decisions.md](decisions.md), mục 26/10.
 
 ## Đã làm
 - [x] Giao diện duyệt, mở bằng `#review` (không có trong menu): đăng nhập người duyệt, lọc câu hỏi theo trạng thái (kèm số đếm), đổi `new` / `accepted` / `rejected` / `answered`, gắn với luật hoặc thẻ đã seed (kể cả chưa bật), ghi chú nội bộ
