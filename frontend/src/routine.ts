@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import {
   api,
   type InciAnalysis,
+  type ProductSummary,
   type RoutineCheckRequest,
   type RoutineCheckResponse,
   type Session,
@@ -43,6 +44,9 @@ export type Entry = { id: string; productKey: string; session: Session; days: nu
 
 export type Routine = { products: MyProduct[]; entries: Entry[] }
 
+/** A removed product and its steps, with their positions, so "Hoàn tác" can put them back. */
+export type RemovedProduct = { product: MyProduct; index: number; entries: { entry: Entry; index: number }[] }
+
 const STORAGE_KEY = 'skinwise.routine.v1'
 const EMPTY: Routine = { products: [], entries: [] }
 
@@ -70,6 +74,41 @@ function save(routine: Routine): void {
 
 export function productKeyFor(productId: number): string {
   return `p${productId}`
+}
+
+/**
+ * A demo routine of products sold in Vietnam, to show what a check looks like: one combination
+ * warning, one myth card and usage notes. Not a recommendation; the empty state says so.
+ */
+const SAMPLE_STEPS: { slug: string; session: Session }[] = [
+  { slug: 'vichy-liftactiv-vitamin-c-15-serum', session: 'AM' },
+  { slug: 'la-roche-posay-anthelios-uvmune-400-anti-dark-spots-fluid-spf50', session: 'AM' },
+  { slug: 'vichy-normaderm-probio-bha-serum', session: 'PM' },
+  { slug: 'vichy-liftactiv-b3-pure-retinol-night-cream', session: 'PM' },
+]
+
+/** The demo routine from the catalogue, or null if a product is gone (no partial demo). */
+export function sampleRoutine(catalogue: ProductSummary[]): Routine | null {
+  const bySlug = new Map(catalogue.map((p) => [p.slug, p]))
+  const steps = SAMPLE_STEPS.map(({ slug, session }) => ({ product: bySlug.get(slug), session }))
+  if (steps.some((s) => !s.product)) return null
+  const chosen = new Map(steps.map(({ product }) => [product!.id, product!]))
+  return {
+    products: [...chosen.values()].map((p) => ({
+      key: productKeyFor(p.id),
+      name: p.name,
+      brand: p.brand,
+      productId: p.id,
+      inci: null,
+      groups: p.groups,
+    })),
+    entries: steps.map(({ product, session }) => ({
+      id: newId(),
+      productKey: productKeyFor(product!.id),
+      session,
+      days: [...ALL_DAYS],
+    })),
+  }
 }
 
 export function sessionEntries(routine: Routine, session: Session): Entry[] {
@@ -112,11 +151,31 @@ export function useRoutine() {
     replace(next: Routine) {
       setRoutine(next)
     },
-    removeProduct(key: string) {
+    /** Remove a product and its steps; returns what restoreProduct needs to undo it. */
+    removeProduct(key: string): RemovedProduct | null {
+      const index = routine.products.findIndex((p) => p.key === key)
+      if (index < 0) return null
+      const removed = {
+        product: routine.products[index],
+        index,
+        entries: routine.entries.flatMap((entry, i) => (entry.productKey === key ? [{ entry, index: i }] : [])),
+      }
       setRoutine((r) => ({
         products: r.products.filter((p) => p.key !== key),
         entries: r.entries.filter((e) => e.productKey !== key),
       }))
+      return removed
+    },
+    /** Undo removeProduct: the product and its steps go back where they were. */
+    restoreProduct(removed: RemovedProduct) {
+      setRoutine((r) => {
+        if (r.products.some((p) => p.key === removed.product.key)) return r // added again meanwhile
+        const products = [...r.products]
+        products.splice(Math.min(removed.index, products.length), 0, removed.product)
+        const entries = [...r.entries]
+        for (const { entry, index } of removed.entries) entries.splice(Math.min(index, entries.length), 0, entry)
+        return { products, entries }
+      })
     },
     addEntry(productKey: string, session: Session) {
       setRoutine((r) => ({
@@ -160,7 +219,7 @@ export type CheckState =
   | { kind: 'empty' } // nothing scheduled yet
   | { kind: 'loading'; previous: RoutineCheckResponse | null }
   | { kind: 'done'; result: RoutineCheckResponse }
-  | { kind: 'error'; message: string }
+  | { kind: 'error'; message: string; retry: () => void }
 
 /** The result to show: the last finished check, kept while a newer one runs. */
 export function currentResult(state: CheckState): RoutineCheckResponse | null {
@@ -182,6 +241,7 @@ export function useRoutineCheck(routine: Routine): CheckState {
   const empty = request.items.length === 0
   // The last finished check and the request it answered; loading = it answered an older request.
   const [last, setLast] = useState<{ body: string; result?: RoutineCheckResponse; error?: string } | null>(null)
+  const [attempt, setAttempt] = useState(0) // bumped by "Thử lại" to send the same request again
 
   useEffect(() => {
     if (empty) return
@@ -198,9 +258,14 @@ export function useRoutineCheck(routine: Routine): CheckState {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [body, empty])
+  }, [body, empty, attempt])
 
   if (empty) return { kind: 'empty' }
   if (last?.body !== body) return { kind: 'loading', previous: last?.result ?? null }
-  return last.result ? { kind: 'done', result: last.result } : { kind: 'error', message: last.error ?? '' }
+  if (last.result) return { kind: 'done', result: last.result }
+  const retry = () => {
+    setLast(null) // shows "loading" until the new answer
+    setAttempt((n) => n + 1)
+  }
+  return { kind: 'error', message: last.error ?? '', retry }
 }

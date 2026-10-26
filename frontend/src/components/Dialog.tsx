@@ -1,4 +1,4 @@
-import { useEffect, useRef, type MouseEvent, type ReactNode } from 'react'
+import { useEffect, useId, useRef, type MouseEvent, type ReactNode } from 'react'
 import { Glyph } from './Icons'
 
 type Props = {
@@ -15,6 +15,7 @@ type Props = {
  */
 export function Dialog({ open, onClose, title, children }: Props) {
   const ref = useRef<HTMLDialogElement>(null)
+  const titleId = useId() // names the dialog: a screen reader announces the title, not just "dialog"
   const pressedOnBackdrop = useRef(false)
 
   // The <dialog> element is the target of backdrop clicks, but also of a text selection
@@ -41,6 +42,7 @@ export function Dialog({ open, onClose, title, children }: Props) {
   return (
     <dialog
       ref={ref}
+      aria-labelledby={titleId}
       onClose={onClose}
       onPointerDown={(e) => {
         pressedOnBackdrop.current = onBackdrop(e)
@@ -54,7 +56,9 @@ export function Dialog({ open, onClose, title, children }: Props) {
       {open && (
         <>
           <header className="sticky top-0 z-10 flex items-start gap-4 border-b border-line bg-surface px-5 py-4">
-            <div className="min-w-0 flex-1">{title}</div>
+            <div id={titleId} className="min-w-0 flex-1">
+              {title}
+            </div>
             <button
               onClick={onClose}
               aria-label="Đóng"

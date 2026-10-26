@@ -16,7 +16,12 @@ export function WarningsPanel({ state, products }: Props) {
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
-    <section aria-labelledby="results-title" aria-live="polite">
+    <section aria-labelledby="results-title">
+      {/* Read out after each check. The panel itself is not a live region: a screen reader
+          would read every card again on each change. */}
+      <p role="status" className="sr-only">
+        {announcement(state)}
+      </p>
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="results-title" className="text-xl font-bold">
           Kết quả kiểm tra
@@ -29,8 +34,20 @@ export function WarningsPanel({ state, products }: Props) {
           <Notice>Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.</Notice>
         )}
         {state.kind === 'error' && (
-          <div className="rounded-xl bg-avoid-soft p-4 text-sm text-avoid-ink">
-            Không kiểm tra được routine ({state.message}). Hãy thử lại sau.
+          <div className="rounded-xl bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
+            <p>Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.</p>
+            <button
+              onClick={state.retry}
+              className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
+            >
+              Thử lại
+            </button>
+            {state.message && (
+              <details className="mt-2 text-xs text-ink-mute">
+                <summary className="cursor-pointer">Chi tiết kỹ thuật</summary>
+                <p className="mt-1 break-words">{state.message}</p>
+              </details>
+            )}
           </div>
         )}
         {incomplete.length > 0 && (
@@ -51,7 +68,7 @@ export function WarningsPanel({ state, products }: Props) {
           const usage = w.rule.kind === 'usage'
           const rinseOff = usage ? [] : w.product_keys.filter((k) => applications.get(k) === 'rinse_off')
           return (
-            <RuleCard key={`${w.rule.key}:${w.product_keys.join('+')}`} rule={w.rule}>
+            <RuleCard key={`${w.rule.key}:${w.product_keys.join('+')}`} rule={w.rule} collapsible>
               <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-ink-mute">Sản phẩm</dt>
                 <dd className="font-medium">
@@ -87,15 +104,31 @@ export function WarningsPanel({ state, products }: Props) {
 }
 
 /**
- * "1 Nên tránh, 2 Thận trọng": how many combination warnings at each severity, most severe
- * first; "Lưu ý khi dùng" notes are counted on their own, not as warnings.
+ * How many combination warnings at each severity, most severe first; "Lưu ý khi dùng" notes are
+ * counted on their own, not as warnings.
  */
-export function SeverityCounts({ warnings, className }: { warnings: Warning[]; className?: string }) {
+function tally(warnings: Warning[]) {
   const combinations = warnings.filter((w) => !isUsageNote(w))
-  const notes = warnings.length - combinations.length
   const counts = (Object.keys(SEVERITY) as Severity[])
     .map((severity) => [severity, combinations.filter((w) => w.rule.severity === severity).length] as const)
     .filter(([, n]) => n > 0)
+  return { counts, notes: warnings.length - combinations.length }
+}
+
+/** The status line a screen reader announces once a check finishes. */
+function announcement(state: CheckState): string {
+  if (state.kind === 'error') return 'Không kiểm tra được routine.'
+  if (state.kind !== 'done') return ''
+  const { counts, notes } = tally(state.result.warnings)
+  const parts = counts.map(([severity, n]) => `${n} ${SEVERITY[severity].label.toLowerCase()}`)
+  if (parts.length === 0) parts.push('chưa có cảnh báo kết hợp, không có nghĩa là chắc chắn an toàn')
+  if (notes > 0) parts.push(`${notes} lưu ý khi dùng`)
+  return `Đã kiểm tra routine: ${parts.join('; ')}.`
+}
+
+/** "1 Nên tránh, 2 Thận trọng" badges, then the number of usage notes. */
+export function SeverityCounts({ warnings, className }: { warnings: Warning[]; className?: string }) {
+  const { counts, notes } = tally(warnings)
   return (
     <p className={`flex flex-wrap items-center gap-1.5 ${className ?? ''}`}>
       {counts.map(([severity, n]) => (

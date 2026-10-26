@@ -94,5 +94,13 @@ Làm hướng E (sau MVP), chi tiết ở [e-review.md](e-review.md). Mở rộn
 ## Xuất/nhập routine không cần tài khoản (hướng B, 26/10)
 Làm trước hướng H như đã chốt. Link chia sẻ mang routine trong phần sau `#` của URL: trình duyệt không gửi phần này lên máy chủ, nên SkinWise không lưu routine của ai. File và link chỉ mang dữ liệu riêng của người dùng (khoá sản phẩm, thứ tự bước, ngày, tên tự đặt, bảng thành phần tự dán); tên hãng, nhóm hoạt chất và lưu ý được lấy lại từ máy chủ khi mở, nên file hay link bị sửa tay không làm hiện sai chip hoạt chất. Mở file hoặc link luôn hỏi trước khi thay routine hiện tại, có nút tải routine hiện tại về trước. Giới hạn giống `/routine/check` (50 sản phẩm, 200 bước, bảng dán 10.000 ký tự); link nén deflate, giải nén có trần 1 MB.
 
+## Sửa theo bản đánh giá sản phẩm (26/10)
+Làm các mục "Làm ngay" của bản đánh giá (chi tiết ở [after-mvp.md](after-mvp.md), hướng B).
+- Routine mẫu dùng 4 sản phẩm bán ở Việt Nam, chọn để ra đủ ba loại thẻ (kết hợp, myth, lưu ý khi dùng) mà không quá nhiều; luôn kèm câu "không phải gợi ý cách dùng", vì một app về sức khoẻ không được để routine mẫu trông như lời khuyên. Thiếu một sản phẩm thì báo lỗi, không ghép routine dở dang.
+- Thu gọn lời giải thích chỉ bằng CSS: không cắt chữ, không viết tóm tắt, nên vẫn đúng nguyên tắc hiển thị nguyên văn.
+- Xoá sản phẩm dùng "Hoàn tác" thay cho `confirm()`: ít bước hơn, và hộp hỏi của trình duyệt không đổi được giao diện, không chặn được bấm nhầm khi sản phẩm chưa có trong lịch.
+- Thẻ luật hiện ngày duyệt, không hiện tên người duyệt: ngày đủ cho người đọc biết luật được xem lại khi nào; hiện tên công khai là quyết định riêng của người duyệt.
+- Chưa thêm `og:image`: cần URL tuyệt đối, phải đợi có địa chỉ công khai.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

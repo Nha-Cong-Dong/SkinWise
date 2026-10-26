@@ -82,6 +82,7 @@ export type Rule = {
   title_vi: string
   explanation_vi: string
   sources: Source[]
+  reviewed_at: string | null // YYYY-MM-DD: when a reviewer read the sources and published the rule
 }
 
 export type RulesResponse = { rules: Rule[]; notice_vi: string | null }

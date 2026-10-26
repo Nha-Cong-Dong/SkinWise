@@ -232,6 +232,10 @@ def test_myth_cards(client: TestClient) -> None:
     assert body["notice_vi"] is None
     assert "vitamin-c-niacinamide-myth" in [r["key"] for r in body["rules"]]
     assert all(r["kind"] == "myth" and r["sources"] for r in body["rules"])
+    # Published rules carry the day a reviewer read their sources (data/rules.toml).
+    by_key = {r["key"]: r for r in body["rules"]}
+    assert by_key["vitamin-c-niacinamide-myth"]["reviewed_at"] == "2026-10-22"
+    assert all(r["reviewed_at"] for r in body["rules"])
 
 
 def lookup(client: TestClient, *groups: str) -> list[str]:

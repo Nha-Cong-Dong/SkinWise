@@ -1,11 +1,10 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, type CosmeticFunction, type Group, type Severity } from './api'
 import { AddProduct } from './components/AddProduct'
 import { Dialog } from './components/Dialog'
 import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
-import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
@@ -22,6 +21,9 @@ import {
 } from './routine'
 
 type Page = 'routine' | 'myths' | 'review'
+
+// Only reviewers open the review page, so its code is loaded when it is first shown.
+const ReviewPage = lazy(() => import('./components/ReviewPage').then((m) => ({ default: m.ReviewPage })))
 
 // The review page has no nav entry for users; reviewers open #review.
 const pageFromHash = (): Page => (window.location.hash === '#review' ? 'review' : 'routine')
@@ -116,6 +118,8 @@ function App() {
           <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
             {page === 'routine' ? (
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
+                {/* The three columns have visible h2 titles; the page title is for screen readers. */}
+                <h1 className="sr-only">Routine của tôi</h1>
                 <div className="lg:col-start-1 lg:row-start-1">
                   <MyProducts actions={actions} onAdd={() => setAdding(true)} />
                 </div>
@@ -132,7 +136,10 @@ function App() {
               </div>
             ) : (
               <div className="mx-auto max-w-4xl">
-                <ReviewPage />
+                <h1 className="sr-only">Trang duyệt</h1>
+                <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải trang duyệt…</p>}>
+                  <ReviewPage />
+                </Suspense>
               </div>
             )}
           </main>

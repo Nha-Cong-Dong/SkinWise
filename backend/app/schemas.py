@@ -1,6 +1,6 @@
 """Request and response models for the API."""
 
-from datetime import datetime
+from datetime import date, datetime
 from typing import Annotated, Literal
 
 from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
@@ -115,6 +115,7 @@ class RuleOut(FromAttributes):
     title_vi: str
     explanation_vi: str
     sources: list[SourceOut]
+    reviewed_at: date | None  # when a reviewer read the sources and published the rule
 
 
 class RulesResponse(BaseModel):

@@ -50,6 +50,7 @@ Mọi cảnh báo đều:
 | Câu hỏi đã được trả lời | Câu hỏi người dùng gửi, được người duyệt trả lời bằng một thẻ có nguồn, hiện trên trang "Sự thật hay myth" (đã biên tập để bỏ thông tin cá nhân) |
 | Trang duyệt (`#review`) | Người duyệt đăng nhập, xem câu hỏi, đổi trạng thái, gắn câu hỏi với luật / thẻ trả lời nó |
 | AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
+| Routine mẫu | Một nút ở trang trống để xem SkinWise kiểm tra thế nào, với 4 sản phẩm bán ở Việt Nam; không phải gợi ý cách dùng |
 
 ### Dự kiến sau hackathon
 
@@ -151,3 +152,4 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [EU CosIng](https://single-market-economy.ec.europa.eu/sectors/cosmetics/cosmetic-ingredient-database_en): tham chiếu khi lập từ điển hoạt chất
 - [Open Beauty Facts](https://world.openbeautyfacts.org) (dự kiến): dữ liệu sản phẩm mở, giấy phép [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)
 - Nguồn y khoa cho từng luật được liệt kê ngay trong cảnh báo tương ứng
+- Font [Archivo](https://github.com/Omnibus-Type/Archivo) và [Newsreader](https://github.com/productiontype/Newsreader), giấy phép SIL Open Font License 1.1; file font và giấy phép đi kèm app trong `frontend/src/fonts/`
