@@ -74,11 +74,12 @@ Rà lại 26/10: mọi ý dưới đây đã đối chiếu với ngữ cảnh t
   - Nồng độ ghi trên nhãn và "đường 1%" vẫn chỉ để hiển thị (quyết định 24/10). Xem lại khi thêm luật có nguồn nêu ngưỡng
 - [x] Luật cho một nhóm hoạt chất: loại `usage` ("Lưu ý khi dùng", phạm vi `routine`). Mỗi luật ra một thẻ, liệt kê mọi sản phẩm trong routine có nhóm đó và mọi ngày/buổi dùng; trong cùng mức độ, thẻ này đứng sau cảnh báo về cặp sản phẩm; tra cặp nhóm ở trang myth không trả luật này. `rule_problems()` chặn luật `usage` có `group_b` hoặc phạm vi khác `routine`
 - [x] Trước khi bật luật `usage`: thẻ "Lưu ý khi dùng" không còn được tính vào chip mức độ trên lịch dùng; thanh đếm ghi riêng "n lưu ý khi dùng" (sửa 26/10 sau code review, kiểm tra trên Chrome khổ điện thoại với luật tạm bật trong DB dev)
-- [ ] **Cần bạn duyệt:** 4 luật nhạy nắng ứng viên trong `rules.toml`, chưa bật. Lời giải thích đã sửa theo lượt rà (bỏ chỗ nói quá nguồn, thêm đoạn trích); đoạn trích qua `verify_quotes`
-  - [ ] `aha-sun-sensitivity` (caution / moderate): hướng dẫn ghi nhãn AHA của FDA (2005), trang AHA của FDA, PMC3047947. Nghiên cứu chỉ dùng glycolic acid. Không áp dụng cho Citric Acid vì SkinWise không tính là AHA, vd. toner Some By Mi "AHA-BHA-PHA" có AHA duy nhất là Citric Acid
-  - [ ] `benzoyl-peroxide-sun-protection` (caution / moderate, hoặc expert_opinion cho nhất quán với các luật dựa trên nhãn): 21 CFR 333.350, quy tắc FDA 2010, nhãn CeraVe; áp dụng cả sữa rửa mặt
-  - [ ] `retinoid-sun-sensitivity` (caution / expert_opinion): nhãn FDA của tretinoin, adapalene (kê đơn và không kê đơn), tazarotene; với retinol mỹ phẩm chỉ có AAD (lời một bác sĩ da liễu) và DermNet
-  - [ ] `bha-sun-protection` (info / low): trang BHA của FDA (cập nhật 2022) vẫn khuyên chống nắng, nhưng nghiên cứu 2009 thấy salicylic acid 2% không làm tăng nhạy nắng. Đề xuất chỉ bật như thông tin hai chiều, hoặc không bật
+- [x] 4 luật nhạy nắng: người duyệt (Vân Anh) bật cả bốn ngày 26/10, 37/37 đoạn trích qua `verify_quotes` ngay trước khi bật. Lời giải thích đã sửa theo lượt rà (bỏ chỗ nói quá nguồn, thêm đoạn trích); đoạn trích qua `verify_quotes`
+  - [x] `aha-sun-sensitivity` (caution / moderate): hướng dẫn ghi nhãn AHA của FDA (2005), trang AHA của FDA, PMC3047947. Nghiên cứu chỉ dùng glycolic acid. Không áp dụng cho Citric Acid vì SkinWise không tính là AHA, vd. toner Some By Mi "AHA-BHA-PHA" có AHA duy nhất là Citric Acid
+  - [x] `benzoyl-peroxide-sun-protection` (caution / moderate, hoặc expert_opinion cho nhất quán với các luật dựa trên nhãn): 21 CFR 333.350, quy tắc FDA 2010, nhãn CeraVe; áp dụng cả sữa rửa mặt
+  - [x] `retinoid-sun-sensitivity` (caution / expert_opinion): nhãn FDA của tretinoin, adapalene (kê đơn và không kê đơn), tazarotene; với retinol mỹ phẩm chỉ có AAD (lời một bác sĩ da liễu) và DermNet
+  - [x] `bha-sun-protection` (info / low): trang BHA của FDA (cập nhật 2022) vẫn khuyên chống nắng, nhưng nghiên cứu 2009 thấy salicylic acid 2% không làm tăng nhạy nắng. Bật ở mức info, thông tin hai chiều
+- [x] Routine chỉ có lưu ý khi dùng vẫn được nhắc "không có cảnh báo kết hợp ≠ an toàn" (`NO_COMBINATION_WARNING_VI`), trên khung kết quả lẫn thanh dưới đáy màn hình điện thoại
 
 ### Luật và thẻ myth
 - [ ] Tìm lại nguồn cho 4 ứng viên đã bỏ (benzoyl peroxide + vitamin C, niacinamide + AHA/BHA, vitamin C + retinol, azelaic acid + niacinamide; lý do ở [README.md](README.md)). Chỉ thêm khi có bài bình duyệt. 26/10: tìm lại, vẫn chưa có nguồn đủ mạnh; làm lại định kỳ

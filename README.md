@@ -40,6 +40,7 @@ Mọi cảnh báo đều:
 | Phát hiện trùng hoạt chất | Cảnh báo khi nhiều sản phẩm trong cùng một buổi chứa cùng nhóm hoạt chất |
 | Cảnh báo kết hợp | Một bộ nhỏ các luật có bằng chứng rõ ràng, áp dụng theo phạm vi cùng bước / cùng buổi / cùng ngày |
 | Thẻ "Sự thật hay myth" | Giải đáp các lời đồn phổ biến, kèm nguồn |
+| Lưu ý khi dùng | Nhắc riêng cho từng hoạt chất, không cần kết hợp: AHA, retinoid, benzoyl peroxide có thể làm da nhạy nắng (nguồn FDA); BHA chỉ ghi thông tin vì bằng chứng chưa thống nhất |
 
 ### Đã làm sau MVP
 

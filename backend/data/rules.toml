@@ -298,7 +298,8 @@ sources = [
 ]
 
 # ======================================================================================
-# Ứng viên 26/10: lưu ý khi dùng (kind = "usage", một nhóm hoạt chất, không cần cặp sản phẩm) — CHƯA BẬT.
+# Lưu ý khi dùng (kind = "usage", một nhóm hoạt chất, không cần cặp sản phẩm). Soạn 26/10; người duyệt (Vân Anh)
+# bật cả bốn ngày 26/10, kể cả BHA ở mức info (thông tin hai chiều, không phải cảnh báo).
 # Nguồn và đoạn trích do Claude tìm, đã kiểm tra nguyên văn trên trang; người duyệt vẫn phải tự đọc nguồn.
 # Lời giải thích là bản nháp do Claude soạn; 26/10 đã đối chiếu lại từng ý với ngữ cảnh trên trang nguồn và sửa
 # chỗ nói quá nguồn. Đề xuất: bật AHA, benzoyl peroxide, retinoid sau khi duyệt; BHA chỉ là thông tin hai chiều
@@ -341,7 +342,9 @@ evidence_level = "moderate"
 group_a = "AHA"
 title_vi = "AHA có thể làm da nhạy cảm hơn với ánh nắng"
 explanation_vi = "Theo Cục Quản lý Thực phẩm và Dược phẩm Mỹ (FDA), mỹ phẩm chứa AHA (phổ biến nhất là glycolic acid và lactic acid) có thể làm da nhạy cảm hơn với ánh nắng và dễ bị cháy nắng hơn, trong thời gian dùng và đến một tuần sau khi ngưng. Các nghiên cứu FDA dựa vào dùng glycolic acid; FDA cho rằng các AHA khác có thể cũng vậy. Trong các nghiên cứu này, tác dụng nhỏ và hết sau khi ngưng dùng. FDA khuyến nghị nhãn sản phẩm chứa AHA ghi lời khuyên dùng kem chống nắng, mặc quần áo che chắn và hạn chế ra nắng trong thời gian dùng và một tuần sau đó, kể cả với sản phẩm chỉ để trên da dưới một giờ rồi rửa sạch."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
 sources = [
   { url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids", quote = "FDA has considered evidence that suggests that topically applied cosmetic products containing alpha hydroxy acids (AHAs) as ingredients may increase the sensitivity of skin to the sun while the products are used and for up to a week after use is stopped, and that this increased skin sensitivity to the sun may increase the possibility of sunburn." },
   { url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids", quote = "Although the studies investigated the effects of glycolic acid, FDA believes that the effects of other types of AHAs used in cosmetic products may be the same." },
@@ -383,7 +386,9 @@ evidence_level = "moderate"
 group_a = "BENZOYL_PEROXIDE"
 title_vi = "Benzoyl peroxide có thể làm da dễ cháy nắng hơn"
 explanation_vi = "Theo quy định của FDA Mỹ, nhãn mọi thuốc trị mụn không kê đơn chứa benzoyl peroxide phải ghi: tránh ra nắng khi không cần thiết và dùng kem chống nắng; nếu ra ngoài, thoa kem chống nắng sau khi dùng sản phẩm. FDA giải thích rằng các nghiên cứu cho thấy benzoyl peroxide 5% và 10% dùng lặp lại có thể làm da chịu tia UV kém hơn (dễ cháy nắng hơn), và kích ứng do benzoyl peroxide có thể nặng hơn khi ra nắng. Cảnh báo này áp dụng cho cả sản phẩm rửa trôi (như sữa rửa mặt) lẫn sản phẩm để trên da."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
 sources = [
   { url = "https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml", quote = "avoid unnecessary sun exposure and use a sunscreen" },
   { url = "https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml", quote = "if going outside, apply sunscreen after using this product." },
@@ -422,7 +427,9 @@ evidence_level = "expert_opinion"
 group_a = "RETINOID"
 title_vi = "Retinoid có thể làm da nhạy cảm hơn với ánh nắng"
 explanation_vi = "Nhãn thuốc tretinoin (theo quy định của FDA Mỹ) ghi thuốc có thể gây nhạy cảm với ánh sáng; nhãn tazarotene ghi da dễ bị bỏng nắng hơn khi dùng thuốc. Nhãn tretinoin, tazarotene và adapalene (kê đơn và không kê đơn) đều khuyên hạn chế ánh nắng, kể cả đèn hoặc giường tắm nắng, và dùng kem chống nắng khi ra nắng; nhãn thuốc kê đơn khuyên thêm quần áo che chắn. Với retinoid trong mỹ phẩm: Viện Hàn lâm Da liễu Hoa Kỳ (AAD) gọi retinol là một loại retinoid; DermNet xếp retinol và retinaldehyde trong mỹ phẩm vào nhóm retinoid bôi ngoài da và cho biết retinoid bôi ngoài da có thể gây nhạy cảm với ánh sáng. Bác sĩ da liễu thường khuyên bôi retinoid vào buổi tối; một bác sĩ da liễu trong bài viết của AAD khuyên luôn chống nắng ban ngày khi dùng retinoid. SkinWise chưa tìm thấy nghiên cứu đo riêng độ nhạy nắng do retinol trong mỹ phẩm."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
 sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "RETIN-A MICRO can cause photosensitivity." },
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Advise patients to avoid or minimize unnecessary exposure to ultraviolet (UV) light, including sunlight and sunlamps, while using RETIN-A MICRO." },
@@ -460,7 +467,9 @@ evidence_level = "low"
 group_a = "BHA"
 title_vi = "BHA (salicylic acid) và ánh nắng: bằng chứng chưa thống nhất"
 explanation_vi = "FDA Mỹ khuyên người dùng mỹ phẩm chứa BHA (phổ biến nhất là salicylic acid) nên chống nắng, như một biện pháp thận trọng cho đến khi các đánh giá an toàn hoàn tất. Một nghiên cứu ngắn hạn trên người (2009) thấy salicylic acid 2% không làm da nhạy cảm hơn với tia UV, trong khi glycolic acid 10% (một AHA) thì có; một bài tổng quan (2010) cho biết một số nghiên cứu thực nghiệm và lâm sàng thấy salicylic acid bôi da có tác dụng bảo vệ da khỏi ánh sáng. Vì bằng chứng chưa thống nhất, SkinWise chỉ ghi đây là thông tin, không phải cảnh báo."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
 sources = [
   { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/beta-hydroxy-acids", quote = "Use sun protection if you use a BHA product." },
   { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/beta-hydroxy-acids", quote = "Until these safety assessments are completed, FDA advises that similar precautions be taken for the use of cosmetics containing AHAs and BHAs." },

@@ -63,6 +63,12 @@ NO_ROUTINE_WARNING_VI = (
     "Chưa có luật đã kiểm chứng nào áp dụng cho routine này. Không có cảnh báo không có nghĩa "
     "là chắc chắn an toàn: SkinWise chỉ kiểm tra một số ít kết hợp đã có nguồn đáng tin cậy."
 )
+# Only "Lưu ý khi dùng" notes apply: about the combinations, the result is still empty.
+NO_COMBINATION_WARNING_VI = (
+    "Chưa có luật kết hợp đã kiểm chứng nào áp dụng cho routine này; các thẻ dưới đây chỉ là lưu ý "
+    "khi dùng từng sản phẩm. Không có cảnh báo kết hợp không có nghĩa là chắc chắn an toàn: "
+    "SkinWise chỉ kiểm tra một số ít kết hợp đã có nguồn đáng tin cậy."
+)
 NO_VERIFIED_INFO_VI = (
     "Chưa có thông tin đã kiểm chứng cho trường hợp này. Không có cảnh báo không có nghĩa là "
     "chắc chắn an toàn. Bạn có thể gửi câu hỏi để chúng tôi tìm nguồn."
@@ -242,7 +248,13 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
             )
             for p in body.products
         ],
-        notice_vi=None if warnings else NO_ROUTINE_WARNING_VI,
+        notice_vi=(
+            None
+            if any(w.rule.kind in PAIR_KINDS for w in warnings)
+            else NO_COMBINATION_WARNING_VI
+            if warnings
+            else NO_ROUTINE_WARNING_VI
+        ),
     )
 
 

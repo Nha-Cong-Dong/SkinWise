@@ -185,12 +185,15 @@ function ResultsAside({ check, children }: { check: CheckState; children: ReactN
           className="fixed inset-x-3 bottom-3 z-20 flex items-center gap-3 rounded-2xl bg-night py-2.5 pr-4 pl-3 text-sm text-night-text shadow-xl shadow-ink/30 lg:hidden"
         >
           <span className="min-w-0 flex-1">
-            {warnings.length > 0 ? (
+            {warnings.some((w) => !isUsageNote(w)) ? (
               <SeverityCounts warnings={warnings} />
             ) : check.kind === 'error' ? (
               'Không kiểm tra được routine'
             ) : check.kind === 'loading' && !result ? (
               'Đang kiểm tra…'
+            ) : warnings.length > 0 ? (
+              // Only usage notes: about the combinations, the result is still empty.
+              `Chưa có cảnh báo kết hợp, không có nghĩa là chắc chắn an toàn · ${warnings.length} lưu ý khi dùng`
             ) : (
               // Silence reads as "safe", so even this short line says what it does not mean.
               'Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn'

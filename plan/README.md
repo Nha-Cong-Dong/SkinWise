@@ -12,7 +12,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
 | — | Sau MVP: những gì chưa làm được, thứ tự đề xuất | sau 10/11 | 🚧 Phần C (độ chính xác) + giao diện mới + thiết kế H + phần E (gộp từ PR #6 để gỡ xung đột): xong code 26/10, chờ review + merge PR #7 | [after-mvp.md](after-mvp.md), [h-accounts.md](h-accounts.md) |
 
-**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 4 thẻ myth đã bật — **đạt mục tiêu**.
+**Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 4 thẻ myth đã bật — **đạt mục tiêu**. Ngày 26/10 bật thêm 4 lưu ý khi dùng (nhạy nắng).
 
 | Luật ứng viên | Loại | Trạng thái |
 |---|---|---|
@@ -26,10 +26,10 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | Retinoid + niacinamide | myth | ✅ Bật 25/10 (RCT Br J Dermatol 2010 + 2 bài PMC; gián tiếp, mức info / evidence low) |
 | Dẫn xuất vitamin C + niacinamide | myth | ✅ Bật 25/10 (RCT mù đôi CCID 2024 + PMC8389214; sản phẩm phối hợp, mức info / evidence low) |
 | Azelaic acid + retinoid | myth | ✅ Bật 25/10, mức info (tổng quan Pharmaceuticals 2025: hiệu quả hơn ở nám nhưng kích ứng nhiều) |
-| AHA làm da nhạy nắng | usage | ⏳ Chờ duyệt 26/10 (hướng dẫn ghi nhãn AHA 2005 + trang AHA của FDA) |
-| Benzoyl peroxide làm da dễ cháy nắng | usage | ⏳ Chờ duyệt 26/10 (21 CFR 333.350 + quy tắc FDA 2010, cả sữa rửa mặt) |
-| Retinoid làm da nhạy nắng | usage | ⏳ Chờ duyệt 26/10 (4 nhãn thuốc FDA; retinol mỹ phẩm chỉ có AAD, DermNet) |
-| BHA và ánh nắng | usage | ⏳ Bản nháp mức info; đề xuất không bật dạng cảnh báo (nghiên cứu của FDA 2009 thấy salicylic acid 2% không làm tăng nhạy nắng) |
+| AHA làm da nhạy nắng | usage | ✅ Bật 26/10 (hướng dẫn ghi nhãn AHA 2005 + trang AHA của FDA) |
+| Benzoyl peroxide làm da dễ cháy nắng | usage | ✅ Bật 26/10 (21 CFR 333.350 + quy tắc FDA 2010, cả sữa rửa mặt) |
+| Retinoid làm da nhạy nắng | usage | ✅ Bật 26/10 (4 nhãn thuốc FDA; retinol mỹ phẩm chỉ có AAD, DermNet) |
+| BHA và ánh nắng | usage | ✅ Bật 26/10 ở mức info, thông tin hai chiều, không phải cảnh báo (FDA khuyên chống nắng; nghiên cứu FDA/NIH 2009 thấy salicylic acid 2% không làm tăng nhạy nắng) |
 | Benzoyl peroxide + vitamin C | conflict | ❌ Bỏ: chỉ có blog / trang thương mại, không có bài bình duyệt |
 | Niacinamide + AHA/BHA | myth | ❌ Bỏ: không có bài bình duyệt về chuyển hoá thành niacin trong sản phẩm thật (bài động học thuỷ phân duy nhất đo ở 89 °C, chỉ có tóm tắt) |
 | Vitamin C + retinol | myth | ❌ Bỏ: một thử nghiệm không đối chứng, và hai chất dùng ở hai buổi khác nhau; tìm sâu 25/10 vẫn không có bài bình duyệt trên PMC |

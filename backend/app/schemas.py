@@ -184,7 +184,9 @@ class WarningOut(BaseModel):
 class RoutineCheckResponse(BaseModel):
     warnings: list[WarningOut]
     products: list[RoutineProductResult]
-    notice_vi: str | None  # set when no rule applies: no warning does not mean safe
+    # Set when no combination rule applies (usage notes alone do not count): no warning does
+    # not mean safe.
+    notice_vi: str | None
 
 
 class QuestionCreate(BaseModel):

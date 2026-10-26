@@ -4,7 +4,7 @@ import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
 
-from app.api import NO_ROUTINE_WARNING_VI, NO_VERIFIED_INFO_VI
+from app.api import NO_COMBINATION_WARNING_VI, NO_ROUTINE_WARNING_VI, NO_VERIFIED_INFO_VI
 
 RETINOL = "the-ordinary-retinol-05-in-squalane"
 BHA = "paulas-choice-skin-perfecting-2-bha-liquid-exfoliant"
@@ -136,6 +136,11 @@ def test_analyze_rejects_empty_text(client: TestClient) -> None:
     assert client.post("/inci/analyze", json={"text": "   "}).status_code == 422
 
 
+def pairs(result: dict) -> list[dict]:
+    """Warnings about a combination of products, without the "Lưu ý khi dùng" notes."""
+    return [w for w in result["warnings"] if w["rule"]["kind"] != "usage"]
+
+
 def entry(key: str, session: str = "PM", step: int = 1, days=EVERY_DAY) -> dict:
     return {"product_key": key, "session": session, "step": step, "days": days}
 
@@ -175,8 +180,12 @@ def test_routine_check_with_pasted_inci(client: TestClient, ids: dict[str, int])
     assert {p["key"]: p["groups"] for p in result["products"]}["mine"] == [
         "AHA", "EXFOLIANT_ACID"
     ]  # fmt: skip
-    (warning,) = result["warnings"]
+    (warning,) = pairs(result)
     assert warning["occurrences"] == [{"day": 2, "session": "PM"}]
+    # The AHA sun note lists the pasted product with every day it is used.
+    (sun,) = [w for w in result["warnings"] if w["rule"]["key"] == "aha-sun-sensitivity"]
+    assert sun["product_keys"] == ["mine"]
+    assert sun["occurrences"] == [{"day": 0, "session": "PM"}, {"day": 2, "session": "PM"}]
 
 
 def test_pasted_product_used_twice_is_not_compared_with_itself(client: TestClient) -> None:
@@ -184,6 +193,20 @@ def test_pasted_product_used_twice_is_not_compared_with_itself(client: TestClien
         "products": [{"key": "mine", "inci": "Retinol, Salicylic Acid"}],
         "items": [entry("mine", step=1), entry("mine", step=3)],
     }
+    result = client.post("/routine/check", json=body).json()
+    assert pairs(result) == []
+    # Usage notes still apply, once per rule, and the combination result says it is empty.
+    assert {w["rule"]["key"]: w["product_keys"] for w in result["warnings"]} == {
+        "retinoid-sun-sensitivity": ["mine"],
+        "bha-sun-protection": ["mine"],
+    }
+    assert result["notice_vi"] == NO_COMBINATION_WARNING_VI
+
+
+def test_routine_without_any_rule_says_no_warning_is_not_safe(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    body = {"products": [{"key": "lotion", "product_id": ids[LOTION]}], "items": [entry("lotion")]}
     result = client.post("/routine/check", json=body).json()
     assert result["warnings"] == []
     assert result["notice_vi"] == NO_ROUTINE_WARNING_VI
@@ -412,4 +435,5 @@ def test_routine_check_flags_possible_misspelled_actives(
     assert products["mine"]["groups"] == []
     assert products["mine"]["possible_actives"] == ["Benzoyl Peroxide"]
     assert products["retinol"]["possible_actives"] == []
-    assert result["warnings"] == []  # suggestions never create warnings
+    # Suggestions never create warnings: nothing mentions the misspelled product.
+    assert all("mine" not in w["product_keys"] for w in result["warnings"])
