@@ -18,8 +18,12 @@ export type ProductSummary = {
   name: string
   market: string | null
   verification_status: 'unverified' | 'user_confirmed' | 'verified'
+  application: Application | null
   groups: string[]
 }
+
+/** Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only. */
+export type Application = 'rinse_off' | 'leave_on'
 
 export type Ingredient = {
   position: number
@@ -34,6 +38,7 @@ export type Ingredient = {
   declared_concentration: string | null // printed with the entry, e.g. "10%"
   at_most_one_percent: boolean // listed after an ingredient the EU caps at 1%
   suggestions: { name: string; groups: string[] }[] // close names for an unrecognised entry
+  fragrance_allergen: boolean // in the EU fragrance allergen list; shown only, never a warning
 }
 
 export type CosmeticFunction = {
@@ -68,9 +73,9 @@ export type Source = { title: string; publisher: string; url: string; quote: str
 
 export type Rule = {
   key: string
-  kind: 'conflict' | 'duplicate' | 'myth' | 'profile'
+  kind: 'conflict' | 'duplicate' | 'myth' | 'profile' | 'usage' // usage: about one group
   severity: Severity
-  scope: 'same_step' | 'same_session' | 'same_day'
+  scope: 'same_step' | 'same_session' | 'same_day' | 'routine' // routine: usage rules
   evidence_level: 'high' | 'moderate' | 'low' | 'expert_opinion'
   group_a: string
   group_b: string | null
@@ -88,13 +93,13 @@ export type RoutineCheckRequest = {
 
 export type Warning = {
   rule: Rule
-  product_keys: [string, string]
+  product_keys: string[] // two for a pair rule; every product a usage rule is about
   occurrences: { day: number; session: Session | null }[]
 }
 
 export type RoutineCheckResponse = {
   warnings: Warning[]
-  products: { key: string; groups: string[]; possible_actives: string[] }[]
+  products: { key: string; groups: string[]; possible_actives: string[]; application: Application | null }[]
   notice_vi: string | null
 }
 

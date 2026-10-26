@@ -15,14 +15,19 @@ export function MythPage({ products }: { products: MyProduct[] }) {
   }, [])
 
   return (
-    <div className="space-y-8">
-      <section>
-        <h2 className="text-lg font-semibold text-slate-900">Sự thật hay myth?</h2>
-        <p className="text-sm text-slate-500">
+    <div className="space-y-14">
+      <section aria-labelledby="myth-title">
+        <h1
+          id="myth-title"
+          className="text-3xl leading-tight font-bold tracking-tight text-balance sm:text-4xl"
+        >
+          Sự thật hay myth?
+        </h1>
+        <p className="mt-3 max-w-[38rem] text-base leading-relaxed text-ink-soft">
           Những lời đồn phổ biến về việc kết hợp hoạt chất, đối chiếu với nguồn đáng tin cậy.
         </p>
-        <div className="mt-3 space-y-3">
-          {error && <p className="text-sm text-red-700">Không tải được thẻ myth.</p>}
+        <div className="mt-6 space-y-3">
+          {error && <p className="text-sm text-avoid-ink">Không tải được thẻ myth.</p>}
           {myths?.notice_vi && <Notice>{myths.notice_vi}</Notice>}
           {myths?.rules.map((rule) => <RuleCard key={rule.key} rule={rule} />)}
         </div>
@@ -46,17 +51,17 @@ function PairLookup({ products }: { products: MyProduct[] }) {
   }
 
   const select = (value: string, onChange: (v: string) => void, label: string) => (
-    <label className="flex-1 text-sm">
-      <span className="text-slate-600">{label}</span>
+    <label className="min-w-0 flex-1">
+      <span className="sr-only">{label}</span>
       <select
         value={value}
         onChange={(e) => {
           onChange(e.target.value)
           setResult(null)
         }}
-        className="mt-1 w-full rounded-md border border-slate-300 bg-white px-3 py-2"
+        className={`w-full rounded-xl border-0 bg-surface px-3.5 py-3 text-[0.9375rem] font-medium ring-1 ring-line focus:ring-2 focus:ring-link focus:outline-none focus-visible:outline-none ${value ? 'text-ink' : 'text-ink-mute'}`}
       >
-        <option value="">— Chọn nhóm hoạt chất —</option>
+        <option value="">{label}</option>
         {[...groups.values()].map((g) => (
           <option key={g.code} value={g.code}>
             {g.name_vi}
@@ -67,22 +72,26 @@ function PairLookup({ products }: { products: MyProduct[] }) {
   )
 
   return (
-    <section>
-      <h2 className="text-lg font-semibold text-slate-900">Tra cứu: hai hoạt chất này dùng chung được không?</h2>
-      <div className="mt-3 flex flex-col gap-2 sm:flex-row sm:items-end">
-        {select(a, setA, 'Hoạt chất thứ nhất')}
-        <span className="hidden pb-2 text-slate-400 sm:block">+</span>
-        {select(b, setB, 'Hoạt chất thứ hai')}
+    <section aria-labelledby="pair-title">
+      <h2 id="pair-title" className="text-2xl leading-tight font-bold text-balance">
+        Hai hoạt chất này dùng chung được không?
+      </h2>
+      <div className="mt-4 flex flex-col items-stretch gap-2 rounded-2xl bg-night p-3 sm:flex-row sm:items-center">
+        {select(a, setA, 'Chọn hoạt chất thứ nhất')}
+        <span className="text-center text-2xl leading-none font-light text-moon" aria-hidden="true">
+          +
+        </span>
+        {select(b, setB, 'Chọn hoạt chất thứ hai')}
         <button
           onClick={lookup}
           disabled={!a || !b}
-          className="rounded-md bg-rose-600 px-4 py-2 text-sm font-medium text-white hover:bg-rose-700 disabled:bg-slate-200 disabled:text-slate-500"
+          className="rounded-xl bg-moon px-5 py-3 text-[0.9375rem] font-semibold text-night hover:bg-white disabled:bg-night-raised disabled:text-night-mute"
         >
           Tra cứu
         </button>
       </div>
-      <div className="mt-3 space-y-3">
-        {error && <p className="text-sm text-red-700">Không tra cứu được.</p>}
+      <div className="mt-4 space-y-3">
+        {error && <p className="text-sm text-avoid-ink">Không tra cứu được.</p>}
         {result?.response.rules.map((rule) => <RuleCard key={rule.key} rule={rule} />)}
         {result?.response.notice_vi && (
           <>
@@ -92,7 +101,7 @@ function PairLookup({ products }: { products: MyProduct[] }) {
         )}
       </div>
       {!result && (
-        <div className="mt-6">
+        <div className="mt-8">
           <QuestionForm groupCodes={[]} products={products} />
         </div>
       )}

@@ -1,6 +1,8 @@
-import { SCOPE_LABELS, formatOccurrences } from '../labels'
+import type { Severity, Warning } from '../api'
+import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
 import { maybeIncomplete, type CheckState, type MyProduct } from '../routine'
-import { Notice } from './Notice'
+import { SeverityBadge } from './Icons'
+import { DataNote, Notice } from './Notice'
 import { RuleCard } from './RuleCard'
 
 type Props = { state: CheckState; products: MyProduct[] }
@@ -11,58 +13,91 @@ export function WarningsPanel({ state, products }: Props) {
   const checked = new Set(result?.products.map((p) => p.key))
   const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
   const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0)
+  const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
-    <section aria-live="polite">
-      <div className="flex items-baseline justify-between">
-        <h2 className="font-semibold text-slate-900">Kết quả kiểm tra</h2>
-        {state.kind === 'loading' && <span className="text-xs text-slate-500">Đang kiểm tra…</span>}
+    <section aria-labelledby="ket-qua-title" aria-live="polite">
+      <div className="flex items-baseline justify-between gap-3">
+        <h2 id="ket-qua-title" className="text-xl font-bold">
+          Kết quả kiểm tra
+        </h2>
+        {state.kind === 'loading' && <span className="text-xs text-ink-mute">Đang kiểm tra…</span>}
       </div>
-      <div className="mt-3 space-y-3">
+      {result && result.warnings.length > 0 && <SeverityCounts warnings={result.warnings} className="mt-2" />}
+      <div className="mt-4 space-y-3">
         {state.kind === 'empty' && (
           <Notice>Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.</Notice>
         )}
         {state.kind === 'error' && (
-          <div className="rounded-lg bg-red-50 p-4 text-sm text-red-800 ring-1 ring-red-200">
+          <div className="rounded-xl bg-avoid-soft p-4 text-sm text-avoid-ink">
             Không kiểm tra được routine ({state.message}). Hãy thử lại sau.
           </div>
         )}
         {incomplete.length > 0 && (
-          <div className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
-            Bảng thành phần của {incomplete.map((p) => `“${p.name}”`).join(', ')} có thể chưa đầy đủ, nên kết quả
-            dưới đây có thể thiếu cảnh báo.
-          </div>
+          <DataNote title="Có thể thiếu cảnh báo">
+            Bảng thành phần của {incomplete.map((p) => `“${p.name}”`).join(', ')} có thể chưa đầy đủ, nên kết quả dưới
+            đây có thể thiếu cảnh báo.
+          </DataNote>
         )}
         {misspelled.map((p) => (
-          <div key={p.key} className="rounded-lg bg-amber-50 p-4 text-sm text-amber-900 ring-1 ring-amber-200">
+          <DataNote key={p.key} title="Có thể có hoạt chất bị gõ sai">
             “{names.get(p.key) ?? p.key}” có thành phần không nhận ra, có thể là hoạt chất bị gõ sai:{' '}
-            <strong>{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất này; hãy sửa bảng thành
-            phần nếu đúng là gõ sai.
-          </div>
+            <strong className="text-ink">{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất này;
+            hãy sửa bảng thành phần nếu đúng là gõ sai.
+          </DataNote>
         ))}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
-        {result?.warnings.map((w) => (
-          <RuleCard key={`${w.rule.key}:${w.product_keys.join('+')}`} rule={w.rule}>
-            <dl className="mt-2 space-y-0.5 text-sm text-slate-600">
-              <div>
-                <dt className="inline font-medium text-slate-700">Sản phẩm: </dt>
-                <dd className="inline">{w.product_keys.map((k) => names.get(k) ?? k).join(' + ')}</dd>
-              </div>
-              <div>
-                <dt className="inline font-medium text-slate-700">Khi nào: </dt>
-                <dd className="inline">{formatOccurrences(w.occurrences)}</dd>
-              </div>
-              <div className="text-xs text-slate-500">Luật áp dụng khi hai sản phẩm dùng {SCOPE_LABELS[w.rule.scope]}.</div>
-            </dl>
-          </RuleCard>
-        ))}
+        {result?.warnings.map((w) => {
+          const usage = w.rule.kind === 'usage'
+          const rinseOff = usage ? [] : w.product_keys.filter((k) => applications.get(k) === 'rinse_off')
+          return (
+            <RuleCard key={`${w.rule.key}:${w.product_keys.join('+')}`} rule={w.rule}>
+              <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+                <dt className="text-ink-mute">Sản phẩm</dt>
+                <dd className="font-medium">
+                  {w.product_keys.map((k, n) => (
+                    <span key={k}>
+                      {n > 0 && <span className="font-normal text-ink-mute">{usage ? ', ' : ' + '}</span>}
+                      {names.get(k) ?? k}
+                    </span>
+                  ))}
+                </dd>
+                <dt className="text-ink-mute">Khi nào</dt>
+                <dd>{formatOccurrences(w.occurrences)}</dd>
+              </dl>
+              <p className="mt-2 text-xs leading-relaxed text-ink-mute">
+                {usage
+                  ? 'Lưu ý cho mọi sản phẩm có nhóm hoạt chất này trong routine.'
+                  : `Luật áp dụng khi hai sản phẩm dùng ${SCOPE_LABELS[w.rule.scope]}.`}
+                {rinseOff.length > 0 &&
+                  ` ${rinseOff.map((k) => `“${names.get(k) ?? k}”`).join(', ')} là sản phẩm rửa trôi; SkinWise hiện áp dụng luật như nhau cho sản phẩm rửa trôi và sản phẩm để lại trên da.`}
+              </p>
+            </RuleCard>
+          )
+        })}
         {result && result.warnings.length > 0 && (
-          <p className="text-xs text-slate-500">
+          <p className="px-1 text-xs leading-relaxed text-ink-mute">
             Bảng thành phần không ghi nồng độ, nên cảnh báo chỉ nói “có thể”. SkinWise chỉ kiểm tra một số ít kết hợp
             đã có nguồn đáng tin cậy.
           </p>
         )}
       </div>
     </section>
+  )
+}
+
+/** "1 Nên tránh, 2 Thận trọng": how many warnings at each severity, most severe first. */
+export function SeverityCounts({ warnings, className }: { warnings: Warning[]; className?: string }) {
+  const counts = (Object.keys(SEVERITY) as Severity[])
+    .map((severity) => [severity, warnings.filter((w) => w.rule.severity === severity).length] as const)
+    .filter(([, n]) => n > 0)
+  return (
+    <p className={`flex flex-wrap gap-1.5 ${className ?? ''}`}>
+      {counts.map(([severity, n]) => (
+        <SeverityBadge key={severity} severity={severity}>
+          {n} {SEVERITY[severity].label.toLowerCase()}
+        </SeverityBadge>
+      ))}
+    </p>
   )
 }

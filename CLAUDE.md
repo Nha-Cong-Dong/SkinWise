@@ -48,7 +48,7 @@ Frontend (chạy trong `frontend/`):
 - `backend/app/rules.py` + `backend/data/rules.toml` — luật và nguồn. `rule_problems()` chặn seed luật `published` thiếu nguồn/đoạn trích hoặc thiếu `reviewed_by`/`reviewed_at`; `load_published_rules()` chỉ trả luật đã bật **và** có nguồn. Không tự đặt `published = true`: chỉ người dùng làm sau khi đọc nguồn.
 - `backend/app/sources.py` — tải trang nguồn và kiểm tra văn bản có trên trang; dùng chung cho kiểm tra sản phẩm và (giai đoạn 2) đoạn trích của luật.
 - `backend/scripts/` — điểm vào chạy tay, mỏng, gọi code trong `app/`.
-- `frontend/src/` — app React một trang, không router, không thư viện ngoài React + Tailwind. `api.ts`: kiểu dữ liệu khớp `app/schemas.py` + hàm gọi `/api/...`. `routine.ts`: routine lưu `localStorage` (bọc try/catch), `toCheckRequest()` đổi sang dạng `/routine/check` (bước = vị trí trong buổi), `useRoutineCheck()` tự kiểm tra lại khi routine đổi. `components/RuleCard.tsx` hiển thị nguyên văn `title_vi`/`explanation_vi` + nguồn; không diễn đạt lại.
+- `frontend/src/` — app React một trang, không router, không thư viện ngoài React + Tailwind. `api.ts`: kiểu dữ liệu khớp `app/schemas.py` + hàm gọi `/api/...`. `routine.ts`: routine lưu `localStorage` (bọc try/catch), `toCheckRequest()` đổi sang dạng `/routine/check` (bước = vị trí trong buổi), `useRoutineCheck()` tự kiểm tra lại khi routine đổi. `components/RuleCard.tsx` hiển thị nguyên văn `title_vi`/`explanation_vi` + nguồn; không diễn đạt lại. Màu và font là token trong `src/index.css` (`@theme`): buổi sáng trắng, buổi tối xanh đêm; màu đậm chỉ dùng cho mức độ cảnh báo (`SEVERITY` trong `labels.ts`).
 
 ## Phạm vi (MVP, hạn ≈ 2026-11-10)
 

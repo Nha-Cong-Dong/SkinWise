@@ -1,15 +1,16 @@
-import type { Rule, Session, Severity, Warning } from './api'
+import type { Application, Rule, Session, Severity, Warning } from './api'
 
 export const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] // 0 = Monday
 export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6]
 
 export const SESSION_LABELS: Record<Session, string> = { AM: 'Sáng', PM: 'Tối' }
 
-export const SEVERITY: Record<Severity, { label: string; badge: string; border: string }> = {
-  avoid: { label: 'Nên tránh', badge: 'bg-red-100 text-red-800', border: 'border-red-300' },
-  caution: { label: 'Thận trọng', badge: 'bg-amber-100 text-amber-800', border: 'border-amber-300' },
-  info: { label: 'Thông tin', badge: 'bg-sky-100 text-sky-800', border: 'border-sky-300' },
-  safe: { label: 'An toàn', badge: 'bg-emerald-100 text-emerald-800', border: 'border-emerald-300' },
+// Most severe first. `badge`: label on a pale background; `mark`: the icon's colour.
+export const SEVERITY: Record<Severity, { label: string; badge: string; mark: string }> = {
+  avoid: { label: 'Nên tránh', badge: 'bg-avoid-soft text-avoid-ink', mark: 'text-avoid' },
+  caution: { label: 'Thận trọng', badge: 'bg-caution-soft text-caution-ink', mark: 'text-caution' },
+  info: { label: 'Thông tin', badge: 'bg-info-soft text-info-ink', mark: 'text-info' },
+  safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe' },
 }
 
 export const KIND_LABELS: Record<Rule['kind'], string> = {
@@ -17,6 +18,7 @@ export const KIND_LABELS: Record<Rule['kind'], string> = {
   duplicate: 'Trùng hoạt chất',
   myth: 'Sự thật hay myth',
   profile: 'Theo loại da',
+  usage: 'Lưu ý khi dùng',
 }
 
 export const EVIDENCE_LABELS: Record<Rule['evidence_level'], string> = {
@@ -30,6 +32,12 @@ export const SCOPE_LABELS: Record<Rule['scope'], string> = {
   same_step: 'cùng một bước',
   same_session: 'cùng một buổi',
   same_day: 'cùng một ngày',
+  routine: 'trong routine',
+}
+
+export const APPLICATION_LABELS: Record<Application, string> = {
+  rinse_off: 'Rửa trôi',
+  leave_on: 'Để lại trên da',
 }
 
 export const VERIFICATION_LABELS: Record<string, string> = {

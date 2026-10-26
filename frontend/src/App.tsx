@@ -1,13 +1,15 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, type CosmeticFunction, type Group, type Severity } from './api'
 import { AddProduct } from './components/AddProduct'
+import { Dialog } from './components/Dialog'
+import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
 import { RoutineBoard } from './components/RoutineBoard'
-import { WarningsPanel } from './components/WarningsPanel'
+import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
-import { useRoutine, useRoutineCheck } from './routine'
+import { useRoutine, useRoutineCheck, type CheckState } from './routine'
 
 type Page = 'routine' | 'myths'
 
@@ -15,6 +17,7 @@ const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
   const [page, setPage] = useState<Page>('routine')
+  const [adding, setAdding] = useState(false)
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
@@ -46,67 +49,131 @@ function App() {
   return (
     <GroupsContext value={groups}>
       <FunctionsContext value={functions}>
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-            <div>
-              <h1 className="text-xl font-bold text-rose-600">SkinWise</h1>
-              <p className="text-xs text-slate-500">Routine skincare, trùng hoạt chất và kết hợp cần thận trọng</p>
+        <div className="min-h-screen">
+          <header className="bg-surface ring-1 ring-line">
+            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6">
+              <div className="flex items-center gap-2.5">
+                <Mark className="size-8" />
+                <span className="text-xl leading-none font-bold tracking-tight">
+                  SkinWise
+                </span>
+              </div>
+              <nav className="flex gap-1 text-[0.9375rem]" aria-label="Trang">
+                {(
+                  [
+                    ['routine', 'Routine của tôi'],
+                    ['myths', 'Sự thật hay myth'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    onClick={() => setPage(value)}
+                    aria-current={page === value ? 'page' : undefined}
+                    className={`rounded-full px-3.5 py-1.5 ${page === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+              <p className="hidden text-sm text-ink-mute xl:ml-auto xl:block">
+                Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng.
+              </p>
             </div>
-            <nav className="flex gap-1 text-sm">
-              {(
-                [
-                  ['routine', 'Routine của tôi'],
-                  ['myths', 'Sự thật hay myth'],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  onClick={() => setPage(value)}
-                  aria-current={page === value ? 'page' : undefined}
-                  className={`rounded-md px-3 py-1.5 ${page === value ? 'bg-rose-50 font-medium text-rose-700' : 'text-slate-600 hover:bg-slate-100'}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </header>
+          </header>
 
-        <div className="mx-auto max-w-6xl px-4 pt-4">
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-200">
-            SkinWise là công cụ nhắc nhở và giáo dục, không thay thế tư vấn của bác sĩ da liễu hay dược sĩ. Nếu bạn
-            đang mang thai, đang điều trị bệnh da hoặc dùng thuốc kê đơn, hãy hỏi ý kiến chuyên gia.
-          </p>
+          <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+            <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
+              SkinWise là công cụ nhắc nhở và giáo dục, không thay thế tư vấn của bác sĩ da liễu hay dược sĩ. Nếu bạn
+              đang mang thai, đang điều trị bệnh da hoặc dùng thuốc kê đơn, hãy hỏi ý kiến chuyên gia.
+            </p>
+          </div>
+
+          <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
+            {page === 'routine' ? (
+              <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
+                <div className="lg:col-start-1 lg:row-start-1">
+                  <MyProducts actions={actions} onAdd={() => setAdding(true)} />
+                </div>
+                <div className="lg:col-start-1 lg:row-start-2 xl:col-start-2 xl:row-start-1">
+                  <RoutineBoard actions={actions} flagged={flagged} />
+                </div>
+                <ResultsAside check={check}>
+                  <WarningsPanel state={check} products={actions.routine.products} />
+                </ResultsAside>
+              </div>
+            ) : (
+              <div className="mx-auto max-w-2xl">
+                <MythPage products={actions.routine.products} />
+              </div>
+            )}
+          </main>
+
+          <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
+            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
+          </footer>
         </div>
 
-        <main className="mx-auto max-w-6xl px-4 py-6">
-          {page === 'routine' ? (
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-              <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <AddProduct actions={actions} />
-                  <MyProducts actions={actions} />
-                </div>
-                <RoutineBoard actions={actions} flagged={flagged} />
-              </div>
-              <aside className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
-                <WarningsPanel state={check} products={actions.routine.products} />
-              </aside>
-            </div>
-          ) : (
-            <div className="mx-auto max-w-3xl">
-              <MythPage products={actions.routine.products} />
-            </div>
-          )}
-        </main>
-
-        <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-slate-400">
-          Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
-        </footer>
-      </div>
+        <Dialog
+          open={adding}
+          onClose={() => setAdding(false)}
+          title={<h2 className="text-xl font-bold">Thêm sản phẩm</h2>}
+        >
+          <AddProduct actions={actions} />
+        </Dialog>
       </FunctionsContext>
     </GroupsContext>
+  )
+}
+
+/**
+ * The check results: a sticky column on wide screens. On narrow screens they come after the
+ * schedule, so a bar at the bottom of the screen says how many warnings there are until the
+ * results scroll into view.
+ */
+function ResultsAside({ check, children }: { check: CheckState; children: ReactNode }) {
+  const ref = useRef<HTMLElement>(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const result = check.kind === 'done' ? check.result : check.kind === 'loading' ? check.previous : null
+  const warnings = result?.warnings ?? []
+
+  return (
+    <>
+      <aside
+        ref={ref}
+        id="ket-qua"
+        className="scroll-mt-4 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain xl:col-start-3 xl:row-span-1"
+      >
+        {children}
+      </aside>
+      {check.kind !== 'empty' && !inView && (
+        <a
+          href="#ket-qua"
+          className="fixed inset-x-3 bottom-3 z-20 flex items-center gap-3 rounded-2xl bg-night py-2.5 pr-4 pl-3 text-sm text-night-text shadow-xl shadow-ink/30 lg:hidden"
+        >
+          <span className="min-w-0 flex-1">
+            {warnings.length > 0 ? (
+              <SeverityCounts warnings={warnings} />
+            ) : check.kind === 'error' ? (
+              'Không kiểm tra được routine'
+            ) : check.kind === 'loading' && !result ? (
+              'Đang kiểm tra…'
+            ) : (
+              'Chưa thấy cảnh báo nào'
+            )}
+          </span>
+          <span className="shrink-0 font-semibold text-moon">Xem kết quả</span>
+        </a>
+      )}
+    </>
   )
 }
 

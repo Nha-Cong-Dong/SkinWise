@@ -34,9 +34,9 @@ export function QuestionForm({ groupCodes, products }: Props) {
 
   if (state.kind === 'sent') {
     return (
-      <div className="rounded-lg bg-emerald-50 p-4 text-sm text-emerald-800 ring-1 ring-emerald-200">
+      <div className="rounded-2xl bg-safe-soft p-5 text-sm text-safe-ink">
         <p>{state.message}</p>
-        <button onClick={() => setState({ kind: 'idle' })} className="mt-2 text-emerald-900 underline">
+        <button onClick={() => setState({ kind: 'idle' })} className="mt-2 font-medium underline underline-offset-2">
           Gửi câu hỏi khác
         </button>
       </div>
@@ -44,13 +44,16 @@ export function QuestionForm({ groupCodes, products }: Props) {
   }
 
   return (
-    <form onSubmit={submit} className="space-y-2 rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <h3 className="font-semibold text-slate-900">Gửi câu hỏi hoặc lời đồn bạn nghe được</h3>
-      <p className="text-sm text-slate-500">
-        Người duyệt sẽ đọc câu hỏi và chỉ làm thẻ trả lời khi tìm được nguồn đáng tin cậy. Vui lòng không ghi thông tin cá nhân.
-      </p>
+    <form onSubmit={submit} className="space-y-3 rounded-2xl bg-surface p-5 ring-1 ring-line">
+      <div>
+        <h3 className="text-base font-semibold">Gửi câu hỏi hoặc lời đồn bạn nghe được</h3>
+        <p className="mt-1 text-sm leading-relaxed text-ink-mute">
+          Người duyệt sẽ đọc câu hỏi và chỉ làm thẻ trả lời khi tìm được nguồn đáng tin cậy. Vui lòng không ghi thông tin
+          cá nhân.
+        </p>
+      </div>
       {groupCodes.length > 0 && (
-        <div className="flex items-center gap-2 text-sm text-slate-600">
+        <div className="flex flex-wrap items-center gap-2 text-sm text-ink-soft">
           Liên quan: <GroupChips codes={groupCodes} />
         </div>
       )}
@@ -59,38 +62,50 @@ export function QuestionForm({ groupCodes, products }: Props) {
         onChange={(e) => setQuestion(e.target.value)}
         rows={3}
         maxLength={2000}
+        aria-label="Câu hỏi"
         placeholder="Ví dụ: Nghe nói không được dùng azelaic acid chung với niacinamide, có đúng không?"
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+        className="w-full rounded-xl border border-line px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:ring-2 focus:ring-link/20 focus:outline-none focus-visible:outline-none"
       />
       {seeded.length > 0 && (
         <fieldset className="text-sm">
-          <legend className="text-slate-600">Sản phẩm liên quan (nếu có):</legend>
-          <div className="mt-1 flex flex-wrap gap-x-4 gap-y-1">
-            {seeded.map((p) => (
-              <label key={p.key} className="flex items-center gap-1.5">
-                <input
-                  type="checkbox"
-                  checked={productIds.includes(p.productId!)}
-                  onChange={(e) =>
-                    setProductIds((ids) =>
-                      e.target.checked ? [...ids, p.productId!] : ids.filter((id) => id !== p.productId),
-                    )
-                  }
-                />
-                {p.name}
-              </label>
-            ))}
+          <legend className="text-ink-soft">Sản phẩm liên quan (nếu có):</legend>
+          <div className="mt-2 flex flex-wrap gap-1.5">
+            {seeded.map((p) => {
+              const checked = productIds.includes(p.productId!)
+              return (
+                <label
+                  key={p.key}
+                  className={`flex cursor-pointer items-center gap-1.5 rounded-full px-3 py-1 ring-1 has-focus-visible:outline-2 has-focus-visible:outline-link ${
+                    checked ? 'bg-ink text-white ring-ink' : 'text-ink-soft ring-line hover:ring-ink-mute'
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="sr-only"
+                    checked={checked}
+                    onChange={(e) =>
+                      setProductIds((ids) =>
+                        e.target.checked ? [...ids, p.productId!] : ids.filter((id) => id !== p.productId),
+                      )
+                    }
+                  />
+                  {p.name}
+                </label>
+              )
+            })}
           </div>
         </fieldset>
       )}
-      <button
-        type="submit"
-        disabled={tooShort || state.kind === 'sending'}
-        className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-700 disabled:bg-slate-200 disabled:text-slate-500"
-      >
-        {state.kind === 'sending' ? 'Đang gửi…' : 'Gửi câu hỏi'}
-      </button>
-      {state.kind === 'error' && <p className="text-sm text-red-700">Không gửi được ({state.message}).</p>}
+      <div className="flex flex-wrap items-center gap-3">
+        <button
+          type="submit"
+          disabled={tooShort || state.kind === 'sending'}
+          className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link disabled:bg-paper disabled:text-ink-mute"
+        >
+          {state.kind === 'sending' ? 'Đang gửi…' : 'Gửi câu hỏi'}
+        </button>
+        {state.kind === 'error' && <p className="text-sm text-avoid-ink">Không gửi được ({state.message}).</p>}
+      </div>
     </form>
   )
 }
