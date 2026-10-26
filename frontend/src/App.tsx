@@ -3,22 +3,32 @@ import { api, type CosmeticFunction, type Group, type Severity } from './api'
 import { AddProduct } from './components/AddProduct'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
+import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
 import { useRoutine, useRoutineCheck } from './routine'
 
-type Page = 'routine' | 'myths'
+type Page = 'routine' | 'myths' | 'review'
+
+// The review page has no nav entry for users; reviewers open #review.
+const pageFromHash = (): Page => (window.location.hash === '#review' ? 'review' : 'routine')
 
 const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
-  const [page, setPage] = useState<Page>('routine')
+  const [page, setPage] = useState<Page>(pageFromHash)
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
   const check = useRoutineCheck(actions.routine)
+
+  useEffect(() => {
+    const onHash = () => setPage(pageFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
   useEffect(() => {
     api.groups().then(
@@ -62,7 +72,10 @@ function App() {
               ).map(([value, label]) => (
                 <button
                   key={value}
-                  onClick={() => setPage(value)}
+                  onClick={() => {
+                    if (window.location.hash) history.replaceState(null, '', window.location.pathname)
+                    setPage(value)
+                  }}
                   aria-current={page === value ? 'page' : undefined}
                   className={`rounded-md px-3 py-1.5 ${page === value ? 'bg-rose-50 font-medium text-rose-700' : 'text-slate-600 hover:bg-slate-100'}`}
                 >
@@ -94,9 +107,13 @@ function App() {
                 <WarningsPanel state={check} products={actions.routine.products} />
               </aside>
             </div>
-          ) : (
+          ) : page === 'myths' ? (
             <div className="mx-auto max-w-3xl">
               <MythPage products={actions.routine.products} />
+            </div>
+          ) : (
+            <div className="mx-auto max-w-4xl">
+              <ReviewPage />
             </div>
           )}
         </main>

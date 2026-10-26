@@ -143,3 +143,50 @@ CREATE TABLE IF NOT EXISTS user_questions (
     CHECK (status IN ('new', 'accepted', 'rejected', 'answered')),
   created_at  timestamptz NOT NULL DEFAULT now()
 );
+
+-- Added after the MVP (direction E): reviewing questions in the app. A question is answered
+-- by a rule (usually a myth card); only answered questions whose rule is published are shown
+-- to users, in the wording the reviewer wrote (`public_question`), never the raw text.
+ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS rule_key text;        -- rules.key, checked by the review API
+ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS public_question text; -- reviewer's wording for the public list
+ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS reviewer_note text;
+ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS updated_by text;
+ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS updated_at timestamptz;
+
+-- Reviewers sign in to the review page. Added with scripts.reviewers; passwords are scrypt hashes.
+CREATE TABLE IF NOT EXISTS reviewers (
+  name          text PRIMARY KEY,
+  password_hash text NOT NULL,
+  created_at    timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS reviewer_sessions (
+  token_hash text PRIMARY KEY, -- sha256 of the bearer token; the token itself is never stored
+  reviewer   text NOT NULL REFERENCES reviewers(name) ON DELETE CASCADE,
+  expires_at timestamptz NOT NULL
+);
+
+-- Myth card drafts written by AI from sources a reviewer chose. Deliberately not in `rules`:
+-- nothing that loads rules can see a draft. A reviewer copies a draft into data/rules.toml
+-- (published = false), reads the sources and publishes it like any other rule.
+CREATE TABLE IF NOT EXISTS rule_drafts (
+  id                serial PRIMARY KEY,
+  question_id       integer REFERENCES user_questions(id) ON DELETE SET NULL,
+  key               text NOT NULL,
+  kind              text NOT NULL DEFAULT 'myth' CHECK (kind = 'myth'),
+  severity          text NOT NULL CHECK (severity IN ('info', 'safe')),
+  scope             text NOT NULL CHECK (scope IN ('same_step', 'same_session', 'same_day')),
+  evidence_level    text NOT NULL CHECK (evidence_level IN ('high', 'moderate', 'low', 'expert_opinion')),
+  group_a           text NOT NULL REFERENCES functional_groups(code),
+  group_b           text NOT NULL REFERENCES functional_groups(code),
+  title_vi          text NOT NULL,
+  explanation_vi    text NOT NULL,
+  answerable        boolean NOT NULL, -- false: the model found the sources do not answer the question
+  reviewer_notes_vi text NOT NULL,    -- what the sources do not say, for the reviewer
+  sources           jsonb NOT NULL,   -- [{url, title, publisher}] as proposed by the model
+  quotes            jsonb NOT NULL,   -- [{url, quote, found}]; found = verbatim on the fetched page
+  model             text NOT NULL,
+  status            text NOT NULL DEFAULT 'draft' CHECK (status IN ('draft', 'discarded')),
+  created_by        text NOT NULL,
+  created_at        timestamptz NOT NULL DEFAULT now()
+);

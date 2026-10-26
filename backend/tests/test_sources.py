@@ -41,3 +41,15 @@ def test_bot_challenge_page_raises_instead_of_reporting_missing_quotes(monkeypat
     monkeypatch.setattr(sources.urllib.request, "urlopen", lambda *a, **k: FakeResponse(challenge))
     with pytest.raises(BlockedError):
         sources.fetch_text("https://example.org")
+
+
+def test_readable_text_drops_scripts_and_styles(monkeypatch) -> None:
+    page = (
+        '<p>Visible text.</p><script type="application/ld+json">{"ingredients": "Aqua"}'
+        "</script><style>p { color: red }</style><p>More text.</p>"
+    )
+    monkeypatch.setattr(sources.urllib.request, "urlopen", lambda *a, **k: FakeResponse(page))
+    assert "Aqua" in sources.fetch_text("https://example.org")
+    readable = sources.fetch_text("https://example.org", keep_scripts=False)
+    assert "Aqua" not in readable and "color" not in readable
+    assert " ".join(readable.split()) == "Visible text. More text."
