@@ -94,5 +94,20 @@ Làm hướng E (sau MVP), chi tiết ở [e-review.md](e-review.md). Mở rộn
 ## Xuất/nhập routine không cần tài khoản (hướng B, 26/10)
 Làm trước hướng H như đã chốt. Link chia sẻ mang routine trong phần sau `#` của URL: trình duyệt không gửi phần này lên máy chủ, nên SkinWise không lưu routine của ai. File và link chỉ mang dữ liệu riêng của người dùng (khoá sản phẩm, thứ tự bước, ngày, tên tự đặt, bảng thành phần tự dán); tên hãng, nhóm hoạt chất và lưu ý được lấy lại từ máy chủ khi mở, nên file hay link bị sửa tay không làm hiện sai chip hoạt chất. Mở file hoặc link luôn hỏi trước khi thay routine hiện tại, có nút tải routine hiện tại về trước. Giới hạn giống `/routine/check` (50 sản phẩm, 200 bước, bảng dán 10.000 ký tự); link nén deflate, giải nén có trần 1 MB.
 
+## Mã vạch qua Open Beauty Facts: chuyển tiếp, không lưu; người dùng so với bao bì (hướng D, 26/10)
+Open Beauty Facts là dữ liệu cộng đồng: thử 26/10 thấy bản ghi có bảng thành phần dịch sang tiếng Pháp ("Eau, glycérine…"), tên bị tách sai ("caprylic, capric triglyceride"), và chỉ 52 sản phẩm gắn Việt Nam, phần lớn son, nước hoa, kem đánh răng. Vì vậy:
+- `GET /barcode/{code}` chỉ chuyển tiếp bản ghi kèm ghi công ODbL, **không lưu vào cơ sở dữ liệu**. Lưu và trộn với dữ liệu của SkinWise rồi công khai có thể kéo theo điều khoản share-alike của ODbL; chưa đọc kỹ nên chưa lưu. Trình duyệt giữ sản phẩm như bảng tự dán, kèm mã vạch và ngày lấy.
+- Bảng thành phần lấy về đưa vào ô "Dán thành phần", không thêm thẳng vào routine: người dùng so với bao bì, sửa chỗ khác, bấm phân tích như văn bản tự dán (cùng lưu ý của `read_label_text()`). Ô "Tôi đã so với bảng thành phần in trên bao bì" chỉ để hiển thị; kiểm tra routine coi sản phẩm như bảng tự dán, nên cảnh báo giống hệt khi dán cùng văn bản.
+- Bản ghi có nhiều ngôn ngữ: chọn bản SkinWise nhận ra nhiều tên nhất (hoà thì tiếng Anh). Không dịch tên.
+- Mã vạch kiểm chữ số kiểm tra trước khi gọi Open Beauty Facts: gõ sai một số thường ra mã của sản phẩm khác. UPC-A 12 số đổi sang dạng EAN-13 (Open Beauty Facts trả lỗi 500 cho dạng 12 số).
+- Quét bằng camera dùng API `BarcodeDetector` của trình duyệt trên ảnh chụp; nút chỉ hiện khi trình duyệt hỗ trợ (không có trên Safari, Firefox). Không thêm thư viện quét mã.
+
+## Đọc bảng thành phần từ ảnh: Claude chỉ chép chữ, người dùng sửa và xác nhận (hướng G, 26/10)
+Chọn Claude qua backend (SDK `anthropic` và khoá đã có cho hướng E) thay vì Tesseract.js (thêm thư viện, tải dữ liệu ngôn ngữ nặng, đọc kém chữ nhỏ trên chai cong) hay OCR cài trên máy chủ. Đánh đổi: ảnh rời máy người dùng tới Anthropic, và mỗi ảnh tốn phí (Opus 5.5: ảnh tối đa 4.784 token, khoảng 0,02 USD tiền đầu vào mỗi ảnh, cộng phần chữ trả về). Tài liệu kỹ thuật gọi đây là OCR nhưng mô hình là AI, nên phải giữ nguyên tắc "AI không tự nhớ bảng thành phần":
+- Lời nhắc chỉ cho chép chữ in trên ảnh, giữ nguyên chính tả và thứ tự, ghi `[?]` cho mỗi tên không đọc chắc; cấm thêm, sửa hay sắp lại tên theo hiểu biết về sản phẩm. Nhãn nhiều thứ tiếng: chỉ chép bảng tên INCI chữ Latin.
+- Route chỉ trả chữ, không phân tích. Giao diện đưa chữ vào ô "Dán thành phần" cạnh ảnh; nút phân tích bị khoá khi còn `[?]` và khi người dùng chưa đánh dấu "đã so từng dòng với bao bì". Sau đó văn bản đi đúng đường của bảng tự dán, nên cảnh báo chỉ đến từ luật như mọi khi.
+- Không lưu ảnh, không ghi log ảnh. Trình duyệt thu ảnh về tối đa 2.576 px cạnh dài và 4.784 ô 28×28 (mức mô hình đọc), JPEG, trước khi gửi.
+- Mô hình mặc định `claude-opus-5-5`, effort `medium` (đổi bằng `LABEL_MODEL`), kèm `fallbacks: "default"`. Chưa đo độ chính xác trên ảnh thật vì chưa có khoá API: `scripts.label_check` làm việc này.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

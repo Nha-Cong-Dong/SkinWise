@@ -16,10 +16,10 @@ Mọi hướng mở rộng vẫn giữ nguyên tắc: **không có nguồn thì 
 | A | Mở công khai: triển khai, CI, kiểm tra nguồn định kỳ | M | — | Điều kiện để người thật dùng; mọi hướng sau cần |
 | B | Sửa giới hạn giao diện + xuất/nhập routine | S | — | Rẻ, người dùng thấy ngay |
 | C | Độ chính xác dữ liệu và engine | M, kéo dài | — | Giá trị cốt lõi; làm dần theo nguồn tìm được |
-| D | Open Beauty Facts + mã vạch | M | A | Bớt việc dán INCI; đứng đầu danh sách cắt nên chưa làm trong MVP |
+| D | Open Beauty Facts + mã vạch | M | A | Bớt việc dán INCI; đứng đầu danh sách cắt nên chưa làm trong MVP. ✅ Xong code 26/10 (chưa mở công khai) |
 | E | Giao diện duyệt câu hỏi + AI soạn nháp thẻ myth | M | A | Biến câu hỏi người dùng thành thẻ myth nhanh hơn |
 | F | Hồ sơ da (luật `profile`) | L | A, người duyệt có chuyên môn | Rủi ro y khoa cao nhất |
-| G | Chụp ảnh nhãn (OCR) | M | D | Chỉ còn cần cho sản phẩm không có trên Open Beauty Facts |
+| G | Chụp ảnh nhãn (OCR) | M | D | Chỉ còn cần cho sản phẩm không có trên Open Beauty Facts. ✅ Xong code 26/10, chưa đo trên ảnh thật (cần khoá API) |
 | H | Tài khoản + đồng bộ | L | A, B, tư vấn pháp lý | Xuất/nhập ở B đã giải quyết phần lớn nhu cầu; có tài khoản là phát sinh nghĩa vụ theo Luật Bảo vệ dữ liệu cá nhân 2025 |
 
 Cỡ: S ≈ vài ngày, M ≈ 1–2 tuần, L ≈ hơn 2 tuần (một người làm).
@@ -32,6 +32,7 @@ Hiện app chỉ chạy trên máy: frontend gọi backend qua proxy Vite, Postg
 - [ ] Tự lưu font trên máy chủ thay vì tải từ Google Fonts, để trình duyệt người xem không gửi IP ra nước ngoài
 - [ ] Frontend gọi API khác origin: cấu hình CORS cho đúng domain, thay cho proxy `/api` lúc dev
 - [ ] Giới hạn tần suất `POST /questions` (giới hạn đã biết của giai đoạn 3) và độ dài câu hỏi
+- [ ] Giới hạn tần suất `POST /label/read` (mỗi ảnh là một lượt gọi API tính phí) và `GET /barcode/{code}` (tôn trọng giới hạn của Open Beauty Facts)
 - [ ] Migration: chuyển sang Alembic trước lần đổi schema đầu tiên sau khi `user_questions` có dữ liệu thật; `schema.sql` chạy lặp lại được nhưng không đổi được kiểu cột hay xoá cột
 - [ ] Sao lưu `user_questions` (bảng duy nhất có dữ liệu không sinh lại được từ `data/*.toml`)
 - [ ] CI cho mỗi PR: `pytest` (cần PostgreSQL trong CI), `ruff check`, `npm run build`, `npm run lint`
@@ -139,17 +140,25 @@ Rà lại 26/10: mọi ý dưới đây đã đối chiếu với ngữ cảnh t
 
 ## D. Open Beauty Facts + mã vạch
 
-Bảng `products` đã có `ingredients_source = 'open_beauty_facts'` và `verification_status`.
+Làm 26/10 (nhánh `feat/barcode-ocr`). Quyết định: [decisions.md](decisions.md), mục "Mã vạch qua Open Beauty Facts".
 
-- [ ] Gọi API đọc sản phẩm theo mã vạch, gửi User-Agent mô tả rõ app (giống `USER_AGENT` trong `app/sources.py`)
-- [ ] Bảng thành phần lấy về đi qua `read_label_text()` như văn bản dán tay, để vẫn có lưu ý khi dữ liệu thiếu, nhiều ngôn ngữ hoặc là danh sách "thành phần nổi bật"
-- [ ] Gắn nhãn "dữ liệu cộng đồng, chưa xác minh"; người dùng so với bao bì rồi bấm xác nhận → `user_confirmed`
-- [ ] Lưu bản sao có `source_retrieved_at`, làm mới sau một thời gian
-- [ ] Ghi công ODbL trong app. **Cần đọc trước khi lưu vào DB:** điều khoản share-alike của ODbL khi trộn dữ liệu Open Beauty Facts với dữ liệu của mình rồi công khai
-- [ ] Quét mã vạch bằng camera: API `BarcodeDetector` chưa có trên mọi trình duyệt; luôn có ô gõ mã số. Thêm thư viện quét mã là quyết định mới (MVP chỉ dùng React + Tailwind)
-- [ ] Không tìm thấy sản phẩm: dẫn người dùng sang dán INCI và gợi ý đóng góp lên Open Beauty Facts
+- [x] Gọi API đọc sản phẩm theo mã vạch, gửi User-Agent mô tả rõ app (`USER_AGENT` của `app/sources.py`): `app/open_beauty_facts.py`, route `GET /barcode/{code}`. Kiểm chữ số kiểm tra trước khi gọi; UPC-A 12 số đổi sang EAN-13
+- [x] Bảng thành phần lấy về đi qua `read_label_text()` như văn bản dán tay: giao diện đưa nó vào ô "Dán thành phần". Bản ghi nhiều ngôn ngữ: chọn bản nhận ra nhiều tên nhất
+- [x] Gắn nhãn "dữ liệu cộng đồng, chưa xác minh"; người dùng so với bao bì rồi đánh dấu "Tôi đã so…" (`origin.confirmed` trên trình duyệt; không dùng `verification_status` vì không lưu vào DB)
+- [x] Lưu bản sao: **không lưu trên máy chủ** cho tới khi đọc xong ODbL (dòng dưới). Trình duyệt giữ mã vạch, link và ngày lấy (`retrievedAt`); chưa tự làm mới
+- [x] Ghi công ODbL trong app: ở kết quả tra, ô dán và chi tiết sản phẩm
+- [ ] Đọc điều khoản share-alike của ODbL trước khi lưu dữ liệu Open Beauty Facts vào DB (nếu cần cache phía máy chủ)
+- [x] Quét mã vạch bằng camera: `BarcodeDetector` đọc từ ảnh chụp (`<input type="file" capture>`), nút chỉ hiện khi trình duyệt hỗ trợ; luôn có ô gõ mã số; không thêm thư viện
+- [x] Không tìm thấy sản phẩm (hoặc có sản phẩm nhưng chưa có bảng thành phần): dẫn sang dán INCI và link đóng góp lên Open Beauty Facts
+- [x] Test: `tests/test_open_beauty_facts.py` (mã vạch, chọn ngôn ngữ, route, lỗi mạng; không gọi mạng thật)
 
-**Xong khi:** nhập một mã vạch có trên Open Beauty Facts thì sản phẩm vào routine với nhãn nguồn và trạng thái xác minh, cảnh báo giống như dán cùng bảng thành phần.
+**Xong khi:** nhập một mã vạch có trên Open Beauty Facts thì sản phẩm vào routine với nhãn nguồn và trạng thái xác minh, cảnh báo giống như dán cùng bảng thành phần. ✅ Đã thử với dữ liệu thật (3337875598996, CeraVe: bản ghi có bản tiếng Pháp và tiếng Anh, route chọn tiếng Anh, nhận ra 22/27 dòng vì cộng đồng tách sai tên).
+
+Giới hạn đã biết:
+- Rất ít sản phẩm bán ở Việt Nam trên Open Beauty Facts (52 sản phẩm gắn Việt Nam ngày 26/10)
+- File và link chia sẻ routine không mang nguồn Open Beauty Facts: mở ra thành sản phẩm tự dán
+- Chưa đánh dấu "đã so với bao bì" được sau khi đã thêm sản phẩm
+- Cần xem giới hạn tần suất của Open Beauty Facts trước khi mở công khai (hướng A)
 
 ## E. Duyệt câu hỏi + AI soạn nháp
 
@@ -173,12 +182,19 @@ Engine đã có loại luật `profile` nhưng bỏ qua (chỉ chạy luật tro
 
 ## G. Chụp ảnh nhãn (OCR)
 
-`ingredients_source = 'ocr'` đã có trong schema.
+Làm 26/10 (nhánh `feat/barcode-ocr`, sau D). Quyết định: [decisions.md](decisions.md), mục "Đọc bảng thành phần từ ảnh".
 
-- [ ] Chọn cách đọc: trên trình duyệt (vd. Tesseract.js, tải dữ liệu ngôn ngữ nặng), trên server, hay dịch vụ thuê ngoài (chi phí, ảnh rời máy người dùng)
-- [ ] Kết quả OCR luôn hiện thành văn bản để người dùng sửa và xác nhận trước khi phân tích; không tự kiểm tra
-- [ ] Không lưu ảnh
-- [ ] Đo trên ảnh chụp thật của sản phẩm mẫu (chai cong, chữ nhỏ, nhãn nhiều ngôn ngữ) trước khi chọn cách
+- [x] Chọn cách đọc: Claude qua backend (`app/label_reader.py`, `POST /label/read`), mô hình chỉ chép chữ và ghi `[?]` chỗ không đọc được. Không thêm thư viện frontend
+- [x] Kết quả hiện thành văn bản trong ô "Dán thành phần" cạnh ảnh để người dùng sửa; nút phân tích bị khoá khi còn `[?]` hoặc chưa đánh dấu "đã so từng dòng với bao bì"; không tự kiểm tra
+- [x] Không lưu ảnh (máy chủ không ghi, trình duyệt chỉ giữ trong bộ nhớ khi hộp thoại còn mở)
+- [x] Test: `tests/test_label_reader.py` (route, kiểm tra đầu vào, lỗi mô hình, yêu cầu gửi tới API qua SDK thật với máy chủ giả)
+- [ ] Đo trên ảnh chụp thật của sản phẩm mẫu (chai cong, chữ nhỏ, nhãn nhiều ngôn ngữ): cần `ANTHROPIC_API_KEY`. Chạy `uv run python -m scripts.label_check ảnh.jpg <slug>` cho từng ảnh, ghi số dòng thiếu/thừa và nhóm hoạt chất có khớp không. Nếu nhóm hoạt chất hay lệch thì thử effort `high` trước khi đổi cách
+- [ ] Giới hạn tần suất `POST /label/read` trước khi mở công khai (mỗi ảnh tốn phí API; xem hướng A)
+
+Giới hạn đã biết:
+- Chỉ hoạt động khi máy chủ có `ANTHROPIC_API_KEY`; không có thì giao diện báo "chưa bật" và người dùng dán tay
+- Ảnh HEIC trên trình duyệt không mở được HEIC (vd. Chrome trên Windows) báo "không mở được ảnh"; iPhone thường tự đổi sang JPEG khi chọn ảnh
+- Muốn chụp lại phải bấm "Bỏ" (xoá chữ đã đọc) rồi chọn ảnh mới
 
 ## H. Tài khoản + đồng bộ
 

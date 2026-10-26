@@ -1,10 +1,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { api, type InciAnalysis, type ProductSummary } from '../api'
+import { api, type BarcodeProduct, type InciAnalysis, type ProductSummary } from '../api'
 import { APPLICATION_LABELS } from '../labels'
 import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
+import { BarcodeLookup, OpenBeautyFactsCredit } from './BarcodeLookup'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
+import { ReadFromPhoto } from './ReadFromPhoto'
 
 type Props = { actions: RoutineActions }
 
@@ -13,15 +15,38 @@ type DraftProps = Props & { draft: AddDraft; setDraft: Dispatch<SetStateAction<A
 const field =
   'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
 
-/** Content of the "add product" dialog: search the catalogue or paste an ingredient list. */
+/** Content of the "add product" dialog: search the catalogue, look up a barcode, or paste a list. */
 export function AddProduct({ actions, draft, setDraft }: DraftProps) {
   const tab = draft.tab
+
+  // A barcode lookup fills the paste tab, where the user compares the list with the package.
+  const takeFound = (product: BarcodeProduct) => {
+    const text = product.ingredients_text ?? ''
+    const pasted = draft.text.trim()
+    if (pasted && pasted !== text && !confirm('Thay bảng thành phần đang dán bằng bảng từ Open Beauty Facts?')) return
+    setDraft({
+      tab: 'paste',
+      name: product.name ?? `Sản phẩm mã ${product.barcode}`,
+      text,
+      analysis: null,
+      origin: {
+        kind: 'open_beauty_facts',
+        barcode: product.barcode,
+        brand: product.brand,
+        url: product.source_url,
+        retrievedAt: product.retrieved_at,
+        confirmed: false,
+      },
+      photo: null,
+    })
+  }
   return (
     <div>
       <div className="flex gap-1 rounded-full bg-paper p-1 text-sm" role="tablist">
         {(
           [
-            ['search', 'Tìm sản phẩm'],
+            ['search', 'Tìm tên'],
+            ['barcode', 'Mã vạch'],
             ['paste', 'Dán thành phần'],
           ] as const
         ).map(([value, label]) => (
@@ -30,7 +55,7 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
             role="tab"
             aria-selected={tab === value}
             onClick={() => setDraft((d) => ({ ...d, tab: value }))}
-            className={`flex-1 rounded-full px-3 py-1.5 ${tab === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
+            className={`flex-1 rounded-full px-2 py-1.5 whitespace-nowrap ${tab === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
           >
             {label}
           </button>
@@ -38,6 +63,8 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
       </div>
       {tab === 'search' ? (
         <SearchProducts actions={actions} />
+      ) : tab === 'barcode' ? (
+        <BarcodeLookup onUse={takeFound} onPaste={() => setDraft((d) => ({ ...d, tab: 'paste' }))} />
       ) : (
         <PasteInci actions={actions} draft={draft} setDraft={setDraft} />
       )}
@@ -119,10 +146,21 @@ function SearchProducts({ actions }: Props) {
   )
 }
 
+// What the model writes where it cannot read a label photo (backend/app/label_reader.py).
+const UNREADABLE = '[?]'
+
 function PasteInci({ actions, draft, setDraft }: DraftProps) {
-  const { name, text, analysis } = draft
+  const { name, text, analysis, origin, photo } = draft
   const [state, setState] = useState<'idle' | 'loading' | 'error' | 'added'>('idle')
+  const [bigPhoto, setBigPhoto] = useState(false)
   const update = (change: Partial<AddDraft>) => setDraft((d) => ({ ...d, ...change }))
+  const clear = () => {
+    update({ name: '', text: '', analysis: null, origin: null, photo: null })
+    setState('idle')
+  }
+  const unreadable = text.split(UNREADABLE).length - 1
+  // A list read off a photo is analysed only once the user has checked it against the package.
+  const unchecked = origin?.kind === 'photo' && !origin.confirmed
 
   const analyze = (input = text) => {
     setState('loading')
@@ -140,18 +178,65 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
     if (!analysis) return
     actions.addProduct({
       name: name.trim() || 'Sản phẩm tự nhập',
-      brand: null,
+      brand: origin?.kind === 'open_beauty_facts' ? origin.brand : null,
       productId: null,
       inci: text.trim(),
       groups: analysis.groups,
       notices: analysis.notices,
+      ...(origin && { origin }),
     })
-    update({ name: '', text: '', analysis: null })
+    update({ name: '', text: '', analysis: null, origin: null, photo: null })
     setState('added')
   }
 
+  const discard = (
+    <button onClick={clear} className="font-medium text-link underline underline-offset-2">
+      Bỏ, tự dán bảng khác
+    </button>
+  )
+
   return (
     <div className="mt-4 space-y-3">
+      {!origin && (
+        <ReadFromPhoto
+          mayReplace={() => !text.trim() || confirm('Thay bảng thành phần đang dán bằng chữ đọc từ ảnh?')}
+          onRead={(read, shot) => {
+            update({ text: read, analysis: null, origin: { kind: 'photo', confirmed: false }, photo: shot })
+            setState('idle')
+          }}
+        />
+      )}
+      {origin?.kind === 'open_beauty_facts' && (
+        <div className="rounded-xl bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
+          <p className="font-semibold text-ink">Bảng thành phần từ Open Beauty Facts, mã {origin.barcode}</p>
+          <p className="mt-1">
+            Dữ liệu do cộng đồng đóng góp, chưa được xác minh: có thể thiếu chất, là bản dịch, hoặc tên bị tách sai. Hãy
+            so với bảng thành phần in trên bao bì và sửa chỗ khác trước khi thêm.
+          </p>
+          <p className="mt-2 text-xs text-ink-mute">
+            <OpenBeautyFactsCredit url={origin.url} /> {discard}
+          </p>
+        </div>
+      )}
+      {origin?.kind === 'photo' && (
+        <div className="rounded-xl bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
+          <p className="font-semibold text-ink">Chữ đọc từ ảnh bằng AI, có thể sai</p>
+          <p className="mt-1">
+            Chữ nhỏ trên chai cong dễ bị đọc nhầm, và một chữ sai trong tên hoạt chất có thể làm mất cảnh báo. Hãy so
+            từng dòng với bao bì, sửa chỗ sai và chỗ đánh dấu {UNREADABLE}, rồi mới phân tích.
+          </p>
+          {photo && (
+            <button
+              onClick={() => setBigPhoto((big) => !big)}
+              aria-label={bigPhoto ? 'Thu nhỏ ảnh' : 'Phóng to ảnh'}
+              className="mt-2 block w-full overflow-hidden rounded-lg bg-surface ring-1 ring-line"
+            >
+              <img src={photo} alt="Ảnh nhãn bạn đã chọn" className={`w-full object-contain ${bigPhoto ? '' : 'max-h-56'}`} />
+            </button>
+          )}
+          <p className="mt-2 text-xs">{discard}</p>
+        </div>
+      )}
       <input
         value={name}
         onChange={(e) => update({ name: e.target.value })}
@@ -162,7 +247,9 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
       <textarea
         value={text}
         onChange={(e) => {
-          update({ text: e.target.value, analysis: null })
+          // Emptied: whatever is pasted next is the user's own list.
+          const emptied = !e.target.value.trim()
+          update({ text: e.target.value, analysis: null, ...(emptied && { origin: null, photo: null }) })
           setState('idle')
         }}
         rows={6}
@@ -170,15 +257,33 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
         aria-label="Bảng thành phần"
         className={`${field} text-sm leading-relaxed`}
       />
+      {unreadable > 0 && (
+        <p className="text-sm text-caution-ink">
+          Còn {unreadable} chỗ đánh dấu {UNREADABLE} chưa đọc được. Sửa theo bao bì hoặc xoá đi rồi mới phân tích.
+        </p>
+      )}
+      {origin && (origin.kind === 'photo' || analysis) && (
+        <label className="flex items-start gap-2.5 text-sm text-ink-soft">
+          <input
+            type="checkbox"
+            checked={origin.confirmed}
+            onChange={(e) => update({ origin: { ...origin, confirmed: e.target.checked } })}
+            className="mt-0.5 size-4 shrink-0 accent-ink"
+          />
+          {origin.kind === 'photo'
+            ? 'Tôi đã so từng dòng với bao bì và sửa chỗ sai'
+            : 'Tôi đã so với bảng thành phần in trên bao bì'}
+        </label>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => analyze()}
-          disabled={!text.trim() || state === 'loading'}
+          disabled={!text.trim() || state === 'loading' || unreadable > 0 || unchecked}
           className="rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40"
         >
           {state === 'loading' ? 'Đang phân tích…' : 'Phân tích'}
         </button>
-        {analysis && (
+        {analysis && !unchecked && (
           <button onClick={add} className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link">
             Thêm vào sản phẩm của tôi
           </button>

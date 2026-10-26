@@ -69,6 +69,25 @@ export type InciAnalysis = {
   one_percent_marker: string | null
 }
 
+/** A product found on Open Beauty Facts: community data under the ODbL, not verified. */
+export type BarcodeProduct = {
+  barcode: string
+  name: string | null
+  brand: string | null
+  ingredients_text: string | null // null: the record has no ingredient list yet
+  source_url: string
+  license_url: string
+  retrieved_at: string
+  last_modified_at: string | null
+}
+
+/** The ingredient list an AI model copied off a label photo, for the user to check. */
+export type LabelReading = {
+  found: boolean // an ingredient list was visible
+  text: string // as printed; "[?]" where the model could not read
+  unreadable_count: number
+}
+
 export type Source = { title: string; publisher: string; url: string; quote: string }
 
 export type Rule = {
@@ -207,6 +226,8 @@ export const api = {
     request<ProductSummary[]>(`/products?${new URLSearchParams({ q })}`, { signal }),
   product: (id: number) => request<ProductDetail>(`/products/${id}`),
   analyzeInci: (text: string) => post<InciAnalysis>('/inci/analyze', { text }),
+  barcode: (code: string) => request<BarcodeProduct>(`/barcode/${encodeURIComponent(code)}`),
+  readLabel: (body: { media_type: 'image/jpeg'; data: string }) => post<LabelReading>('/label/read', body),
   checkRoutine: (body: RoutineCheckRequest, signal?: AbortSignal) =>
     post<RoutineCheckResponse>('/routine/check', body, signal),
   rules: (params: { kind?: Rule['kind']; groups?: string[] }) => {

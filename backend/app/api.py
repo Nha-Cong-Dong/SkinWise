@@ -1,10 +1,13 @@
 """API routes. The frontend calls them under /api; the Vite dev proxy strips that prefix."""
 
+from datetime import UTC, datetime
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Path, Query, status
 from sqlalchemy.orm import Session
 
+from app import label_reader
+from app import open_beauty_facts as obf
 from app.concentration import OnePercentLine, one_percent_line
 from app.db import get_session
 from app.engine import (
@@ -38,11 +41,14 @@ from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
     AnsweredQuestionOut,
+    BarcodeProduct,
     FunctionOut,
     GroupOut,
     InciAnalysis,
     InciAnalyzeRequest,
     IngredientOut,
+    LabelImage,
+    LabelReadingOut,
     OccurrenceOut,
     ProductDetail,
     ProductSummary,
@@ -199,6 +205,49 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
         unresolved_count=sum(1 for r in resolved if not r.known),
         notices=[TextNotice(code=c, message_vi=TEXT_NOTICES_VI[c]) for c in label.notices],
         one_percent_marker=line.marker if line else None,
+    )
+
+
+@router.get("/barcode/{code}")
+def barcode(db: DbSession, code: Annotated[str, Path(max_length=40)]) -> BarcodeProduct:
+    """A product on Open Beauty Facts by barcode. Community data: the frontend shows it as
+    unverified and the user compares it with the package before adding it."""
+    normalized = obf.normalize_barcode(code)
+    if normalized is None:
+        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid barcode")
+    try:
+        record = obf.fetch_record(normalized)
+    except obf.OpenBeautyFactsError as e:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e)) from e
+    if record is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
+
+    def known(text: str) -> int:
+        return sum(r.known for r in resolve(db, read_label_text(text).entries))
+
+    found = obf.read_record(normalized, record, known)
+    return BarcodeProduct(
+        barcode=found.barcode,
+        name=found.name,
+        brand=found.brand,
+        ingredients_text=found.ingredients.text if found.ingredients else None,
+        source_url=obf.PRODUCT_URL.format(code=found.barcode),
+        license_url=obf.LICENSE_URL,
+        retrieved_at=datetime.now(UTC),
+        last_modified_at=found.last_modified_at,
+    )
+
+
+@router.post("/label/read")
+def read_label(body: LabelImage) -> LabelReadingOut:
+    """Copy the ingredient list off a label photo with an AI model. The text is for the user
+    to check and correct; nothing is analysed here and the photo is not kept."""
+    try:
+        reading = label_reader.read_label(body.media_type, body.data)
+    except label_reader.LabelReadingError as e:
+        raise HTTPException(e.status, str(e)) from e
+    return LabelReadingOut(
+        found=reading.found, text=reading.text, unreadable_count=reading.unreadable_count
     )
 
 

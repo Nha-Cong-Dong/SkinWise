@@ -97,6 +97,36 @@ class InciAnalysis(BaseModel):
     one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
+class BarcodeProduct(BaseModel):
+    """A product found on Open Beauty Facts: community data, passed through, not stored."""
+
+    barcode: str
+    name: str | None
+    brand: str | None
+    # The ingredient list SkinWise recognises best among the record's languages; None when
+    # the record has none yet. Analyse it with /inci/analyze like a pasted list.
+    ingredients_text: str | None
+    source_url: str  # the product page on Open Beauty Facts
+    license_url: str  # ODbL
+    retrieved_at: datetime
+    last_modified_at: datetime | None
+
+
+class LabelImage(BaseModel):
+    """A photo of a label, downscaled by the browser. Not stored."""
+
+    media_type: Literal["image/jpeg", "image/png", "image/webp", "image/gif"]
+    data: Annotated[str, StringConstraints(min_length=1, max_length=10_000_000)]  # base64
+
+
+class LabelReadingOut(BaseModel):
+    """The ingredient list as read off the photo, for the user to check before analysing."""
+
+    found: bool  # an ingredient list was visible
+    text: str  # as printed; "[?]" where the model could not read
+    unreadable_count: int
+
+
 class SourceOut(FromAttributes):
     title: str
     publisher: str

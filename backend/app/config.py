@@ -11,6 +11,8 @@ class Settings(BaseSettings):
     # ANTHROPIC_API_KEY in the environment; with neither, drafting answers 503.
     anthropic_api_key: str | None = None
     draft_model: str = "claude-opus-5-5"
+    # Reading ingredient lists off label photos (direction G); same key. Without one, 503.
+    label_model: str = "claude-opus-5-5"
 
 
 @lru_cache

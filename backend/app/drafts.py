@@ -26,7 +26,7 @@ from app.sources import BlockedError, fetch_text, missing_on_page
 # a truncated article could drop the passage that qualifies a finding.
 MAX_SOURCE_CHARS = 600_000
 # Models that accept server-side fallbacks on a refusal (`fallbacks: "default"`).
-_FALLBACK_MODELS = {"claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"}
+FALLBACK_MODELS = {"claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "claude-sonnet-5-5"}
 
 
 class DraftingError(Exception):
@@ -163,7 +163,7 @@ def call_model(prompt: str) -> tuple[ModelDraft, str]:
     """The draft and the model that wrote it. Tests replace this function."""
     settings = get_settings()
     extra: dict[str, Any] = {}
-    if settings.draft_model in _FALLBACK_MODELS:
+    if settings.draft_model in FALLBACK_MODELS:
         extra = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
     try:
         client = anthropic.Anthropic(api_key=settings.anthropic_api_key)

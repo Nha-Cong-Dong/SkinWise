@@ -50,11 +50,11 @@ Mọi cảnh báo đều:
 | Câu hỏi đã được trả lời | Câu hỏi người dùng gửi, được người duyệt trả lời bằng một thẻ có nguồn, hiện trên trang "Sự thật hay myth" (đã biên tập để bỏ thông tin cá nhân) |
 | Trang duyệt (`#review`) | Người duyệt đăng nhập, xem câu hỏi, đổi trạng thái, gắn câu hỏi với luật / thẻ trả lời nó |
 | AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
+| Tra mã vạch | Gõ dãy số dưới mã vạch, hoặc chụp mã vạch trên trình duyệt hỗ trợ (Chrome trên Android), để lấy bảng thành phần từ [Open Beauty Facts](https://world.openbeautyfacts.org). Đây là dữ liệu cộng đồng nên bảng thành phần được đưa vào ô "Dán thành phần" để người dùng so với bao bì và sửa trước khi thêm; máy chủ SkinWise không lưu lại. Hiện Open Beauty Facts có rất ít sản phẩm bán ở Việt Nam |
+| Đọc bảng thành phần từ ảnh | Chọn hoặc chụp ảnh mặt nhãn có bảng thành phần; AI (Claude) chỉ chép lại chữ in trên ảnh, đánh dấu `[?]` chỗ không đọc được. Chữ đọc được đưa vào ô "Dán thành phần" cạnh ảnh: người dùng so từng dòng với bao bì, sửa, đánh dấu đã so rồi mới phân tích. SkinWise không lưu ảnh. Cần `ANTHROPIC_API_KEY` |
 
 ### Dự kiến sau hackathon
 
-- Tra cứu sản phẩm theo mã vạch qua [Open Beauty Facts](https://world.openbeautyfacts.org)
-- Chụp ảnh nhãn để đọc bảng thành phần (OCR)
 - Hồ sơ da: da nhạy cảm, đang mang thai…
 - Tài khoản người dùng, đồng bộ routine giữa các thiết bị
 
@@ -90,7 +90,7 @@ SkinWise được xây theo nguyên tắc **"không có nguồn thì không có 
 1. Mỗi luật gắn với nguồn uy tín và **lưu nguyên văn đoạn trích** hỗ trợ luật đó.
 2. Hệ thống tự kiểm tra đoạn trích có thực sự xuất hiện trên trang nguồn.
 3. Luật chỉ được bật sau khi có người đọc và đối chiếu với nguồn.
-4. AI **không được tạo ra cảnh báo** và không được tự "nhớ" bảng thành phần của sản phẩm. AI chỉ soạn bản nháp thẻ myth cho người duyệt, từ những trang nguồn người duyệt chọn: mỗi ý phải kèm đoạn trích nguyên văn, máy chủ tìm lại từng đoạn trích trên trang, và bản nháp không bao giờ hiện cho người dùng. Bản nháp chỉ thành thẻ khi người duyệt đọc nguồn và tự bật như mọi luật khác.
+4. AI **không được tạo ra cảnh báo** và không được tự "nhớ" bảng thành phần của sản phẩm. AI chỉ soạn bản nháp thẻ myth cho người duyệt, từ những trang nguồn người duyệt chọn: mỗi ý phải kèm đoạn trích nguyên văn, máy chủ tìm lại từng đoạn trích trên trang, và bản nháp không bao giờ hiện cho người dùng. Bản nháp chỉ thành thẻ khi người duyệt đọc nguồn và tự bật như mọi luật khác. Khi người dùng gửi ảnh nhãn, AI chỉ chép lại chữ in trên ảnh (không đoán, không điền thêm); người dùng so với bao bì và sửa trước khi SkinWise phân tích.
 
 Mỗi sản phẩm cũng ghi lại bảng thành phần lấy từ đâu (nhập tay, dữ liệu mẫu, Open Beauty Facts…) và trạng thái xác minh.
 
@@ -124,7 +124,7 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    npm run dev                    # mở http://localhost:5173
    ```
 
-4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`.
+4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`; cùng khoá này bật chức năng đọc bảng thành phần từ ảnh nhãn (mỗi ảnh là một lượt gọi API tính phí).
 
    ```bash
    cd backend
@@ -142,6 +142,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth, gửi câu hỏi
 - [ ] Hoàn thiện demo
 - [x] Sau MVP: trang duyệt câu hỏi, AI soạn nháp thẻ myth, hiện câu hỏi đã được trả lời
+- [x] Sau MVP: tra mã vạch qua Open Beauty Facts, đọc bảng thành phần từ ảnh nhãn
 
 ## Nguồn dữ liệu và ghi công
 
@@ -149,5 +150,5 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - Danh mục thành phần mỹ phẩm của EU năm 2006, [Quyết định 2006/257/EC](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006D0257): chức năng thường gặp của thành phần và định nghĩa từng chức năng. Danh mục này không còn hiệu lực pháp lý, chỉ dùng để tham khảo. © Liên minh châu Âu, https://eur-lex.europa.eu
 - Phụ lục III của [Quy định (EC) 1223/2009](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223) (bản hợp nhất), đã sửa đổi bởi [Quy định (EU) 2023/1545](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R1545): danh sách chất gây dị ứng hương liệu phải ghi riêng trên nhãn. © Liên minh châu Âu, https://eur-lex.europa.eu
 - [EU CosIng](https://single-market-economy.ec.europa.eu/sectors/cosmetics/cosmetic-ingredient-database_en): tham chiếu khi lập từ điển hoạt chất
-- [Open Beauty Facts](https://world.openbeautyfacts.org) (dự kiến): dữ liệu sản phẩm mở, giấy phép [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)
+- [Open Beauty Facts](https://world.openbeautyfacts.org): bảng thành phần khi tra mã vạch, dữ liệu do cộng đồng đóng góp, giấy phép [ODbL](https://opendatacommons.org/licenses/odbl/1-0/). Chỉ chuyển tiếp tới người dùng kèm ghi công, không lưu vào cơ sở dữ liệu của SkinWise
 - Nguồn y khoa cho từng luật được liệt kê ngay trong cảnh báo tương ứng

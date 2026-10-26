@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { api, type InciAnalysis, type ProductDetail } from '../api'
 import { APPLICATION_LABELS, SESSION_LABELS, VERIFICATION_LABELS } from '../labels'
-import { maybeIncomplete, type MyProduct, type RoutineActions } from '../routine'
+import { maybeIncomplete, type MyProduct, type ProductOrigin, type RoutineActions } from '../routine'
+import { OpenBeautyFactsCredit } from './BarcodeLookup'
 import { Dialog } from './Dialog'
 import { GroupChips } from './GroupChips'
 import { Glyph } from './Icons'
@@ -75,7 +76,10 @@ export function MyProducts({ actions, onAdd }: Props) {
           (viewing.productId !== null ? (
             <SeededIngredients productId={viewing.productId} />
           ) : (
-            <PastedIngredients inci={viewing.inci ?? ''} />
+            <>
+              {viewing.origin && <OriginNote origin={viewing.origin} />}
+              <PastedIngredients inci={viewing.inci ?? ''} />
+            </>
           ))}
       </Dialog>
     </section>
@@ -88,13 +92,19 @@ function ProductRow({ product, uses, actions, onView }: RowProps) {
   return (
     <li className="flex w-72 shrink-0 snap-start flex-col rounded-xl bg-surface p-3 ring-1 ring-line md:w-auto">
       <p className="leading-snug text-pretty">
-        {product.brand ? (
-          <span className="block text-xs text-ink-mute">{product.brand}</span>
-        ) : (
-          <span className="block text-xs text-ink-mute">Tự nhập bảng thành phần</span>
-        )}
+        <span className="block text-xs text-ink-mute">
+          {product.brand ??
+            (product.origin?.kind === 'open_beauty_facts' ? 'Open Beauty Facts' : 'Tự nhập bảng thành phần')}
+        </span>
         <span className="text-sm font-medium">{product.name}</span>
       </p>
+      {product.origin && (
+        <p className="mt-1 text-xs text-ink-mute">
+          {product.origin.kind === 'photo'
+            ? 'Đọc từ ảnh nhãn bằng AI, bạn đã so với bao bì'
+            : `Từ Open Beauty Facts, ${product.origin.confirmed ? 'bạn đã so với bao bì' : 'chưa so với bao bì'}`}
+        </p>
+      )}
       {maybeIncomplete(product) && (
         <p className="mt-1 text-xs text-caution-ink">Bảng thành phần có thể chưa đầy đủ, cảnh báo có thể bị thiếu</p>
       )}
@@ -177,4 +187,22 @@ function PastedIngredients({ inci }: { inci: string }) {
   if (error) return <p className="text-sm text-avoid-ink">Không phân tích được bảng thành phần.</p>
   if (!analysis) return <p className="text-sm text-ink-mute">Đang tải…</p>
   return <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
+}
+
+function OriginNote({ origin }: { origin: ProductOrigin }) {
+  if (origin.kind === 'photo') {
+    return (
+      <p className="mb-3 text-xs leading-relaxed text-ink-mute">
+        Bảng thành phần do AI đọc từ ảnh nhãn; bạn đã so với bao bì và sửa trước khi thêm.
+      </p>
+    )
+  }
+  return (
+    <p className="mb-3 text-xs leading-relaxed text-ink-mute">
+      Bảng thành phần lấy từ Open Beauty Facts ngày {new Date(origin.retrievedAt).toLocaleDateString('vi-VN')} (mã{' '}
+      {origin.barcode}): dữ liệu cộng đồng, chưa được xác minh;{' '}
+      {origin.confirmed ? 'bạn đã so với bao bì khi thêm.' : 'bạn chưa so với bao bì.'}{' '}
+      <OpenBeautyFactsCredit url={origin.url} />
+    </p>
+  )
 }
