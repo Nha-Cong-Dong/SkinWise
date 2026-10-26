@@ -329,3 +329,97 @@ class DraftOut(FromAttributes):
 
 class DraftStatusUpdate(BaseModel):
     status: Literal["draft", "discarded"]
+
+
+# --- User accounts (plan/h-accounts.md) ---
+
+
+class EmailLinkRequest(BaseModel):
+    email: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=254)]
+    consent: bool  # the separate, unticked consent box of the sign-in form (Law 91/2025 Art. 9)
+    policy_version: Annotated[str, StringConstraints(max_length=50)]
+
+
+class EmailLinkSent(BaseModel):
+    message_vi: str
+    dev_link: str | None  # dev mode only: no email was sent, the page shows the link instead
+
+
+class SessionRequest(BaseModel):
+    token: Annotated[str, StringConstraints(min_length=10, max_length=200)]
+
+
+class ConsentOut(FromAttributes):
+    purpose: str
+    policy_version: str
+    granted_at: datetime
+
+
+class MeOut(BaseModel):
+    email: str
+    created_at: datetime
+    consents: list[ConsentOut]
+    routine_updated_at: datetime | None
+    dev_mode: bool  # sign-in links are not emailed; accounts are not open to real users
+
+
+class StoredNotice(BaseModel):
+    code: Annotated[str, StringConstraints(max_length=40)]
+    message_vi: Annotated[str, StringConstraints(max_length=2000)]
+
+
+Key = Annotated[str, StringConstraints(min_length=1, max_length=100)]
+
+
+class StoredProduct(BaseModel):
+    """A product as frontend/src/routine.ts keeps it (camelCase on the wire)."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    key: Key
+    name: Annotated[str, StringConstraints(max_length=200)]
+    brand: Annotated[str, StringConstraints(max_length=200)] | None
+    product_id: int | None = Field(alias="productId")
+    inci: Annotated[str, StringConstraints(max_length=MAX_INCI_LENGTH)] | None
+    groups: Annotated[list[Annotated[str, StringConstraints(max_length=40)]], Field(max_length=20)]
+    notices: Annotated[list[StoredNotice], Field(max_length=10)] = []
+
+
+class StoredEntry(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    id: Key
+    product_key: Key = Field(alias="productKey")
+    session: Literal["AM", "PM"]
+    days: Annotated[list[Annotated[int, Field(ge=0, le=6)]], Field(max_length=7)]
+
+
+class StoredRoutineData(BaseModel):
+    """The routine kept for sync: the limits of /routine/check, steps pointing to products."""
+
+    products: Annotated[list[StoredProduct], Field(max_length=50)]
+    entries: Annotated[list[StoredEntry], Field(max_length=200)]
+
+    @model_validator(mode="after")
+    def _entries_point_to_products(self) -> "StoredRoutineData":
+        keys = [p.key for p in self.products]
+        if len(keys) != len(set(keys)):
+            raise ValueError("product keys must be unique")
+        if any(e.product_key not in set(keys) for e in self.entries):
+            raise ValueError("a step refers to a product that is not in the routine")
+        return self
+
+
+class RoutineOut(BaseModel):
+    data: StoredRoutineData | None  # None: nothing stored yet
+    version: int  # 0 when nothing is stored
+    updated_at: datetime | None
+
+
+class RoutinePut(BaseModel):
+    data: StoredRoutineData
+    base_version: Annotated[int, Field(ge=0)]  # the version this device last saw
+
+
+class DeleteAccount(BaseModel):
+    confirm_email: Annotated[str, StringConstraints(strip_whitespace=True, max_length=254)]

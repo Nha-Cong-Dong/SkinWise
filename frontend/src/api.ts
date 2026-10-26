@@ -176,11 +176,41 @@ export type DraftRequest = {
 
 export class ApiError extends Error {
   readonly status: number
+  readonly body: unknown // the response body, e.g. what is stored on a 409 sync conflict
 
-  constructor(status: number, message: string) {
+  constructor(status: number, message: string, body: unknown = null) {
     super(message)
     this.status = status
+    this.body = body
   }
+}
+
+// --- User accounts (backend/app/accounts_api.py) ---
+
+export type Me = {
+  email: string
+  created_at: string
+  consents: { purpose: string; policy_version: string; granted_at: string }[]
+  routine_updated_at: string | null
+  dev_mode: boolean // sign-in links are not emailed; accounts are not open to real users
+}
+
+/** The routine kept on the server; same shape as Routine in routine.ts. */
+export type StoredRoutine = {
+  data: {
+    products: {
+      key: string
+      name: string
+      brand: string | null
+      productId: number | null
+      inci: string | null
+      groups: string[]
+      notices?: TextNotice[]
+    }[]
+    entries: { id: string; productKey: string; session: Session; days: number[] }[]
+  } | null
+  version: number // 0 when nothing is stored
+  updated_at: string | null
 }
 
 /** `token`: a reviewer's session, for the /review routes. */
@@ -192,7 +222,7 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
   if (!res.ok) {
     const body = await res.json().catch(() => null)
     const detail = typeof body?.detail === 'string' ? body.detail : res.statusText
-    throw new ApiError(res.status, detail)
+    throw new ApiError(res.status, detail, body)
   }
   return (res.status === 204 ? undefined : res.json()) as Promise<T>
 }
@@ -220,7 +250,26 @@ export const api = {
   answeredQuestions: () => request<AnsweredQuestion[]>('/questions/answered'),
   login: (name: string, password: string) =>
     post<{ token: string; name: string; expires_at: string }>('/review/login', { name, password }),
+  // User accounts; the session is an HttpOnly cookie the browser sends by itself.
+  requestSignInLink: (email: string, policyVersion: string) =>
+    post<{ message_vi: string; dev_link: string | null }>('/auth/email-link', {
+      email,
+      consent: true,
+      policy_version: policyVersion,
+    }),
+  signIn: (token: string) => post<Me>('/auth/session', { token }),
+  signOut: () => request<void>('/auth/logout', { method: 'POST' }),
+  signOutEverywhere: () => request<void>('/auth/logout-all', { method: 'POST' }),
+  me: () => request<Me>('/me'),
+  myRoutine: () => request<StoredRoutine>('/me/routine'),
+  saveRoutine: (data: NonNullable<StoredRoutine['data']>, baseVersion: number) =>
+    request<StoredRoutine>('/me/routine', { method: 'PUT', body: JSON.stringify({ data, base_version: baseVersion }) }),
+  deleteAccount: (confirmEmail: string) =>
+    request<void>('/me', { method: 'DELETE', body: JSON.stringify({ confirm_email: confirmEmail }) }),
 }
+
+/** Everything SkinWise keeps about the signed-in user, as a file (GET /me/export). */
+export const EXPORT_URL = '/api/me/export'
 
 /** Review page calls; every one needs the reviewer's session token. */
 export function reviewApi(token: string) {

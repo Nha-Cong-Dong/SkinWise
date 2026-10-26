@@ -10,6 +10,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 3 | API: tìm sản phẩm, phân tích INCI, kiểm tra routine, myth, nhận câu hỏi người dùng | 2–3/11 | ✅ Xong sớm (23/10, PR #4) | [phase-3-api.md](phase-3-api.md) |
 | 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth, form gửi câu hỏi | 3–7/11 | ✅ Xong code (23–25/10), chờ review giao diện + merge PR #5 | [phase-4-ui.md](phase-4-ui.md), [phase-4b-ingredient-coverage.md](phase-4b-ingredient-coverage.md) |
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
+| — | Tài khoản bắt buộc + đồng bộ (hướng H), chế độ thử, chưa mở cho người dùng thật | 26/10 | 🚧 Xong code, nhánh `feat/accounts` (chưa có PR) | [h-accounts.md](h-accounts.md) |
 | — | Sau MVP: những gì chưa làm được, thứ tự đề xuất | sau 10/11 | 🚧 Phần C (độ chính xác) + giao diện mới + phần B (xuất/nhập routine) + thiết kế H + phần E (gộp từ PR #6 để gỡ xung đột): xong code 26/10, chờ review + merge PR #7 | [after-mvp.md](after-mvp.md), [h-accounts.md](h-accounts.md) |
 
 **Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 4 thẻ myth đã bật — **đạt mục tiêu**. Ngày 26/10 bật thêm 4 lưu ý khi dùng (nhạy nắng).

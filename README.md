@@ -56,7 +56,7 @@ Mọi cảnh báo đều:
 - Tra cứu sản phẩm theo mã vạch qua [Open Beauty Facts](https://world.openbeautyfacts.org)
 - Chụp ảnh nhãn để đọc bảng thành phần (OCR)
 - Hồ sơ da: da nhạy cảm, đang mang thai…
-- Tài khoản người dùng, đồng bộ routine giữa các thiết bị
+- Mở tài khoản cho người dùng thật: đăng nhập bằng link qua email và đồng bộ routine đã có ở chế độ thử (link hiện ngay trên màn hình, không gửi email), cần dịch vụ email và tư vấn pháp lý trước khi mở
 
 Chi tiết và thứ tự ưu tiên: [plan/after-mvp.md](plan/after-mvp.md).
 
@@ -121,7 +121,8 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    ```bash
    cd frontend
    npm install
-   npm run dev                    # mở http://localhost:5173
+   npm run dev                    # mở http://localhost:5173, đăng nhập bằng email bất kỳ:
+                                  # chế độ thử không gửi email, link đăng nhập hiện ngay trên màn hình
    ```
 
 4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`.

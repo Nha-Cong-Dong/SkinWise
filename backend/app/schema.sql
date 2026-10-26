@@ -212,3 +212,47 @@ CREATE TABLE IF NOT EXISTS rule_drafts (
   created_by        text NOT NULL,
   created_at        timestamptz NOT NULL DEFAULT now()
 );
+
+-- User accounts (direction H, plan/h-accounts.md): sign-in by an emailed link, sessions, and
+-- the routine kept for use on several devices. Only the email and the routine are stored.
+-- Not open to real users until the legal questions in plan/h-accounts.md are answered.
+CREATE TABLE IF NOT EXISTS users (
+  id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  email        text NOT NULL UNIQUE, -- normalized: trimmed, lower case
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now()
+);
+
+-- Proof of consent (Law 91/2025/QH15 Art. 9): what was agreed to, under which policy, when.
+CREATE TABLE IF NOT EXISTS consents (
+  user_id        uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  purpose        text NOT NULL,
+  policy_version text NOT NULL,
+  granted_at     timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (user_id, purpose, policy_version)
+);
+
+-- Sign-in links: single use, 15 minutes. Only the sha256 of the token is stored.
+CREATE TABLE IF NOT EXISTS login_tokens (
+  token_hash     text PRIMARY KEY,
+  email          text NOT NULL,
+  policy_version text NOT NULL, -- the policy agreed to when asking for the link
+  expires_at     timestamptz NOT NULL,
+  used_at        timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS user_sessions (
+  id_hash    text PRIMARY KEY, -- sha256 of the cookie value
+  user_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  expires_at timestamptz NOT NULL
+);
+
+-- The routine as the browser keeps it (frontend/src/routine.ts), with a version for sync:
+-- a write names the version it started from and is refused if another device wrote since.
+CREATE TABLE IF NOT EXISTS user_routines (
+  user_id    uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  data       jsonb NOT NULL,
+  version    integer NOT NULL,
+  updated_at timestamptz NOT NULL DEFAULT now()
+);

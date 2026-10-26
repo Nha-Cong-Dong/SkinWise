@@ -182,7 +182,7 @@ Engine đã có loại luật `profile` nhưng bỏ qua (chỉ chạy luật tro
 
 ## H. Tài khoản + đồng bộ
 
-Thiết kế chi tiết (26/10): [h-accounts.md](h-accounts.md). Chưa viết code.
+Thiết kế chi tiết (26/10): [h-accounts.md](h-accounts.md). **Đã làm ở chế độ thử ngày 26/10** (nhánh `feat/accounts`): người duyệt đổi sang đăng nhập bắt buộc khi vào web và làm ngay; email chỉ ở chế độ dev; chưa mở cho người dùng thật. Việc còn thiếu trước khi mở: [h-accounts.md](h-accounts.md) mục 16.
 
 Người duyệt đã chốt (26/10):
 - làm sau B, chỉ khi người dùng thật vẫn cần đồng bộ;
@@ -198,10 +198,11 @@ Người duyệt đã chốt (26/10):
   - routine gắn với email có là dữ liệu sức khoẻ không;
   - nội dung bắt buộc của thông báo và văn bản đồng ý.
 - [x] Chọn cách đăng nhập: link qua email (người duyệt, 26/10). Token dùng một lần, hạn 15 phút, chỉ lưu hash; link mở trang có nút bấm để trình quét thư không đốt mất token; phiên bằng cookie `HttpOnly; Secure; SameSite=Lax`
-- [ ] Bảng `users`, `consents`, `login_tokens`, `sessions`, `routines` (qua Alembic). Chỉ thu email và routine
-- [ ] Đồng bộ: kiểm phiên bản (409 khi lệch, hỏi người dùng chọn bản) thay cho "bản sửa sau thắng", vì cách cũ âm thầm xoá thay đổi của máy kia
-- [ ] Quyền của người dùng: xem, xuất JSON, xoá tài khoản ngay, rút lại đồng ý; chính sách quyền riêng tư có phiên bản; xoá tài khoản không dùng sau 24 tháng (báo trước 30 ngày), bản sao lưu giữ 30 ngày
-- [ ] Hồ sơ da (hướng F) không đồng bộ; câu hỏi người dùng không gắn với tài khoản
+- [x] Bảng `users`, `consents`, `login_tokens`, `user_sessions`, `user_routines` (trong `schema.sql`; Alembic còn chờ hướng A). Chỉ thu email và routine
+- [x] Đồng bộ: kiểm phiên bản (409 khi lệch, hỏi người dùng chọn bản) thay cho "bản sửa sau thắng", vì cách cũ âm thầm xoá thay đổi của máy kia
+- [x] Quyền của người dùng: xem, xuất JSON, xoá tài khoản ngay, rút lại đồng ý (= xoá); chính sách quyền riêng tư có phiên bản (bản nháp)
+- [ ] Xoá tài khoản không dùng sau 24 tháng (báo trước 30 ngày): cần dịch vụ email; bản sao lưu giữ 30 ngày: cần hướng A
+- [x] Hồ sơ da (hướng F) không đồng bộ; câu hỏi người dùng không gắn với tài khoản
 - [ ] Đồng bộ mã hoá đầu-cuối: chỉ làm nếu tư vấn kết luận routine là dữ liệu nhạy cảm
 
 Ước lượng 3–4 tuần một người (cỡ L), chưa tính thời gian chờ tư vấn pháp lý.

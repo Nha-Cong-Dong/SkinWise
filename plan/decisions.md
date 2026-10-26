@@ -94,5 +94,8 @@ Làm hướng E (sau MVP), chi tiết ở [e-review.md](e-review.md). Mở rộn
 ## Xuất/nhập routine không cần tài khoản (hướng B, 26/10)
 Làm trước hướng H như đã chốt. Link chia sẻ mang routine trong phần sau `#` của URL: trình duyệt không gửi phần này lên máy chủ, nên SkinWise không lưu routine của ai. File và link chỉ mang dữ liệu riêng của người dùng (khoá sản phẩm, thứ tự bước, ngày, tên tự đặt, bảng thành phần tự dán); tên hãng, nhóm hoạt chất và lưu ý được lấy lại từ máy chủ khi mở, nên file hay link bị sửa tay không làm hiện sai chip hoạt chất. Mở file hoặc link luôn hỏi trước khi thay routine hiện tại, có nút tải routine hiện tại về trước. Giới hạn giống `/routine/check` (50 sản phẩm, 200 bước, bảng dán 10.000 ký tự); link nén deflate, giải nén có trần 1 MB.
 
+## Đăng nhập bắt buộc khi vào web (26/10, đổi so với quyết định cùng ngày)
+Người duyệt chọn bắt buộc đăng nhập ngay khi vào web và làm ngay, thay cho "đăng nhập tuỳ chọn, chỉ làm sau hướng B khi người dùng thật cần". Hệ quả đã nêu trước khi chọn: ai dùng app (kể cả người xem demo) cũng phải đưa email, nên nghĩa vụ theo Luật Bảo vệ dữ liệu cá nhân áp dụng cho mọi người dùng. Vì vậy: email chỉ có chế độ dev (link hiện trên màn hình, không gửi thư), và không mở cho người dùng thật cho tới khi trả lời xong 3 câu hỏi pháp lý và có dịch vụ email tại Việt Nam. Trang duyệt `#review` giữ đăng nhập riêng. Các API công khai (tìm sản phẩm, kiểm tra routine, luật) vẫn mở vì không chứa dữ liệu người dùng; chỉ `/me/*` cần phiên. Chi tiết: `plan/h-accounts.md` mục 16.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

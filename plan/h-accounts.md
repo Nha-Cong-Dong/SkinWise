@@ -1,6 +1,6 @@
 # Hướng H: Tài khoản + đồng bộ routine (thiết kế)
 
-Trạng thái: thiết kế, chưa viết code (26/10/2026). Người duyệt đã chốt các lựa chọn chính ngày 26/10 (mục 15); còn chờ tư vấn pháp lý (mục 2). Mục tóm tắt trong [after-mvp.md](after-mvp.md#h-tài-khoản--đồng-bộ).
+Trạng thái: **đã làm ở chế độ thử, chưa mở cho người dùng thật** (26/10/2026, nhánh `feat/accounts`). Người duyệt đổi ý cùng ngày: đăng nhập **bắt buộc** khi vào web (mục 16), làm ngay thay vì chờ sau hướng B; email ở chế độ dev; code viết xong nhưng không thu email người thật cho tới khi trả lời xong câu hỏi pháp lý (mục 2). Mục tóm tắt trong [after-mvp.md](after-mvp.md#h-tài-khoản--đồng-bộ).
 
 ## 1. Có nên làm không
 
@@ -183,6 +183,20 @@ Trình duyệt mã hoá routine trước khi gửi; server chỉ giữ bản mã
 Tổng khoảng 3–4 tuần (cỡ L), chưa tính thời gian chờ tư vấn pháp lý.
 
 **Xong khi:** đăng nhập trên máy A rồi sửa routine, đăng nhập trên máy B thấy đúng routine đó. Hai máy cùng sửa thì được hỏi chọn bản, không mất âm thầm. Xoá tài khoản thì server không còn dữ liệu (trừ bản sao lưu đến hạn). Không đăng nhập thì app chạy như cũ. Chính sách và văn bản đồng ý đã được duyệt; hồ sơ pháp lý, nếu phải lập, đã gửi.
+
+## 16. Đã làm (26/10) và còn thiếu trước khi mở thật
+
+Đã làm, theo đúng các mục trên trừ chỗ ghi khác:
+- Backend: `app/accounts.py`, `app/accounts_api.py`, `app/mailer.py`; bảng ở `schema.sql` (chưa dùng Alembic: hướng A). 12 test (`tests/test_accounts.py`): link dùng một lần, hết hạn, không lộ email đã có, bắt buộc đồng ý, giới hạn tần suất, 409 khi lệch phiên bản, dữ liệu sai dạng, đăng xuất / đăng xuất mọi máy, xuất, xoá sạch, chưa cấu hình email thì từ chối gửi.
+- Frontend: cổng đăng nhập (`components/SignIn.tsx`, trừ `#review`), chính sách bản nháp (`PolicyText.tsx`), trang Tài khoản (`AccountPanel.tsx`), đồng bộ (`sync.ts`) với hộp thoại chọn bản. Thêm so với mục 6: máy dùng chung — routine của tài khoản khác còn trên máy không bao giờ bị tải lên tài khoản vừa đăng nhập; đăng xuất và xoá tài khoản xoá routine khỏi máy.
+- Thử trên Chrome với hai hồ sơ trình duyệt (hai "thiết bị"): 22 tình huống, gồm đăng nhập bằng link, tải lên lần đầu, máy thứ hai nhận routine, hai máy cùng sửa thì hỏi, đăng xuất, máy dùng chung, xuất và xoá tài khoản.
+
+Còn thiếu trước khi mở cho người dùng thật:
+- [ ] Trả lời 3 câu hỏi pháp lý (mục 2); điền cách liên hệ vào chính sách và bỏ chữ "bản nháp" (đổi `POLICY_VERSION` ở cả backend và frontend)
+- [ ] Dịch vụ gửi email đặt tại Việt Nam (thêm chế độ gửi thật vào `app/mailer.py`), domain có SPF / DKIM / DMARC
+- [ ] Triển khai theo hướng A: HTTPS (cookie tự bật `Secure` khi `APP_URL` là https), Alembic, sao lưu, tự lưu font
+- [ ] Giới hạn tần suất đang nằm trong bộ nhớ của một tiến trình: chạy nhiều tiến trình thì chuyển vào DB
+- [ ] Việc định kỳ xoá tài khoản không dùng 24 tháng (cần gửi email báo trước, nên làm sau khi có dịch vụ email)
 
 ## 15. Đã chốt (người duyệt, 26/10)
 
