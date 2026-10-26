@@ -54,3 +54,15 @@ def test_real_page_with_challenge_marker_is_not_blocked(monkeypatch, marker: str
     page = f"<p>Ingredients: Aqua, Glycerin, Niacinamide. {'Product details. ' * 200}</p>{marker}"
     monkeypatch.setattr(sources.urllib.request, "urlopen", lambda *a, **k: FakeResponse(page))
     assert "Aqua, Glycerin, Niacinamide" in sources.fetch_text("https://example.org")
+
+
+def test_readable_text_drops_scripts_and_styles(monkeypatch) -> None:
+    page = (
+        '<p>Visible text.</p><script type="application/ld+json">{"ingredients": "Aqua"}'
+        "</script><style>p { color: red }</style><p>More text.</p>"
+    )
+    monkeypatch.setattr(sources.urllib.request, "urlopen", lambda *a, **k: FakeResponse(page))
+    assert "Aqua" in sources.fetch_text("https://example.org")
+    readable = sources.fetch_text("https://example.org", keep_scripts=False)
+    assert "Aqua" not in readable and "color" not in readable
+    assert " ".join(readable.split()) == "Visible text. More text."

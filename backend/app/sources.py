@@ -56,9 +56,10 @@ def _europe_pmc(match: re.Match[str]) -> str:
     return f"https://www.ebi.ac.uk/europepmc/webservices/rest/{match.group(1)}/fullTextXML"
 
 
-def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
-    """Page content as plain text. Script contents are kept: many shops embed the
-    ingredient list in JSON rather than in visible HTML.
+def fetch_text(url: str, timeout: float = 30, retries: int = 2, keep_scripts: bool = True) -> str:
+    """Page content as plain text. Script contents are kept by default: many shops embed the
+    ingredient list in JSON rather than in visible HTML. `keep_scripts=False` gives the
+    readable text only (for a model to read; a quote found there is also found with scripts).
 
     Connection errors are retried with a pause: brand sites sometimes reset connections
     when several pages are fetched in a row. HTTP errors (403, 404, 500) are not retried.
@@ -94,10 +95,12 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2) -> str:
             # open-access article text through an API meant for automated use (not every
             # PMC article is in its open-access set, hence the fallthrough).
             try:
-                return fetch_text(_europe_pmc(pmcid), timeout, retries)
+                return fetch_text(_europe_pmc(pmcid), timeout, retries, keep_scripts)
             except urllib.error.URLError:
                 pass
         raise BlockedError(f"{url} returned a bot-challenge page; retry later")
+    if not keep_scripts:
+        page = _NON_TEXT.sub(" ", page)
     page = _JSON_UNICODE.sub(lambda m: chr(int(m.group(1), 16)), page).replace("\\/", "/")
     return html.unescape(_TAG.sub(" ", page))
 

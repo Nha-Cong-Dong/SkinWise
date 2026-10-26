@@ -197,3 +197,133 @@ class QuestionCreate(BaseModel):
 class QuestionCreated(BaseModel):
     id: int
     message_vi: str
+
+
+class AnsweredQuestionOut(BaseModel):
+    id: int
+    question: str  # the reviewer's public wording, not the text the user sent
+    rule: RuleOut
+
+
+# Review page (sign-in required).
+ReviewText = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)]
+
+
+class LoginRequest(BaseModel):
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
+    password: Annotated[str, StringConstraints(min_length=1, max_length=200)]
+
+
+class SignInOut(FromAttributes):
+    token: str
+    name: str
+    expires_at: datetime
+
+
+class ReviewerOut(BaseModel):
+    name: str
+
+
+class ReviewRuleOut(FromAttributes):
+    key: str
+    kind: str
+    severity: str
+    group_a: str
+    group_b: str | None
+    title_vi: str
+    published: bool
+
+
+class RelatedProductOut(BaseModel):
+    id: int
+    label: str  # "brand name"
+
+
+QuestionStatus = Literal["new", "accepted", "rejected", "answered"]
+
+
+class ReviewQuestionOut(FromAttributes):
+    id: int
+    question: str
+    products: list[RelatedProductOut]
+    group_codes: list[str]
+    status: QuestionStatus
+    created_at: datetime
+    rule_key: str | None
+    rule: ReviewRuleOut | None
+    public_question: str | None
+    reviewer_note: str | None
+    updated_by: str | None
+    updated_at: datetime | None
+    # Shown to users: answered, with public wording, and its rule is published with sources.
+    public: bool
+    draft_ids: list[int]
+
+
+class ReviewQuestionsOut(BaseModel):
+    questions: list[ReviewQuestionOut]
+    counts: dict[str, int]  # per status, over all questions
+
+
+class QuestionUpdate(BaseModel):
+    status: QuestionStatus
+    rule_key: str | None = None
+    public_question: ReviewText | None = None
+    reviewer_note: ReviewText | None = None
+
+    @model_validator(mode="after")
+    def _answered_needs_rule(self) -> "QuestionUpdate":
+        if self.status == "answered" and not (self.rule_key and self.public_question):
+            raise ValueError("an answered question needs rule_key and public_question")
+        return self
+
+
+SourceUrl = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000,
+                                             pattern=r"^https?://\S+$")]  # fmt: skip
+
+
+class DraftCreate(BaseModel):
+    question_id: int | None = None
+    group_a: str
+    group_b: str
+    source_urls: Annotated[list[SourceUrl], Field(min_length=1, max_length=5)]
+    instructions: ReviewText = ""
+
+
+class QuoteCheckOut(BaseModel):
+    url: str
+    quote: str
+    found: bool  # verbatim on the page the model read
+
+
+class DraftSourceOut(BaseModel):
+    url: str
+    title: str
+    publisher: str
+
+
+class DraftOut(FromAttributes):
+    id: int
+    question_id: int | None
+    key: str
+    kind: str
+    severity: str
+    scope: str
+    evidence_level: str
+    group_a: str
+    group_b: str
+    title_vi: str
+    explanation_vi: str
+    answerable: bool
+    reviewer_notes_vi: str
+    sources: list[DraftSourceOut]
+    quotes: list[QuoteCheckOut]
+    model: str
+    status: Literal["draft", "discarded"]
+    created_by: str
+    created_at: datetime
+    toml: str  # blocks to paste into data/rules.toml, published = false
+
+
+class DraftStatusUpdate(BaseModel):
+    status: Literal["draft", "discarded"]

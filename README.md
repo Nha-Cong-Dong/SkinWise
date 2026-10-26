@@ -41,6 +41,14 @@ Mọi cảnh báo đều:
 | Cảnh báo kết hợp | Một bộ nhỏ các luật có bằng chứng rõ ràng, áp dụng theo phạm vi cùng bước / cùng buổi / cùng ngày |
 | Thẻ "Sự thật hay myth" | Giải đáp các lời đồn phổ biến, kèm nguồn |
 
+### Đã làm sau MVP
+
+| Tính năng | Mô tả |
+|---|---|
+| Câu hỏi đã được trả lời | Câu hỏi người dùng gửi, được người duyệt trả lời bằng một thẻ có nguồn, hiện trên trang "Sự thật hay myth" (đã biên tập để bỏ thông tin cá nhân) |
+| Trang duyệt (`#review`) | Người duyệt đăng nhập, xem câu hỏi, đổi trạng thái, gắn câu hỏi với luật / thẻ trả lời nó |
+| AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
+
 ### Dự kiến sau hackathon
 
 - Tra cứu sản phẩm theo mã vạch qua [Open Beauty Facts](https://world.openbeautyfacts.org)
@@ -80,7 +88,7 @@ SkinWise được xây theo nguyên tắc **"không có nguồn thì không có 
 1. Mỗi luật gắn với nguồn uy tín và **lưu nguyên văn đoạn trích** hỗ trợ luật đó.
 2. Hệ thống tự kiểm tra đoạn trích có thực sự xuất hiện trên trang nguồn.
 3. Luật chỉ được bật sau khi có người đọc và đối chiếu với nguồn.
-4. AI (nếu dùng) chỉ được diễn đạt lại lời giải thích của một luật có sẵn, **không được tạo ra cảnh báo mới** và không được tự "nhớ" bảng thành phần của sản phẩm.
+4. AI **không được tạo ra cảnh báo** và không được tự "nhớ" bảng thành phần của sản phẩm. AI chỉ soạn bản nháp thẻ myth cho người duyệt, từ những trang nguồn người duyệt chọn: mỗi ý phải kèm đoạn trích nguyên văn, máy chủ tìm lại từng đoạn trích trên trang, và bản nháp không bao giờ hiện cho người dùng. Bản nháp chỉ thành thẻ khi người duyệt đọc nguồn và tự bật như mọi luật khác.
 
 Mỗi sản phẩm cũng ghi lại bảng thành phần lấy từ đâu (nhập tay, dữ liệu mẫu, Open Beauty Facts…) và trạng thái xác minh.
 
@@ -114,6 +122,13 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    npm run dev                    # mở http://localhost:5173
    ```
 
+4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`.
+
+   ```bash
+   cd backend
+   uv run python -m scripts.reviewers add "Tên người duyệt"   # hỏi mật khẩu
+   ```
+
 ## Lộ trình
 
 Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
@@ -124,6 +139,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth, gửi câu hỏi
 - [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth, gửi câu hỏi
 - [ ] Hoàn thiện demo
+- [x] Sau MVP: trang duyệt câu hỏi, AI soạn nháp thẻ myth, hiện câu hỏi đã được trả lời
 
 ## Nguồn dữ liệu và ghi công
 

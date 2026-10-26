@@ -1,5 +1,5 @@
 import { useContext, useEffect, useState } from 'react'
-import { api, type RulesResponse } from '../api'
+import { api, type AnsweredQuestion, type RulesResponse } from '../api'
 import { GroupsContext } from '../groups'
 import type { MyProduct } from '../routine'
 import { Notice } from './Notice'
@@ -32,8 +32,40 @@ export function MythPage({ products }: { products: MyProduct[] }) {
           {myths?.rules.map((rule) => <RuleCard key={rule.key} rule={rule} />)}
         </div>
       </section>
+      <AnsweredQuestions />
       <PairLookup products={products} />
     </div>
+  )
+}
+
+/** Questions users sent that a reviewer answered with a published card. Hidden until there is one. */
+function AnsweredQuestions() {
+  const [answered, setAnswered] = useState<AnsweredQuestion[]>([])
+
+  useEffect(() => {
+    api.answeredQuestions().then(setAnswered, () => {}) // optional section: hide on error
+  }, [])
+
+  if (answered.length === 0) return null
+  return (
+    <section aria-labelledby="answered-title">
+      <h2 id="answered-title" className="text-2xl leading-tight font-bold text-balance">
+        Câu hỏi bạn đọc đã được trả lời
+      </h2>
+      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+        Câu hỏi người dùng gửi, được người duyệt trả lời bằng thẻ có nguồn. Câu hỏi đã được biên tập để bỏ thông tin cá
+        nhân.
+      </p>
+      <div className="mt-3 space-y-3">
+        {answered.map((q) => (
+          <RuleCard key={q.id} rule={q.rule}>
+            <p className="mt-1 text-sm text-ink-mute">
+              Câu hỏi: <span className="text-ink-soft italic">“{q.question}”</span>
+            </p>
+          </RuleCard>
+        ))}
+      </div>
+    </section>
   )
 }
 

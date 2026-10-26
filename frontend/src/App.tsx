@@ -5,6 +5,7 @@ import { Dialog } from './components/Dialog'
 import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
+import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
@@ -18,18 +19,27 @@ import {
   type CheckState,
 } from './routine'
 
-type Page = 'routine' | 'myths'
+type Page = 'routine' | 'myths' | 'review'
+
+// The review page has no nav entry for users; reviewers open #review.
+const pageFromHash = (): Page => (window.location.hash === '#review' ? 'review' : 'routine')
 
 const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
-  const [page, setPage] = useState<Page>('routine')
+  const [page, setPage] = useState<Page>(pageFromHash)
   const [adding, setAdding] = useState(false)
   const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
   const check = useRoutineCheck(actions.routine)
+
+  useEffect(() => {
+    const onHash = () => setPage(pageFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
 
   useEffect(() => {
     api.groups().then(
@@ -74,7 +84,11 @@ function App() {
                 ).map(([value, label]) => (
                   <button
                     key={value}
-                    onClick={() => setPage(value)}
+                    onClick={() => {
+                      // Leaving #review (or the #results anchor) for a page of the menu.
+                      if (window.location.hash) history.replaceState(null, '', window.location.pathname)
+                      setPage(value)
+                    }}
                     aria-current={page === value ? 'page' : undefined}
                     className={`rounded-full px-3.5 py-1.5 ${page === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
                   >
@@ -108,9 +122,13 @@ function App() {
                   <WarningsPanel state={check} products={actions.routine.products} />
                 </ResultsAside>
               </div>
-            ) : (
+            ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">
                 <MythPage products={actions.routine.products} />
+              </div>
+            ) : (
+              <div className="mx-auto max-w-4xl">
+                <ReviewPage />
               </div>
             )}
           </main>

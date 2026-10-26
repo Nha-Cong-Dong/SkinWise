@@ -152,11 +152,12 @@ Bảng `products` đã có `ingredients_source = 'open_beauty_facts'` và `verif
 
 ## E. Duyệt câu hỏi + AI soạn nháp
 
-Hiện câu hỏi chỉ xem được bằng `scripts.questions`; không lưu thông tin liên hệ nên không trả lời riêng được, câu trả lời là thẻ myth công khai.
+Làm 26/10 ở phiên khác (nhánh `feat/review`, PR #6), đã gộp vào `feat/accuracy` (PR #7) để gỡ xung đột giữa hai nhánh. Chi tiết, kiểm tra và giới hạn: [e-review.md](e-review.md).
 
-- [ ] Giao diện duyệt (có đăng nhập cho người duyệt): xem câu hỏi, đổi trạng thái `new` / `accepted` / `rejected` / `answered`, gắn với luật hoặc thẻ đã tạo
-- [ ] Hiện cho người dùng những câu hỏi đã thành thẻ myth
-- [ ] AI soạn bản nháp thẻ myth (quyết định 22/10): nháp phải kèm nguồn và đoạn trích; server chạy kiểm tra như `verify_quotes`; nháp gắn "chưa kiểm duyệt", lưu ở trạng thái chưa bật, không bao giờ hiện cho người dùng. Người duyệt đọc nguồn và tự bật như mọi luật
+- [x] Giao diện duyệt (`#review`, đăng nhập người duyệt): xem câu hỏi, đổi trạng thái `new` / `accepted` / `rejected` / `answered`, gắn với luật hoặc thẻ đã tạo
+- [x] Hiện cho người dùng những câu hỏi đã thành thẻ myth (bằng lời người duyệt viết lại)
+- [x] AI soạn bản nháp thẻ myth (quyết định 22/10): nháp kèm nguồn do người duyệt chọn, máy chủ kiểm đoạn trích, nháp nằm ngoài bảng luật và không bao giờ hiện cho người dùng. Chưa thử với API Claude thật
+- [ ] Trang duyệt vẫn dùng màu của giao diện cũ (chỉ người duyệt thấy); chuyển sang token của giao diện mới khi rảnh
 - [ ] (Tuỳ chọn) AI diễn đạt lại `explanation_vi` cho dễ hiểu hơn, luôn hiện kèm bản gốc. Không đổi mức độ, không thêm ý mới
 
 ## F. Hồ sơ da (luật `profile`)
