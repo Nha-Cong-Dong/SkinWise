@@ -1,5 +1,3 @@
-from collections.abc import Iterator
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
@@ -266,6 +264,7 @@ def test_single_group_lookup_lists_rules_involving_it(client: TestClient) -> Non
     assert set(lookup(client, "PHA")) == {
         "exfoliant-acid-duplicate-same-session",
         "retinoid-exfoliant-acid-same-session",
+        "azelaic-acid-exfoliant-acid-same-session",
     }
 
 
@@ -273,48 +272,6 @@ def test_lookup_without_verified_rule_says_so(client: TestClient) -> None:
     body = client.get("/rules", params={"groups": ["AZELAIC_ACID", "NIACINAMIDE"]}).json()
     assert body == {"rules": [], "notice_vi": NO_VERIFIED_INFO_VI}
     assert client.get("/rules", params={"groups": ["NOPE"]}).status_code == 422
-
-
-@pytest.fixture
-def cleanup_questions(engine: Engine) -> Iterator[list[int]]:
-    created: list[int] = []
-    yield created
-    with engine.begin() as conn:
-        conn.execute(text("DELETE FROM user_questions WHERE id = ANY(:ids)"), {"ids": created})
-
-
-def test_submit_question(
-    client: TestClient, engine: Engine, ids: dict[str, int], cleanup_questions: list[int]
-) -> None:
-    response = client.post(
-        "/questions",
-        json={
-            "question": "  Azelaic acid dùng chung với niacinamide được không?  ",
-            "product_ids": [ids[RETINOL], ids[RETINOL]],
-            "group_codes": ["NIACINAMIDE", "AZELAIC_ACID"],
-        },
-    )
-    assert response.status_code == 201
-    question_id = response.json()["id"]
-    cleanup_questions.append(question_id)
-    with engine.connect() as conn:
-        row = conn.execute(
-            text("SELECT question, product_ids, group_codes, status FROM user_questions "
-                 "WHERE id = :id"), {"id": question_id}
-        ).one()  # fmt: skip
-    assert row.question == "Azelaic acid dùng chung với niacinamide được không?"
-    assert row.product_ids == [ids[RETINOL]]
-    assert row.group_codes == ["AZELAIC_ACID", "NIACINAMIDE"]
-    assert row.status == "new"
-
-
-def test_question_rejects_bad_input(client: TestClient) -> None:
-    assert client.post("/questions", json={"question": "hi"}).status_code == 422
-    assert client.post("/questions", json={"question": "x" * 2001}).status_code == 422
-    unknown_product = {"question": "Câu hỏi hợp lệ?", "product_ids": [999999]}
-    assert client.post("/questions", json=unknown_product).status_code == 422
-    unknown_group = {"question": "Câu hỏi hợp lệ?", "group_codes": ["NOPE"]}
-    assert client.post("/questions", json=unknown_group).status_code == 422
 
 
 def test_analyze_marks_entries_after_a_one_percent_preservative(client: TestClient) -> None:

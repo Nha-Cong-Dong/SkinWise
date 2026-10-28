@@ -1,5 +1,7 @@
 import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
-import { api, type CosmeticFunction, type Group, type Severity } from './api'
+import { ApiError, api, type CosmeticFunction, type Group, type Severity } from './api'
+import { emailLink, useAccount } from './account'
+import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
 import { Dialog } from './components/Dialog'
 import { Mark } from './components/Icons'
@@ -7,10 +9,12 @@ import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
+import { EmailLinkPage, SignIn } from './components/SignIn'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
 import { useIncomingRoutine } from './share'
+import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
 import {
   EMPTY_ADD_DRAFT,
   currentResult,
@@ -40,9 +44,65 @@ function App() {
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
   const check = useRoutineCheck(actions.routine)
+  // Signing in is required (plan/h-accounts.md); the review page has its own sign-in.
+  const account = useAccount()
+  const me = account.state.kind === 'signed-in' ? account.state.me : null
+  const accountOffline = account.state.kind === 'signed-in' && account.state.offline === true
+  const sync = useRoutineSync(actions, me?.email ?? null)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const conflict = sync.state.kind === 'conflict' ? sync.state.server : null
+  // The conflict the user closed without choosing; a new conflict opens the dialog again.
+  const [hiddenConflict, setHiddenConflict] = useState<ServerCopy | null>(null)
+  // A #verify-email or #reset-password link opened in this tab; it acts only on a click.
+  const [link, setLink] = useState(() => emailLink(window.location.hash))
+  const [passwordReset, setPasswordReset] = useState(false) // show the "new password" line once
+
+  const leaveLink = () => {
+    history.replaceState(null, '', window.location.pathname) // the token must not stay in the address
+    setLink(null)
+  }
+
+  // Before a link signs this tab in: the current account's unsent routine goes to the server first.
+  const beforeLinkSignIn = async () =>
+    !me ||
+    (await sync.flush()) ||
+    confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Tiếp tục bây giờ sẽ mất các thay đổi đó. Vẫn tiếp tục?')
+
+  /** Null once signed out; otherwise what to tell the user. */
+  const signOut = async (everywhere: boolean): Promise<string | null> => {
+    const sent = await sync.flush()
+    if (
+      !sent &&
+      !confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Đăng xuất bây giờ sẽ mất các thay đổi đó. Vẫn đăng xuất?')
+    ) {
+      return null
+    }
+    try {
+      await (everywhere ? api.signOutEverywhere() : api.signOut())
+    } catch (e) {
+      // 401: the session had already ended. Anything else: the cookie may still be valid, so this
+      // device stays signed in and keeps the routine until the server confirms.
+      if (!(e instanceof ApiError && e.status === 401)) return 'Chưa đăng xuất được (mất kết nối). Hãy thử lại.'
+    }
+    forgetDevice()
+    setPasswordReset(false)
+    setAccountOpen(false)
+    void account.refresh()
+    return null
+  }
+
+  /** Signed out or account deleted: the next person on this device must not get this routine or draft. */
+  const forgetDevice = () => {
+    sync.forget()
+    setAddDraft(EMPTY_ADD_DRAFT) // the label photo and the list being typed
+    setAdding(false)
+  }
 
   useEffect(() => {
-    const onHash = () => setPage(pageFromHash())
+    const onHash = () => {
+      setPage(pageFromHash())
+      setLink(emailLink(window.location.hash))
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -67,6 +127,41 @@ function App() {
         flagged.set(key, w.rule.severity)
       }
     }
+  }
+
+  if (page !== 'review' && link && account.state.kind !== 'checking') {
+    return (
+      <EmailLinkPage
+        key={link.token}
+        link={link}
+        signedInAs={me?.email ?? null}
+        beforeSignIn={beforeLinkSignIn}
+        onSignedIn={(signedIn) => {
+          if (link.kind === 'reset-password') setPasswordReset(true)
+          leaveLink()
+          account.signedIn(signedIn)
+        }}
+        onLeave={leaveLink}
+      />
+    )
+  }
+
+  if (page !== 'review' && !me) {
+    if (account.state.kind === 'signed-out') return <SignIn onSignedIn={account.signedIn} />
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 text-sm text-ink-mute">
+        {account.state.kind === 'unreachable' ? (
+          <p>
+            Không kết nối được máy chủ SkinWise.{' '}
+            <button onClick={() => void account.refresh()} className="text-link underline underline-offset-2">
+              Thử lại
+            </button>
+          </p>
+        ) : (
+          <p>Đang tải…</p>
+        )}
+      </div>
+    )
   }
 
   return (
@@ -105,6 +200,18 @@ function App() {
               <p className="hidden text-sm text-ink-mute xl:ml-auto xl:block">
                 Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng.
               </p>
+              {me && (
+                <button
+                  onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
+                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper xl:ml-0"
+                  title="Tài khoản"
+                >
+                  <span className="max-w-[14rem] truncate text-sm font-medium">{me.email}</span>
+                  <span className={`text-xs ${conflict || sync.state.kind === 'offline' || accountOffline ? 'text-caution-ink' : 'text-ink-mute'}`}>
+                    {accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? 'Tài khoản')}
+                  </span>
+                </button>
+              )}
             </div>
           </header>
 
@@ -114,6 +221,17 @@ function App() {
               đang mang thai, đang điều trị bệnh da hoặc dùng thuốc kê đơn, hãy hỏi ý kiến chuyên gia.
             </p>
           </div>
+
+          {passwordReset && (
+            <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+              <p className="flex max-w-2xl items-start gap-3 rounded-xl bg-surface p-3 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
+                <span className="flex-1">Đã đặt mật khẩu mới. Các thiết bị khác đã được đăng xuất.</span>
+                <button onClick={() => setPasswordReset(false)} className="shrink-0 text-link underline underline-offset-2">
+                  Đóng
+                </button>
+              </p>
+            </div>
+          )}
 
           <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
             {page === 'routine' ? (
@@ -132,7 +250,7 @@ function App() {
               </div>
             ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">
-                <MythPage products={actions.routine.products} />
+                <MythPage />
               </div>
             ) : (
               <div className="mx-auto max-w-4xl">
@@ -145,7 +263,7 @@ function App() {
           </main>
 
           <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
-            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
+            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này và đồng bộ với tài khoản SkinWise của bạn.
           </footer>
         </div>
 
@@ -155,6 +273,36 @@ function App() {
           title={<h2 className="text-xl font-bold">Thêm sản phẩm</h2>}
         >
           <AddProduct actions={actions} draft={addDraft} setDraft={setAddDraft} />
+        </Dialog>
+
+        {me && (
+          <Dialog open={accountOpen} onClose={() => setAccountOpen(false)} title={<h2 className="text-xl font-bold">Tài khoản</h2>}>
+            <AccountPanel
+              me={me}
+              sync={sync.state}
+              onSignOut={signOut}
+              onDeleted={() => {
+                forgetDevice()
+                setAccountOpen(false)
+                void account.refresh()
+              }}
+            />
+          </Dialog>
+        )}
+
+        <Dialog
+          open={conflict !== null && conflict !== hiddenConflict}
+          onClose={() => setHiddenConflict(conflict)}
+          title={<h2 className="text-xl font-bold">Routine đã đổi trên thiết bị khác</h2>}
+        >
+          {conflict && (
+            <SyncConflict
+              local={actions.routine}
+              server={conflict}
+              onKeepThisDevice={sync.keepThisDevice}
+              onUseSynced={sync.useSynced}
+            />
+          )}
         </Dialog>
 
         <Dialog

@@ -28,16 +28,13 @@ from app.ingredients import (
     with_ancestors,
 )
 from app.products import (
-    existing_product_ids,
     get_product,
     product_applications,
     search_products,
 )
-from app.questions import add_question, list_answered
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
-    AnsweredQuestionOut,
     FunctionOut,
     GroupOut,
     InciAnalysis,
@@ -46,8 +43,6 @@ from app.schemas import (
     OccurrenceOut,
     ProductDetail,
     ProductSummary,
-    QuestionCreate,
-    QuestionCreated,
     RoutineCheckRequest,
     RoutineCheckResponse,
     RoutineProductResult,
@@ -71,7 +66,7 @@ NO_COMBINATION_WARNING_VI = (
 )
 NO_VERIFIED_INFO_VI = (
     "Chưa có thông tin đã kiểm chứng cho trường hợp này. Không có cảnh báo không có nghĩa là "
-    "chắc chắn an toàn. Bạn có thể gửi câu hỏi để chúng tôi tìm nguồn."
+    "chắc chắn an toàn. Nếu chưa chắc, hãy hỏi bác sĩ da liễu hoặc dược sĩ."
 )
 TEXT_NOTICES_VI = {
     "drug_facts": (
@@ -99,11 +94,6 @@ TEXT_NOTICES_VI = {
         "kiểm tra có thể thiếu cảnh báo."
     ),
 }
-QUESTION_RECEIVED_VI = (
-    "Đã nhận câu hỏi của bạn. Người duyệt sẽ xem câu hỏi; nếu tìm được nguồn đáng tin cậy, "
-    "câu trả lời sẽ được làm thành thẻ thông tin mới."
-)
-
 DbSession = Annotated[Session, Depends(get_session)]
 
 router = APIRouter()
@@ -293,33 +283,3 @@ def rules(
         rules=[RuleOut.model_validate(r) for r in matched],
         notice_vi=None if matched else NO_VERIFIED_INFO_VI,
     )
-
-
-@router.post("/questions", status_code=status.HTTP_201_CREATED)
-def ask(db: DbSession, body: QuestionCreate) -> QuestionCreated:
-    product_ids = sorted(set(body.product_ids))
-    group_codes = sorted(set(body.group_codes))
-    problems = []
-    if missing := set(product_ids) - existing_product_ids(db, product_ids):
-        problems.append(f"unknown product ids: {sorted(missing)}")
-    if unknown := set(group_codes) - {g.code for g in list_groups(db)}:
-        problems.append(f"unknown group codes: {sorted(unknown)}")
-    if problems:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "; ".join(problems))
-    question_id = add_question(db, body.question, product_ids, group_codes)
-    db.commit()
-    return QuestionCreated(id=question_id, message_vi=QUESTION_RECEIVED_VI)
-
-
-@router.get("/questions/answered")
-def answered_questions(db: DbSession) -> list[AnsweredQuestionOut]:
-    """Questions a reviewer answered with a published rule, newest first, in the reviewer's
-    wording. A rule that is not published (or lost its sources) hides its questions."""
-    published = {r.key: r for r in load_published_rules(db)}
-    return [
-        AnsweredQuestionOut(
-            id=q.id, question=q.public_question, rule=RuleOut.model_validate(published[q.rule_key])
-        )
-        for q in list_answered(db)
-        if q.rule_key in published
-    ]

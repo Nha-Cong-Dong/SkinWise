@@ -165,6 +165,9 @@ function ProductRow({ product, actions, onView, onRemove }: RowProps) {
         )}
         <span className="text-sm font-medium">{product.name}</span>
       </p>
+      {product.origin?.kind === 'photo' && (
+        <p className="mt-1 text-xs text-ink-mute">Đọc từ ảnh nhãn bằng AI, bạn đã so với bao bì</p>
+      )}
       {maybeIncomplete(product) && (
         <p className="mt-1 text-xs text-caution-ink">Bảng thành phần có thể chưa đầy đủ, cảnh báo có thể bị thiếu</p>
       )}

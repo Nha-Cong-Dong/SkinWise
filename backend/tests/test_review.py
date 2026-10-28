@@ -18,8 +18,6 @@ from app.rules import rule_problems
 
 NAME, PASSWORD = "Người duyệt thử", "mat-khau-thu-nghiem"
 MYTH = "vitamin-c-niacinamide-myth"
-RAW_QUESTION = "Tôi tên Lan, 0901234567. Vitamin C và niacinamide có kỵ nhau không?"
-PUBLIC_QUESTION = "Vitamin C và niacinamide có kỵ nhau không?"
 SOURCE = "https://example.org/study"
 REAL_ANTHROPIC = anthropic.Anthropic
 PAGE = (
@@ -49,39 +47,11 @@ def auth(client: TestClient, reviewer: str) -> dict[str, str]:
 
 
 @pytest.fixture
-def question(engine: Engine) -> Iterator[int]:
+def new_drafts(engine: Engine) -> Iterator[list[int]]:
+    created: list[int] = []
+    yield created
     with engine.begin() as conn:
-        question_id = conn.execute(
-            text(
-                "INSERT INTO user_questions (question, group_codes) "
-                "VALUES (:q, '{NIACINAMIDE,VITAMIN_C}') RETURNING id"
-            ),
-            {"q": RAW_QUESTION},
-        ).scalar_one()
-    yield question_id
-    with engine.begin() as conn:
-        conn.execute(text("DELETE FROM rule_drafts WHERE question_id = :id"), {"id": question_id})
-        conn.execute(text("DELETE FROM user_questions WHERE id = :id"), {"id": question_id})
-
-
-@pytest.fixture
-def unpublished_rule(engine: Engine) -> Iterator[str]:
-    key = "test-unpublished-myth"
-    with engine.begin() as conn:
-        conn.execute(
-            text(
-                """
-                INSERT INTO rules (key, kind, severity, scope, evidence_level, group_a, group_b,
-                                   title_vi, explanation_vi, published)
-                VALUES (:key, 'myth', 'info', 'same_session', 'low', 'RETINOID', 'NIACINAMIDE',
-                        'Thẻ thử', 'Chưa bật.', false)
-                """
-            ),
-            {"key": key},
-        )
-    yield key
-    with engine.begin() as conn:
-        conn.execute(text("DELETE FROM rules WHERE key = :key"), {"key": key})
+        conn.execute(text("DELETE FROM rule_drafts WHERE id = ANY(:ids)"), {"ids": created})
 
 
 def test_password_hash() -> None:
@@ -94,12 +64,9 @@ def test_password_hash() -> None:
 def test_review_routes_need_sign_in(client: TestClient) -> None:
     bogus = {"Authorization": "Bearer not-a-token"}
     for headers in ({}, bogus):
-        assert client.get("/review/questions", headers=headers).status_code == 401
-        assert client.get("/review/rules", headers=headers).status_code == 401
         assert client.get("/review/drafts", headers=headers).status_code == 401
         draft = {"group_a": "VITAMIN_C", "group_b": "NIACINAMIDE", "source_urls": [SOURCE]}
         assert client.post("/review/drafts", json=draft, headers=headers).status_code == 401
-        assert client.put("/review/questions/1", json={"status": "new"}).status_code == 401
 
 
 def test_login_rejects_wrong_password_and_unknown_name(client: TestClient, reviewer: str) -> None:
@@ -126,67 +93,6 @@ def test_expired_session_is_rejected(client: TestClient, engine: Engine, reviewe
             {"hash": hashlib.sha256(token.encode()).hexdigest(), "name": NAME},
         )
     assert client.get("/review/me", headers={"Authorization": f"Bearer {token}"}).status_code == 401
-
-
-def test_review_lists_questions_with_counts(
-    client: TestClient, auth: dict[str, str], question: int
-) -> None:
-    body = client.get("/review/questions", params={"status": "new"}, headers=auth).json()
-    listed = {q["id"]: q for q in body["questions"]}
-    assert listed[question]["question"] == RAW_QUESTION
-    assert listed[question]["group_codes"] == ["NIACINAMIDE", "VITAMIN_C"]
-    assert listed[question]["public"] is False
-    assert set(body["counts"]) == {"new", "accepted", "rejected", "answered"}
-    assert body["counts"]["new"] >= 1
-    rejected = client.get("/review/questions", params={"status": "rejected"}, headers=auth).json()
-    assert question not in {q["id"] for q in rejected["questions"]}
-
-
-def test_answered_question_is_shown_in_the_reviewer_wording(
-    client: TestClient, auth: dict[str, str], question: int
-) -> None:
-    update = {"status": "answered", "rule_key": MYTH, "public_question": PUBLIC_QUESTION}
-    response = client.put(f"/review/questions/{question}", json=update, headers=auth)
-    assert response.status_code == 200
-    reviewed = response.json()
-    assert reviewed["public"] is True
-    assert reviewed["rule"]["key"] == MYTH
-    assert reviewed["updated_by"] == NAME
-
-    answered = {q["id"]: q for q in client.get("/questions/answered").json()}
-    assert answered[question]["question"] == PUBLIC_QUESTION
-    assert answered[question]["rule"]["key"] == MYTH
-    assert answered[question]["rule"]["sources"]
-    assert "0901234567" not in json.dumps(answered[question])
-
-
-def test_answering_needs_a_known_rule_and_public_wording(
-    client: TestClient, auth: dict[str, str], question: int
-) -> None:
-    url = f"/review/questions/{question}"
-    no_rule = {"status": "answered", "public_question": PUBLIC_QUESTION}
-    assert client.put(url, json=no_rule, headers=auth).status_code == 422
-    no_wording = {"status": "answered", "rule_key": MYTH}
-    assert client.put(url, json=no_wording, headers=auth).status_code == 422
-    unknown = {"status": "accepted", "rule_key": "no-such-rule"}
-    assert client.put(url, json=unknown, headers=auth).status_code == 422
-    assert (
-        client.put("/review/questions/999999", json={"status": "new"}, headers=auth).status_code
-        == 404
-    )
-
-
-def test_question_answered_by_an_unpublished_rule_stays_hidden(
-    client: TestClient, auth: dict[str, str], question: int, unpublished_rule: str
-) -> None:
-    update = {"status": "answered", "rule_key": unpublished_rule, "public_question": "Câu hỏi?"}
-    reviewed = client.put(f"/review/questions/{question}", json=update, headers=auth).json()
-    assert reviewed["rule"]["published"] is False
-    assert reviewed["public"] is False
-    assert question not in {q["id"] for q in client.get("/questions/answered").json()}
-    rules = {r["key"]: r for r in client.get("/review/rules", headers=auth).json()}
-    assert rules[unpublished_rule]["published"] is False
-    assert rules[MYTH]["published"] is True
 
 
 def model_draft(**overrides) -> ModelDraft:
@@ -220,7 +126,7 @@ def test_ai_draft_checks_quotes_and_never_becomes_a_rule(
     client: TestClient,
     engine: Engine,
     auth: dict[str, str],
-    question: int,
+    new_drafts: list[int],
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
     fetched: list[tuple[str, bool]] = []
@@ -238,7 +144,6 @@ def test_ai_draft_checks_quotes_and_never_becomes_a_rule(
     monkeypatch.setattr(drafts, "fetch_text", fake_fetch)
     monkeypatch.setattr(review_api, "call_model", fake_model)
     request = {
-        "question_id": question,
         "group_a": "VITAMIN_C",
         "group_b": "NIACINAMIDE",
         "source_urls": [SOURCE, SOURCE],
@@ -247,9 +152,10 @@ def test_ai_draft_checks_quotes_and_never_becomes_a_rule(
     response = client.post("/review/drafts", json=request, headers=auth)
     assert response.status_code == 201, response.text
     draft = response.json()
+    new_drafts.append(draft["id"])
 
     assert fetched == [(SOURCE, False)]  # readable text only, each page once
-    assert RAW_QUESTION in prompts[0] and PAGE in prompts[0] and "Chú ý cỡ mẫu." in prompts[0]
+    assert PAGE in prompts[0] and "Chú ý cỡ mẫu." in prompts[0]
     assert "<example_card>" in prompts[0]  # published myth cards as style examples
     assert [q["found"] for q in draft["quotes"]] == [True, False, False]
     assert draft["quotes"][0]["quote"].count("\n") == 0
@@ -281,8 +187,6 @@ def test_ai_draft_checks_quotes_and_never_becomes_a_rule(
         assert row.first() is None
     assert draft["key"] not in {r["key"] for r in client.get("/rules").json()["rules"]}
 
-    listed = client.get("/review/questions", headers=auth).json()["questions"]
-    assert {q["id"]: q for q in listed}[question]["draft_ids"] == [draft["id"]]
     assert draft["id"] in {d["id"] for d in client.get("/review/drafts", headers=auth).json()}
 
     discarded = client.patch(
@@ -324,8 +228,6 @@ def test_draft_request_validation(client: TestClient, auth: dict[str, str]) -> N
         {**base, "group_a": "NOPE"},
     ):
         assert client.post("/review/drafts", json=bad, headers=auth).status_code == 422
-    missing = {**base, "question_id": 999999}
-    assert client.post("/review/drafts", json=missing, headers=auth).status_code == 404
 
 
 def fake_anthropic(monkeypatch: pytest.MonkeyPatch, handler) -> list[dict]:
@@ -360,6 +262,8 @@ def message(stop_reason: str, text_: str) -> dict:
 
 
 def test_call_model_sends_a_structured_request(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A model that takes fallbacks, whatever the developer's .env chose.
+    monkeypatch.setattr(get_settings(), "draft_model", "claude-opus-5-5")
     expected = model_draft()
     sent = fake_anthropic(
         monkeypatch,

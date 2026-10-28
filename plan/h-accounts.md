@@ -1,6 +1,6 @@
 # Hướng H: Tài khoản + đồng bộ routine (thiết kế)
 
-Trạng thái: thiết kế, chưa viết code (26/10/2026). Người duyệt đã chốt các lựa chọn chính ngày 26/10 (mục 15); còn chờ tư vấn pháp lý (mục 2). Mục tóm tắt trong [after-mvp.md](after-mvp.md#h-tài-khoản--đồng-bộ).
+Trạng thái: **đã làm ở chế độ thử, chưa mở cho người dùng thật** (26/10/2026, nhánh `feat/accounts`). Người duyệt đổi ý cùng ngày: đăng nhập **bắt buộc** khi vào web (mục 16), làm ngay thay vì chờ sau hướng B; email ở chế độ dev; code viết xong nhưng không thu email người thật cho tới khi trả lời xong câu hỏi pháp lý (mục 2). Mục tóm tắt trong [after-mvp.md](after-mvp.md#h-tài-khoản--đồng-bộ).
 
 ## 1. Có nên làm không
 
@@ -49,45 +49,48 @@ Còn phải kiểm khi triển khai: các dịch vụ ở nước ngoài mà tr�
 - **Thu tối thiểu:** chỉ email và routine. Không tên, không số điện thoại, không ngày sinh; không lưu IP lâu dài.
 - **Trình duyệt vẫn là bản làm việc chính:** `localStorage` như hiện nay; server chỉ giữ bản sao để đồng bộ. Không đăng nhập vẫn dùng đủ mọi tính năng.
 - **Hồ sơ da (hướng F) không đồng bộ** trong thiết kế này.
-- **Câu hỏi người dùng gửi không gắn với tài khoản**, như hiện nay.
+- **Không có câu hỏi người dùng gửi**: tính năng đã bỏ ngày 27/10.
 - **Kiểm tra routine (`/routine/check`) vẫn không lưu gì**, kể cả khi đã đăng nhập.
 
-## 4. Đăng nhập bằng link qua email
+## 4. Đăng nhập bằng email + mật khẩu (đổi 27/10, trước đó là link qua email)
 
-1. Người dùng bấm "Đồng bộ giữa các thiết bị", nhập email, đánh dấu ô đồng ý. Ô này để trống sẵn và tách riêng với mọi thứ khác (Đ.9).
-2. `POST /auth/email-link {email, consent_version}` luôn trả 202 với cùng một câu, để không lộ email nào đã có tài khoản.
-3. Server tạo token ngẫu nhiên 32 byte (`secrets.token_urlsafe`), chỉ lưu **hash SHA-256**, hạn 15 phút, dùng một lần. Gửi email chứa link `https://<domain>/#sign-in?token=…`. Token nằm sau `#` nên không vào log máy chủ hay header Referer.
-4. Link mở trang có nút "Đăng nhập", **không tự đăng nhập khi mở**. Lý do: trình quét link của hộp thư (Outlook Safe Links, bộ lọc thư rác) tự mở link sẽ đốt mất token dùng một lần. Bấm nút thì gửi `POST /auth/session {token}`; server kiểm hash, hạn, chưa dùng; tạo người dùng nếu chưa có và lưu bản ghi đồng ý; rồi tạo phiên.
-5. **Phiên:**
+1. **Đăng ký:** email, mật khẩu (8–128 ký tự, không bắt buộc chữ hoa / số / ký hiệu, không trùng email; theo NIST SP 800-63B), ô đồng ý để trống sẵn và tách riêng (Đ.9). `POST /auth/register` luôn trả 202 với cùng một câu, để không lộ email nào đã có tài khoản. Mật khẩu băm bằng scrypt (`app/passwords.py`).
+2. **Xác thực email:** link `#verify-email?token=…`, 24 giờ, dùng một lần, gắn với mật khẩu của lần đăng ký tạo ra nó. Mở link **không tự gọi API** (trình quét link của hộp thư sẽ đốt token); trang hỏi lại mật khẩu, bấm nút thì `POST /auth/verify-email {token, password}`. Sai mật khẩu → 401, link vẫn còn, tính là một lần đăng nhập sai. Lý do hỏi mật khẩu: kẻ biết email người khác có thể đăng ký lại bằng mật khẩu của mình; không hỏi thì chủ email bấm link sẽ kích hoạt mật khẩu của kẻ đó. Xác thực xong thì ghi bản đồng ý và đăng nhập. Chưa xác thực thì không đăng nhập được (403), có "Gửi lại link xác thực" (cần email + mật khẩu). Bản chính sách đã đồng ý lưu ở `users.pending_policy_version`; tài khoản chưa xác thực bị xoá sau 7 ngày nếu không còn link xác thực còn hạn.
+3. **Đăng nhập:** `POST /auth/login`. Sai email hay sai mật khẩu cùng một lỗi 401; không có tài khoản vẫn chạy scrypt trên hash giả để thời gian trả lời giống nhau.
+4. **Quên mật khẩu:** `POST /auth/forgot-password` luôn 202 cùng câu; chỉ gửi link (`#reset-password?token=…`, 30 phút, dùng một lần) cho tài khoản **đã xác thực** (sau review 28/10: đặt lại chỉ cần hộp thư, không chứng minh được ai đã tích ô đồng ý lúc đăng ký). `POST /auth/reset-password {token, password}`: đặt mật khẩu mới, vô hiệu các link đặt lại khác, **đăng xuất mọi thiết bị**, đăng nhập máy này. Quên mật khẩu khi chưa xác thực thì đăng ký lại.
+5. **Token trong link** (`email_tokens`, `purpose` verify / reset): 32 byte ngẫu nhiên, chỉ lưu **hash SHA-256**; nằm sau `#` nên không vào log máy chủ hay header Referer.
+6. **Phiên:**
    - id ngẫu nhiên, server chỉ lưu hash.
    - Cookie `HttpOnly; Secure; SameSite=Lax`, hạn 30 ngày, gia hạn mỗi lần dùng.
    - Có "Đăng xuất" và "Đăng xuất mọi thiết bị".
-6. **Chống lạm dụng:**
-   - Tối đa 3 email mỗi giờ cho một địa chỉ, 10 mỗi giờ cho một IP. Đếm trong bảng có hạn hoặc trong bộ nhớ, không giữ IP sau khi hết hạn.
+7. **Chống lạm dụng:**
+   - Gửi email (đăng ký, gửi lại, quên mật khẩu): tối đa 3 mỗi giờ cho một địa chỉ, 10 mỗi giờ cho một IP.
+   - Đăng nhập / xác thực sai: 5 lần / 15 phút cho một email, 20 cho một IP; quá thì 429, kể cả khi lần đó đúng.
+   - Đếm trong bộ nhớ, không giữ IP / email sau khi hết hạn. Proxy Vite gửi `X-Forwarded-For` để đếm theo IP thật.
    - Email chuẩn hoá thành chữ thường, bỏ khoảng trắng; không tự bỏ dấu chấm kiểu Gmail.
-7. **CSRF:** cookie `SameSite=Lax`, route ghi chỉ nhận `application/json`, kiểm header `Origin`.
-8. **Email:**
-   - Dùng dịch vụ gửi email giao dịch đặt tại Việt Nam (chốt 26/10); domain riêng cấu hình SPF, DKIM, DMARC (từ hướng A).
-   - Nội dung tiếng Việt, không chứa dữ liệu routine. Nhắc rằng nếu không phải bạn yêu cầu thì bỏ qua email.
+8. **CSRF:** cookie `SameSite=Lax`, route ghi chỉ nhận `application/json`, kiểm header `Origin`.
+9. **Email:**
+   - Hiện chỉ có chế độ dev: link in ra log server và hiện trên màn hình.
+   - Gửi thật: dịch vụ gửi email giao dịch đặt tại Việt Nam (chốt 26/10); domain riêng cấu hình SPF, DKIM, DMARC (từ hướng A). Nội dung tiếng Việt, không chứa dữ liệu routine. Nhắc rằng nếu không phải bạn yêu cầu thì bỏ qua email.
 
 **Đã cân nhắc, không chọn:**
-- Mật khẩu: phải lưu hash; quên mật khẩu vẫn cần email.
+- Đăng nhập bằng link qua email (đã làm 26/10, bỏ 27/10): người duyệt chọn mật khẩu.
 - Passkey: không cần email, nhưng khó khôi phục khi mất thiết bị. Có thể thêm sau làm cách đăng nhập thứ hai.
 - Đăng nhập Google / Facebook: chia sẻ dữ liệu với bên thứ ba ở nước ngoài.
 
 ## 5. Dữ liệu (qua Alembic)
 
 ```sql
-users        (id uuid PK, email text UNIQUE NOT NULL, created_at, last_seen_at)
+users        (id uuid PK, email text UNIQUE NOT NULL, password_hash, email_verified_at, pending_policy_version, created_at, last_seen_at)
 consents     (user_id FK, purpose text, policy_version text, granted_at, withdrawn_at)  -- bằng chứng đồng ý (Đ.9)
-login_tokens (token_hash bytea PK, email text, expires_at, used_at)                      -- xoá sau 24 giờ
+email_tokens (token_hash PK, email, purpose verify|reset, policy_version, password_hash, expires_at, used_at)  -- xoá 1 ngày sau khi hết hạn
 sessions     (id_hash bytea PK, user_id FK, created_at, expires_at, last_used_at)
 routines     (user_id PK FK, data jsonb NOT NULL, version int NOT NULL, updated_at)
 ```
 
 - `routines.data` có cùng dạng với `Routine` trong `frontend/src/routine.ts` (`products` + `entries`), kèm số phiên bản dạng dữ liệu. Server kiểm bằng Pydantic khi lưu, với giới hạn như `RoutineCheckRequest` (50 sản phẩm, 200 bước) và kích thước tối đa khoảng 100 KB.
 - Mỗi người một routine; nhiều routine để sau.
-- Bảng tài khoản không nối với `user_questions`.
+- Không có bảng câu hỏi người dùng (đã bỏ 27/10).
 
 ## 6. Đồng bộ
 
@@ -142,8 +145,12 @@ Trình duyệt mã hoá routine trước khi gửi; server chỉ giữ bản mã
 
 | Route | Việc |
 |---|---|
-| `POST /auth/email-link` | Gửi link đăng nhập (luôn 202) |
-| `POST /auth/session` | Đổi token lấy phiên |
+| `POST /auth/register` | Đăng ký, gửi link xác thực (luôn 202) |
+| `POST /auth/verify-email` | Token + mật khẩu → xác thực, đăng nhập |
+| `POST /auth/resend-verification` | Email + mật khẩu → gửi lại link xác thực (luôn 202) |
+| `POST /auth/login` | Email + mật khẩu → phiên |
+| `POST /auth/forgot-password` | Gửi link đặt lại (luôn 202) |
+| `POST /auth/reset-password` | Token + mật khẩu mới → đăng xuất mọi máy khác, đăng nhập |
 | `POST /auth/logout`, `POST /auth/logout-all` | Đăng xuất máy này / mọi máy |
 | `GET /me` | Email, ngày tạo, đồng ý, lần đồng bộ cuối |
 | `GET /me/routine`, `PUT /me/routine` | Đồng bộ (mục 6) |
@@ -184,11 +191,29 @@ Tổng khoảng 3–4 tuần (cỡ L), chưa tính thời gian chờ tư vấn p
 
 **Xong khi:** đăng nhập trên máy A rồi sửa routine, đăng nhập trên máy B thấy đúng routine đó. Hai máy cùng sửa thì được hỏi chọn bản, không mất âm thầm. Xoá tài khoản thì server không còn dữ liệu (trừ bản sao lưu đến hạn). Không đăng nhập thì app chạy như cũ. Chính sách và văn bản đồng ý đã được duyệt; hồ sơ pháp lý, nếu phải lập, đã gửi.
 
+## 16. Đã làm (26/10) và còn thiếu trước khi mở thật
+
+Đã làm, theo đúng các mục trên trừ chỗ ghi khác:
+- Backend: `app/accounts.py`, `app/accounts_api.py`, `app/mailer.py`; bảng ở `schema.sql` (chưa dùng Alembic: hướng A). 12 test (`tests/test_accounts.py`): link dùng một lần, hết hạn, không lộ email đã có, bắt buộc đồng ý, giới hạn tần suất, 409 khi lệch phiên bản, dữ liệu sai dạng, đăng xuất / đăng xuất mọi máy, xuất, xoá sạch, chưa cấu hình email thì từ chối gửi.
+- Frontend: cổng đăng nhập (`components/SignIn.tsx`, trừ `#review`), chính sách bản nháp (`PolicyText.tsx`), trang Tài khoản (`AccountPanel.tsx`), đồng bộ (`sync.ts`) với hộp thoại chọn bản. Thêm so với mục 6: máy dùng chung — routine của tài khoản khác còn trên máy không bao giờ bị tải lên tài khoản vừa đăng nhập; đăng xuất và xoá tài khoản xoá routine khỏi máy.
+- Thử trên Chrome với hai hồ sơ trình duyệt (hai "thiết bị"): 22 tình huống, gồm đăng nhập bằng link, tải lên lần đầu, máy thứ hai nhận routine, hai máy cùng sửa thì hỏi, đăng xuất, máy dùng chung, xuất và xoá tài khoản.
+
+Đổi 27–28/10: đăng nhập bằng email + mật khẩu thay cho link (mục 4): đăng ký có xác thực email (link gắn với mật khẩu, hỏi lại mật khẩu khi xác thực), quên / đặt lại mật khẩu, giới hạn đăng nhập sai. `app/passwords.py` dùng chung với người duyệt. Test viết lại trong `tests/test_accounts.py`; QA thử trên trình duyệt (Playwright) đăng ký → xác thực → đăng nhập, sai mật khẩu, gửi lại link, quên / đặt lại mật khẩu, đồng bộ routine; review 4 góc nhìn (8 lỗi nhỏ / vừa đã sửa). Sau PR #9 (28/10): review cả PR (14 lỗi, không có lỗi nặng) đã sửa hết: đồng bộ không mất lần sửa cuối khi đăng xuất và không báo xung đột giả (mỗi lúc một lần gửi); đăng xuất chỉ xoá dữ liệu trên máy khi máy chủ xác nhận; mất mạng khi đang đăng nhập không văng ra ngoài; đăng xuất xoá bản nháp thêm sản phẩm; nhãn "đọc từ ảnh" được đồng bộ; test không đọc cấu hình email từ `.env`.
+
+Còn thiếu trước khi mở cho người dùng thật:
+- [ ] Trả lời 3 câu hỏi pháp lý (mục 2); điền cách liên hệ vào chính sách và bỏ chữ "bản nháp" (đổi `POLICY_VERSION` ở cả backend và frontend)
+- [ ] Dịch vụ gửi email đặt tại Việt Nam (thêm chế độ gửi thật vào `app/mailer.py`), domain có SPF / DKIM / DMARC
+- [ ] Triển khai theo hướng A: HTTPS (cookie tự bật `Secure` khi `APP_URL` là https), Alembic, sao lưu, tự lưu font
+- [ ] Giới hạn tần suất đang nằm trong bộ nhớ của một tiến trình: chạy nhiều tiến trình thì chuyển vào DB
+- [ ] Sau reverse proxy: chạy uvicorn với `FORWARDED_ALLOW_IPS` chỉ chứa IP của proxy (mặc định tin `127.0.0.1`); để rộng hơn thì client tự gửi `X-Forwarded-For` để né giới hạn theo IP
+- [ ] Việc định kỳ xoá tài khoản không dùng 24 tháng (cần gửi email báo trước, nên làm sau khi có dịch vụ email)
+
 ## 15. Đã chốt (người duyệt, 26/10)
 
 - Làm H sau B, chỉ khi người dùng thật vẫn cần đồng bộ (mục 1)
 - Bên kiểm soát dữ liệu: cá nhân người làm dự án (mục 2)
 - Máy chủ và dịch vụ gửi email đặt tại Việt Nam (mục 2, 4)
+- (27/10) Đăng nhập bằng email + mật khẩu, bỏ link qua email; chưa xác thực email thì chưa đăng nhập được; đặt lại mật khẩu thì đăng xuất mọi thiết bị khác; trang xác thực hỏi lại mật khẩu (mục 4)
 - Kiểm phiên bản và hỏi người dùng, thay cho "bản sửa sau thắng" (mục 6)
 - Xoá tài khoản không dùng sau 24 tháng, báo trước 30 ngày; bản sao lưu giữ 30 ngày (mục 7)
 - Đồng bộ mã hoá đầu-cuối chỉ làm nếu tư vấn kết luận routine là dữ liệu nhạy cảm (mục 9)

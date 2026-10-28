@@ -78,10 +78,6 @@ def get_product(db: Session | Connection, product_id: int) -> ProductDetailRow |
     return ProductDetailRow(*columns, ingredients=tuple(resolve(db, parse_inci(raw or ""))))
 
 
-def existing_product_ids(db: Session | Connection, product_ids: list[int]) -> set[int]:
-    return set(product_applications(db, product_ids))
-
-
 _APPLICATIONS = text("SELECT id, application FROM products WHERE id IN :ids").bindparams(
     bindparam("ids", expanding=True)
 )

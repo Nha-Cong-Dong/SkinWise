@@ -1,4 +1,4 @@
-import type { Application, QuestionStatus, Rule, Session, Severity, Warning } from './api'
+import type { Application, Rule, Session, Severity, Warning } from './api'
 
 export const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] // 0 = Monday
 /** Spoken names: a screen reader reads "T2" letter by letter. */
@@ -40,13 +40,6 @@ export const SCOPE_LABELS: Record<Rule['scope'], string> = {
 export const APPLICATION_LABELS: Record<Application, string> = {
   rinse_off: 'Rửa trôi',
   leave_on: 'Để lại trên da',
-}
-
-export const QUESTION_STATUS_LABELS: Record<QuestionStatus, string> = {
-  new: 'Mới',
-  accepted: 'Đang làm',
-  rejected: 'Không làm',
-  answered: 'Đã trả lời',
 }
 
 export const VERIFICATION_LABELS: Record<string, string> = {

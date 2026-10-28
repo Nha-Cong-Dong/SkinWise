@@ -1,10 +1,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { api, type InciAnalysis, type ProductSummary } from '../api'
 import { APPLICATION_LABELS } from '../labels'
+import { pastedImage, usePhotoReader } from '../photoReader'
 import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
+import { PhotoReaderStatus, ReadFromPhoto } from './ReadFromPhoto'
 
 type Props = { actions: RoutineActions }
 
@@ -119,10 +121,29 @@ function SearchProducts({ actions }: Props) {
   )
 }
 
+// What the model writes where it cannot read a label photo (backend/app/label_reader.py).
+const UNREADABLE = '[?]'
+
 function PasteInci({ actions, draft, setDraft }: DraftProps) {
-  const { name, text, analysis } = draft
+  const { name, text, analysis, origin, photo } = draft
   const [state, setState] = useState<'idle' | 'loading' | 'error' | 'added'>('idle')
+  const [bigPhoto, setBigPhoto] = useState(false)
   const update = (change: Partial<AddDraft>) => setDraft((d) => ({ ...d, ...change }))
+  const clear = () => {
+    update({ name: '', text: '', analysis: null, origin: null, photo: null })
+    setState('idle')
+  }
+  const reader = usePhotoReader(
+    (read, shot) => {
+      update({ text: read, analysis: null, origin: { kind: 'photo', confirmed: false }, photo: shot })
+      setState('idle')
+    },
+    () => !text.trim() || confirm('Thay bảng thành phần đang dán bằng chữ đọc từ ảnh?'),
+  )
+  const reading = reader.state === 'loading'
+  const unreadable = text.split(UNREADABLE).length - 1
+  // A list read off a photo is analysed only once the user has checked it against the package.
+  const unchecked = origin?.kind === 'photo' && !origin.confirmed
 
   const analyze = (input = text) => {
     setState('loading')
@@ -145,13 +166,54 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
       inci: text.trim(),
       groups: analysis.groups,
       notices: analysis.notices,
+      ...(origin && { origin }),
     })
-    update({ name: '', text: '', analysis: null })
+    update({ name: '', text: '', analysis: null, origin: null, photo: null })
     setState('added')
   }
 
   return (
-    <div className="mt-4 space-y-3">
+    <div
+      className="mt-4 space-y-3"
+      onPaste={(e) => {
+        // A pasted screenshot or copied photo is read; pasted text goes into the box as usual.
+        const image = pastedImage(e)
+        if (!image) return
+        e.preventDefault()
+        reader.read(image)
+      }}
+    >
+      {origin ? (
+        <div className="rounded-xl bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
+          <p className="font-semibold text-ink">Chữ đọc từ ảnh bằng AI, có thể sai</p>
+          <p className="mt-1">
+            Chữ nhỏ trên chai cong dễ bị đọc nhầm, và một chữ sai trong tên hoạt chất có thể làm mất cảnh báo. Hãy so
+            từng dòng với bao bì, sửa chỗ sai và chỗ đánh dấu {UNREADABLE}, rồi mới phân tích.
+          </p>
+          {photo && (
+            <button
+              onClick={() => setBigPhoto((big) => !big)}
+              aria-label={bigPhoto ? 'Thu nhỏ ảnh' : 'Phóng to ảnh'}
+              className="mt-2 block w-full overflow-hidden rounded-lg bg-surface ring-1 ring-line"
+            >
+              <img src={photo} alt="Ảnh nhãn bạn đã chọn" className={`w-full object-contain ${bigPhoto ? '' : 'max-h-56'}`} />
+            </button>
+          )}
+          <p className="mt-2 text-xs">
+            <button
+              onClick={clear}
+              disabled={reading}
+              className="font-medium text-link underline underline-offset-2 disabled:opacity-40"
+            >
+              Bỏ, tự dán bảng khác
+            </button>
+          </p>
+          {/* A photo pasted over a list already read: say that it is being read, or what failed. */}
+          <PhotoReaderStatus state={reader.state} alone />
+        </div>
+      ) : (
+        <ReadFromPhoto reader={reader} />
+      )}
       <input
         value={name}
         onChange={(e) => update({ name: e.target.value })}
@@ -162,23 +224,42 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
       <textarea
         value={text}
         onChange={(e) => {
-          update({ text: e.target.value, analysis: null })
+          // Emptied: whatever is pasted next is the user's own list.
+          const emptied = !e.target.value.trim()
+          update({ text: e.target.value, analysis: null, ...(emptied && { origin: null, photo: null }) })
           setState('idle')
         }}
         rows={6}
+        disabled={reading} // the text read off the photo would replace what is typed meanwhile
         placeholder="Ingredients: Aqua, Glycerin, Niacinamide, …"
         aria-label="Bảng thành phần"
-        className={`${field} text-sm leading-relaxed`}
+        className={`${field} text-sm leading-relaxed disabled:opacity-60`}
       />
+      {unreadable > 0 && (
+        <p className="text-sm text-caution-ink">
+          Còn {unreadable} chỗ đánh dấu {UNREADABLE} chưa đọc được. Sửa theo bao bì hoặc xoá đi rồi mới phân tích.
+        </p>
+      )}
+      {origin && (
+        <label className="flex items-start gap-2.5 text-sm text-ink-soft">
+          <input
+            type="checkbox"
+            checked={origin.confirmed}
+            onChange={(e) => update({ origin: { ...origin, confirmed: e.target.checked } })}
+            className="mt-0.5 size-4 shrink-0 accent-ink"
+          />
+          Tôi đã so từng dòng với bao bì và sửa chỗ sai
+        </label>
+      )}
       <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => analyze()}
-          disabled={!text.trim() || state === 'loading'}
+          disabled={!text.trim() || state === 'loading' || unreadable > 0 || unchecked}
           className="rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40"
         >
           {state === 'loading' ? 'Đang phân tích…' : 'Phân tích'}
         </button>
-        {analysis && (
+        {analysis && !unchecked && (
           <button onClick={add} className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link">
             Thêm vào sản phẩm của tôi
           </button>
