@@ -46,7 +46,7 @@ export function AccountPanel({
     <div className="space-y-6 text-sm leading-relaxed text-ink-soft">
       {me.dev_mode && (
         <p className="rounded-xl bg-caution-soft p-3 text-caution-ink">
-          Chế độ thử: tài khoản chưa mở cho người dùng thật, link đăng nhập không được gửi qua email.
+          Chế độ thử: tài khoản chưa mở cho người dùng thật, SkinWise không gửi email thật (link xác thực và link đặt lại mật khẩu chỉ hiện trên màn hình).
         </p>
       )}
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1">

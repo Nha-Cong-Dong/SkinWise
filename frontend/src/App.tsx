@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, type CosmeticFunction, type Group, type Severity } from './api'
-import { useAccount } from './account'
+import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
 import { Dialog } from './components/Dialog'
@@ -10,7 +10,7 @@ import { MythPage } from './components/MythPage'
 import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
-import { SignIn } from './components/SignIn'
+import { EmailLinkPage, SignIn } from './components/SignIn'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
@@ -50,6 +50,20 @@ function App() {
   const conflict = sync.state.kind === 'conflict' ? sync.state.server : null
   // The conflict the user closed without choosing; a new conflict opens the dialog again.
   const [hiddenConflict, setHiddenConflict] = useState<ServerCopy | null>(null)
+  // A #verify-email or #reset-password link opened in this tab; it acts only on a click.
+  const [link, setLink] = useState(() => emailLink(window.location.hash))
+  const [passwordReset, setPasswordReset] = useState(false) // show the "new password" line once
+
+  const leaveLink = () => {
+    history.replaceState(null, '', window.location.pathname) // the token must not stay in the address
+    setLink(null)
+  }
+
+  // Before a link signs this tab in: the current account's unsent routine goes to the server first.
+  const beforeLinkSignIn = async () =>
+    !me ||
+    (await sync.flush()) ||
+    confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Tiếp tục bây giờ sẽ mất các thay đổi đó. Vẫn tiếp tục?')
 
   const signOut = async (everywhere: boolean) => {
     const sent = await sync.flush()
@@ -61,12 +75,16 @@ function App() {
     }
     await (everywhere ? api.signOutEverywhere() : api.signOut()).catch(() => {})
     sync.forget() // the next person on this device must not get this routine
+    setPasswordReset(false)
     setAccountOpen(false)
     void account.refresh()
   }
 
   useEffect(() => {
-    const onHash = () => setPage(pageFromHash())
+    const onHash = () => {
+      setPage(pageFromHash())
+      setLink(emailLink(window.location.hash))
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -91,6 +109,23 @@ function App() {
         flagged.set(key, w.rule.severity)
       }
     }
+  }
+
+  if (page !== 'review' && link && account.state.kind !== 'checking') {
+    return (
+      <EmailLinkPage
+        key={link.token}
+        link={link}
+        signedInAs={me?.email ?? null}
+        beforeSignIn={beforeLinkSignIn}
+        onSignedIn={(signedIn) => {
+          if (link.kind === 'reset-password') setPasswordReset(true)
+          leaveLink()
+          account.signedIn(signedIn)
+        }}
+        onLeave={leaveLink}
+      />
+    )
   }
 
   if (page !== 'review' && !me) {
@@ -169,6 +204,17 @@ function App() {
             </p>
           </div>
 
+          {passwordReset && (
+            <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+              <p className="flex max-w-2xl items-start gap-3 rounded-xl bg-surface p-3 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
+                <span className="flex-1">Đã đặt mật khẩu mới. Các thiết bị khác đã được đăng xuất.</span>
+                <button onClick={() => setPasswordReset(false)} className="shrink-0 text-link underline underline-offset-2">
+                  Đóng
+                </button>
+              </p>
+            </div>
+          )}
+
           <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
             {page === 'routine' ? (
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
@@ -184,7 +230,7 @@ function App() {
               </div>
             ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">
-                <MythPage products={actions.routine.products} />
+                <MythPage />
               </div>
             ) : (
               <div className="mx-auto max-w-4xl">

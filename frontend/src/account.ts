@@ -4,7 +4,7 @@
 import { useCallback, useEffect, useState } from 'react'
 import { ApiError, api, type Me } from './api'
 
-/** The privacy policy shown on the sign-in form; must match POLICY_VERSION in backend/app/accounts.py. */
+/** The privacy policy shown on the form that creates an account; must match POLICY_VERSION in backend/app/accounts.py. */
 export const POLICY_VERSION = '2026-10-26-draft'
 
 export type AccountState =
@@ -27,7 +27,7 @@ export function useAccount() {
 
   useEffect(() => {
     void refresh()
-    // A sign-in link opened from the email lands in another tab; this one catches up on focus.
+    // A verification or reset link opened from the email signs in another tab; this one catches up on focus.
     window.addEventListener('focus', refresh)
     return () => window.removeEventListener('focus', refresh)
   }, [refresh])
@@ -35,8 +35,19 @@ export function useAccount() {
   return { state, refresh, signedIn: (me: Me) => setState({ kind: 'signed-in', me }) }
 }
 
-/** The token of a sign-in link opened in this tab ("#sign-in?token=…"), or null. */
-export function signInToken(hash: string): string | null {
-  if (!hash.startsWith('#sign-in?')) return null
-  return new URLSearchParams(hash.slice('#sign-in?'.length)).get('token')
+/**
+ * A link from an email, opened in this tab: "#verify-email?token=…" or "#reset-password?token=…".
+ * Opening it does nothing by itself; the user acts on it with a button (mail scanners open links
+ * on their own and would use up the single-use token).
+ */
+export type EmailLink = { kind: 'verify-email' | 'reset-password'; token: string }
+
+export function emailLink(hash: string): EmailLink | null {
+  for (const kind of ['verify-email', 'reset-password'] as const) {
+    const prefix = `#${kind}?`
+    if (!hash.startsWith(prefix)) continue
+    const token = new URLSearchParams(hash.slice(prefix.length)).get('token')
+    return token ? { kind, token } : null
+  }
+  return null
 }

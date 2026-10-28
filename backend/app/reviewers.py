@@ -5,7 +5,6 @@ is a random bearer token; only its sha256 is stored, so a leaked database cannot
 """
 
 import hashlib
-import hmac
 import secrets
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -14,25 +13,9 @@ from sqlalchemy import text
 from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 
+from app.passwords import DUMMY_HASH, check_password, hash_password
+
 SESSION_TTL = timedelta(hours=12)
-# scrypt cost: ~50 ms per check, enough to make guessing slow without a rate limiter.
-_N, _R, _P = 2**14, 8, 1
-# Compared against when the name is unknown, so a wrong name takes as long as a wrong password.
-_DUMMY_HASH = "scrypt$16384$8$1$" + "00" * 16 + "$" + "00" * 32
-
-
-def hash_password(password: str) -> str:
-    salt = secrets.token_bytes(16)
-    digest = hashlib.scrypt(password.encode(), salt=salt, n=_N, r=_R, p=_P)
-    return f"scrypt${_N}${_R}${_P}${salt.hex()}${digest.hex()}"
-
-
-def check_password(password: str, stored: str) -> bool:
-    _, n, r, p, salt, digest = stored.split("$")
-    actual = hashlib.scrypt(
-        password.encode(), salt=bytes.fromhex(salt), n=int(n), r=int(r), p=int(p)
-    )
-    return hmac.compare_digest(actual, bytes.fromhex(digest))
 
 
 def _token_hash(token: str) -> str:
@@ -73,7 +56,7 @@ def sign_in(db: Session | Connection, name: str, password: str) -> SignIn | None
     stored = db.execute(
         text("SELECT password_hash FROM reviewers WHERE name = :name"), {"name": name}
     ).scalar_one_or_none()
-    if not check_password(password, stored or _DUMMY_HASH) or stored is None:
+    if not check_password(password, stored or DUMMY_HASH) or stored is None:
         return None
     db.execute(text("DELETE FROM reviewer_sessions WHERE expires_at < now()"))
     token = secrets.token_urlsafe(32)
