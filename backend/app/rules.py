@@ -80,16 +80,3 @@ def load_product_groups(db: Session | Connection, product_ids: list[int]) -> dic
         for row in db.execute(_PRODUCT_GROUPS, {"ids": product_ids}):
             groups[row.product_id].add(row.group_code)
     return groups
-
-
-_ALL_RULES = text(
-    """
-    SELECT key, kind, severity, group_a, group_b, title_vi, published FROM rules
-    WHERE key IS NOT NULL ORDER BY published DESC, kind, key
-    """
-)
-
-
-def list_all_rules(db: Session | Connection) -> list[Any]:
-    """Every seeded rule, published or not, for reviewers to link questions to."""
-    return list(db.execute(_ALL_RULES))

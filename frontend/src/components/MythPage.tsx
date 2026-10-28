@@ -1,12 +1,10 @@
 import { useContext, useEffect, useState } from 'react'
-import { api, type AnsweredQuestion, type RulesResponse } from '../api'
+import { api, type RulesResponse } from '../api'
 import { GroupsContext } from '../groups'
-import type { MyProduct } from '../routine'
 import { Notice } from './Notice'
-import { QuestionForm } from './QuestionForm'
 import { RuleCard } from './RuleCard'
 
-export function MythPage({ products }: { products: MyProduct[] }) {
+export function MythPage() {
   const [myths, setMyths] = useState<RulesResponse | null>(null)
   const [error, setError] = useState(false)
 
@@ -32,44 +30,12 @@ export function MythPage({ products }: { products: MyProduct[] }) {
           {myths?.rules.map((rule) => <RuleCard key={rule.key} rule={rule} />)}
         </div>
       </section>
-      <AnsweredQuestions />
-      <PairLookup products={products} />
+      <PairLookup />
     </div>
   )
 }
 
-/** Questions users sent that a reviewer answered with a published card. Hidden until there is one. */
-function AnsweredQuestions() {
-  const [answered, setAnswered] = useState<AnsweredQuestion[]>([])
-
-  useEffect(() => {
-    api.answeredQuestions().then(setAnswered, () => {}) // optional section: hide on error
-  }, [])
-
-  if (answered.length === 0) return null
-  return (
-    <section aria-labelledby="answered-title">
-      <h2 id="answered-title" className="text-2xl leading-tight font-bold text-balance">
-        Câu hỏi bạn đọc đã được trả lời
-      </h2>
-      <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-        Câu hỏi người dùng gửi, được người duyệt trả lời bằng thẻ có nguồn. Câu hỏi đã được biên tập để bỏ thông tin cá
-        nhân.
-      </p>
-      <div className="mt-3 space-y-3">
-        {answered.map((q) => (
-          <RuleCard key={q.id} rule={q.rule}>
-            <p className="mt-1 text-sm text-ink-mute">
-              Câu hỏi: <span className="text-ink-soft italic">“{q.question}”</span>
-            </p>
-          </RuleCard>
-        ))}
-      </div>
-    </section>
-  )
-}
-
-function PairLookup({ products }: { products: MyProduct[] }) {
+function PairLookup() {
   const groups = useContext(GroupsContext)
   const [a, setA] = useState('')
   const [b, setB] = useState('')
@@ -126,18 +92,8 @@ function PairLookup({ products }: { products: MyProduct[] }) {
       <div className="mt-4 space-y-3">
         {error && <p className="text-sm text-avoid-ink">Không tra cứu được.</p>}
         {result?.response.rules.map((rule) => <RuleCard key={rule.key} rule={rule} />)}
-        {result?.response.notice_vi && (
-          <>
-            <Notice>{result.response.notice_vi}</Notice>
-            <QuestionForm key={result.codes.join('+')} groupCodes={result.codes} products={products} />
-          </>
-        )}
+        {result?.response.notice_vi && <Notice>{result.response.notice_vi}</Notice>}
       </div>
-      {!result && (
-        <div className="mt-8">
-          <QuestionForm groupCodes={[]} products={products} />
-        </div>
-      )}
     </section>
   )
 }

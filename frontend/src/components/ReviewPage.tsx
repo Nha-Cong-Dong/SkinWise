@@ -1,18 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState, type FormEvent } from 'react'
-import {
-  api,
-  ApiError,
-  reviewApi,
-  type Draft,
-  type QuestionStatus,
-  type ReviewApi,
-  type ReviewQuestion,
-  type ReviewRule,
-} from '../api'
+import { api, ApiError, reviewApi, type Draft, type ReviewApi } from '../api'
 import { GroupsContext } from '../groups'
-import { QUESTION_STATUS_LABELS } from '../labels'
 import { DraftCard, DraftForm } from './DraftCard'
-import { ReviewQuestionCard } from './ReviewQuestionCard'
 
 type ReviewSession = { token: string; name: string }
 
@@ -38,7 +27,7 @@ function saveSession(session: ReviewSession | null) {
   }
 }
 
-/** Review page (#review): questions from users, and AI drafts of myth cards. Sign-in required. */
+/** Review page (#review): AI drafts of myth cards. Sign-in required. */
 export function ReviewPage() {
   const [session, setSession] = useState<ReviewSession | null>(loadSession)
 
@@ -112,14 +101,7 @@ function LoginForm({ onSignedIn }: { onSignedIn: (session: ReviewSession) => voi
   )
 }
 
-type Tab = 'questions' | 'drafts'
-const STATUS_ORDER: QuestionStatus[] = ['new', 'accepted', 'answered', 'rejected']
-
 function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut: () => void }) {
-  const [tab, setTab] = useState<Tab>('questions')
-  const [rules, setRules] = useState<ReviewRule[]>([])
-  const [error, setError] = useState<string | null>(null)
-
   // Every call goes through here: an expired session sends the reviewer back to sign in.
   const client = useMemo(() => reviewApi(session.token), [session.token])
   const guard = useCallback(
@@ -131,10 +113,6 @@ function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut
     [onSignOut],
   )
 
-  useEffect(() => {
-    guard(client.rules()).then(setRules, () => setError('Không tải được danh sách luật.'))
-  }, [client, guard])
-
   const signOut = () => {
     client.logout().finally(onSignOut)
   }
@@ -143,7 +121,7 @@ function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Duyệt câu hỏi và bản nháp</h2>
+          <h2 className="text-lg font-semibold text-slate-900">Duyệt bản nháp thẻ myth</h2>
           <p className="text-sm text-slate-500">
             Luật và thẻ myth chỉ được bật trong <code className="text-xs">backend/data/rules.toml</code> sau khi người
             duyệt đọc nguồn; trang này không bật được luật nào.
@@ -156,92 +134,12 @@ function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut
           </button>
         </div>
       </div>
-      <nav className="flex gap-1 text-sm">
-        {(
-          [
-            ['questions', 'Câu hỏi của người dùng'],
-            ['drafts', 'Bản nháp thẻ myth (AI)'],
-          ] as const
-        ).map(([value, label]) => (
-          <button
-            key={value}
-            onClick={() => setTab(value)}
-            aria-current={tab === value ? 'page' : undefined}
-            className={`rounded-md px-3 py-1.5 ${tab === value ? 'bg-rose-50 font-medium text-rose-700' : 'text-slate-600 hover:bg-slate-100'}`}
-          >
-            {label}
-          </button>
-        ))}
-      </nav>
-      {error && <p className="text-sm text-red-700">{error}</p>}
-      {tab === 'questions' ? (
-        <QuestionsTab client={client} guard={guard} rules={rules} />
-      ) : (
-        <DraftsTab client={client} guard={guard} />
-      )}
+      <DraftsTab client={client} guard={guard} />
     </div>
   )
 }
 
 type Guard = <T>(promise: Promise<T>) => Promise<T>
-
-function QuestionsTab({ client, guard, rules }: { client: ReviewApi; guard: Guard; rules: ReviewRule[] }) {
-  const [filter, setFilter] = useState<QuestionStatus | 'all'>('new')
-  const [questions, setQuestions] = useState<ReviewQuestion[] | null>(null)
-  const [counts, setCounts] = useState<Record<QuestionStatus, number> | null>(null)
-  const [error, setError] = useState(false)
-
-  const load = useCallback(() => {
-    guard(client.questions(filter === 'all' ? [] : [filter])).then(
-      (r) => {
-        setQuestions(r.questions)
-        setCounts(r.counts)
-        setError(false)
-      },
-      () => setError(true),
-    )
-  }, [client, guard, filter])
-
-  useEffect(load, [load])
-
-  const total = counts ? Object.values(counts).reduce((a, b) => a + b, 0) : null
-  return (
-    <section className="space-y-3">
-      <div className="flex flex-wrap gap-1 text-sm">
-        {[...STATUS_ORDER, 'all' as const].map((s) => {
-          const n = s === 'all' ? total : counts?.[s]
-          return (
-            <button
-              key={s}
-              onClick={() => setFilter(s)}
-              aria-pressed={filter === s}
-              className={`rounded-full px-3 py-1 ring-1 ${filter === s ? 'bg-slate-800 text-white ring-slate-800' : 'bg-white text-slate-600 ring-slate-300 hover:bg-slate-50'}`}
-            >
-              {s === 'all' ? 'Tất cả' : QUESTION_STATUS_LABELS[s]}
-              {n !== null && n !== undefined && ` (${n})`}
-            </button>
-          )
-        })}
-      </div>
-      {error && <p className="text-sm text-red-700">Không tải được câu hỏi.</p>}
-      {questions?.length === 0 && <p className="text-sm text-slate-500">Không có câu hỏi nào.</p>}
-      {questions?.map((q) => (
-        <ReviewQuestionCard
-          key={q.id}
-          question={q}
-          rules={rules}
-          client={client}
-          guard={guard}
-          onSaved={(updated) => {
-            setQuestions((list) => list?.map((x) => (x.id === updated.id ? updated : x)) ?? null)
-            // Counts change with the status; the list keeps the card until the filter changes.
-            guard(client.questions([])).then((r) => setCounts(r.counts), () => {})
-          }}
-        />
-      ))}
-    </section>
-  )
-}
 
 function DraftsTab({ client, guard }: { client: ReviewApi; guard: Guard }) {
   const groups = useContext(GroupsContext)
@@ -269,8 +167,6 @@ function DraftsTab({ client, guard }: { client: ReviewApi; guard: Guard }) {
         <DraftForm
           client={client}
           guard={guard}
-          questionId={null}
-          initialGroups={[]}
           onCreated={(d) => status === 'draft' && setDrafts((list) => [d, ...(list ?? [])])}
         />
       )}
