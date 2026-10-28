@@ -28,7 +28,7 @@ async function prepare(file: File): Promise<{ data: string; preview: string }> {
   return { data: preview.slice(preview.indexOf(',') + 1), preview }
 }
 
-export type PhotoReaderState = 'idle' | 'loading' | 'none' | 'bad_image' | 'signed_out' | 'off' | 'error'
+export type PhotoReaderState = 'idle' | 'loading' | 'none' | 'bad_image' | 'signed_out' | 'off' | 'busy' | 'error'
 
 /** The image in a paste event (a screenshot or a copied photo), if there is one. */
 export function pastedImage(e: ClipboardEvent): File | null {
@@ -38,6 +38,8 @@ export function pastedImage(e: ClipboardEvent): File | null {
 /**
  * Reads the ingredient list off a photo. `onRead` gets the text, for the user to check, and the
  * photo to check it against. `mayReplace` is asked first; false keeps what the user pasted.
+ * While `state` is 'loading' the caller locks the ingredient box, so the text read off the photo
+ * never replaces something typed during the wait.
  */
 export function usePhotoReader(onRead: (text: string, photo: string) => void, mayReplace: () => boolean) {
   const [state, setState] = useState<PhotoReaderState>('idle')
@@ -64,7 +66,15 @@ export function usePhotoReader(onRead: (text: string, photo: string) => void, ma
       (e) => {
         const status = e instanceof ApiError ? e.status : 0
         setState(
-          status === 401 ? 'signed_out' : status === 503 ? 'off' : status === 422 ? 'bad_image' : 'error',
+          status === 401
+            ? 'signed_out'
+            : status === 429 // the AI service is busy, or too many photos were sent
+              ? 'busy'
+              : status === 503 // not set up on this server
+                ? 'off'
+                : status === 422
+                  ? 'bad_image'
+                  : 'error',
         )
       },
     )

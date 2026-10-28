@@ -1,14 +1,18 @@
 import base64
 import json
+import threading
+import time
 import uuid
+from collections.abc import Iterator
+from concurrent.futures import ThreadPoolExecutor
 
 import anthropic
 import httpx2
 import pytest
 from fastapi.testclient import TestClient
 
-from app import label_reader
-from app.accounts import POLICY_VERSION, reset_rate_limits
+from app import label_api, label_reader
+from app.accounts import POLICY_VERSION, RateLimit, reset_rate_limits
 from app.config import get_settings
 from app.label_reader import LabelReadingError, ModelLabel
 
@@ -20,6 +24,13 @@ PIXEL = base64.b64encode(
         "0000000c4944415408d763f8cfc000000301010018dd8db40000000049454e44ae426082"
     )
 ).decode()
+
+
+@pytest.fixture(autouse=True)
+def fresh_photo_limits() -> Iterator[None]:
+    label_api.reset_photo_limits()
+    yield
+    label_api.reset_photo_limits()
 
 
 def photo(data: str = PIXEL, media_type: str = "image/png") -> dict:
@@ -175,5 +186,88 @@ def test_call_model_reports_refusals_bad_images_and_outages(
 
     assert status_of(httpx2.Response(200, json=message("refusal", ""))) == 502
     assert status_of(httpx2.Response(401, json=api_error("authentication_error"))) == 503
+    # Overloaded is not "not set up": 429, so the page says to try again later.
+    assert status_of(httpx2.Response(429, json=api_error("rate_limit_error"))) == 429
     assert status_of(httpx2.Response(400, json=api_error("invalid_request_error"))) == 422
     assert status_of(httpx2.Response(500, json=api_error("api_error"))) == 502
+
+
+def any_label(media_type: str, data: str) -> ModelLabel:
+    return ModelLabel(found=True, text="Aqua, Glycerin")
+
+
+def test_ai_busy_is_429(signed_in: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    def busy(media_type: str, data: str) -> ModelLabel:
+        raise LabelReadingError(label_reader.AI_BUSY, 429)
+
+    monkeypatch.setattr(label_reader, "call_model", busy)
+    response = signed_in.post("/label/read", json=photo())
+    assert response.status_code == 429
+    assert response.json() == {"detail": "the AI service is busy; try again in a minute"}
+
+
+def test_ten_photos_per_account_in_ten_minutes(
+    signed_in: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls = []
+
+    def model(media_type: str, data: str) -> ModelLabel:
+        calls.append(1)
+        return any_label(media_type, data)
+
+    monkeypatch.setattr(label_reader, "call_model", model)
+    statuses = [signed_in.post("/label/read", json=photo()).status_code for _ in range(11)]
+    assert statuses == [200] * 10 + [429]
+    assert len(calls) == 10  # the refused photo never reached the model
+    refused = signed_in.post("/label/read", json=photo())
+    assert refused.json() == {"detail": "too many photos; wait a few minutes"}
+
+
+def test_photos_per_ip(signed_in: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    # Same rule with a small IP limit, so one account (under its own limit) reaches it.
+    monkeypatch.setattr(label_api, "_photos", RateLimit({"email": (10, 600.0), "ip": (3, 600.0)}))
+    monkeypatch.setattr(label_reader, "call_model", any_label)
+    statuses = [signed_in.post("/label/read", json=photo()).status_code for _ in range(4)]
+    assert statuses == [200, 200, 200, 429]
+
+
+def test_at_most_four_reads_at_once(signed_in: TestClient, monkeypatch: pytest.MonkeyPatch) -> None:
+    running = threading.BoundedSemaphore(label_api.MAX_CONCURRENT_READS)
+    monkeypatch.setattr(label_api, "_reading", running)
+    monkeypatch.setattr(label_reader, "call_model", any_label)
+    for _ in range(label_api.MAX_CONCURRENT_READS):  # four reads in progress elsewhere
+        assert running.acquire(blocking=False)
+    busy = signed_in.post("/label/read", json=photo())
+    assert busy.status_code == 429
+    assert busy.json() == {"detail": "the AI service is busy; try again in a minute"}
+    running.release()
+    assert signed_in.post("/label/read", json=photo()).status_code == 200
+
+    # The slot is given back after a read, also after a failed one.
+    def fails(media_type: str, data: str) -> ModelLabel:
+        raise LabelReadingError("the AI service failed (500): x", 502)
+
+    monkeypatch.setattr(label_reader, "call_model", fails)
+    assert signed_in.post("/label/read", json=photo()).status_code == 502
+    assert signed_in.post("/label/read", json=photo()).status_code == 502  # not 429
+
+
+def test_photos_sent_at_once_cannot_pass_the_limit(
+    signed_in: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    """The route runs in a thread pool: twelve photos at once must still let exactly ten in."""
+
+    class SlowCheck(RateLimit):
+        def blocked(self, email: str, ip: str | None) -> bool:
+            answer = super().blocked(email, ip)
+            time.sleep(0.05)  # widen the gap between checking and counting
+            return answer
+
+    monkeypatch.setattr(label_api, "_photos", SlowCheck({"email": (10, 600.0), "ip": (30, 600.0)}))
+    monkeypatch.setattr(label_api, "_reading", threading.BoundedSemaphore(100))
+    monkeypatch.setattr(label_reader, "call_model", any_label)
+    with ThreadPoolExecutor(max_workers=12) as pool:
+        statuses = list(
+            pool.map(lambda _: signed_in.post("/label/read", json=photo()).status_code, range(12))
+        )
+    assert sorted(statuses) == [200] * 10 + [429] * 2

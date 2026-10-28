@@ -343,6 +343,13 @@ class StoredNotice(BaseModel):
 Key = Annotated[str, StringConstraints(min_length=1, max_length=100)]
 
 
+class StoredOrigin(BaseModel):
+    """The list was copied off a label photo; `confirmed`: the user checked it on the package."""
+
+    kind: Literal["photo"]
+    confirmed: bool
+
+
 class StoredProduct(BaseModel):
     """A product as frontend/src/routine.ts keeps it (camelCase on the wire)."""
 
@@ -355,6 +362,9 @@ class StoredProduct(BaseModel):
     inci: Annotated[str, StringConstraints(max_length=MAX_INCI_LENGTH)] | None
     groups: Annotated[list[Annotated[str, StringConstraints(max_length=40)]], Field(max_length=20)]
     notices: Annotated[list[StoredNotice], Field(max_length=10)] = []
+    # Where a pasted list came from (frontend ProductOrigin). Shown only; absent in routines
+    # saved before it existed, and left out of the output when absent (never `null`).
+    origin: StoredOrigin | None = Field(default=None, exclude_if=lambda v: v is None)
 
 
 class StoredEntry(BaseModel):

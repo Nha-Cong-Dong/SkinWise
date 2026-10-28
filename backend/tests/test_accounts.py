@@ -686,3 +686,26 @@ def test_export_then_delete_removes_everything(client: TestClient, engine: Engin
                 )  # fmt: skip
             )
             assert orphans.scalar_one() == 0, table
+
+
+def test_routine_keeps_where_a_list_came_from(client: TestClient) -> None:
+    sign_up(client, new_email())
+    photo_product = {**ROUTINE["products"][1], "origin": {"kind": "photo", "confirmed": False}}
+    data = {**ROUTINE, "products": [ROUTINE["products"][0], photo_product]}
+    saved = client.put("/me/routine", json={"data": data, "base_version": 0})
+    assert saved.status_code == 200
+    assert saved.json()["data"] == data  # origin kept; absent where it was absent (no null)
+    assert "origin" not in saved.json()["data"]["products"][0]
+    assert client.get("/me/routine").json()["data"] == data
+
+    for bad in ({"kind": "camera", "confirmed": True}, {"kind": "photo"}):
+        wrong = {**data, "products": [ROUTINE["products"][0], {**photo_product, "origin": bad}]}
+        assert client.put("/me/routine", json={"data": wrong, "base_version": 1}).status_code == 422
+
+
+def test_tests_never_send_email() -> None:
+    """tests/conftest.py pins dev mode whatever .env says (LOGIN_EMAIL_MODE=smtp included)."""
+    settings = get_settings()
+    assert settings.login_email_mode == "dev" and mailer.dev_mode()
+    assert settings.smtp_host is None and settings.smtp_from is None
+    assert settings.app_url == "http://localhost:5173"
