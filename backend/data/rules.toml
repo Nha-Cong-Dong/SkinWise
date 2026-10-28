@@ -482,8 +482,8 @@ sources = [
 ]
 
 # ======================================================================================
-# Ứng viên mới (28/10). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang; lời giải thích là bản nháp
-# do Claude soạn. CHƯA BẬT: người duyệt phải tự đọc nguồn trước khi đặt published = true.
+# Ứng viên mới (28/10). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang; lời giải thích do Claude soạn.
+# Người duyệt (Vân Anh) duyệt và bật cả bốn luật dưới đây ngày 28/10.
 # ======================================================================================
 
 # Nguồn: nhãn thuốc FINACEA Foam (azelaic acid 15%, LEO Pharma, DailyMed, sửa đổi 12/2020): dặn tránh chất làm
@@ -545,7 +545,9 @@ group_a = "AZELAIC_ACID"
 group_b = "EXFOLIANT_ACID"
 title_vi = "Azelaic acid và acid tẩy tế bào chết trong cùng một buổi"
 explanation_vi = "Hướng dẫn sử dụng của thuốc azelaic acid 15% (Finacea, trị rosacea) dặn người bệnh tránh các chất làm bong da (peeling agents), chất làm se và sản phẩm chà xát. Trong thử nghiệm lâm sàng của thuốc này, đó được xem là những sản phẩm có thể gây kích ứng tại chỗ. Hướng dẫn không nêu tên AHA, BHA hay PHA, và không nói về azelaic acid trong mỹ phẩm, nên đây chỉ là lưu ý thận trọng."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=9fabd24e-4c3b-49a0-aa5f-c8d75ae67572", quote = "Instruct patients to avoid use of alcoholic cleansers, tinctures and astringents, abrasives and peeling agents." },
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=9fabd24e-4c3b-49a0-aa5f-c8d75ae67572", quote = "Subjects were also instructed to avoid use of products which may cause local irritation such as soaps, alcohol-containing cleansers, tinctures and astringents, abrasives and peeling agents during the study." },
@@ -613,7 +615,9 @@ group_a = "AZELAIC_ACID"
 group_b = "BENZOYL_PEROXIDE"
 title_vi = "Azelaic acid và benzoyl peroxide trong cùng một buổi"
 explanation_vi = "Benzoyl peroxide là hoạt chất trị mụn; azelaic acid ở dạng thuốc (vd. kem 20%) cũng được dùng để trị mụn. Một bài tổng quan (2013) cho biết khi điều trị mụn mức trung bình và nặng, benzoyl peroxide được ưu tiên dùng phối hợp (trong cùng một thuốc hoặc lần lượt) với các thuốc khác, trong đó có azelaic acid. Tuy vậy, nhãn thuốc benzoyl peroxide (theo quy định của FDA Mỹ) ghi rằng dùng cùng lúc với một sản phẩm trị mụn bôi khác có thể làm da khô và kích ứng hơn. Nhãn không nhắc riêng azelaic acid. Nếu da bị kích ứng, nhãn khuyên chỉ dùng một sản phẩm trị mụn mỗi lần. Cảnh báo này suy ra từ nhãn thuốc; chưa rõ có áp dụng cho azelaic acid nồng độ thấp hay dẫn xuất (Potassium Azeloyl Diglycinate) trong mỹ phẩm hay không."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
   { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=ebdfcaf7-b5d6-47e1-be87-ccaba4b97e75", quote = "cream is indicated for the topical treatment of mild-to-moderate inflammatory acne vulgaris." },
@@ -681,7 +685,9 @@ evidence_level = "low"
 group_a = "VITAMIN_C"
 title_vi = "Nhiều sản phẩm chứa vitamin C (ascorbic acid) trong cùng một buổi"
 explanation_vi = "Các bài tổng quan cho biết tác dụng của vitamin C (L-ascorbic acid) trong một sản phẩm tăng theo nồng độ nhưng chỉ đến khoảng 20%; cao hơn mức đó không tăng tác dụng mà có thể gây kích ứng. Dùng nhiều sản phẩm chứa vitamin C trong cùng một buổi có thể không làm tăng hiệu quả thêm; các bài này không nói trực tiếp về việc bôi chồng nhiều sản phẩm."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5605218/", quote = "Studies have shown that a concentration above 20 percent does not increase its biological significance and, conversely, might cause some irritation." },
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "From a clinical point of view, it is important to note that the efficacy of the Vit. C serum is proportional to the concentration, but only up to 20%." },
@@ -736,7 +742,9 @@ group_a = "NIACINAMIDE"
 group_b = "BENZOYL_PEROXIDE"
 title_vi = "Niacinamide và benzoyl peroxide: đã được dùng chung trong nghiên cứu, chưa thấy lý do phải tách riêng"
 explanation_vi = "Một thử nghiệm ngẫu nhiên mù đôi nhỏ (21 người bị mụn, 12 tuần) cho người bệnh bôi gel benzoyl peroxide 2,5% lên mặt, để 10 phút rồi rửa sạch, sau đó bôi kem niacinamide 5% lên một nửa mặt, nửa kia bôi kem nền. Cả hai nửa mặt đều dung nạp tốt: một số người bị ngứa, rát, đóng vảy nhưng các triệu chứng này giảm dần, và hai nửa mặt không khác nhau có ý nghĩa thống kê. Nghiên cứu còn nhỏ và chỉ thử benzoyl peroxide 2,5% rửa trôi sau 10 phút, chưa thử loại để lại trên da hay nồng độ cao hơn, nên chỉ cho thấy dùng chung theo cách này có thể không làm kích ứng nhiều hơn rõ rệt; SkinWise chưa tìm thấy nguồn nào cho thấy dùng chung gây hại."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "Patients were asked to apply a 2.5% benzoyl peroxide water-based gel 2 FTU (1g) on their entire face for 10 minutes before facial washing." },
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "After washing off the 2.5% benzoyl peroxide water-based gel, the patients were randomly assigned to apply 5% niacinamide cream 1 FTU (0.5 g) on one half of the face and the cream base 1 FTU (0.5g) on the other half." },
