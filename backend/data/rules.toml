@@ -687,6 +687,63 @@ sources = [
   { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "From a clinical point of view, it is important to note that the efficacy of the Vit. C serum is proportional to the concentration, but only up to 20%." },
 ]
 
+# Nguồn: J Clin Aesthet Dermatol 2021 (PMC8594539): RCT mù đôi chia nửa mặt, 21 người. Gel BPO 2,5% bôi 10 phút
+#   rồi rửa trôi, sau đó bôi kem niacinamide 5% so với kem nền, 2 lần/ngày trong 12 tuần. Cả hai bên dung nạp
+#   tốt, tác dụng phụ không khác biệt có ý nghĩa thống kê. (Đã bỏ PMC9433072 theo phản biện.)
+# Lưu ý người duyệt:
+#   - Lượt sửa theo phản biện: (1) Câu 1 của explanation_vi đã viết lại: bôi gel BPO 2,5%, để 10 phút, rửa sạch
+#   rồi mới bôi niacinamide. Thêm đoạn trích Methods 'Patients were asked to apply ... for 10 minutes before
+#   facial washing.' (check_text OK). (2) Đã bỏ PMC9433072 khỏi luật (cả 2 đoạn trích và khối source), làm theo
+#   cách sửa được ưu tiên. Lý do: kem Duo+ có salicylic acid và octyl salicylic acid (BHA), nên sẽ đụng luật đã
+#   bật benzoyl-peroxide-bha-same-session. Ngoài ra nhóm phối hợp có nhiều ca châm chích và rát hơn, và bài
+#   không so sánh thống kê. (3) Câu kết đã thu hẹp: chỉ nói về BPO 2,5% rửa trôi, 'có thể không làm kích ứng
+#   nhiều hơn rõ rệt', và ghi rõ chưa thử loại để lại trên da hay nồng độ cao hơn.
+#   - Bằng chứng giờ chỉ còn MỘT RCT nhỏ (21 người). Chưa có tổng quan hay hướng dẫn (AAD, DermNet) nào nói
+#   riêng về cặp này. Đề xuất severity = info, evidence_level = low. Người duyệt nên cân nhắc xem chỉ một nguồn
+#   như vậy đã đủ để bật thẻ chưa.
+#   - Giới hạn quan trọng: engine không phân biệt rinse_off và leave_on, nên thẻ sẽ hiện cả với BPO để lại trên
+#   da (kem/gel 5–10%). Giới hạn này nay đã ghi trong explanation_vi để người dùng cũng thấy.
+#   - Nghiên cứu không có nhóm nào không dùng BPO, nên không cho biết niacinamide có làm giảm kích ứng do BPO
+#   hay không. Luật không nói niacinamide 'làm dịu' BPO.
+#   - Không nguồn nào khuyên nên bôi cách nhau bao lâu, nên explanation_vi không đưa lời khuyên về cách dùng.
+#   - Phạm vi same_session khớp với nghiên cứu: rửa BPO rồi bôi niacinamide ngay trong cùng buổi, 2 lần/ngày.
+#   - Không dùng nhãn sản phẩm thương mại (CeraVe Acne Foaming Cream Cleanser) làm nguồn.
+#   - Có thật sự có lời đồn 'không được dùng niacinamide với benzoyl peroxide' không? Không nguồn bình duyệt nào
+#   nhắc lời đồn này. Người duyệt quyết định có giữ thẻ myth không.
+#   - Chỉ còn một RCT 21 người: như vậy đã đủ để bật thẻ chưa, hay nên chờ thêm nguồn (vd. bài MDPI 2024) hoặc
+#   chuyển sang no_source?
+#   - Key: dùng 'niacinamide-benzoyl-peroxide-myth' (hậu tố -myth giống các thẻ myth khác) hay giữ key ứng viên?
+#   - Bảng 3 cho thấy có thể chỉ 19/21 người được phân tích tác dụng phụ: 5 người rát = 26%, 7 người da nhờn =
+#   37%, tức mẫu số là 19. Bài không nói rõ có người bỏ cuộc hay không. explanation_vi ghi '21 người' là đúng số
+#   người tham gia; người duyệt có thể cân nhắc thêm câu 'phân tích tác dụng phụ trên khoảng 19 người'.
+#   - Kích ứng không hiếm. Ở tuần 2, khoảng 1/4 số người bị rát và khoảng 1/5 bị ngứa, ở CẢ HAI nửa mặt (do
+#   BPO). Bài viết 'A few patients' và explanation_vi viết 'một số người', cả hai không sai, nhưng người duyệt
+#   nên biết mức độ thật.
+#   - Thiết kế chia nửa mặt, và cả hai nửa đều dùng BPO. Vì vậy nghiên cứu chỉ cho thấy thêm niacinamide không
+#   làm tác dụng phụ tăng có ý nghĩa thống kê so với BPO + kem nền. Nó không chứng minh hai chất 'an toàn' khi
+#   dùng chung theo nghĩa rộng. Bản nháp đã ghi đúng điều này.
+#   - Chỉ có một RCT nhỏ, nên severity info và evidence_level low là phù hợp. Có bật thẻ hay không và có thật sự
+#   tồn tại lời đồn hay không là quyết định của người duyệt (open_questions trong bản nháp).
+#   - File _workspace/rules-niacinamide-bpo/pages/pmc9433072.txt vẫn còn trong workspace, nhưng bản nháp đã bỏ
+#   nguồn này. Không ảnh hưởng tới TOML.
+[[rule]]
+key = "niacinamide-benzoyl-peroxide-myth"
+kind = "myth"
+severity = "info"
+scope = "same_session"
+evidence_level = "low"
+group_a = "NIACINAMIDE"
+group_b = "BENZOYL_PEROXIDE"
+title_vi = "Niacinamide và benzoyl peroxide: đã được dùng chung trong nghiên cứu, chưa thấy lý do phải tách riêng"
+explanation_vi = "Một thử nghiệm ngẫu nhiên mù đôi nhỏ (21 người bị mụn, 12 tuần) cho người bệnh bôi gel benzoyl peroxide 2,5% lên mặt, để 10 phút rồi rửa sạch, sau đó bôi kem niacinamide 5% lên một nửa mặt, nửa kia bôi kem nền. Cả hai nửa mặt đều dung nạp tốt: một số người bị ngứa, rát, đóng vảy nhưng các triệu chứng này giảm dần, và hai nửa mặt không khác nhau có ý nghĩa thống kê. Nghiên cứu còn nhỏ và chỉ thử benzoyl peroxide 2,5% rửa trôi sau 10 phút, chưa thử loại để lại trên da hay nồng độ cao hơn, nên chỉ cho thấy dùng chung theo cách này có thể không làm kích ứng nhiều hơn rõ rệt; SkinWise chưa tìm thấy nguồn nào cho thấy dùng chung gây hại."
+published = false
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "Patients were asked to apply a 2.5% benzoyl peroxide water-based gel 2 FTU (1g) on their entire face for 10 minutes before facial washing." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "After washing off the 2.5% benzoyl peroxide water-based gel, the patients were randomly assigned to apply 5% niacinamide cream 1 FTU (0.5 g) on one half of the face and the cream base 1 FTU (0.5g) on the other half." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "Both treatments were well tolerated." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "A few patients experienced itchiness, burning, crusting, greasy skin, and dermatitis, but these symptoms decreased by the end of the treatment in both groups, with no statistically significant differences between groups." },
+]
+
 # Nguồn mạnh hơn đề xuất cho hai luật ĐÃ BẬT (workflow wf_f45d98f1-4a7, 28/10). CHỈ LÀ GHI CHÚ: luật đã bật
 # không đổi. Người duyệt đọc nguồn rồi tự quyết có thêm vào `sources` của luật hay không.
 #   exfoliant-acid-duplicate-same-session:
@@ -897,4 +954,10 @@ accessed_at = 2026-10-28
 url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/"
 title = "Vitamin C in dermatology"
 publisher = "Indian Dermatol Online J (2013), via PubMed Central"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/"
+title = "Clinical Comparison of Topical 2.5% Benzoyl Peroxide plus 5% Niacinamide to 2.5% Benzoyl Peroxide Alone in the Treatment of Mild to Moderate Facial Acne Vulgaris"
+publisher = "J Clin Aesthet Dermatol (2021), via PubMed Central"
 accessed_at = 2026-10-28
