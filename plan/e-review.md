@@ -1,5 +1,7 @@
 # Hướng E: duyệt câu hỏi + AI soạn nháp thẻ myth
 
+> Cập nhật 27/10: phần câu hỏi người dùng (duyệt câu hỏi, `GET /questions/answered`) đã bỏ, chỉ còn AI soạn nháp. Lý do: [decisions.md](decisions.md), mục 27/10.
+
 Làm 26/10/2026 trên nhánh `feat/review`, PR #6 (chờ review + merge), trước hướng A (mở công khai) dù kế hoạch [after-mvp.md](after-mvp.md) xếp sau A: chạy được trên máy, chưa cần triển khai. Quyết định và lý do: [decisions.md](decisions.md), mục 26/10.
 
 ## Đã làm
