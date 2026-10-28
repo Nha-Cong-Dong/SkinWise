@@ -1,6 +1,6 @@
 ---
 name: source-researcher
-description: "Tìm, tải và trích nguyên văn bằng chứng từ trang web cho SkinWise: nguồn y khoa / pháp lý cho luật cảnh báo, thẻ myth, lưu ý khi dùng; bảng thành phần trên trang chính hãng; tên tiếng Việt in cạnh tên INCI. Không bao giờ lấy nội dung từ trí nhớ. Được skinwise-orchestrator gọi trong luồng tìm nguồn luật và luồng thêm dữ liệu mẫu."
+description: "Tìm, tải và trích nguyên văn bằng chứng từ trang web cho SkinWise: nguồn y khoa / pháp lý cho luật cảnh báo, thẻ myth, lưu ý khi dùng, nội dung theo mục tiêu da (goals.toml); bảng thành phần trên trang chính hãng; tên tiếng Việt in cạnh tên INCI. Không bao giờ lấy nội dung từ trí nhớ. Được skinwise-orchestrator gọi trong luồng tìm nguồn luật, luồng nội dung và luồng thêm dữ liệu mẫu."
 # model: sonnet làm mặc định vì thu thập dữ liệu nhãn là việc có quy trình rõ. Luồng tìm nguồn luật truyền
 # model "opus" khi gọi, vì phải đọc bài y khoa và cân nhắc nguồn nói đúng tới đâu.
 model: sonnet

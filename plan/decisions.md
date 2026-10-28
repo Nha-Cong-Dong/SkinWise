@@ -111,5 +111,13 @@ Bỏ form gửi câu hỏi / lời đồn trên trang "Sự thật hay myth", ph
 ## Đăng nhập bằng mật khẩu thay cho link qua email (27/10, đổi quyết định 26/10)
 Người duyệt chọn email + mật khẩu, bỏ hẳn đăng nhập bằng link. Đăng ký phải xác thực email trước khi đăng nhập; quên mật khẩu đặt lại qua link, đặt lại xong đăng xuất mọi thiết bị khác. Email vẫn chế độ dev. Mỗi link xác thực gắn với mật khẩu của lần đăng ký tạo ra nó và trang xác thực bắt nhập lại mật khẩu, để kẻ biết email người khác không thể khiến chủ email kích hoạt mật khẩu của kẻ đó. Bản chính sách đã đồng ý lưu ở `users.pending_policy_version` để gửi lại link trong 7 ngày. Sau review (28/10): link đặt lại chỉ gửi cho tài khoản đã xác thực (đặt lại không được ghi bản đồng ý mà người khác tích); quên mật khẩu khi chưa xác thực thì đăng ký lại. Thiết kế: `plan/h-accounts.md` mục 4.
 
+## Mục tiêu da: thông tin có nguồn, lưu trên máy (28/10)
+Người dùng chọn một hoặc vài mục tiêu cố định: da dễ nổi mụn, dấu hiệu lão hoá, thâm và không đều màu, da khô/nhạy cảm. Thông tin chống nắng hiện chung cho mọi mục tiêu. Trang "Mục tiêu" có hai phần: nhóm hoạt chất thường dùng (đánh dấu nhóm nào routine đã có) và thẻ thông tin.
+- Nguyên tắc nguồn áp dụng như với luật. Mỗi mục trong `backend/data/goals.toml` có đoạn trích nguyên văn, được `verify_quotes` kiểm, và để `published = false` cho tới khi người duyệt đọc nguồn rồi tự bật (kèm `reviewed_by`, `reviewed_at`). Mục tiêu không bao giờ tạo hay tắt cảnh báo.
+- Mục tiêu đã chọn **chỉ lưu trên máy** (localStorage), không gửi lên máy chủ, không đồng bộ theo tài khoản. "Tôi bị mụn / da nhạy cảm" có thể bị coi là dữ liệu sức khoẻ theo Luật 91/2025; lưu trên máy thì không phải sửa chính sách hay xin thêm đồng ý. Đăng xuất hoặc xoá tài khoản thì xoá luôn mục tiêu khỏi máy, giống routine, để người dùng sau trên máy dùng chung không thấy (review 28/10).
+- Chỉ gợi ý nhóm hoạt chất đã có trong `functional_groups.toml`. Ceramide, kojic acid và kem chống nắng chỉ nằm trong thẻ thông tin, không tạo nhóm mới. Không gợi ý sản phẩm hay thương hiệu cụ thể. Không dùng chữ "trị"/"chữa" (mỹ phẩm không được nói là chữa bệnh). Thuốc kê đơn chỉ được nhắc kèm câu "cần bác sĩ kê đơn".
+- Nguồn: AAD, DermNet, Mayo Clinic, StatPearls, bài tổng quan PMC. Không dùng nguồn tiếng Việt, vì lần tìm 28/10 chỉ ra trang tổng hợp và quảng cáo.
+- Nhãn routine chỉ tính sản phẩm đã xếp lịch và nói rõ là khớp theo nhóm ("Routine có sản phẩm thuộc nhóm …"), vì nguồn có thể chỉ nói về một chất trong nhóm. Nhóm cha khớp sản phẩm thuộc nhóm con, giống `/rules`.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

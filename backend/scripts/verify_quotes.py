@@ -1,9 +1,9 @@
 """Check every quote against its live source page:
-uv run python -m scripts.verify_quotes [rule-key ...]
+uv run python -m scripts.verify_quotes [rule-or-goal-item-key ...]
 
-Covers rule quotes in data/rules.toml; when no rule keys are given, also the legal basis in
-data/concentration_limits.toml and data/legal_basis.toml and the label evidence of everyday
-names in data/common_names.toml. A quote must appear verbatim on
+Covers rule quotes in data/rules.toml and goal item quotes in data/goals.toml; when no keys
+are given, also the legal basis in data/concentration_limits.toml and data/legal_basis.toml and
+the label evidence of everyday names in data/common_names.toml. A quote must appear verbatim on
 the page (case, whitespace, dash and quote variants ignored). Exit code 1 if any quote fails,
 so it can gate a PR.
 """
@@ -16,15 +16,18 @@ from app.sources import BlockedError, fetch_text, has_challenge_marker, missing_
 
 
 def quotes_to_check(keys: list[str]) -> list[tuple[str, str | None, str | None]]:
-    """(label, url, quote); url None means the rule has no source yet."""
-    rules = load_toml("rules.toml").get("rule", [])
+    """(label, url, quote); url None means the rule or goal item has no source yet."""
+    entries = [
+        *load_toml("rules.toml").get("rule", []),
+        *load_toml("goals.toml").get("item", []),
+    ]
     if keys:
-        rules = [r for r in rules if r["key"] in keys]
+        entries = [e for e in entries if e["key"] in keys]
     items: list[tuple[str, str | None, str | None]] = []
-    for rule in rules:
-        items += [(rule["key"], s["url"], s["quote"]) for s in rule.get("sources", [])]
-        if not rule.get("sources"):
-            items.append((rule["key"], None, None))
+    for entry in entries:
+        items += [(entry["key"], s["url"], s["quote"]) for s in entry.get("sources", [])]
+        if not entry.get("sources"):
+            items.append((entry["key"], None, None))
     if not keys:
         limits = load_toml("concentration_limits.toml")
         order = limits["ordering_rule"]

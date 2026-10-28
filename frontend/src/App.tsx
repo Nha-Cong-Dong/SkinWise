@@ -4,6 +4,7 @@ import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
 import { Dialog } from './components/Dialog'
+import { GoalsPage } from './components/GoalsPage'
 import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
@@ -11,6 +12,7 @@ import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { EmailLinkPage, SignIn } from './components/SignIn'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
+import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
 import { useIncomingRoutine } from './share'
@@ -24,7 +26,7 @@ import {
   type CheckState,
 } from './routine'
 
-type Page = 'routine' | 'myths' | 'review'
+type Page = 'routine' | 'goals' | 'myths' | 'review'
 
 // Only reviewers open the review page, so its code is loaded when it is first shown.
 const ReviewPage = lazy(() => import('./components/ReviewPage').then((m) => ({ default: m.ReviewPage })))
@@ -94,6 +96,7 @@ function App() {
   /** Signed out or account deleted: the next person on this device must not get this routine or draft. */
   const forgetDevice = () => {
     sync.forget()
+    clearSelectedGoals() // the next person on this device must not get these goals
     setAddDraft(EMPTY_ADD_DRAFT) // the label photo and the list being typed
     setAdding(false)
   }
@@ -180,6 +183,7 @@ function App() {
                 {(
                   [
                     ['routine', 'Routine của tôi'],
+                    ['goals', 'Mục tiêu'],
                     ['myths', 'Sự thật hay myth'],
                   ] as const
                 ).map(([value, label]) => (
@@ -247,6 +251,10 @@ function App() {
                 <ResultsAside check={check}>
                   <WarningsPanel state={check} products={actions.routine.products} />
                 </ResultsAside>
+              </div>
+            ) : page === 'goals' ? (
+              <div className="mx-auto max-w-3xl">
+                <GoalsPage routine={actions.routine} />
               </div>
             ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">

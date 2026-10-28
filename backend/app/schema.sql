@@ -271,3 +271,37 @@ CREATE TABLE IF NOT EXISTS user_routines (
   version    integer NOT NULL,
   updated_at timestamptz NOT NULL DEFAULT now()
 );
+
+-- Skin goals (data/goals.toml, app/goals.py): actives commonly used for a goal and info cards,
+-- each with sourced quotes like the rules. Display only: goals never reach the warning engine,
+-- and the goals a user picks stay in their browser.
+CREATE TABLE IF NOT EXISTS goals (
+  code           text PRIMARY KEY,         -- acne, aging ...; 'all' holds the shared cards
+  name_vi        text NOT NULL,
+  description_vi text NOT NULL,
+  position       integer NOT NULL,
+  shared         boolean NOT NULL DEFAULT false -- true for 'all': shown with every goal
+);
+
+CREATE TABLE IF NOT EXISTS goal_items (
+  id          serial PRIMARY KEY,
+  key         text NOT NULL UNIQUE,
+  goal_code   text NOT NULL REFERENCES goals(code),
+  kind        text NOT NULL CHECK (kind IN ('active', 'info')),
+  group_code  text REFERENCES functional_groups(code),
+  title_vi    text NOT NULL,
+  body_vi     text NOT NULL,
+  position    integer NOT NULL,             -- order in goals.toml
+  published   boolean NOT NULL DEFAULT false, -- only after a human checked the cited sources
+  reviewed_by text,
+  reviewed_at timestamptz,
+  CONSTRAINT goal_items_group_check CHECK ((kind = 'active') = (group_code IS NOT NULL))
+);
+
+CREATE TABLE IF NOT EXISTS goal_item_sources (
+  item_id   integer NOT NULL REFERENCES goal_items(id) ON DELETE CASCADE,
+  position  integer NOT NULL,
+  source_id integer NOT NULL REFERENCES sources(id),
+  quote     text NOT NULL, -- verbatim passage; checked against the live page (scripts.verify_quotes)
+  PRIMARY KEY (item_id, position)
+);
