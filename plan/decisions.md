@@ -26,7 +26,7 @@ Mở rộng từ điển theo biến thể của các nhóm đã có và ghi rõ
 ## Kiểm tra sản phẩm theo cả nội dung lẫn thứ tự (22/10)
 `verify_products` yêu cầu từng thành phần có trên trang nguồn và xuất hiện đúng thứ tự, để bắt danh sách bị đảo hoặc ghép từ hai phiên bản trên cùng một trang.
 
-## Lời đồn ngoài bộ myth cố định: nói rõ + thu câu hỏi, không để AI trả lời (22/10)
+## Lời đồn ngoài bộ myth cố định: nói rõ + thu câu hỏi, không để AI trả lời (22/10; phần thu câu hỏi đã bỏ 27/10)
 Bộ myth là danh sách cố định có nguồn. Khi không có thông tin, app nói rõ là chưa có thông tin đã kiểm chứng thay vì im lặng (im lặng dễ bị hiểu là an toàn). Người dùng gửi câu hỏi qua `POST /questions`; người duyệt chọn câu đáng làm và tạo thẻ theo quy trình nguồn như luật. Không cho AI trả lời trực tiếp trong MVP vì trái nguyên tắc "cảnh báo không do AI tạo"; sau hackathon có thể cân nhắc AI soạn bản nháp có trích dẫn, server kiểm tra đoạn trích, gắn nhãn "chưa kiểm duyệt" và người duyệt quyết định.
 
 ## Nhóm hoạt chất có nhóm cha; tra cặp khớp như engine (23/10)
@@ -86,7 +86,7 @@ Làm hướng E (sau MVP), chi tiết ở [e-review.md](e-review.md). Mở rộn
 - Nháp lưu ở bảng `rule_drafts`, không ở `rules`, nên `load_published_rules` và mọi API công khai không chạm tới được. `rules.toml` vẫn là nguồn sự thật: người duyệt chép TOML (`published = false`) vào file, đọc nguồn, tự bật, chạy `verify_quotes` và `seed`. Không route nào bật được luật.
 - Nháp chỉ có mức `info`/`safe` (thẻ myth không cảnh báo). Nếu nguồn cho thấy kết hợp thật sự có vấn đề, AI ghi vào ghi chú cho người duyệt; viết luật `conflict` vẫn là việc của người.
 - Khoá nháp không trùng luật đã seed: seed upsert theo `key` sẽ âm thầm ghi đè, và tắt, luật đã bật.
-- Câu hỏi hiện công khai bằng lời người duyệt viết lại (`public_question`), không bao giờ bằng văn bản gốc: người dùng vẫn có thể ghi tên, số điện thoại dù form đã nhắc. Chỉ hiện khi luật trả lời đã bật.
+- Câu hỏi hiện công khai bằng lời người duyệt viết lại (`public_question`), không bao giờ bằng văn bản gốc: người dùng vẫn có thể ghi tên, số điện thoại dù form đã nhắc. Chỉ hiện khi luật trả lời đã bật. (Đã bỏ cùng tính năng câu hỏi, 27/10.)
 - Đăng nhập người duyệt: tài khoản tạo bằng `scripts.reviewers`, mật khẩu scrypt, phiên là token ngẫu nhiên chỉ lưu sha256. Không thêm thư viện, không cần khoá bí mật trong cấu hình. Đây không phải tài khoản người dùng (hướng H).
 - Mô hình mặc định `claude-opus-5-5` (đổi bằng `DRAFT_MODEL`), kèm `fallbacks: "default"` khi mô hình từ chối.
 - Chưa làm phần tuỳ chọn "AI diễn đạt lại `explanation_vi`": cần thêm cột cho luật và đổi `RuleCard` trong lúc nhánh `feat/accuracy` đang sửa mô hình luật (loại `usage`). Làm sau khi nhánh đó vào `main`, theo cùng cách: người duyệt duyệt bản diễn đạt trong `rules.toml`, giao diện luôn hiện kèm bản gốc.
@@ -96,6 +96,12 @@ Làm trước hướng H như đã chốt. Link chia sẻ mang routine trong ph�
 
 ## Đăng nhập bắt buộc khi vào web (26/10, đổi so với quyết định cùng ngày)
 Người duyệt chọn bắt buộc đăng nhập ngay khi vào web và làm ngay, thay cho "đăng nhập tuỳ chọn, chỉ làm sau hướng B khi người dùng thật cần". Hệ quả đã nêu trước khi chọn: ai dùng app (kể cả người xem demo) cũng phải đưa email, nên nghĩa vụ theo Luật Bảo vệ dữ liệu cá nhân áp dụng cho mọi người dùng. Vì vậy: email chỉ có chế độ dev (link hiện trên màn hình, không gửi thư), và không mở cho người dùng thật cho tới khi trả lời xong 3 câu hỏi pháp lý và có dịch vụ email tại Việt Nam. Trang duyệt `#review` giữ đăng nhập riêng. Các API công khai (tìm sản phẩm, kiểm tra routine, luật) vẫn mở vì không chứa dữ liệu người dùng; chỉ `/me/*` cần phiên. Chi tiết: `plan/h-accounts.md` mục 16.
+
+## Bỏ tính năng gửi câu hỏi (27/10)
+Bỏ form gửi câu hỏi / lời đồn trên trang "Sự thật hay myth", phần duyệt câu hỏi ở `#review`, mục "Câu hỏi bạn đọc đã được trả lời", `scripts.questions` và bảng `user_questions` (`schema.sql` xoá cột `rule_drafts.question_id` rồi xoá bảng). Lý do: người dùng cần câu trả lời ngay lúc tra, còn câu trả lời ở đây đến sau nhiều ngày và không báo được cho người hỏi (không lưu liên hệ, không gắn tài khoản). Ô nhập tự do có thể chứa dữ liệu cá nhân, kéo theo việc giới hạn tần suất, sao lưu và biên tập lại câu hỏi trước khi công khai. Giữ nguyên: thông báo "chưa có thông tin đã kiểm chứng" khi tra cặp không có luật (im lặng dễ bị hiểu là an toàn), và AI soạn nháp thẻ myth từ nguồn người duyệt chọn. Ý tưởng thẻ myth mới do người duyệt tự chọn.
+
+## Đăng nhập bằng mật khẩu thay cho link qua email (27/10, đổi quyết định 26/10)
+Người duyệt chọn email + mật khẩu, bỏ hẳn đăng nhập bằng link. Đăng ký phải xác thực email trước khi đăng nhập; quên mật khẩu đặt lại qua link, đặt lại xong đăng xuất mọi thiết bị khác. Email vẫn chế độ dev. Mỗi link xác thực gắn với mật khẩu của lần đăng ký tạo ra nó và trang xác thực bắt nhập lại mật khẩu, để kẻ biết email người khác không thể khiến chủ email kích hoạt mật khẩu của kẻ đó. Bản chính sách đã đồng ý lưu ở `users.pending_policy_version` để gửi lại link trong 7 ngày. Sau review (28/10): link đặt lại chỉ gửi cho tài khoản đã xác thực (đặt lại không được ghi bản đồng ý mà người khác tích); quên mật khẩu khi chưa xác thực thì đăng ký lại. Thiết kế: `plan/h-accounts.md` mục 4.
 
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

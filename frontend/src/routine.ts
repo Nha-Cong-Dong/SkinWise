@@ -22,7 +22,12 @@ export type MyProduct = {
   groups: string[]
   /** Notices from analysing a pasted list (missing in routines saved before they existed). */
   notices?: TextNotice[]
+  /** Where a list not typed or pasted by the user came from. Shown only: checks treat it as pasted. */
+  origin?: ProductOrigin
 }
+
+/** A list copied off a label photo by an AI model. `confirmed`: the user checked it against the package. */
+export type ProductOrigin = { kind: 'photo'; confirmed: boolean }
 
 const INFORMATIONAL: TextNotice['code'][] = ['vietnamese_names', 'drug_facts']
 
@@ -35,9 +40,23 @@ export function maybeIncomplete(product: MyProduct): boolean {
  * What the "add product" dialog keeps while it is closed. The dialog unmounts its content, and a
  * pasted list must survive closing it (Esc, a stray click) or switching tabs.
  */
-export type AddDraft = { tab: 'search' | 'paste'; name: string; text: string; analysis: InciAnalysis | null }
+export type AddDraft = {
+  tab: 'search' | 'paste'
+  name: string
+  text: string
+  analysis: InciAnalysis | null
+  origin: ProductOrigin | null // the pasted list was read off a photo
+  photo: string | null // the label photo as a data URL, to compare with; never stored
+}
 
-export const EMPTY_ADD_DRAFT: AddDraft = { tab: 'search', name: '', text: '', analysis: null }
+export const EMPTY_ADD_DRAFT: AddDraft = {
+  tab: 'search',
+  name: '',
+  text: '',
+  analysis: null,
+  origin: null,
+  photo: null,
+}
 
 export type Entry = { id: string; productKey: string; session: Session; days: number[] }
 

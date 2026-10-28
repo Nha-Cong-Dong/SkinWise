@@ -154,27 +154,6 @@ CREATE TABLE IF NOT EXISTS common_names (
   note            text
 );
 
--- Added in phase 3. Questions and rumours users send in; a reviewer picks which ones become
--- sourced myth cards. No contact details are stored.
-CREATE TABLE IF NOT EXISTS user_questions (
-  id          serial PRIMARY KEY,
-  question    text NOT NULL,
-  product_ids integer[] NOT NULL DEFAULT '{}', -- related products, if any
-  group_codes text[] NOT NULL DEFAULT '{}',    -- active groups the user looked up, if any
-  status      text NOT NULL DEFAULT 'new'
-    CHECK (status IN ('new', 'accepted', 'rejected', 'answered')),
-  created_at  timestamptz NOT NULL DEFAULT now()
-);
-
--- Added after the MVP (direction E): reviewing questions in the app. A question is answered
--- by a rule (usually a myth card); only answered questions whose rule is published are shown
--- to users, in the wording the reviewer wrote (`public_question`), never the raw text.
-ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS rule_key text;        -- rules.key, checked by the review API
-ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS public_question text; -- reviewer's wording for the public list
-ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS reviewer_note text;
-ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS updated_by text;
-ALTER TABLE user_questions ADD COLUMN IF NOT EXISTS updated_at timestamptz;
-
 -- Reviewers sign in to the review page. Added with scripts.reviewers; passwords are scrypt hashes.
 CREATE TABLE IF NOT EXISTS reviewers (
   name          text PRIMARY KEY,
@@ -193,7 +172,6 @@ CREATE TABLE IF NOT EXISTS reviewer_sessions (
 -- (published = false), reads the sources and publishes it like any other rule.
 CREATE TABLE IF NOT EXISTS rule_drafts (
   id                serial PRIMARY KEY,
-  question_id       integer REFERENCES user_questions(id) ON DELETE SET NULL,
   key               text NOT NULL,
   kind              text NOT NULL DEFAULT 'myth' CHECK (kind = 'myth'),
   severity          text NOT NULL CHECK (severity IN ('info', 'safe')),
@@ -213,8 +191,14 @@ CREATE TABLE IF NOT EXISTS rule_drafts (
   created_at        timestamptz NOT NULL DEFAULT now()
 );
 
--- User accounts (direction H, plan/h-accounts.md): sign-in by an emailed link, sessions, and
--- the routine kept for use on several devices. Only the email and the routine are stored.
+-- User questions were dropped: answers came days later with no way to reach the asker, while the
+-- free-text box could hold personal data. Drop the column first, it references the table.
+ALTER TABLE rule_drafts DROP COLUMN IF EXISTS question_id;
+DROP TABLE IF EXISTS user_questions;
+
+-- User accounts (direction H, plan/h-accounts.md): sign-in by email and password, sessions, and
+-- the routine kept for use on several devices. Only the email, a password hash and the routine
+-- are stored.
 -- Not open to real users until the legal questions in plan/h-accounts.md are answered.
 CREATE TABLE IF NOT EXISTS users (
   id           uuid PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -232,14 +216,45 @@ CREATE TABLE IF NOT EXISTS consents (
   PRIMARY KEY (user_id, purpose, policy_version)
 );
 
--- Sign-in links: single use, 15 minutes. Only the sha256 of the token is stored.
-CREATE TABLE IF NOT EXISTS login_tokens (
+-- Sign-in by password (27/10, replacing sign-in by emailed link). password_hash is a scrypt
+-- hash (app/passwords.py); NULL for accounts made before passwords, which set one through
+-- "forgot password". email_verified_at NULL: the address is not verified yet, so no sign-in.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS password_hash text;
+-- The policy agreed to when registering; recorded as consent on verification, then cleared.
+ALTER TABLE users ADD COLUMN IF NOT EXISTS pending_policy_version text;
+-- Accounts made before passwords signed in by an emailed link, which proves the mailbox: they
+-- count as verified. The backfill runs only in the run that adds the column, so later runs
+-- never mark a new, unverified account as verified.
+DO $$
+BEGIN
+  IF NOT EXISTS (
+    SELECT 1 FROM information_schema.columns
+    WHERE table_schema = current_schema() AND table_name = 'users'
+      AND column_name = 'email_verified_at'
+  ) THEN
+    ALTER TABLE users ADD COLUMN email_verified_at timestamptz;
+    UPDATE users SET email_verified_at = created_at;
+  END IF;
+END $$;
+
+-- Links sent by email: verify the address (24 hours) or reset the password (30 minutes).
+-- Single use; only the sha256 of the token is stored.
+CREATE TABLE IF NOT EXISTS email_tokens (
   token_hash     text PRIMARY KEY,
   email          text NOT NULL,
-  policy_version text NOT NULL, -- the policy agreed to when asking for the link
+  purpose        text NOT NULL CHECK (purpose IN ('verify', 'reset')),
+  policy_version text, -- verify: the policy agreed to when registering; recorded on verification
   expires_at     timestamptz NOT NULL,
   used_at        timestamptz
 );
+CREATE INDEX IF NOT EXISTS email_tokens_email ON email_tokens (email);
+-- Verify links only: the scrypt hash of the password registered with this link. A link
+-- verifies only with that password, so registering an unverified address again with another
+-- password cannot make an earlier link (in the owner's mailbox) activate it. Added 27/10.
+ALTER TABLE email_tokens ADD COLUMN IF NOT EXISTS password_hash text;
+
+-- Sign-in links were replaced by passwords (27/10); the table only ever held dev data.
+DROP TABLE IF EXISTS login_tokens;
 
 CREATE TABLE IF NOT EXISTS user_sessions (
   id_hash    text PRIMARY KEY, -- sha256 of the cookie value

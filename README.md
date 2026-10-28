@@ -47,8 +47,7 @@ Mọi cảnh báo đều:
 
 | Tính năng | Mô tả |
 |---|---|
-| Câu hỏi đã được trả lời | Câu hỏi người dùng gửi, được người duyệt trả lời bằng một thẻ có nguồn, hiện trên trang "Sự thật hay myth" (đã biên tập để bỏ thông tin cá nhân) |
-| Trang duyệt (`#review`) | Người duyệt đăng nhập, xem câu hỏi, đổi trạng thái, gắn câu hỏi với luật / thẻ trả lời nó |
+| Trang duyệt (`#review`) | Người duyệt đăng nhập bằng tài khoản riêng để nhờ AI soạn nháp thẻ myth và xem các bản nháp |
 | AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
 
 ### Dự kiến sau hackathon
@@ -56,7 +55,7 @@ Mọi cảnh báo đều:
 - Tra cứu sản phẩm theo mã vạch qua [Open Beauty Facts](https://world.openbeautyfacts.org)
 - Chụp ảnh nhãn để đọc bảng thành phần (OCR)
 - Hồ sơ da: da nhạy cảm, đang mang thai…
-- Mở tài khoản cho người dùng thật: đăng nhập bằng link qua email và đồng bộ routine đã có ở chế độ thử (link hiện ngay trên màn hình, không gửi email), cần dịch vụ email và tư vấn pháp lý trước khi mở
+- Mở tài khoản cho người dùng thật: đăng nhập bằng email + mật khẩu (xác thực email, quên mật khẩu) và đồng bộ routine đã có ở chế độ thử (link xác thực / đặt lại hiện ngay trên màn hình, không gửi email), cần dịch vụ email và tư vấn pháp lý trước khi mở
 
 Chi tiết và thứ tự ưu tiên: [plan/after-mvp.md](plan/after-mvp.md).
 
@@ -121,11 +120,13 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    ```bash
    cd frontend
    npm install
-   npm run dev                    # mở http://localhost:5173, đăng nhập bằng email bất kỳ:
-                                  # chế độ thử không gửi email, link đăng nhập hiện ngay trên màn hình
+   npm run dev                    # mở http://localhost:5173, tạo tài khoản bằng email bất kỳ:
+                                  # chế độ thử không gửi email, link xác thực hiện ngay trên màn hình
    ```
 
 4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`.
+
+5. Đọc bảng thành phần từ ảnh nhãn (không bắt buộc): cùng `ANTHROPIC_API_KEY`, chọn model bằng `LABEL_MODEL`. Dùng khoá của cổng hackathon thì thêm `ANTHROPIC_BASE_URL=https://proptit.dekthe.dev` và đặt `DRAFT_MODEL`, `LABEL_MODEL` là `claude-haiku-5-5` (xem `backend/.env.example`). Chỉ người đã đăng nhập mới gửi được ảnh.
 
    ```bash
    cd backend
@@ -139,10 +140,10 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Khung dự án: API, cơ sở dữ liệu, test
 - [x] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [x] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
-- [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth, gửi câu hỏi
-- [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth, gửi câu hỏi
+- [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth
+- [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth
 - [ ] Hoàn thiện demo
-- [x] Sau MVP: trang duyệt câu hỏi, AI soạn nháp thẻ myth, hiện câu hỏi đã được trả lời
+- [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
 
 ## Nguồn dữ liệu và ghi công
 

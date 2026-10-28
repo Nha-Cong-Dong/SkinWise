@@ -97,6 +97,21 @@ class InciAnalysis(BaseModel):
     one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
+class LabelImage(BaseModel):
+    """A photo of a label, downscaled by the browser. Not stored."""
+
+    media_type: Literal["image/jpeg", "image/png", "image/webp", "image/gif"]
+    data: Annotated[str, StringConstraints(min_length=1, max_length=10_000_000)]  # base64
+
+
+class LabelReadingOut(BaseModel):
+    """The ingredient list as read off the photo, for the user to check before analysing."""
+
+    found: bool  # an ingredient list was visible
+    text: str  # as printed; "[?]" where the model could not read
+    unreadable_count: int
+
+
 class SourceOut(FromAttributes):
     title: str
     publisher: str
@@ -189,29 +204,11 @@ class RoutineCheckResponse(BaseModel):
     notice_vi: str | None
 
 
-class QuestionCreate(BaseModel):
-    question: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5,
-                                               max_length=2000)]  # fmt: skip
-    product_ids: Annotated[list[int], Field(max_length=20)] = []
-    group_codes: Annotated[list[str], Field(max_length=10)] = []
-
-
-class QuestionCreated(BaseModel):
-    id: int
-    message_vi: str
-
-
-class AnsweredQuestionOut(BaseModel):
-    id: int
-    question: str  # the reviewer's public wording, not the text the user sent
-    rule: RuleOut
-
-
 # Review page (sign-in required).
 ReviewText = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000)]
 
 
-class LoginRequest(BaseModel):
+class ReviewerLoginRequest(BaseModel):
     name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=100)]
     password: Annotated[str, StringConstraints(min_length=1, max_length=200)]
 
@@ -226,66 +223,11 @@ class ReviewerOut(BaseModel):
     name: str
 
 
-class ReviewRuleOut(FromAttributes):
-    key: str
-    kind: str
-    severity: str
-    group_a: str
-    group_b: str | None
-    title_vi: str
-    published: bool
-
-
-class RelatedProductOut(BaseModel):
-    id: int
-    label: str  # "brand name"
-
-
-QuestionStatus = Literal["new", "accepted", "rejected", "answered"]
-
-
-class ReviewQuestionOut(FromAttributes):
-    id: int
-    question: str
-    products: list[RelatedProductOut]
-    group_codes: list[str]
-    status: QuestionStatus
-    created_at: datetime
-    rule_key: str | None
-    rule: ReviewRuleOut | None
-    public_question: str | None
-    reviewer_note: str | None
-    updated_by: str | None
-    updated_at: datetime | None
-    # Shown to users: answered, with public wording, and its rule is published with sources.
-    public: bool
-    draft_ids: list[int]
-
-
-class ReviewQuestionsOut(BaseModel):
-    questions: list[ReviewQuestionOut]
-    counts: dict[str, int]  # per status, over all questions
-
-
-class QuestionUpdate(BaseModel):
-    status: QuestionStatus
-    rule_key: str | None = None
-    public_question: ReviewText | None = None
-    reviewer_note: ReviewText | None = None
-
-    @model_validator(mode="after")
-    def _answered_needs_rule(self) -> "QuestionUpdate":
-        if self.status == "answered" and not (self.rule_key and self.public_question):
-            raise ValueError("an answered question needs rule_key and public_question")
-        return self
-
-
 SourceUrl = Annotated[str, StringConstraints(strip_whitespace=True, max_length=2000,
                                              pattern=r"^https?://\S+$")]  # fmt: skip
 
 
 class DraftCreate(BaseModel):
-    question_id: int | None = None
     group_a: str
     group_b: str
     source_urls: Annotated[list[SourceUrl], Field(min_length=1, max_length=5)]
@@ -306,7 +248,6 @@ class DraftSourceOut(BaseModel):
 
 class DraftOut(FromAttributes):
     id: int
-    question_id: int | None
     key: str
     kind: str
     severity: str
@@ -334,19 +275,50 @@ class DraftStatusUpdate(BaseModel):
 # --- User accounts (plan/h-accounts.md) ---
 
 
-class EmailLinkRequest(BaseModel):
-    email: Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=254)]
-    consent: bool  # the separate, unticked consent box of the sign-in form (Law 91/2025 Art. 9)
+Email = Annotated[str, StringConstraints(strip_whitespace=True, min_length=3, max_length=254)]
+# A new password is checked by the route (8 to 128 characters, not the email) so the page gets
+# a `detail` it can show; never stripped.
+NewPassword = Annotated[str, StringConstraints(max_length=1000)]
+LinkToken = Annotated[str, StringConstraints(min_length=10, max_length=200)]
+
+
+class RegisterRequest(BaseModel):
+    email: Email
+    password: NewPassword
+    consent: bool  # the separate, unticked consent box of the sign-up form (Law 91/2025 Art. 9)
     policy_version: Annotated[str, StringConstraints(max_length=50)]
 
 
-class EmailLinkSent(BaseModel):
+class EmailRequest(BaseModel):
+    email: Email
+
+
+class ResendVerificationRequest(BaseModel):
+    email: Email
+    password: Annotated[str, StringConstraints(min_length=1, max_length=1000)]
+
+
+class VerifyEmailRequest(BaseModel):
+    token: LinkToken
+    # The password set when registering: a verify link only activates its own registration.
+    password: Annotated[str, StringConstraints(min_length=1, max_length=1000)]
+
+
+class LoginRequest(BaseModel):
+    email: Email
+    password: Annotated[str, StringConstraints(min_length=1, max_length=1000)]
+
+
+class ResetPasswordRequest(BaseModel):
+    token: LinkToken
+    password: NewPassword
+
+
+class EmailSent(BaseModel):
     message_vi: str
-    dev_link: str | None  # dev mode only: no email was sent, the page shows the link instead
-
-
-class SessionRequest(BaseModel):
-    token: Annotated[str, StringConstraints(min_length=10, max_length=200)]
+    # Dev mode only: no email was sent, the page shows the link instead. None when there is no
+    # link (e.g. the address already has an account).
+    dev_link: str | None
 
 
 class ConsentOut(FromAttributes):
@@ -360,7 +332,7 @@ class MeOut(BaseModel):
     created_at: datetime
     consents: list[ConsentOut]
     routine_updated_at: datetime | None
-    dev_mode: bool  # sign-in links are not emailed; accounts are not open to real users
+    dev_mode: bool  # account emails are not sent, links are shown on the page instead (smtp: false)
 
 
 class StoredNotice(BaseModel):

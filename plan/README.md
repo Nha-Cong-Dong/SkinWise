@@ -42,6 +42,6 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 
 **Đã chốt cho giai đoạn 3–4 (22/10):**
 - Khi không có luật/thẻ nào áp dụng, API và giao diện phải nói rõ "chưa có thông tin đã kiểm chứng — không có cảnh báo không có nghĩa là chắc chắn an toàn" (cả kết quả kiểm tra routine lẫn tra cứu myth).
-- `POST /questions`: người dùng gửi câu hỏi / lời đồn (kèm các sản phẩm liên quan nếu có), lưu vào bảng `user_questions` để người duyệt chọn và làm thẻ myth mới theo đúng quy trình nguồn. Form gửi câu hỏi trong giao diện.
+- `POST /questions`: người dùng gửi câu hỏi / lời đồn (kèm các sản phẩm liên quan nếu có), lưu vào bảng `user_questions` để người duyệt chọn và làm thẻ myth mới theo đúng quy trình nguồn. Form gửi câu hỏi trong giao diện. (Đã bỏ 27/10, xem `decisions.md`.)
 
 Quyết định đã chốt và lý do: [decisions.md](decisions.md).

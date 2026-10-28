@@ -69,6 +69,13 @@ export type InciAnalysis = {
   one_percent_marker: string | null
 }
 
+/** The ingredient list an AI model copied off a label photo, for the user to check. */
+export type LabelReading = {
+  found: boolean // an ingredient list was visible
+  text: string // as printed; "[?]" where the model could not read
+  unreadable_count: number
+}
+
 export type Source = { title: string; publisher: string; url: string; quote: string }
 
 export type Rule = {
@@ -103,49 +110,9 @@ export type RoutineCheckResponse = {
   notice_vi: string | null
 }
 
-/** A question a reviewer answered with a published rule, in the reviewer's wording. */
-export type AnsweredQuestion = { id: number; question: string; rule: Rule }
-
 // Review page (backend/app/review_api.py).
-export type QuestionStatus = 'new' | 'accepted' | 'rejected' | 'answered'
-
-export type ReviewRule = {
-  key: string
-  kind: Rule['kind']
-  severity: Severity
-  group_a: string
-  group_b: string | null
-  title_vi: string
-  published: boolean
-}
-
-export type ReviewQuestion = {
-  id: number
-  question: string
-  products: { id: number; label: string }[]
-  group_codes: string[]
-  status: QuestionStatus
-  created_at: string
-  rule_key: string | null
-  rule: ReviewRule | null
-  public_question: string | null
-  reviewer_note: string | null
-  updated_by: string | null
-  updated_at: string | null
-  public: boolean // shown to users: answered, public wording, rule published
-  draft_ids: number[]
-}
-
-export type QuestionUpdate = {
-  status: QuestionStatus
-  rule_key: string | null
-  public_question: string | null
-  reviewer_note: string | null
-}
-
 export type Draft = {
   id: number
-  question_id: number | null
   key: string
   kind: 'myth'
   severity: Severity
@@ -167,7 +134,6 @@ export type Draft = {
 }
 
 export type DraftRequest = {
-  question_id: number | null
   group_a: string
   group_b: string
   source_urls: string[]
@@ -192,7 +158,21 @@ export type Me = {
   created_at: string
   consents: { purpose: string; policy_version: string; granted_at: string }[]
   routine_updated_at: string | null
-  dev_mode: boolean // sign-in links are not emailed; accounts are not open to real users
+  dev_mode: boolean // links are not emailed; accounts are not open to real users
+}
+
+export type RegisterRequest = { email: string; password: string; consent: boolean; policy_version: string }
+export type EmailRequest = { email: string }
+/** The token of a #verify-email link, with the password of the registration that made the link. */
+export type VerifyEmailRequest = { token: string; password: string }
+export type ResendVerificationRequest = { email: string; password: string }
+export type LoginRequest = { email: string; password: string }
+export type ResetPasswordRequest = { token: string; password: string }
+
+/** 202 from register, resend-verification and forgot-password: the same answer whether or not the email has an account. */
+export type EmailSent = {
+  message_vi: string
+  dev_link: string | null // dev mode only; null when no link was made (e.g. the email already has an account)
 }
 
 /** The routine kept on the server; same shape as Routine in routine.ts. */
@@ -237,6 +217,8 @@ export const api = {
     request<ProductSummary[]>(`/products?${new URLSearchParams({ q })}`, { signal }),
   product: (id: number) => request<ProductDetail>(`/products/${id}`),
   analyzeInci: (text: string) => post<InciAnalysis>('/inci/analyze', { text }),
+  /** Signed-in users only: each photo is a billed AI call. */
+  readLabel: (body: { media_type: 'image/jpeg'; data: string }) => post<LabelReading>('/label/read', body),
   checkRoutine: (body: RoutineCheckRequest, signal?: AbortSignal) =>
     post<RoutineCheckResponse>('/routine/check', body, signal),
   rules: (params: { kind?: Rule['kind']; groups?: string[] }) => {
@@ -245,19 +227,15 @@ export const api = {
     for (const g of params.groups ?? []) query.append('groups', g)
     return request<RulesResponse>(`/rules?${query}`)
   },
-  askQuestion: (body: { question: string; product_ids: number[]; group_codes: string[] }) =>
-    post<{ id: number; message_vi: string }>('/questions', body),
-  answeredQuestions: () => request<AnsweredQuestion[]>('/questions/answered'),
   login: (name: string, password: string) =>
     post<{ token: string; name: string; expires_at: string }>('/review/login', { name, password }),
   // User accounts; the session is an HttpOnly cookie the browser sends by itself.
-  requestSignInLink: (email: string, policyVersion: string) =>
-    post<{ message_vi: string; dev_link: string | null }>('/auth/email-link', {
-      email,
-      consent: true,
-      policy_version: policyVersion,
-    }),
-  signIn: (token: string) => post<Me>('/auth/session', { token }),
+  register: (body: RegisterRequest) => post<EmailSent>('/auth/register', body),
+  verifyEmail: (body: VerifyEmailRequest) => post<Me>('/auth/verify-email', body),
+  resendVerification: (body: ResendVerificationRequest) => post<EmailSent>('/auth/resend-verification', body),
+  signIn: (body: LoginRequest) => post<Me>('/auth/login', body),
+  forgotPassword: (email: string) => post<EmailSent>('/auth/forgot-password', { email } satisfies EmailRequest),
+  resetPassword: (body: ResetPasswordRequest) => post<Me>('/auth/reset-password', body),
   signOut: () => request<void>('/auth/logout', { method: 'POST' }),
   signOutEverywhere: () => request<void>('/auth/logout-all', { method: 'POST' }),
   me: () => request<Me>('/me'),
@@ -278,15 +256,6 @@ export function reviewApi(token: string) {
   return {
     me: () => send<{ name: string }>('GET', '/review/me'),
     logout: () => send<void>('POST', '/review/logout'),
-    rules: () => send<ReviewRule[]>('GET', '/review/rules'),
-    questions: (statuses: QuestionStatus[]) => {
-      const query = new URLSearchParams(statuses.map((s) => ['status', s]))
-      return send<{ questions: ReviewQuestion[]; counts: Record<QuestionStatus, number> }>(
-        'GET',
-        `/review/questions?${query}`,
-      )
-    },
-    updateQuestion: (id: number, body: QuestionUpdate) => send<ReviewQuestion>('PUT', `/review/questions/${id}`, body),
     drafts: (status: Draft['status']) => send<Draft[]>('GET', `/review/drafts?${new URLSearchParams({ status })}`),
     createDraft: (body: DraftRequest) => send<Draft>('POST', '/review/drafts', body),
     setDraftStatus: (id: number, status: Draft['status']) => send<Draft>('PATCH', `/review/drafts/${id}`, { status }),
