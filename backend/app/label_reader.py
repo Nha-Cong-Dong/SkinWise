@@ -45,6 +45,11 @@ names (usually English). If there is only one list, transcribe it, whatever the 
 """
 
 
+# 429: the AI service is overloaded, or this server already has as many calls running as
+# it allows (label_api). 503 only ever means "not set up".
+AI_BUSY = "the AI service is busy; try again in a minute"
+
+
 class LabelReadingError(Exception):
     """Reading failed for a reason the user can act on. `status` is the HTTP status."""
 
@@ -109,7 +114,7 @@ def call_model(media_type: str, data: str) -> ModelLabel:
     except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
         raise LabelReadingError(f"reading photos is not set up: {e.message}", 503) from e
     except anthropic.RateLimitError as e:
-        raise LabelReadingError("the AI service is busy; try again in a minute", 503) from e
+        raise LabelReadingError(AI_BUSY, 429) from e
     except anthropic.BadRequestError as e:
         # Mostly an image the API cannot open (corrupt, or not the declared type).
         raise LabelReadingError(f"the AI service could not read the image: {e.message}", 422) from e
