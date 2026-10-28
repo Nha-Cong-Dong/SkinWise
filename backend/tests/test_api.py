@@ -260,6 +260,7 @@ def test_single_group_lookup_lists_rules_involving_it(client: TestClient) -> Non
     assert set(lookup(client, "PHA")) == {
         "exfoliant-acid-duplicate-same-session",
         "retinoid-exfoliant-acid-same-session",
+        "azelaic-acid-exfoliant-acid-same-session",
     }
 
 
