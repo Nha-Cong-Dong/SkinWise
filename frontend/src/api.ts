@@ -98,6 +98,77 @@ export type RoutineCheckResponse = {
   notice_vi: string | null
 }
 
+/** A question a reviewer answered with a published rule, in the reviewer's wording. */
+export type AnsweredQuestion = { id: number; question: string; rule: Rule }
+
+// Review page (backend/app/review_api.py).
+export type QuestionStatus = 'new' | 'accepted' | 'rejected' | 'answered'
+
+export type ReviewRule = {
+  key: string
+  kind: Rule['kind']
+  severity: Severity
+  group_a: string
+  group_b: string | null
+  title_vi: string
+  published: boolean
+}
+
+export type ReviewQuestion = {
+  id: number
+  question: string
+  products: { id: number; label: string }[]
+  group_codes: string[]
+  status: QuestionStatus
+  created_at: string
+  rule_key: string | null
+  rule: ReviewRule | null
+  public_question: string | null
+  reviewer_note: string | null
+  updated_by: string | null
+  updated_at: string | null
+  public: boolean // shown to users: answered, public wording, rule published
+  draft_ids: number[]
+}
+
+export type QuestionUpdate = {
+  status: QuestionStatus
+  rule_key: string | null
+  public_question: string | null
+  reviewer_note: string | null
+}
+
+export type Draft = {
+  id: number
+  question_id: number | null
+  key: string
+  kind: 'myth'
+  severity: Severity
+  scope: Rule['scope']
+  evidence_level: Rule['evidence_level']
+  group_a: string
+  group_b: string
+  title_vi: string
+  explanation_vi: string
+  answerable: boolean // false: the model found the sources do not answer the question
+  reviewer_notes_vi: string
+  sources: { url: string; title: string; publisher: string }[]
+  quotes: { url: string; quote: string; found: boolean }[] // found: verbatim on the page
+  model: string
+  status: 'draft' | 'discarded'
+  created_by: string
+  created_at: string
+  toml: string // to paste into backend/data/rules.toml, published = false
+}
+
+export type DraftRequest = {
+  question_id: number | null
+  group_a: string
+  group_b: string
+  source_urls: string[]
+  instructions: string
+}
+
 export class ApiError extends Error {
   readonly status: number
 
@@ -107,17 +178,18 @@ export class ApiError extends Error {
   }
 }
 
-async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`/api${path}`, {
-    ...init,
-    headers: init?.body ? { 'Content-Type': 'application/json' } : undefined,
-  })
+/** `token`: a reviewer's session, for the /review routes. */
+async function request<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
+  const headers: Record<string, string> = {}
+  if (init?.body) headers['Content-Type'] = 'application/json'
+  if (token) headers.Authorization = `Bearer ${token}`
+  const res = await fetch(`/api${path}`, { ...init, headers })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
     const detail = typeof body?.detail === 'string' ? body.detail : res.statusText
     throw new ApiError(res.status, detail)
   }
-  return res.json() as Promise<T>
+  return (res.status === 204 ? undefined : res.json()) as Promise<T>
 }
 
 const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
@@ -140,4 +212,31 @@ export const api = {
   },
   askQuestion: (body: { question: string; product_ids: number[]; group_codes: string[] }) =>
     post<{ id: number; message_vi: string }>('/questions', body),
+  answeredQuestions: () => request<AnsweredQuestion[]>('/questions/answered'),
+  login: (name: string, password: string) =>
+    post<{ token: string; name: string; expires_at: string }>('/review/login', { name, password }),
 }
+
+/** Review page calls; every one needs the reviewer's session token. */
+export function reviewApi(token: string) {
+  const send = <T>(method: string, path: string, body?: unknown) =>
+    request<T>(path, { method, body: body === undefined ? undefined : JSON.stringify(body) }, token)
+  return {
+    me: () => send<{ name: string }>('GET', '/review/me'),
+    logout: () => send<void>('POST', '/review/logout'),
+    rules: () => send<ReviewRule[]>('GET', '/review/rules'),
+    questions: (statuses: QuestionStatus[]) => {
+      const query = new URLSearchParams(statuses.map((s) => ['status', s]))
+      return send<{ questions: ReviewQuestion[]; counts: Record<QuestionStatus, number> }>(
+        'GET',
+        `/review/questions?${query}`,
+      )
+    },
+    updateQuestion: (id: number, body: QuestionUpdate) => send<ReviewQuestion>('PUT', `/review/questions/${id}`, body),
+    drafts: (status: Draft['status']) => send<Draft[]>('GET', `/review/drafts?${new URLSearchParams({ status })}`),
+    createDraft: (body: DraftRequest) => send<Draft>('POST', '/review/drafts', body),
+    setDraftStatus: (id: number, status: Draft['status']) => send<Draft>('PATCH', `/review/drafts/${id}`, { status }),
+  }
+}
+
+export type ReviewApi = ReturnType<typeof reviewApi>

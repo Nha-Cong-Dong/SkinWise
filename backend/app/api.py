@@ -27,10 +27,11 @@ from app.ingredients import (
     with_ancestors,
 )
 from app.products import existing_product_ids, get_product, search_products
-from app.questions import add_question
+from app.questions import add_question, list_answered
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
+    AnsweredQuestionOut,
     FunctionOut,
     GroupOut,
     InciAnalysis,
@@ -284,3 +285,17 @@ def ask(db: DbSession, body: QuestionCreate) -> QuestionCreated:
     question_id = add_question(db, body.question, product_ids, group_codes)
     db.commit()
     return QuestionCreated(id=question_id, message_vi=QUESTION_RECEIVED_VI)
+
+
+@router.get("/questions/answered")
+def answered_questions(db: DbSession) -> list[AnsweredQuestionOut]:
+    """Questions a reviewer answered with a published rule, newest first, in the reviewer's
+    wording. A rule that is not published (or lost its sources) hides its questions."""
+    published = {r.key: r for r in load_published_rules(db)}
+    return [
+        AnsweredQuestionOut(
+            id=q.id, question=q.public_question, rule=RuleOut.model_validate(published[q.rule_key])
+        )
+        for q in list_answered(db)
+        if q.rule_key in published
+    ]

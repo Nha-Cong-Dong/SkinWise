@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 
 from app.api import router
 from app.db import get_session
+from app.review_api import router as review_router
 
 
 def create_app() -> FastAPI:
@@ -17,6 +18,7 @@ def create_app() -> FastAPI:
         return {"status": "ok", "db": "ok"}
 
     app.include_router(router)
+    app.include_router(review_router)
     return app
 
 

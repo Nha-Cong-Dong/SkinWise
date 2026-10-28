@@ -57,5 +57,16 @@ Gõ sai ("Salicilic Acid") làm mất hoạt chất và mất cảnh báo. Khôn
 ## Duyệt từ điển hoạt chất (25/10)
 Người duyệt duyệt toàn bộ 59 chất. Bỏ từ đồng nghĩa "BHA" của Salicylic Acid: trên nhãn, BHA là tên INCI của butylated hydroxyanisole (chất chống oxy hoá), nên sản phẩm có chất này bị cảnh báo như có acid tẩy tế bào chết. Test chặn từ đồng nghĩa trùng tên INCI của chất khác. Sodium Salicylate không tính BHA (chất bảo quản); ammonium lactate/glycolate vẫn là AHA.
 
+## Trang duyệt + AI soạn nháp thẻ myth: nguồn do người duyệt chọn, nháp nằm ngoài bảng luật (26/10)
+Làm hướng E (sau MVP), chi tiết ở [e-review.md](e-review.md). Mở rộng quyết định "lời đồn ngoài bộ myth cố định" (22/10).
+- AI chỉ đọc các trang người duyệt dán link (tối đa 5), không tự tìm nguồn: nguồn phải thuộc danh sách uy tín, và máy chủ phải kiểm tra đoạn trích trên đúng văn bản AI đã đọc. Trang không tải được thì dừng, không soạn.
+- Nháp lưu ở bảng `rule_drafts`, không ở `rules`, nên `load_published_rules` và mọi API công khai không chạm tới được. `rules.toml` vẫn là nguồn sự thật: người duyệt chép TOML (`published = false`) vào file, đọc nguồn, tự bật, chạy `verify_quotes` và `seed`. Không route nào bật được luật.
+- Nháp chỉ có mức `info`/`safe` (thẻ myth không cảnh báo). Nếu nguồn cho thấy kết hợp thật sự có vấn đề, AI ghi vào ghi chú cho người duyệt; viết luật `conflict` vẫn là việc của người.
+- Khoá nháp không trùng luật đã seed: seed upsert theo `key` sẽ âm thầm ghi đè, và tắt, luật đã bật.
+- Câu hỏi hiện công khai bằng lời người duyệt viết lại (`public_question`), không bao giờ bằng văn bản gốc: người dùng vẫn có thể ghi tên, số điện thoại dù form đã nhắc. Chỉ hiện khi luật trả lời đã bật.
+- Đăng nhập người duyệt: tài khoản tạo bằng `scripts.reviewers`, mật khẩu scrypt, phiên là token ngẫu nhiên chỉ lưu sha256. Không thêm thư viện, không cần khoá bí mật trong cấu hình. Đây không phải tài khoản người dùng (hướng H).
+- Mô hình mặc định `claude-opus-5-5` (đổi bằng `DRAFT_MODEL`), kèm `fallbacks: "default"` khi mô hình từ chối.
+- Chưa làm phần tuỳ chọn "AI diễn đạt lại `explanation_vi`": cần thêm cột cho luật và đổi `RuleCard` trong lúc nhánh `feat/accuracy` đang sửa mô hình luật (loại `usage`). Làm sau khi nhánh đó vào `main`, theo cùng cách: người duyệt duyệt bản diễn đạt trong `rules.toml`, giao diện luôn hiện kèm bản gốc.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.
