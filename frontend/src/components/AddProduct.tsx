@@ -1,36 +1,49 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
 import { api, type InciAnalysis, type ProductSummary } from '../api'
-import { productKeyFor, type RoutineActions } from '../routine'
+import { APPLICATION_LABELS } from '../labels'
+import { pastedImage, usePhotoReader } from '../photoReader'
+import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
+import { DataNote } from './Notice'
+import { ReadFromPhoto } from './ReadFromPhoto'
 
 type Props = { actions: RoutineActions }
 
-export function AddProduct({ actions }: Props) {
-  const [tab, setTab] = useState<'search' | 'paste'>('search')
+type DraftProps = Props & { draft: AddDraft; setDraft: Dispatch<SetStateAction<AddDraft>> }
+
+const field =
+  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
+
+/** Content of the "add product" dialog: search the catalogue or paste an ingredient list. */
+export function AddProduct({ actions, draft, setDraft }: DraftProps) {
+  const tab = draft.tab
   return (
-    <section className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200">
-      <h2 className="font-semibold text-slate-900">Thêm sản phẩm</h2>
-      <div className="mt-3 flex gap-1 rounded-md bg-slate-100 p-1 text-sm" role="tablist">
+    <div>
+      <div className="flex gap-1 rounded-full bg-paper p-1 text-sm" role="tablist">
         {(
           [
-            ['search', 'Tìm sản phẩm có sẵn'],
-            ['paste', 'Dán bảng thành phần'],
+            ['search', 'Tìm sản phẩm'],
+            ['paste', 'Dán thành phần'],
           ] as const
         ).map(([value, label]) => (
           <button
             key={value}
             role="tab"
             aria-selected={tab === value}
-            onClick={() => setTab(value)}
-            className={`flex-1 rounded px-3 py-1.5 ${tab === value ? 'bg-white font-medium shadow-sm' : 'text-slate-600'}`}
+            onClick={() => setDraft((d) => ({ ...d, tab: value }))}
+            className={`flex-1 rounded-full px-3 py-1.5 ${tab === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
           >
             {label}
           </button>
         ))}
       </div>
-      {tab === 'search' ? <SearchProducts actions={actions} /> : <PasteInci actions={actions} />}
-    </section>
+      {tab === 'search' ? (
+        <SearchProducts actions={actions} />
+      ) : (
+        <PasteInci actions={actions} draft={draft} setDraft={setDraft} />
+      )}
+    </div>
   )
 }
 
@@ -60,28 +73,33 @@ function SearchProducts({ actions }: Props) {
   }, [query])
 
   return (
-    <div className="mt-3">
+    <div className="mt-4">
       <input
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
         placeholder="Tên hãng hoặc sản phẩm, gõ không dấu cũng được"
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+        aria-label="Tìm sản phẩm"
+        data-autofocus
+        className={field}
       />
-      {error && <p className="mt-2 text-sm text-red-700">Không tải được danh sách sản phẩm.</p>}
+      {error && <p className="mt-3 text-sm text-avoid-ink">Không tải được danh sách sản phẩm.</p>}
       {results?.length === 0 && (
-        <p className="mt-2 text-sm text-slate-500">
+        <p className="mt-3 text-sm text-ink-mute">
           Không tìm thấy. Bạn có thể dán bảng thành phần in trên bao bì ở thẻ bên cạnh.
         </p>
       )}
-      <ul className="mt-2 max-h-80 divide-y divide-slate-100 overflow-y-auto">
+      <ul className="mt-2 divide-y divide-line">
         {results?.map((p) => {
           const isAdded = added.has(productKeyFor(p.id))
           return (
-            <li key={p.id} className="flex items-center gap-3 py-2">
+            <li key={p.id} className="flex items-center gap-3 py-3">
               <div className="min-w-0 flex-1">
-                <p className="text-xs text-slate-500">{p.brand}</p>
-                <p className="truncate text-sm font-medium text-slate-900">{p.name}</p>
+                <p className="text-xs text-ink-mute">
+                  {p.brand}
+                  {p.application && <span className="ml-2">{APPLICATION_LABELS[p.application]}</span>}
+                </p>
+                <p className="text-sm leading-snug font-medium">{p.name}</p>
                 <div className="mt-1">
                   <GroupChips codes={p.groups} empty="Không có hoạt chất trong danh sách theo dõi" />
                 </div>
@@ -91,7 +109,7 @@ function SearchProducts({ actions }: Props) {
                 onClick={() =>
                   actions.addProduct({ name: p.name, brand: p.brand, productId: p.id, inci: null, groups: p.groups })
                 }
-                className="shrink-0 rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-700 disabled:bg-slate-200 disabled:text-slate-500"
+                className="shrink-0 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-white hover:bg-link disabled:bg-paper disabled:text-ink-mute"
               >
                 {isAdded ? 'Đã thêm' : 'Thêm'}
               </button>
@@ -103,18 +121,36 @@ function SearchProducts({ actions }: Props) {
   )
 }
 
-function PasteInci({ actions }: Props) {
-  const [name, setName] = useState('')
-  const [text, setText] = useState('')
-  const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
+// What the model writes where it cannot read a label photo (backend/app/label_reader.py).
+const UNREADABLE = '[?]'
+
+function PasteInci({ actions, draft, setDraft }: DraftProps) {
+  const { name, text, analysis, origin, photo } = draft
   const [state, setState] = useState<'idle' | 'loading' | 'error' | 'added'>('idle')
+  const [bigPhoto, setBigPhoto] = useState(false)
+  const update = (change: Partial<AddDraft>) => setDraft((d) => ({ ...d, ...change }))
+  const clear = () => {
+    update({ name: '', text: '', analysis: null, origin: null, photo: null })
+    setState('idle')
+  }
+  const reader = usePhotoReader(
+    (read, shot) => {
+      update({ text: read, analysis: null, origin: { kind: 'photo', confirmed: false }, photo: shot })
+      setState('idle')
+    },
+    () => !text.trim() || confirm('Thay bảng thành phần đang dán bằng chữ đọc từ ảnh?'),
+  )
+  const unreadable = text.split(UNREADABLE).length - 1
+  // A list read off a photo is analysed only once the user has checked it against the package.
+  const unchecked = origin?.kind === 'photo' && !origin.confirmed
 
   const analyze = (input = text) => {
     setState('loading')
     api
       .analyzeInci(input)
       .then((a) => {
-        setAnalysis(a)
+        // Kept only if the list was not edited meanwhile; lands even if the dialog was closed.
+        setDraft((d) => (d.text === input ? { ...d, analysis: a } : d))
         setState('idle')
       })
       .catch(() => setState('error'))
@@ -129,57 +165,106 @@ function PasteInci({ actions }: Props) {
       inci: text.trim(),
       groups: analysis.groups,
       notices: analysis.notices,
+      ...(origin && { origin }),
     })
-    setName('')
-    setText('')
-    setAnalysis(null)
+    update({ name: '', text: '', analysis: null, origin: null, photo: null })
     setState('added')
   }
 
   return (
-    <div className="mt-3 space-y-2">
+    <div
+      className="mt-4 space-y-3"
+      onPaste={(e) => {
+        // A pasted screenshot or copied photo is read; pasted text goes into the box as usual.
+        const image = pastedImage(e)
+        if (!image) return
+        e.preventDefault()
+        reader.read(image)
+      }}
+    >
+      {origin ? (
+        <div className="rounded-xl bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
+          <p className="font-semibold text-ink">Chữ đọc từ ảnh bằng AI, có thể sai</p>
+          <p className="mt-1">
+            Chữ nhỏ trên chai cong dễ bị đọc nhầm, và một chữ sai trong tên hoạt chất có thể làm mất cảnh báo. Hãy so
+            từng dòng với bao bì, sửa chỗ sai và chỗ đánh dấu {UNREADABLE}, rồi mới phân tích.
+          </p>
+          {photo && (
+            <button
+              onClick={() => setBigPhoto((big) => !big)}
+              aria-label={bigPhoto ? 'Thu nhỏ ảnh' : 'Phóng to ảnh'}
+              className="mt-2 block w-full overflow-hidden rounded-lg bg-surface ring-1 ring-line"
+            >
+              <img src={photo} alt="Ảnh nhãn bạn đã chọn" className={`w-full object-contain ${bigPhoto ? '' : 'max-h-56'}`} />
+            </button>
+          )}
+          <p className="mt-2 text-xs">
+            <button onClick={clear} className="font-medium text-link underline underline-offset-2">
+              Bỏ, tự dán bảng khác
+            </button>
+          </p>
+        </div>
+      ) : (
+        <ReadFromPhoto reader={reader} />
+      )}
       <input
         value={name}
-        onChange={(e) => setName(e.target.value)}
+        onChange={(e) => update({ name: e.target.value })}
         placeholder="Tên sản phẩm (để bạn dễ nhận ra)"
-        className="w-full rounded-md border border-slate-300 px-3 py-2 text-sm focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+        aria-label="Tên sản phẩm"
+        className={field}
       />
       <textarea
         value={text}
         onChange={(e) => {
-          setText(e.target.value)
-          setAnalysis(null)
+          // Emptied: whatever is pasted next is the user's own list.
+          const emptied = !e.target.value.trim()
+          update({ text: e.target.value, analysis: null, ...(emptied && { origin: null, photo: null }) })
           setState('idle')
         }}
-        rows={5}
+        rows={6}
         placeholder="Ingredients: Aqua, Glycerin, Niacinamide, …"
-        className="w-full rounded-md border border-slate-300 px-3 py-2 font-mono text-xs focus:border-rose-400 focus:ring-2 focus:ring-rose-100 focus:outline-none"
+        aria-label="Bảng thành phần"
+        className={`${field} text-sm leading-relaxed`}
       />
-      <div className="flex gap-2">
+      {unreadable > 0 && (
+        <p className="text-sm text-caution-ink">
+          Còn {unreadable} chỗ đánh dấu {UNREADABLE} chưa đọc được. Sửa theo bao bì hoặc xoá đi rồi mới phân tích.
+        </p>
+      )}
+      {origin && (
+        <label className="flex items-start gap-2.5 text-sm text-ink-soft">
+          <input
+            type="checkbox"
+            checked={origin.confirmed}
+            onChange={(e) => update({ origin: { ...origin, confirmed: e.target.checked } })}
+            className="mt-0.5 size-4 shrink-0 accent-ink"
+          />
+          Tôi đã so từng dòng với bao bì và sửa chỗ sai
+        </label>
+      )}
+      <div className="flex flex-wrap items-center gap-2">
         <button
           onClick={() => analyze()}
-          disabled={!text.trim() || state === 'loading'}
-          className="rounded-md border border-rose-300 px-3 py-1.5 text-sm font-medium text-rose-700 hover:bg-rose-50 disabled:opacity-50"
+          disabled={!text.trim() || state === 'loading' || unreadable > 0 || unchecked}
+          className="rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40"
         >
           {state === 'loading' ? 'Đang phân tích…' : 'Phân tích'}
         </button>
-        {analysis && (
-          <button
-            onClick={add}
-            className="rounded-md bg-rose-600 px-3 py-1.5 text-sm font-medium text-white hover:bg-rose-700"
-          >
+        {analysis && !unchecked && (
+          <button onClick={add} className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link">
             Thêm vào sản phẩm của tôi
           </button>
         )}
+        {state === 'added' && <p className="text-sm text-safe-ink">Đã thêm vào “Sản phẩm của tôi”.</p>}
       </div>
-      {state === 'error' && <p className="text-sm text-red-700">Không phân tích được bảng thành phần.</p>}
-      {state === 'added' && <p className="text-sm text-emerald-700">Đã thêm vào “Sản phẩm của tôi”.</p>}
+      {state === 'error' && <p className="text-sm text-avoid-ink">Không phân tích được bảng thành phần.</p>}
       {analysis && (
         <AnalysisPreview
           analysis={analysis}
           onSuggest={(rawName, suggestion) => {
             const fixed = text.replace(rawName, suggestion)
-            setText(fixed)
+            update({ text: fixed })
             analyze(fixed)
           }}
         />
@@ -197,35 +282,35 @@ function AnalysisPreview({
 }) {
   const misspelledActives = analysis.ingredients.filter((i) => i.suggestions.some((s) => s.groups.length))
   return (
-    <div className="rounded-md bg-slate-50 p-3 text-sm">
+    <div className="space-y-3 border-t border-line pt-4 text-sm">
       {analysis.notices.map((n) => (
-        <p key={n.code} className="mb-2 rounded-md bg-amber-50 p-2 text-amber-900 ring-1 ring-amber-200">
+        <DataNote key={n.code} title="Lưu ý về văn bản đã dán">
           {n.message_vi}
-        </p>
+        </DataNote>
       ))}
-      <p className="font-medium text-slate-700">Hoạt chất nhận ra:</p>
-      <div className="mt-1">
-        <GroupChips codes={analysis.groups} empty="Không có hoạt chất nào trong danh sách SkinWise theo dõi." />
-      </div>
-      <p className="mt-2 text-xs text-slate-500">
-        Nhận ra {analysis.ingredients.length - analysis.unresolved_count}/{analysis.ingredients.length} thành phần.
-        {analysis.unresolved_count > 0 &&
-          ' Thành phần không nhận ra có thể do gõ sai, tên không theo chuẩn INCI, hoặc là chất SkinWise chưa biết.'}
-      </p>
-      {misspelledActives.length > 0 && (
-        <p className="mt-2 rounded-md bg-amber-50 p-2 text-xs text-amber-900 ring-1 ring-amber-200">
-          {misspelledActives.map((i) => `“${i.raw_name}”`).join(', ')} không có trong danh sách, nhưng gần giống tên
-          hoạt chất. Nếu gõ sai, hãy bấm vào tên gợi ý bên dưới để sửa; SkinWise không tự sửa và chưa tính chất này
-          khi kiểm tra.
+      <div>
+        <p className="font-semibold">Hoạt chất nhận ra</p>
+        <div className="mt-1.5">
+          <GroupChips codes={analysis.groups} empty="Không có hoạt chất nào trong danh sách SkinWise theo dõi." />
+        </div>
+        <p className="mt-2 text-xs leading-relaxed text-ink-mute">
+          Nhận ra {analysis.ingredients.length - analysis.unresolved_count}/{analysis.ingredients.length} thành phần.
+          {analysis.unresolved_count > 0 &&
+            ' Thành phần không nhận ra có thể do gõ sai, tên không theo chuẩn INCI, hoặc là chất SkinWise chưa biết.'}
         </p>
-      )}
-      <div className="mt-2">
-        <IngredientList
-          ingredients={analysis.ingredients}
-          onePercentMarker={analysis.one_percent_marker}
-          onSuggest={onSuggest}
-        />
       </div>
+      {misspelledActives.length > 0 && (
+        <DataNote title="Có thể có hoạt chất bị gõ sai">
+          {misspelledActives.map((i) => `“${i.raw_name}”`).join(', ')} không có trong danh sách, nhưng gần giống tên
+          hoạt chất. Nếu gõ sai, hãy bấm vào tên gợi ý bên dưới để sửa; SkinWise không tự sửa và chưa tính chất này khi
+          kiểm tra.
+        </DataNote>
+      )}
+      <IngredientList
+        ingredients={analysis.ingredients}
+        onePercentMarker={analysis.one_percent_marker}
+        onSuggest={onSuggest}
+      />
     </div>
   )
 }

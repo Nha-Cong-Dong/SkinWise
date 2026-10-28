@@ -2,7 +2,15 @@
 // key; entries are ordered, and an entry's step is its position within its session.
 
 import { useEffect, useState } from 'react'
-import { api, type RoutineCheckRequest, type RoutineCheckResponse, type Session, type TextNotice } from './api'
+import {
+  api,
+  type InciAnalysis,
+  type RoutineCheckRequest,
+  type RoutineCheckResponse,
+  type Session,
+  type TextNotice,
+  type Warning,
+} from './api'
 import { ALL_DAYS } from './labels'
 
 export type MyProduct = {
@@ -14,13 +22,40 @@ export type MyProduct = {
   groups: string[]
   /** Notices from analysing a pasted list (missing in routines saved before they existed). */
   notices?: TextNotice[]
+  /** Where a list not typed or pasted by the user came from. Shown only: checks treat it as pasted. */
+  origin?: ProductOrigin
 }
+
+/** A list copied off a label photo by an AI model. `confirmed`: the user checked it against the package. */
+export type ProductOrigin = { kind: 'photo'; confirmed: boolean }
 
 const INFORMATIONAL: TextNotice['code'][] = ['vietnamese_names', 'drug_facts']
 
 /** The pasted list may not be the whole label, so the check may miss warnings. */
 export function maybeIncomplete(product: MyProduct): boolean {
   return (product.notices ?? []).some((n) => !INFORMATIONAL.includes(n.code))
+}
+
+/**
+ * What the "add product" dialog keeps while it is closed. The dialog unmounts its content, and a
+ * pasted list must survive closing it (Esc, a stray click) or switching tabs.
+ */
+export type AddDraft = {
+  tab: 'search' | 'paste'
+  name: string
+  text: string
+  analysis: InciAnalysis | null
+  origin: ProductOrigin | null // the pasted list was read off a photo
+  photo: string | null // the label photo as a data URL, to compare with; never stored
+}
+
+export const EMPTY_ADD_DRAFT: AddDraft = {
+  tab: 'search',
+  name: '',
+  text: '',
+  analysis: null,
+  origin: null,
+  photo: null,
 }
 
 export type Entry = { id: string; productKey: string; session: Session; days: number[] }
@@ -30,7 +65,7 @@ export type Routine = { products: MyProduct[]; entries: Entry[] }
 const STORAGE_KEY = 'skinwise.routine.v1'
 const EMPTY: Routine = { products: [], entries: [] }
 
-function newId(): string {
+export function newId(): string {
   return globalThis.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}${Math.random().toString(36).slice(2)}`
 }
 
@@ -92,6 +127,10 @@ export function useRoutine() {
       setRoutine((r) => (r.products.some((p) => p.key === key) ? r : { ...r, products: [...r.products, { ...product, key }] }))
       return key
     },
+    /** Replace the whole routine (opening a file or a shared link, after the user agreed). */
+    replace(next: Routine) {
+      setRoutine(next)
+    },
     removeProduct(key: string) {
       setRoutine((r) => ({
         products: r.products.filter((p) => p.key !== key),
@@ -141,6 +180,19 @@ export type CheckState =
   | { kind: 'loading'; previous: RoutineCheckResponse | null }
   | { kind: 'done'; result: RoutineCheckResponse }
   | { kind: 'error'; message: string }
+
+/** The result to show: the last finished check, kept while a newer one runs. */
+export function currentResult(state: CheckState): RoutineCheckResponse | null {
+  return state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
+}
+
+/**
+ * A "Lưu ý khi dùng" note is about one product's active group, not a combination, so it does
+ * not mark products on the schedule or count among the warnings.
+ */
+export function isUsageNote(w: Warning): boolean {
+  return w.rule.kind === 'usage'
+}
 
 /** Re-check the routine whenever it changes (debounced; a newer check cancels an older one). */
 export function useRoutineCheck(routine: Routine): CheckState {

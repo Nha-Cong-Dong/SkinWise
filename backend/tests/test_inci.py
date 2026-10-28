@@ -99,6 +99,25 @@ def test_marketing_sentences_and_short_lists_are_flagged() -> None:
     assert read_label_text(text).notices == ["long_entries", "few_entries"]
 
 
+def test_names_printed_with_an_alternate_name_are_not_sentences() -> None:
+    text = (
+        "Aqua, Glycerin, Coix Lacryma-Jobi Ma-yuen Seed Extract (Coix Seed Extract), "
+        "Scutellaria Baicalensis Extract / Scutellaria Baicalensis Root Extract, Niacinamide, "
+        "Panthenol, Phenoxyethanol"
+    )
+    assert read_label_text(text).notices == []
+
+
+def test_slogans_with_slashes_or_parentheses_are_still_sentences() -> None:
+    base = "Aqua, Glycerin, Niacinamide, Panthenol, "
+    for slogan in [
+        "Dermatologist tested / suitable for all skin types / fragrance free",
+        "Clinically proven to brighten skin (in 4 weeks)",
+        "Phù hợp cho mọi loại da (kể cả da nhạy cảm)",
+    ]:
+        assert read_label_text(base + slogan).notices == ["long_entries"], slogan
+
+
 def test_seeded_full_lists_raise_no_notice() -> None:
     for product in load_toml("products.toml")["product"]:
         assert read_label_text(product["ingredients"]).notices == [], product["slug"]

@@ -1,5 +1,7 @@
 """Download the EU ingredient lists and write them to data/ (rerun when a new glossary is
 published): uv run python -m scripts.import_eu_lists
+Only the fragrance allergens, after updating ANNEX_III_CELEX to a newer consolidated text:
+uv run python -m scripts.import_eu_lists allergens
 
 Fetches the Official Journal texts as XHTML from the EU Publications Office (CELLAR), the
 channel meant for automated reuse; eur-lex.europa.eu itself serves scripts a bot challenge.
@@ -7,19 +9,25 @@ Writes:
   data/eu_glossary.txt          one common ingredient name per line (Decision (EU) 2025/1175)
   data/eu_inventory_2006.tsv    INCI name <TAB> functions joined by "|" (Decision 2006/257/EC)
   data/eu_functions_2006.tsv    function <TAB> official definition (same decision)
+  data/eu_fragrance_allergens.tsv
+                                Annex III entry <TAB> label names joined by "|" (consolidated
+                                Regulation 1223/2009; update ANNEX_III_CELEX first)
 """
 
+import sys
 import urllib.request
 from datetime import date
 
 from app.eu_lists import (
+    ANNEX_III_CELEX,
     GLOSSARY_CELEX,
     INVENTORY_CELEX,
+    parse_fragrance_allergens,
     parse_function_definitions,
     parse_glossary,
     parse_inventory,
 )
-from app.seed import DATA_DIR
+from app.seed import DATA_DIR, data_lines
 from app.sources import CELLAR_URL, USER_AGENT
 
 
@@ -64,11 +72,30 @@ def main() -> None:
         f.write(header(INVENTORY_CELEX, title))
         f.writelines(f"{code}\t{text}\n" for code, text in definitions.items())
 
+    allergens = write_fragrance_allergens(glossary)
     print(
         f"Wrote {len(glossary)} glossary names, {len(inventory)} inventory entries, "
-        f"{len(definitions)} function definitions."
+        f"{len(definitions)} function definitions, {len(allergens)} fragrance allergens."
     )
 
 
+def write_fragrance_allergens(glossary: list[str]) -> dict[str, list[str]]:
+    allergens = parse_fragrance_allergens(fetch_xhtml(ANNEX_III_CELEX), glossary)
+    title = "EU fragrance allergens to be named on the label (Annex III, Regulation 1223/2009)"
+    with (DATA_DIR / "eu_fragrance_allergens.tsv").open("w", encoding="utf-8", newline="\n") as f:
+        f.write(header(ANNEX_III_CELEX, title))
+        f.writelines(f"{ref}\t{'|'.join(names)}\n" for ref, names in allergens.items())
+    return allergens
+
+
 if __name__ == "__main__":
-    main()
+    args = sys.argv[1:]
+    if args == ["allergens"]:
+        # Only the allergens, against the glossary already in data/.
+        allergens = write_fragrance_allergens(data_lines("eu_glossary.txt"))
+        print(f"Wrote {len(allergens)} fragrance allergens.")
+    elif not args:
+        main()
+    else:
+        # A typo must not re-download and overwrite every data/eu_* file.
+        sys.exit("usage: python -m scripts.import_eu_lists [allergens]")

@@ -12,3 +12,7 @@ dist/
 # Local config
 .env
 .claude/settings.local.json
+
+# Intermediate files of the agent harness (.claude/skills/skinwise-orchestrator)
+_workspace/
+_workspace_*/

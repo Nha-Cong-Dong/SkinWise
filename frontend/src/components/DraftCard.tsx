@@ -12,19 +12,15 @@ const MAX_SOURCES = 5
 export function DraftForm({
   client,
   guard,
-  questionId,
-  initialGroups,
   onCreated,
 }: {
   client: ReviewApi
   guard: Guard
-  questionId: number | null
-  initialGroups: string[]
   onCreated: (draft: Draft) => void
 }) {
   const groups = useContext(GroupsContext)
-  const [groupA, setGroupA] = useState(initialGroups[0] ?? '')
-  const [groupB, setGroupB] = useState(initialGroups[1] ?? '')
+  const [groupA, setGroupA] = useState('')
+  const [groupB, setGroupB] = useState('')
   const [urls, setUrls] = useState('')
   const [instructions, setInstructions] = useState('')
   const [state, setState] = useState<'idle' | 'sending' | { error: string }>('idle')
@@ -41,7 +37,6 @@ export function DraftForm({
     setState('sending')
     guard(
       client.createDraft({
-        question_id: questionId,
         group_a: groupA,
         group_b: groupB,
         source_urls: sourceUrls,
@@ -79,7 +74,7 @@ export function DraftForm({
   return (
     <form onSubmit={submit} className="space-y-3 rounded-lg bg-slate-50 p-4 ring-1 ring-slate-200">
       <h3 className="font-semibold text-slate-900">
-        AI soạn nháp thẻ myth{questionId !== null && ` cho câu hỏi #${questionId}`}
+        AI soạn nháp thẻ myth
       </h3>
       <p className="text-sm text-slate-600">
         AI chỉ đọc các trang bạn đưa và phải trích nguyên văn; máy chủ tìm lại từng đoạn trích trên trang. Chọn nguồn uy
@@ -164,7 +159,6 @@ export function DraftCard({
         <span className={`rounded px-2 py-0.5 font-semibold ${severity.badge}`}>{severity.label}</span>
         <span className="text-slate-500">
           #{d.id} · {d.created_by} · {new Date(d.created_at).toLocaleString('vi-VN')} · {d.model}
-          {d.question_id !== null && ` · câu hỏi #${d.question_id}`}
           {d.status === 'discarded' && ' · đã bỏ'}
         </span>
       </div>
@@ -224,7 +218,6 @@ export function DraftCard({
           <li>
             Chạy <code>uv run python -m scripts.verify_quotes {d.key}</code> rồi <code>uv run python -m scripts.seed</code>.
           </li>
-          <li>Quay lại câu hỏi, gắn luật vừa bật và đổi trạng thái thành “Đã trả lời”.</li>
         </ol>
         <pre className="mt-2 max-h-96 overflow-auto rounded-md bg-slate-900 p-3 text-xs whitespace-pre-wrap text-slate-100">
           {d.toml}

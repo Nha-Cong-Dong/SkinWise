@@ -9,11 +9,12 @@
 #
 # key: khoá ổn định của luật (không đổi sau khi đã seed).
 # kind: conflict (hai nhóm khác nhau) | duplicate (cùng một nhóm ở nhiều sản phẩm) | myth (kết hợp hay bị
-#       đồn là xấu nhưng thực ra ổn) | profile (chưa dùng trong MVP).
+#       đồn là xấu nhưng thực ra ổn) | usage (lưu ý khi dùng một nhóm, vd. nhạy nắng; không cần cặp sản phẩm)
+#       | profile (chưa dùng trong MVP).
 # severity: avoid | caution | info | safe.
-# scope: same_step | same_session (cùng buổi sáng/tối) | same_day.
+# scope: same_step | same_session (cùng buổi sáng/tối) | same_day; luật usage dùng routine (cả routine).
 # evidence_level: high | moderate | low | expert_opinion.
-# group_a, group_b: mã trong functional_groups.toml; duplicate chỉ dùng group_a.
+# group_a, group_b: mã trong functional_groups.toml; duplicate và usage chỉ dùng group_a.
 # INCI không có nồng độ, nên lời giải thích dùng "có thể".
 #
 # Mỗi nguồn khai báo một lần ở [[source]] (khoá là url), luật tham chiếu bằng url.
@@ -297,6 +298,190 @@ sources = [
 ]
 
 # ======================================================================================
+# Lưu ý khi dùng (kind = "usage", một nhóm hoạt chất, không cần cặp sản phẩm). Soạn 26/10; người duyệt (Vân Anh)
+# bật cả bốn ngày 26/10, kể cả BHA ở mức info (thông tin hai chiều, không phải cảnh báo).
+# Nguồn và đoạn trích do Claude tìm, đã kiểm tra nguyên văn trên trang; người duyệt vẫn phải tự đọc nguồn.
+# Lời giải thích là bản nháp do Claude soạn; 26/10 đã đối chiếu lại từng ý với ngữ cảnh trên trang nguồn và sửa
+# chỗ nói quá nguồn. Đề xuất: bật AHA, benzoyl peroxide, retinoid sau khi duyệt; BHA chỉ là thông tin hai chiều
+# (mức info), không bật dạng cảnh báo (xem ghi chú của luật đó).
+# Chưa có luật cho PHA (không nguồn nào nói PHA làm da nhạy nắng) hay EXFOLIANT_ACID (bằng chứng khác nhau
+# giữa AHA, BHA, PHA).
+# ======================================================================================
+
+# Nguồn: FDA — Hướng dẫn ghi nhãn mỹ phẩm chứa AHA (2005) và trang thông tin về AHA: các nghiên cứu lâm sàng trên
+#   người cho thấy AHA bôi da làm da nhạy cảm hơn với tia UV trong thời gian dùng và đến một tuần sau khi ngưng
+#   ("up to a week"); FDA khuyến nghị nhãn "Sunburn Alert" (dùng kem chống nắng, mặc quần áo che chắn, hạn chế ra nắng
+#   trong thời gian dùng và một tuần sau đó). Sau 4 tuần, độ nhạy với đỏ da do UV tăng 18%. Kornhauser et al., Clin
+#   Cosmet Investig Dermatol 2010 (PMC3047947, tác giả từ FDA/NIH): tác dụng làm nhạy cảm với nắng của glycolic acid là
+#   nhỏ nhưng có thể quan trọng vì nhiều người dùng lâu dài.
+# Lưu ý người duyệt (đã đối chiếu lại trên trang nguồn 26/10):
+#   - Các nghiên cứu chỉ dùng glycolic acid; FDA cho rằng các AHA khác "may be the same" (suy rộng, chưa đo trực tiếp).
+#   - Không có ngưỡng nồng độ: FDA khuyến nghị nhãn cho MỌI mỹ phẩm có AHA là thành phần, vì "It is the presence of
+#     AHAs in a product, rather than the claims made for certain uses, that may increase the possibility of sunburn."
+#     Kết luận của CIR mà FDA trích (glycolic, lactic acid an toàn ở ≤ 10%, pH ≥ 3,5 khi có hướng dẫn chống nắng hằng
+#     ngày) là điều kiện an toàn, không phải ngưỡng mà dưới đó da hết nhạy nắng.
+#   - FDA không khuyến nghị nhãn khi AHA chỉ là thành phần "incidental". Theo định nghĩa FDA trích (21 CFR 701.3(l)),
+#     thành phần incidental có lượng không đáng kể, không có tác dụng và KHÔNG bắt buộc ghi trên nhãn; nên AHA đã có
+#     trong bảng thành phần thường không thuộc trường hợp này.
+#   - Trang FDA kể cả citric acid là AHA, còn SkinWise cố ý không xếp citric acid vào nhóm AHA (quyết định 22/10), nên
+#     sản phẩm chỉ có citric acid không nhận ghi chú này. Ví dụ có thật: toner Some By Mi "AHA-BHA-PHA" quảng cáo có
+#     AHA, nhưng AHA duy nhất trong bảng thành phần là Citric Acid (toner này vẫn có BHA, PHA).
+#   - Hướng dẫn áp dụng cho cả sản phẩm để trên da lẫn sản phẩm "discontinuous use" (để dưới 1 giờ rồi rửa sạch),
+#     nên ghi chú cũng đúng với sữa rửa mặt chứa AHA.
+#   - Hướng dẫn không áp dụng cho sản phẩm dùng ở vùng da không ra nắng, và sản phẩm vừa là thuốc vừa là mỹ phẩm có ghi
+#     chứa kem chống nắng; SkinWise không phân biệt được hai trường hợp này (ghi chú vẫn hiện, lời khuyên vẫn đúng).
+#   - severity = caution: FDA khuyến nghị một câu cảnh báo trên nhãn kèm việc cần làm (chống nắng).
+#   - evidence_level = moderate: có nghiên cứu có đối chứng trên người do FDA tổng hợp, nhưng chỉ với glycolic acid và
+#     tác dụng nhỏ. Người duyệt có thể nâng lên high nếu coi kết luận của FDA là đủ.
+[[rule]]
+key = "aha-sun-sensitivity"
+kind = "usage"
+severity = "caution"
+scope = "routine"
+evidence_level = "moderate"
+group_a = "AHA"
+title_vi = "AHA có thể làm da nhạy cảm hơn với ánh nắng"
+explanation_vi = "Theo Cục Quản lý Thực phẩm và Dược phẩm Mỹ (FDA), mỹ phẩm chứa AHA (phổ biến nhất là glycolic acid và lactic acid) có thể làm da nhạy cảm hơn với ánh nắng và dễ bị cháy nắng hơn, trong thời gian dùng và đến một tuần sau khi ngưng. Các nghiên cứu FDA dựa vào dùng glycolic acid; FDA cho rằng các AHA khác có thể cũng vậy. Trong các nghiên cứu này, tác dụng nhỏ và hết sau khi ngưng dùng. FDA khuyến nghị nhãn sản phẩm chứa AHA ghi lời khuyên dùng kem chống nắng, mặc quần áo che chắn và hạn chế ra nắng trong thời gian dùng và một tuần sau đó, kể cả với sản phẩm chỉ để trên da dưới một giờ rồi rửa sạch."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
+sources = [
+  { url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids", quote = "FDA has considered evidence that suggests that topically applied cosmetic products containing alpha hydroxy acids (AHAs) as ingredients may increase the sensitivity of skin to the sun while the products are used and for up to a week after use is stopped, and that this increased skin sensitivity to the sun may increase the possibility of sunburn." },
+  { url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids", quote = "Although the studies investigated the effects of glycolic acid, FDA believes that the effects of other types of AHAs used in cosmetic products may be the same." },
+  { url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids", quote = "The product may be a \"leave on\" product that is intended to remain on the skin or mucous membrane or it may be a \"discontinuous use\" product that is intended to be left on the skin for a short period of time (less than an hour) followed by thorough rinsing." },
+  { url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids", quote = "It is the presence of AHAs in a product, rather than the claims made for certain uses, that may increase the possibility of sunburn." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/alpha-hydroxy-acids", quote = "Sunburn Alert: This product contains an alpha hydroxy acid (AHA) that may increase your skin's sensitivity to the sun and particularly the possibility of sunburn. Use a sunscreen, wear protective clothing, and limit sun exposure while using this product and for a week afterwards." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/alpha-hydroxy-acids", quote = "After four weeks of AHA application, volunteers' sensitivity to skin reddening produced by UV increased by 18 percent." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/alpha-hydroxy-acids", quote = "However, the studies also indicated that this increase in sensitivity is reversible and does not last long after discontinuing use of the AHA cream." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/alpha-hydroxy-acids", quote = "The most common AHAs in cosmetic products are glycolic acid and lactic acid. Among others are citric acid, hydroxycaprylic acid, and hydroxycapric acid." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3047947/", quote = "The photosensitizing effects of glycolic acid were small, but they may be an important factor for public health" },
+]
+
+# Nguồn: FDA — quy định về thuốc trị mụn không kê đơn (21 CFR 333.350, bản 2025 trên govinfo): nhãn mọi sản phẩm
+#   benzoyl peroxide phải ghi "avoid unnecessary sun exposure and use a sunscreen" và hướng dẫn "if going outside,
+#   apply sunscreen after using this product", kể cả sản phẩm bôi rồi rửa đi (xà phòng, mặt nạ). Quy tắc cuối cùng năm
+#   2010 (Federal Register 75 FR 9767): nghiên cứu cho thấy benzoyl peroxide 5% và 10% bôi lặp lại có thể làm giảm
+#   khả năng chịu tia UV của da (dễ cháy nắng hơn); kích ứng do benzoyl peroxide có thể nặng hơn khi ra nắng; FDA từ
+#   chối miễn cảnh báo cho sữa rửa mặt và xà phòng. Nhãn CeraVe Acne Foaming Cleanser (sữa rửa mặt) có đúng câu này.
+# Lưu ý người duyệt (đã đối chiếu lại trên trang nguồn 26/10):
+#   - Quy định áp dụng cho THUỐC trị mụn không kê đơn chứa benzoyl peroxide 2,5–10% (21 CFR 333.310(a)). Câu cảnh báo
+#     bắt buộc với MỌI sản phẩm đó, không phụ thuộc nồng độ ("This warning is required for all OTC topical acne drug
+#     products containing benzoyl peroxide"); nghiên cứu FDA trích dùng 5% và 10%. Bảng INCI không cho biết nồng độ.
+#   - Khi soạn quy tắc 2010, hai ý kiến gửi FDA cho rằng không có bằng chứng nhạy nắng ở người (Refs 16, 17). FDA vẫn
+#     giữ cảnh báo, viện dẫn dữ liệu mới (Refs 19, 20, chưa đọc bản gốc) và lý do sản phẩm thường dùng hằng ngày trên
+#     vùng da ra nắng như mặt. Cùng quy tắc ghi benzoyl peroxide KHÔNG gây ung thư khi chiếu sáng ở động vật ("not a
+#     photocarcinogen in animals").
+#   - Quy tắc 2010 cũng nói các cảnh báo này "not required for other acne active ingredients" (salicylic acid không có).
+#   - Bài Frontiers in Pediatrics 2025 (PMC12318945) nêu thêm lý do khác (benzoyl peroxide tạo benzene khi gặp UV/nhiệt);
+#     không đưa vào đây vì đó là vấn đề bảo quản sản phẩm, không phải độ nhạy của da.
+#   - severity = caution: câu cảnh báo bắt buộc trên nhãn thuốc.
+#   - evidence_level = moderate: kết luận của FDA trong văn bản pháp quy, có nêu nghiên cứu. Nếu muốn nhất quán với các
+#     luật dựa trên nhãn khác thì hạ xuống expert_opinion.
+[[rule]]
+key = "benzoyl-peroxide-sun-protection"
+kind = "usage"
+severity = "caution"
+scope = "routine"
+evidence_level = "moderate"
+group_a = "BENZOYL_PEROXIDE"
+title_vi = "Benzoyl peroxide có thể làm da dễ cháy nắng hơn"
+explanation_vi = "Theo quy định của FDA Mỹ, nhãn mọi thuốc trị mụn không kê đơn chứa benzoyl peroxide phải ghi: tránh ra nắng khi không cần thiết và dùng kem chống nắng; nếu ra ngoài, thoa kem chống nắng sau khi dùng sản phẩm. FDA giải thích rằng các nghiên cứu cho thấy benzoyl peroxide 5% và 10% dùng lặp lại có thể làm da chịu tia UV kém hơn (dễ cháy nắng hơn), và kích ứng do benzoyl peroxide có thể nặng hơn khi ra nắng. Cảnh báo này áp dụng cho cả sản phẩm rửa trôi (như sữa rửa mặt) lẫn sản phẩm để trên da."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
+sources = [
+  { url = "https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml", quote = "avoid unnecessary sun exposure and use a sunscreen" },
+  { url = "https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml", quote = "if going outside, apply sunscreen after using this product." },
+  { url = "https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml", quote = "Products, such as soaps and masks, may be applied and removed and should include appropriate directions. All products containing benzoyl peroxide should include the directions in paragraph (d)(2)(ii) of this section." },
+  { url = "https://www.govinfo.gov/content/pkg/FR-2010-03-04/html/2010-4424.htm", quote = "Studies have also shown that 5 and 10 percent benzoyl peroxide preparations can decrease the skin's tolerance to UV radiation (i.e., increase sunburn) after repeated applications" },
+  { url = "https://www.govinfo.gov/content/pkg/FR-2010-03-04/html/2010-4424.htm", quote = "In addition, benzoyl peroxide can cause skin irritation, which may worsen with sun exposure." },
+  { url = "https://www.govinfo.gov/content/pkg/FR-2010-03-04/html/2010-4424.htm", quote = "applies to all OTC topical acne drug products containing benzoyl peroxide whether they are washed off or left on." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "avoid unnecessary sun exposure and use a sunscreen" },
+]
+
+# Nguồn: nhãn thuốc FDA (DailyMed): Retin-A Micro (tretinoin) — "can cause photosensitivity", tránh/giảm tiếp xúc tia
+#   UV kể cả đèn tắm nắng; adapalene cream (kê đơn) — giảm tiếp xúc nắng, dùng kem chống nắng và quần áo che chắn;
+#   Differin Gel (adapalene 0,1% không kê đơn, Drug Facts) — hạn chế nắng, kể cả giường tắm nắng, dùng kem chống nắng
+#   khi ra ngoài; Tazorac cream (tazarotene) — "heightened burning susceptibility". AAD (Retinoid or retinol?): retinol
+#   là một loại retinoid; "retinoids can make skin more sensitive to sun", bác sĩ da liễu khuyên dùng buổi tối và
+#   chống nắng ban ngày. AAD (Acne: Diagnosis and treatment): bác sĩ thường khuyên bôi retinoid buổi tối. DermNet
+#   (Topical retinoids): "Topical retinoids can cause photosensitivity"; retinol, retinaldehyde có trong mỹ phẩm.
+# Lưu ý người duyệt (đã đối chiếu lại trên trang nguồn 26/10):
+#   - Nhãn FDA chỉ áp dụng cho retinoid là THUỐC (tretinoin, adapalene, tazarotene). Với retinol/retinal/retinyl ester
+#     trong mỹ phẩm, chỉ có AAD (lời khuyên của MỘT bác sĩ da liễu, Tina Alster, trong bài viết của AAD) và DermNet nói
+#     chung về "topical retinoids"; không tìm được nghiên cứu đo riêng retinol mỹ phẩm và độ nhạy với nắng. Không nguồn
+#     nào nói về hydroxypinacolone retinoate.
+#   - Mỗi nhãn nói khác nhau, lời giải thích giữ đúng từng nhãn: tretinoin "can cause photosensitivity"; tazarotene
+#     "heightened burning susceptibility" (cùng nhãn ghi tazarotene không gây phototoxicity hay photoallergy trong thử
+#     nghiệm trên người, tức là dễ bỏng nắng hơn chứ không phải phản ứng quang độc); adapalene (kê đơn và không kê đơn)
+#     chỉ khuyên hạn chế nắng, không nói thuốc gây nhạy cảm với ánh sáng.
+#   - Không nêu chỉ số SPF (nhãn tretinoin nói SPF ≥ 15, AAD nói SPF 30) để khỏi chọn giữa hai nguồn.
+#   - severity = caution: nằm trong mục Warnings and Precautions của nhãn thuốc.
+#   - evidence_level = expert_opinion: nhãn thuốc + tổ chức chuyên môn, như các luật dựa trên nhãn khác.
+[[rule]]
+key = "retinoid-sun-sensitivity"
+kind = "usage"
+severity = "caution"
+scope = "routine"
+evidence_level = "expert_opinion"
+group_a = "RETINOID"
+title_vi = "Retinoid có thể làm da nhạy cảm hơn với ánh nắng"
+explanation_vi = "Nhãn thuốc tretinoin (theo quy định của FDA Mỹ) ghi thuốc có thể gây nhạy cảm với ánh sáng; nhãn tazarotene ghi da dễ bị bỏng nắng hơn khi dùng thuốc. Nhãn tretinoin, tazarotene và adapalene (kê đơn và không kê đơn) đều khuyên hạn chế ánh nắng, kể cả đèn hoặc giường tắm nắng, và dùng kem chống nắng khi ra nắng; nhãn thuốc kê đơn khuyên thêm quần áo che chắn. Với retinoid trong mỹ phẩm: Viện Hàn lâm Da liễu Hoa Kỳ (AAD) gọi retinol là một loại retinoid; DermNet xếp retinol và retinaldehyde trong mỹ phẩm vào nhóm retinoid bôi ngoài da và cho biết retinoid bôi ngoài da có thể gây nhạy cảm với ánh sáng. Bác sĩ da liễu thường khuyên bôi retinoid vào buổi tối; một bác sĩ da liễu trong bài viết của AAD khuyên luôn chống nắng ban ngày khi dùng retinoid. SkinWise chưa tìm thấy nghiên cứu đo riêng độ nhạy nắng do retinol trong mỹ phẩm."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
+sources = [
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "RETIN-A MICRO can cause photosensitivity." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Advise patients to avoid or minimize unnecessary exposure to ultraviolet (UV) light, including sunlight and sunlamps, while using RETIN-A MICRO." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=08ab7e0c-1437-455f-815c-98904d96a289", quote = "Advise patients to use sunscreen (SPF ≥15) and sun-protective clothing if UV light exposure cannot be avoided." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=276f7cce-5f54-40f8-8321-9192d0e52a73", quote = "Exposure to sunlight, including sunlamps, should be minimized during use of adapalene." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=276f7cce-5f54-40f8-8321-9192d0e52a73", quote = "Use of sunscreen products and protective clothing over treated areas is recommended when exposure cannot be avoided." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0739d631-171b-42a8-bd55-0022b8df2d8a", quote = "limit sun exposure, including light from tanning beds, and use sunscreen when going outdoors" },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=021744d1-a6d7-4ad6-99c2-7187c24e64c6", quote = "Because of heightened burning susceptibility, exposure to sunlight (including sunlamps) should be avoided unless deemed medically necessary, and in such cases, exposure should be minimized during the use of TAZORAC Cream." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=021744d1-a6d7-4ad6-99c2-7187c24e64c6", quote = "Patients must be warned to use sunscreens and protective clothing when using TAZORAC Cream." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Then there's retinol, a type of retinoid that's routinely used to improve uneven skin tone, pigmentation, and texture." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Because retinoids can make skin more sensitive to sun, Dr. Alster advises using it only at night and always using sun protection during the day" },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "For example, dermatologists often recommend applying a topical retinoid in the evening." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Topical retinoids can cause photosensitivity" },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Topical retinoids such as retinol and retinaldehyde are commonly added to cosmetics." },
+]
+
+# Nguồn: FDA — trang thông tin về BHA: "Use sun protection if you use a BHA product", là biện pháp thận trọng "cho đến
+#   khi các đánh giá an toàn hoàn tất". NGƯỢC CHIỀU: Kornhauser et al., J Dermatol Sci 2009 (PMC2791365, nghiên cứu
+#   ngắn hạn trên người của các nhà khoa học FDA và NIH): salicylic acid 2% không làm thay đổi đỏ da, tổn thương DNA hay
+#   tế bào cháy nắng, trong khi glycolic acid 10% có; Kornhauser et al. 2010 (PMC3047947): một số nghiên cứu thực nghiệm
+#   và lâm sàng thấy salicylic acid bôi da có tác dụng bảo vệ khỏi ánh sáng; trang AHA của FDA: salicylic acid bảo vệ
+#   khỏi ánh sáng ở chuột (nghiên cứu NTP).
+# Lưu ý người duyệt (đã đối chiếu lại trên trang nguồn 26/10): bằng chứng YẾU và NGƯỢC CHIỀU. Trang BHA của FDA ghi
+#   "Content current as of 02/25/2022", tức là SAU cả hai nghiên cứu trên, mà vẫn giữ lời khuyên chống nắng; không nên
+#   nói lời khuyên đó đã lỗi thời. Quy định thuốc trị mụn của FDA chỉ bắt cảnh báo nắng cho benzoyl peroxide ("These
+#   warnings are not required for other acne active ingredients"), không cho salicylic acid. Đề xuất: không bật như
+#   cảnh báo; nếu muốn trả lời câu hỏi hay gặp này thì bật ở mức info với lời giải thích nêu cả hai chiều như dưới đây.
+#   Nhóm BHA của SkinWise còn gồm betaine salicylate, capryloyl salicylic acid: không nguồn nào nói về chúng.
+[[rule]]
+key = "bha-sun-protection"
+kind = "usage"
+severity = "info"
+scope = "routine"
+evidence_level = "low"
+group_a = "BHA"
+title_vi = "BHA (salicylic acid) và ánh nắng: bằng chứng chưa thống nhất"
+explanation_vi = "FDA Mỹ khuyên người dùng mỹ phẩm chứa BHA (phổ biến nhất là salicylic acid) nên chống nắng, như một biện pháp thận trọng cho đến khi các đánh giá an toàn hoàn tất. Một nghiên cứu ngắn hạn trên người (2009) thấy salicylic acid 2% không làm da nhạy cảm hơn với tia UV, trong khi glycolic acid 10% (một AHA) thì có; một bài tổng quan (2010) cho biết một số nghiên cứu thực nghiệm và lâm sàng thấy salicylic acid bôi da có tác dụng bảo vệ da khỏi ánh sáng. Vì bằng chứng chưa thống nhất, SkinWise chỉ ghi đây là thông tin, không phải cảnh báo."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-26
+sources = [
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/beta-hydroxy-acids", quote = "Use sun protection if you use a BHA product." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/beta-hydroxy-acids", quote = "Until these safety assessments are completed, FDA advises that similar precautions be taken for the use of cosmetics containing AHAs and BHAs." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/beta-hydroxy-acids", quote = "Currently, the BHA most commonly used in cosmetics is salicylic acid." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3047947/", quote = "We found that glycolic acid (10%) increased the SSR sensitivity of human skin, whereas SA (2%) did not." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2791365/", quote = "Short-term topical application of glycolic acid in a cosmetic formulation increased the sensitivity of human skin to SSR, while a comparable treatment with salicylic acid did not." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2791365/", quote = "Salicylic acid did not produce significant changes in any of these biomarkers." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3047947/", quote = "Several experimental and clinical studies have found that topically applied SA is photoprotective." },
+  { url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/alpha-hydroxy-acids", quote = "salicyclic acid had a photoprotective effect (protected against the effects of light) in mice" },
+]
+
+# ======================================================================================
 # Nguồn
 # ======================================================================================
 
@@ -383,3 +568,75 @@ url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/"
 title = "A Comprehensive Review of Azelaic Acid Pharmacological Properties, Clinical Applications, and Innovative Topical Formulations"
 publisher = "Pharmaceuticals (MDPI, 2025), via PubMed Central"
 accessed_at = 2026-10-25
+
+[[source]]
+url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/alpha-hydroxy-acids"
+title = "Alpha Hydroxy Acids"
+publisher = "U.S. Food and Drug Administration (FDA)"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://www.fda.gov/regulatory-information/search-fda-guidance-documents/guidance-industry-labeling-cosmetics-containing-alpha-hydroxy-acids"
+title = "Guidance for Industry: Labeling for Cosmetics Containing Alpha Hydroxy Acids (2005)"
+publisher = "U.S. Food and Drug Administration (FDA)"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://www.fda.gov/cosmetics/cosmetic-ingredients/beta-hydroxy-acids"
+title = "Beta Hydroxy Acids"
+publisher = "U.S. Food and Drug Administration (FDA)"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3047947/"
+title = "Applications of hydroxy acids: classification, mechanisms, and photoactivity"
+publisher = "Clinical, Cosmetic and Investigational Dermatology (2010), via PubMed Central"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2791365/"
+title = "The effects of topically applied glycolic acid and salicylic acid on ultraviolet radiation-induced erythema, DNA damage and sunburn cell formation in human skin"
+publisher = "Journal of Dermatological Science (2009), via PubMed Central"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0739d631-171b-42a8-bd55-0022b8df2d8a"
+title = "DIFFERIN (adapalene) gel 0.1% — OTC drug label (Galderma Laboratories, L.P.)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=021744d1-a6d7-4ad6-99c2-7187c24e64c6"
+title = "TAZORAC (tazarotene) cream — prescribing information (Almirall, LLC)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol"
+title = "Retinoid or retinol?"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://www.aad.org/public/diseases/acne/derm-treat/treat"
+title = "Acne: Diagnosis and treatment"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://dermnetnz.org/topics/topical-retinoids"
+title = "Topical retinoids"
+publisher = "DermNet (New Zealand)"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml"
+title = "21 CFR 333.350 — Labeling of acne drug products (Code of Federal Regulations, 2025 edition)"
+publisher = "U.S. Government Publishing Office (govinfo); FDA regulation"
+accessed_at = 2026-10-26
+
+[[source]]
+url = "https://www.govinfo.gov/content/pkg/FR-2010-03-04/html/2010-4424.htm"
+title = "Classification of Benzoyl Peroxide as Safe and Effective and Revision of Labeling to Drug Facts Format; Topical Acne Drug Products for Over-The-Counter Human Use; Final Rule (75 FR 9767, 2010)"
+publisher = "Federal Register, via U.S. Government Publishing Office (govinfo)"
+accessed_at = 2026-10-26

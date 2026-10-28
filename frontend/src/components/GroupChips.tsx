@@ -1,7 +1,14 @@
 import { useContext } from 'react'
 import { GroupsContext, useGroupName } from '../groups'
 
-export function GroupChips({ codes, empty }: { codes: string[]; empty?: string }) {
+type Props = {
+  codes: string[]
+  empty?: string
+  /** `night`: on the evening panel. */
+  tone?: 'day' | 'night'
+}
+
+export function GroupChips({ codes, empty, tone = 'day' }: Props) {
   const groups = useContext(GroupsContext)
   const name = useGroupName()
   // An umbrella group (EXFOLIANT_ACID) adds nothing when a member (AHA, BHA…) is already shown.
@@ -9,7 +16,9 @@ export function GroupChips({ codes, empty }: { codes: string[]; empty?: string }
   const shown = codes.filter((c) => !parents.has(c))
 
   if (shown.length === 0) {
-    return empty ? <span className="text-xs text-slate-400">{empty}</span> : null
+    return empty ? (
+      <span className={`text-xs ${tone === 'night' ? 'text-night-mute' : 'text-ink-mute'}`}>{empty}</span>
+    ) : null
   }
   return (
     <span className="flex flex-wrap gap-1">
@@ -17,7 +26,9 @@ export function GroupChips({ codes, empty }: { codes: string[]; empty?: string }
         <span
           key={code}
           title={groups.get(code)?.description_vi ?? undefined}
-          className="rounded-full bg-rose-50 px-2 py-0.5 text-xs font-medium text-rose-700 ring-1 ring-rose-200"
+          className={`rounded-full px-2 py-px text-xs font-medium ${
+            tone === 'night' ? 'bg-night-raised text-night-text' : 'bg-active text-active-ink'
+          }`}
         >
           {name(code)}
         </span>

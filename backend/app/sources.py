@@ -16,16 +16,34 @@ USER_AGENT = (
     "verifies ingredient lists and quotes against their source)"
 )
 _TAG = re.compile(r"<[^>]+>")
-_SCRIPT = re.compile(r"<(script|style)\b.*?</\1\s*>", re.IGNORECASE | re.DOTALL)
 # Bot-challenge pages (e.g. PMC serves reCAPTCHA after several quick fetches). Treating them
 # as the real page would report a genuine quote as missing.
 _CHALLENGE = re.compile(
     r"grecaptcha|g-recaptcha|_f_combinedSignature|cf-challenge|challenge-platform", re.IGNORECASE
 )
+# The markers also appear on real pages: a reCAPTCHA newsletter form (The Ordinary), the
+# script Cloudflare injects into every page it serves (CeraVe). A challenge page has almost
+# no visible text; the shortest real source page has ~7,000 characters.
+_NON_TEXT = re.compile(r"<(script|style|noscript|template)\b.*?</\1\s*>", re.IGNORECASE | re.DOTALL)
+_CHALLENGE_MAX_TEXT = 2000
 
 
 class BlockedError(Exception):
     """The site answered with a bot-challenge page instead of the content."""
+
+
+def has_challenge_marker(page_text: str) -> bool:
+    """The text still carries a bot-challenge marker (scripts are kept by fetch_text). A long
+    page with one passes as real content, so a quote missing from it may only mean the
+    challenge was not recognised."""
+    return bool(_CHALLENGE.search(page_text))
+
+
+def _is_challenge(page: str) -> bool:
+    if not _CHALLENGE.search(page):
+        return False
+    visible = " ".join(_TAG.sub(" ", _NON_TEXT.sub(" ", page)).split())
+    return len(visible) < _CHALLENGE_MAX_TEXT
 
 
 _JSON_UNICODE = re.compile(r"\\u([0-9a-fA-F]{4})")
@@ -71,7 +89,7 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2, keep_scripts: bo
             if attempt == retries:
                 raise
             time.sleep(3 * (attempt + 1))
-    if _CHALLENGE.search(page):
+    if _is_challenge(page):
         if pmcid := _PMC_ARTICLE.search(url):
             # PMC challenges scripts after a few quick fetches; Europe PMC serves the same
             # open-access article text through an API meant for automated use (not every
@@ -82,7 +100,7 @@ def fetch_text(url: str, timeout: float = 30, retries: int = 2, keep_scripts: bo
                 pass
         raise BlockedError(f"{url} returned a bot-challenge page; retry later")
     if not keep_scripts:
-        page = _SCRIPT.sub(" ", page)
+        page = _NON_TEXT.sub(" ", page)
     page = _JSON_UNICODE.sub(lambda m: chr(int(m.group(1), 16)), page).replace("\\/", "/")
     return html.unescape(_TAG.sub(" ", page))
 

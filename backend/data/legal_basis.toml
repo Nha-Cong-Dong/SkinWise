@@ -1,0 +1,22 @@
+# Căn cứ cho thông tin chỉ để HIỂN THỊ trên thành phần / sản phẩm (không bao giờ tạo cảnh báo).
+# Mỗi mục: url + các đoạn trích nguyên văn (quotes) trên trang đó; giao diện chỉ nói điều đoạn trích nói.
+# Kiểm tra: uv run python -m scripts.verify_quotes
+
+# Nhãn "chất gây dị ứng hương liệu" trên thành phần. Danh sách chất: eu_fragrance_allergens.tsv (Phụ lục III
+# Quy định 1223/2009, bản hợp nhất; sinh bằng scripts.import_eu_lists). Quy định (EU) 2023/1545 thêm 56 chất
+# vào 24 chất đã có.
+[fragrance_allergens]
+url = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R1545"
+quotes = [
+  "it identified 56 additional fragrance allergens, which have clearly caused allergies in humans",
+  "an obligation to individually label those fragrance allergens should be introduced in Annex III to Regulation (EC) No 1223/2009 when their concentration exceeds 0,001 % in leave-on products and 0,01 % in rinse-off products",
+]
+
+# Loại sản phẩm (products.toml: application = "rinse_off" | "leave_on"). Định nghĩa trong phần mở đầu Phụ lục II–VI
+# của Quy định 1223/2009. Chỉ để hiển thị: engine áp dụng luật như nhau cho hai loại (xem plan/decisions.md).
+[application]
+url = "https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223"
+quotes = [
+  "'Rinse-off product' means a cosmetic product which is intended to be removed after application on the skin, the hair or the mucous membranes",
+  "'Leave-on product' means a cosmetic product which is intended to stay in prolonged contact with the skin, the hair or the mucous membranes",
+]

@@ -11,6 +11,8 @@ export default defineConfig({
       '/api': {
         target: 'http://127.0.0.1:8000',
         rewrite: (path) => path.replace(/^\/api/, ''),
+        // Send X-Forwarded-For so the backend's per-IP limits see the browser, not this proxy.
+        xfwd: true,
       },
     },
   },

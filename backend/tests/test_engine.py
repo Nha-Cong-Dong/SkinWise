@@ -3,8 +3,9 @@ from app.engine import Occurrence, RoutineItem, Rule, check_routine
 EVERY_DAY = frozenset(range(7))
 MON = frozenset({0})
 
-RETINOL, GLYCOLIC, SALICYLIC, VIT_C, NIACINAMIDE, MOISTURIZER = 1, 2, 3, 4, 5, 6
+RETINOL, GLYCOLIC, SALICYLIC, VIT_C, NIACINAMIDE, MOISTURIZER, LACTIC = 1, 2, 3, 4, 5, 6, 7
 GROUPS = {
+    LACTIC: {"AHA", "EXFOLIANT_ACID"},
     RETINOL: {"RETINOID"},
     GLYCOLIC: {"AHA", "EXFOLIANT_ACID"},
     SALICYLIC: {"BHA", "EXFOLIANT_ACID"},
@@ -118,4 +119,30 @@ def test_sorted_by_severity_then_rule() -> None:
         "caution",
         "info",
         "info",
+    ]
+
+
+AHA_SUN = rule(10, "usage", "routine", "AHA")
+
+
+def test_usage_rule_lists_every_product_with_the_group_and_when_it_is_used() -> None:
+    routine = [item(GLYCOLIC, "AM", MON), item(LACTIC, "PM", frozenset({2})), item(RETINOL)]
+    (warning,) = check_routine(routine, GROUPS, [AHA_SUN])
+    assert warning.product_ids == (GLYCOLIC, LACTIC)
+    assert warning.occurrences == [Occurrence(0, "AM"), Occurrence(2, "PM")]
+
+
+def test_usage_rule_needs_one_product_with_the_group_not_a_pair() -> None:
+    assert keys(check_routine([item(GLYCOLIC)], GROUPS, [AHA_SUN])) == [("rule-10", (GLYCOLIC,))]
+    assert check_routine([item(RETINOL), item(SALICYLIC)], GROUPS, [AHA_SUN]) == []
+
+
+def test_usage_rules_sort_by_severity_after_pair_rules_of_the_same_severity() -> None:
+    sun_caution = rule(0, "usage", "routine", "RETINOID")  # key "rule-0" sorts first by key
+    routine = [item(RETINOL), item(GLYCOLIC)]
+    rules = [sun_caution, RETINOID_ACID_SESSION, RETINOID_ACID_DAY]
+    assert keys(check_routine(routine, GROUPS, rules)) == [
+        ("rule-1", (RETINOL, GLYCOLIC)),  # caution, pair
+        ("rule-0", (RETINOL,)),  # caution, usage
+        ("rule-4", (RETINOL, GLYCOLIC)),  # info
     ]

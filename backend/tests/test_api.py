@@ -1,10 +1,8 @@
-from collections.abc import Iterator
-
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
 
-from app.api import NO_ROUTINE_WARNING_VI, NO_VERIFIED_INFO_VI
+from app.api import NO_COMBINATION_WARNING_VI, NO_ROUTINE_WARNING_VI, NO_VERIFIED_INFO_VI
 
 RETINOL = "the-ordinary-retinol-05-in-squalane"
 BHA = "paulas-choice-skin-perfecting-2-bha-liquid-exfoliant"
@@ -36,8 +34,10 @@ def test_product_search_tolerates_typos_and_case(client: TestClient) -> None:
 
 
 def test_product_search_ignores_vietnamese_diacritics(client: TestClient) -> None:
-    assert search(client, "bí đao")[0] == "cocoon-tinh-chat-bi-dao-n7"
-    assert search(client, "bi dao")[0] == "cocoon-tinh-chat-bi-dao-n7"
+    winter_melon = {"cocoon-tinh-chat-bi-dao-n7", "cocoon-gel-bi-dao-rua-mat"}
+    assert set(search(client, "bí đao")[:2]) == winter_melon
+    assert set(search(client, "bi dao")[:2]) == winter_melon
+    assert search(client, "tinh chat bi dao")[0] == "cocoon-tinh-chat-bi-dao-n7"
 
 
 def test_product_search_without_query_lists_products_with_groups(client: TestClient) -> None:
@@ -61,6 +61,23 @@ def test_product_detail(client: TestClient, ids: dict[str, int]) -> None:
     salicylic = next(i for i in product["ingredients"] if i["raw_name"] == "Salicylic Acid")
     assert salicylic["inci_name"] == "Salicylic Acid"
     assert [i["position"] for i in product["ingredients"]][:3] == [1, 2, 3]
+    assert product["application"] == "leave_on"
+
+
+def test_products_say_rinse_off_or_leave_on(client: TestClient) -> None:
+    products = {p["slug"]: p for p in client.get("/products").json()}
+    assert products["cerave-renewing-sa-cleanser"]["application"] == "rinse_off"
+    assert products[LOTION]["application"] == "leave_on"
+
+
+def test_analyze_marks_fragrance_allergens(client: TestClient) -> None:
+    text = "Aqua, Linalool, Citrus Aurantium Dulcis (Orange) Peel Oil, Retinol, Parfum"
+    body = client.post("/inci/analyze", json={"text": text}).json()
+    # Orange peel oil is listed by its name without the parenthesis.
+    assert [i["fragrance_allergen"] for i in body["ingredients"]] == [
+        False, True, True, False, False
+    ]  # fmt: skip
+    assert body["groups"] == ["RETINOID"]  # never an active, never a warning
 
 
 def test_unknown_product_is_404(client: TestClient) -> None:
@@ -82,6 +99,7 @@ def test_analyze_inci(client: TestClient) -> None:
         "eu_name": "CITRIC ACID", "functions": ["BUFFERING", "CHELATING"], "known": True,
         "common_name_of": [], "common_name_note": None, "declared_concentration": None,
         "at_most_one_percent": False, "suggestions": [], "may_contain": False,
+        "fragrance_allergen": False,
     }  # fmt: skip
     aqua = body["ingredients"][0]
     assert (aqua["inci_name"], aqua["eu_name"], aqua["known"]) == (None, "AQUA", True)
@@ -116,6 +134,11 @@ def test_analyze_rejects_empty_text(client: TestClient) -> None:
     assert client.post("/inci/analyze", json={"text": "   "}).status_code == 422
 
 
+def pairs(result: dict) -> list[dict]:
+    """Warnings about a combination of products, without the "Lưu ý khi dùng" notes."""
+    return [w for w in result["warnings"] if w["rule"]["kind"] != "usage"]
+
+
 def entry(key: str, session: str = "PM", step: int = 1, days=EVERY_DAY) -> dict:
     return {"product_key": key, "session": session, "step": step, "days": days}
 
@@ -137,6 +160,7 @@ def test_routine_check_warns_with_sources(client: TestClient, ids: dict[str, int
         w for w in result["warnings"] if w["rule"]["key"] == "retinoid-exfoliant-acid-same-session"
     ]
     assert set(warning["product_keys"]) == {"bha", "retinol"}
+    assert {p["key"]: p["application"] for p in result["products"]}["bha"] == "leave_on"
     assert warning["occurrences"] == [{"day": d, "session": "PM"} for d in EVERY_DAY]
     assert all(s["quote"] and s["url"] for s in warning["rule"]["sources"])
     assert {p["key"]: p["groups"] for p in result["products"]}["lotion"] == []
@@ -154,8 +178,12 @@ def test_routine_check_with_pasted_inci(client: TestClient, ids: dict[str, int])
     assert {p["key"]: p["groups"] for p in result["products"]}["mine"] == [
         "AHA", "EXFOLIANT_ACID"
     ]  # fmt: skip
-    (warning,) = result["warnings"]
+    (warning,) = pairs(result)
     assert warning["occurrences"] == [{"day": 2, "session": "PM"}]
+    # The AHA sun note lists the pasted product with every day it is used.
+    (sun,) = [w for w in result["warnings"] if w["rule"]["key"] == "aha-sun-sensitivity"]
+    assert sun["product_keys"] == ["mine"]
+    assert sun["occurrences"] == [{"day": 0, "session": "PM"}, {"day": 2, "session": "PM"}]
 
 
 def test_pasted_product_used_twice_is_not_compared_with_itself(client: TestClient) -> None:
@@ -163,6 +191,20 @@ def test_pasted_product_used_twice_is_not_compared_with_itself(client: TestClien
         "products": [{"key": "mine", "inci": "Retinol, Salicylic Acid"}],
         "items": [entry("mine", step=1), entry("mine", step=3)],
     }
+    result = client.post("/routine/check", json=body).json()
+    assert pairs(result) == []
+    # Usage notes still apply, once per rule, and the combination result says it is empty.
+    assert {w["rule"]["key"]: w["product_keys"] for w in result["warnings"]} == {
+        "retinoid-sun-sensitivity": ["mine"],
+        "bha-sun-protection": ["mine"],
+    }
+    assert result["notice_vi"] == NO_COMBINATION_WARNING_VI
+
+
+def test_routine_without_any_rule_says_no_warning_is_not_safe(
+    client: TestClient, ids: dict[str, int]
+) -> None:
+    body = {"products": [{"key": "lotion", "product_id": ids[LOTION]}], "items": [entry("lotion")]}
     result = client.post("/routine/check", json=body).json()
     assert result["warnings"] == []
     assert result["notice_vi"] == NO_ROUTINE_WARNING_VI
@@ -208,6 +250,12 @@ def test_pair_lookup_counts_a_group_as_its_umbrella(client: TestClient) -> None:
     assert lookup(client, "AHA", "BHA") == ["exfoliant-acid-duplicate-same-session"]
 
 
+def test_pair_lookup_of_one_group_twice_asks_about_two_products(client: TestClient) -> None:
+    # "Can I use two retinoid products together?" is the duplicate rule, not every rule
+    # involving retinoids.
+    assert lookup(client, "RETINOID", "RETINOID") == ["retinoid-duplicate-same-session"]
+
+
 def test_single_group_lookup_lists_rules_involving_it(client: TestClient) -> None:
     assert set(lookup(client, "PHA")) == {
         "exfoliant-acid-duplicate-same-session",
@@ -219,48 +267,6 @@ def test_lookup_without_verified_rule_says_so(client: TestClient) -> None:
     body = client.get("/rules", params={"groups": ["AZELAIC_ACID", "NIACINAMIDE"]}).json()
     assert body == {"rules": [], "notice_vi": NO_VERIFIED_INFO_VI}
     assert client.get("/rules", params={"groups": ["NOPE"]}).status_code == 422
-
-
-@pytest.fixture
-def cleanup_questions(engine: Engine) -> Iterator[list[int]]:
-    created: list[int] = []
-    yield created
-    with engine.begin() as conn:
-        conn.execute(text("DELETE FROM user_questions WHERE id = ANY(:ids)"), {"ids": created})
-
-
-def test_submit_question(
-    client: TestClient, engine: Engine, ids: dict[str, int], cleanup_questions: list[int]
-) -> None:
-    response = client.post(
-        "/questions",
-        json={
-            "question": "  Azelaic acid dùng chung với niacinamide được không?  ",
-            "product_ids": [ids[RETINOL], ids[RETINOL]],
-            "group_codes": ["NIACINAMIDE", "AZELAIC_ACID"],
-        },
-    )
-    assert response.status_code == 201
-    question_id = response.json()["id"]
-    cleanup_questions.append(question_id)
-    with engine.connect() as conn:
-        row = conn.execute(
-            text("SELECT question, product_ids, group_codes, status FROM user_questions "
-                 "WHERE id = :id"), {"id": question_id}
-        ).one()  # fmt: skip
-    assert row.question == "Azelaic acid dùng chung với niacinamide được không?"
-    assert row.product_ids == [ids[RETINOL]]
-    assert row.group_codes == ["AZELAIC_ACID", "NIACINAMIDE"]
-    assert row.status == "new"
-
-
-def test_question_rejects_bad_input(client: TestClient) -> None:
-    assert client.post("/questions", json={"question": "hi"}).status_code == 422
-    assert client.post("/questions", json={"question": "x" * 2001}).status_code == 422
-    unknown_product = {"question": "Câu hỏi hợp lệ?", "product_ids": [999999]}
-    assert client.post("/questions", json=unknown_product).status_code == 422
-    unknown_group = {"question": "Câu hỏi hợp lệ?", "group_codes": ["NOPE"]}
-    assert client.post("/questions", json=unknown_group).status_code == 422
 
 
 def test_analyze_marks_entries_after_a_one_percent_preservative(client: TestClient) -> None:
@@ -385,4 +391,5 @@ def test_routine_check_flags_possible_misspelled_actives(
     assert products["mine"]["groups"] == []
     assert products["mine"]["possible_actives"] == ["Benzoyl Peroxide"]
     assert products["retinol"]["possible_actives"] == []
-    assert result["warnings"] == []  # suggestions never create warnings
+    # Suggestions never create warnings: nothing mentions the misspelled product.
+    assert all("mine" not in w["product_keys"] for w in result["warnings"])

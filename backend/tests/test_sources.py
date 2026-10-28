@@ -43,6 +43,19 @@ def test_bot_challenge_page_raises_instead_of_reporting_missing_quotes(monkeypat
         sources.fetch_text("https://example.org")
 
 
+@pytest.mark.parametrize(
+    "marker",
+    [
+        '<input type="hidden" class="g-recaptcha-response" name="newsletter">',
+        "<script>a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js'</script>",
+    ],
+)
+def test_real_page_with_challenge_marker_is_not_blocked(monkeypatch, marker: str) -> None:
+    page = f"<p>Ingredients: Aqua, Glycerin, Niacinamide. {'Product details. ' * 200}</p>{marker}"
+    monkeypatch.setattr(sources.urllib.request, "urlopen", lambda *a, **k: FakeResponse(page))
+    assert "Aqua, Glycerin, Niacinamide" in sources.fetch_text("https://example.org")
+
+
 def test_readable_text_drops_scripts_and_styles(monkeypatch) -> None:
     page = (
         '<p>Visible text.</p><script type="application/ld+json">{"ingredients": "Aqua"}'

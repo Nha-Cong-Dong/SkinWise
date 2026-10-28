@@ -1,1 +1,79 @@
 @import "tailwindcss";
+
+/* Day / night: the routine has two sessions, so the brand is a white morning panel and an
+   indigo evening panel. Saturated colour is kept for warning severity only. */
+@theme {
+  --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
+  /* Words quoted from a source, never the app's own text. */
+  --font-serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+
+  --text-xl: 1.3125rem;
+  --text-xl--line-height: 1.3;
+
+  --color-paper: #eef1ef;
+  --color-surface: #ffffff;
+  --color-line: #d8dce2;
+  --color-ink: #1b2140;
+  --color-ink-soft: #444b6a;
+  --color-ink-mute: #646a88;
+  --color-link: #3346a8;
+
+  --color-night: #1e2448;
+  --color-night-raised: #2b3263;
+  --color-night-line: #3a4277;
+  --color-night-text: #e8eaf6;
+  --color-night-mute: #aeb3d4;
+  --color-moon: #f1e6bd;
+  --color-sun: #f2b234;
+
+  /* Active-ingredient groups. */
+  --color-active: #e7e9f7;
+  --color-active-ink: #2e3a8c;
+
+  --color-avoid: #c4362b;
+  --color-avoid-ink: #93211a;
+  --color-avoid-soft: #fbe5e2;
+  --color-caution: #d08a10;
+  --color-caution-ink: #7c4d08;
+  --color-caution-soft: #fcefd4;
+  --color-info: #23809f;
+  --color-info-ink: #135a72;
+  --color-info-soft: #def0f5;
+  --color-safe: #2e8c59;
+  --color-safe-ink: #1b6340;
+  --color-safe-soft: #def2e6;
+}
+
+@layer base {
+  body {
+    @apply bg-paper font-sans text-ink antialiased;
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-link);
+    outline-offset: 2px;
+  }
+
+  ::selection {
+    background: var(--color-moon);
+    color: var(--color-ink);
+  }
+
+  dialog::backdrop {
+    background: rgb(27 33 64 / 0.5);
+  }
+
+  html:has(dialog[open]) {
+    overflow: hidden;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *,
+    ::before,
+    ::after {
+      transition-duration: 0s !important;
+      animation-duration: 0s !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}

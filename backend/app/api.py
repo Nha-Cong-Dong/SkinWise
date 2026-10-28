@@ -8,7 +8,7 @@ from sqlalchemy.orm import Session
 from app.concentration import OnePercentLine, one_percent_line
 from app.db import get_session
 from app.engine import (
-    CHECKED_KINDS,
+    PAIR_KINDS,
     SEVERITY_ORDER,
     RoutineItem,
     Rule,
@@ -21,17 +21,20 @@ from app.ingredients import (
     Suggestion,
     list_functions,
     list_groups,
+    mark_allergens,
     product_groups,
     resolve,
     suggest,
     with_ancestors,
 )
-from app.products import existing_product_ids, get_product, search_products
-from app.questions import add_question, list_answered
+from app.products import (
+    get_product,
+    product_applications,
+    search_products,
+)
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
-    AnsweredQuestionOut,
     FunctionOut,
     GroupOut,
     InciAnalysis,
@@ -40,8 +43,6 @@ from app.schemas import (
     OccurrenceOut,
     ProductDetail,
     ProductSummary,
-    QuestionCreate,
-    QuestionCreated,
     RoutineCheckRequest,
     RoutineCheckResponse,
     RoutineProductResult,
@@ -57,9 +58,15 @@ NO_ROUTINE_WARNING_VI = (
     "Chưa có luật đã kiểm chứng nào áp dụng cho routine này. Không có cảnh báo không có nghĩa "
     "là chắc chắn an toàn: SkinWise chỉ kiểm tra một số ít kết hợp đã có nguồn đáng tin cậy."
 )
+# Only "Lưu ý khi dùng" notes apply: about the combinations, the result is still empty.
+NO_COMBINATION_WARNING_VI = (
+    "Chưa có luật kết hợp đã kiểm chứng nào áp dụng cho routine này; các thẻ dưới đây chỉ là lưu ý "
+    "khi dùng từng sản phẩm. Không có cảnh báo kết hợp không có nghĩa là chắc chắn an toàn: "
+    "SkinWise chỉ kiểm tra một số ít kết hợp đã có nguồn đáng tin cậy."
+)
 NO_VERIFIED_INFO_VI = (
     "Chưa có thông tin đã kiểm chứng cho trường hợp này. Không có cảnh báo không có nghĩa là "
-    "chắc chắn an toàn. Bạn có thể gửi câu hỏi để chúng tôi tìm nguồn."
+    "chắc chắn an toàn. Nếu chưa chắc, hãy hỏi bác sĩ da liễu hoặc dược sĩ."
 )
 TEXT_NOTICES_VI = {
     "drug_facts": (
@@ -87,11 +94,6 @@ TEXT_NOTICES_VI = {
         "kiểm tra có thể thiếu cảnh báo."
     ),
 }
-QUESTION_RECEIVED_VI = (
-    "Đã nhận câu hỏi của bạn. Người duyệt sẽ xem câu hỏi; nếu tìm được nguồn đáng tin cậy, "
-    "câu trả lời sẽ được làm thành thẻ thông tin mới."
-)
-
 DbSession = Annotated[Session, Depends(get_session)]
 
 router = APIRouter()
@@ -130,6 +132,7 @@ def ingredient_fields(
         "suggestions": [
             SuggestionOut.model_validate(s) for s in suggestions.get(r.entry.position, [])
         ],
+        "fragrance_allergen": r.fragrance_allergen,
     }
 
 
@@ -152,7 +155,7 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
     row = get_product(db, product_id)
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
-    resolved = list(row.ingredients)
+    resolved = mark_allergens(db, list(row.ingredients))
     line = one_percent_line(resolved)
     suggestions = suggestions_for(db, resolved)
     return ProductDetail.model_validate(
@@ -170,7 +173,7 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 @router.post("/inci/analyze")
 def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
     label = read_label_text(body.text)
-    resolved = resolve(db, label.entries)
+    resolved = mark_allergens(db, resolve(db, label.entries))
     # Key-ingredient lists and Drug Facts labels are not in order of weight.
     unordered = {"highlight_list", "drug_facts"} & set(label.notices)
     line = None if unordered else one_percent_line(resolved)
@@ -192,7 +195,8 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
 @router.post("/routine/check")
 def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
     seeded_ids = [p.product_id for p in body.products if p.product_id is not None]
-    missing = set(seeded_ids) - existing_product_ids(db, seeded_ids)
+    applications = product_applications(db, seeded_ids)
+    missing = set(seeded_ids) - applications.keys()
     if missing:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
                             f"unknown product ids: {sorted(missing)}")  # fmt: skip
@@ -220,7 +224,7 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
         warnings=[
             WarningOut(
                 rule=RuleOut.model_validate(w.rule),
-                product_keys=(keys[w.product_ids[0]], keys[w.product_ids[1]]),
+                product_keys=[keys[i] for i in w.product_ids],
                 occurrences=[OccurrenceOut.model_validate(o) for o in w.occurrences],
             )
             for w in warnings
@@ -230,35 +234,45 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
                 key=p.key,
                 groups=sorted(groups_by_id[ids[p.key]]),
                 possible_actives=possible_actives.get(p.key, []),
+                application=applications.get(p.product_id) if p.product_id else None,
             )
             for p in body.products
         ],
-        notice_vi=None if warnings else NO_ROUTINE_WARNING_VI,
+        notice_vi=(
+            None
+            if any(w.rule.kind in PAIR_KINDS for w in warnings)
+            else NO_COMBINATION_WARNING_VI
+            if warnings
+            else NO_ROUTINE_WARNING_VI
+        ),
     )
 
 
 @router.get("/rules")
 def rules(
     db: DbSession,
-    kind: Literal["conflict", "duplicate", "myth"] | None = None,
+    kind: Literal["conflict", "duplicate", "myth", "usage"] | None = None,
     groups: Annotated[list[str], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
 ) -> RulesResponse:
     """Published rules, optionally of one kind. With one group: rules involving it. With two:
-    the rules that would fire for one product of each group, whatever their kind, matched the
-    way the routine engine matches. A group also counts as its umbrella groups (BHA is an
-    EXFOLIANT_ACID), so a rule written for the umbrella answers a question about a member."""
+    the pair rules that would fire for one product of each group, whatever their kind, matched
+    the way the routine engine matches (usage rules are about one group, not the pair). A group
+    also counts as its umbrella groups (BHA is an EXFOLIANT_ACID), so a rule written for the
+    umbrella answers a question about a member."""
     all_groups = list_groups(db)
     unknown = set(groups) - {g.code for g in all_groups}
     if unknown:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
                             f"unknown group codes: {sorted(unknown)}")  # fmt: skip
-    expanded = [with_ancestors(code, all_groups) for code in dict.fromkeys(groups)]
+    # The same group twice asks about two products of that group (a duplicate rule), not
+    # about the group alone.
+    expanded = [with_ancestors(code, all_groups) for code in groups]
 
     def wanted(rule: Rule) -> bool:
         if kind is not None and rule.kind != kind:
             return False
         if len(expanded) == 2:
-            return rule.kind in CHECKED_KINDS and rule_matches(rule, *expanded)
+            return rule.kind in PAIR_KINDS and rule_matches(rule, *expanded)
         if len(expanded) == 1:
             return bool(expanded[0] & {rule.group_a, rule.group_b})
         return True
@@ -269,33 +283,3 @@ def rules(
         rules=[RuleOut.model_validate(r) for r in matched],
         notice_vi=None if matched else NO_VERIFIED_INFO_VI,
     )
-
-
-@router.post("/questions", status_code=status.HTTP_201_CREATED)
-def ask(db: DbSession, body: QuestionCreate) -> QuestionCreated:
-    product_ids = sorted(set(body.product_ids))
-    group_codes = sorted(set(body.group_codes))
-    problems = []
-    if missing := set(product_ids) - existing_product_ids(db, product_ids):
-        problems.append(f"unknown product ids: {sorted(missing)}")
-    if unknown := set(group_codes) - {g.code for g in list_groups(db)}:
-        problems.append(f"unknown group codes: {sorted(unknown)}")
-    if problems:
-        raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "; ".join(problems))
-    question_id = add_question(db, body.question, product_ids, group_codes)
-    db.commit()
-    return QuestionCreated(id=question_id, message_vi=QUESTION_RECEIVED_VI)
-
-
-@router.get("/questions/answered")
-def answered_questions(db: DbSession) -> list[AnsweredQuestionOut]:
-    """Questions a reviewer answered with a published rule, newest first, in the reviewer's
-    wording. A rule that is not published (or lost its sources) hides its questions."""
-    published = {r.key: r for r in load_published_rules(db)}
-    return [
-        AnsweredQuestionOut(
-            id=q.id, question=q.public_question, rule=RuleOut.model_validate(published[q.rule_key])
-        )
-        for q in list_answered(db)
-        if q.rule_key in published
-    ]

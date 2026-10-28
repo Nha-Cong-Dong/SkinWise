@@ -158,7 +158,7 @@ def read_label_text(text: str) -> LabelText:
     if (drug_facts := drug_facts_ingredients(text)) is not None:
         entries = parse_inci(drug_facts)
         notices = ["drug_facts"]
-        if any(len(e.raw.split()) > MAX_NAME_WORDS for e in entries):
+        if any(_name_words(e.raw) > MAX_NAME_WORDS for e in entries):
             notices.append("long_entries")
         return LabelText(entries, notices)
 
@@ -170,11 +170,30 @@ def read_label_text(text: str) -> LabelText:
         notices.append("highlight_list")
     if entries and sum(_has_diacritics(e.raw) for e in entries) * 4 >= len(entries):
         notices.append("vietnamese_names")
-    if not highlights and any(len(e.raw.split()) > MAX_NAME_WORDS for e in entries):
+    if not highlights and any(_name_words(e.raw) > MAX_NAME_WORDS for e in entries):
         notices.append("long_entries")
     if "highlight_list" not in notices and len(entries) < MIN_FULL_LIST:
         notices.append("few_entries")
     return LabelText(entries, notices)
+
+
+_ALTERNATE_NAMES = re.compile(r"[()\[\]/]")
+# Words of a sentence, never of an ingredient name: "Dermatologist tested / suitable for all
+# skin types", "Clinically proven to brighten skin (in 4 weeks)", "giúp da mềm mịn".
+_SENTENCE_WORDS = re.compile(
+    r"\b(for|to|the|with|your|you|all|is|are|in|on|by|free|tested|proven|suitable"
+    r"|cho|giup|cua|voi|khong|lam)\b"
+)
+
+
+def _name_words(raw: str) -> int:
+    """Words in the longest name of an entry. "A (B)" and "A / B" print two names for one
+    ingredient ("Coix Lacryma-Jobi Ma-yuen Seed Extract (Coix Seed Extract)"); together they
+    are longer than any single name, but they are not a sentence. Text with sentence words
+    is counted whole, so a slogan does not pass for two names."""
+    if _SENTENCE_WORDS.search(normalize_name(raw)):
+        return len(raw.split())
+    return max(len(name.split()) for name in _ALTERNATE_NAMES.split(raw))
 
 
 def _highlight_names(text: str) -> list[str] | None:

@@ -40,13 +40,14 @@ Mọi cảnh báo đều:
 | Phát hiện trùng hoạt chất | Cảnh báo khi nhiều sản phẩm trong cùng một buổi chứa cùng nhóm hoạt chất |
 | Cảnh báo kết hợp | Một bộ nhỏ các luật có bằng chứng rõ ràng, áp dụng theo phạm vi cùng bước / cùng buổi / cùng ngày |
 | Thẻ "Sự thật hay myth" | Giải đáp các lời đồn phổ biến, kèm nguồn |
+| Lưu & chia sẻ routine | Tải routine về máy thành file, mở lại trên máy khác, hoặc gửi link chia sẻ. Không cần tài khoản; SkinWise không lưu routine của bạn |
+| Lưu ý khi dùng | Nhắc riêng cho từng hoạt chất, không cần kết hợp: AHA, retinoid, benzoyl peroxide có thể làm da nhạy nắng (nguồn FDA); BHA chỉ ghi thông tin vì bằng chứng chưa thống nhất |
 
 ### Đã làm sau MVP
 
 | Tính năng | Mô tả |
 |---|---|
-| Câu hỏi đã được trả lời | Câu hỏi người dùng gửi, được người duyệt trả lời bằng một thẻ có nguồn, hiện trên trang "Sự thật hay myth" (đã biên tập để bỏ thông tin cá nhân) |
-| Trang duyệt (`#review`) | Người duyệt đăng nhập, xem câu hỏi, đổi trạng thái, gắn câu hỏi với luật / thẻ trả lời nó |
+| Trang duyệt (`#review`) | Người duyệt đăng nhập bằng tài khoản riêng để nhờ AI soạn nháp thẻ myth và xem các bản nháp |
 | AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
 
 ### Dự kiến sau hackathon
@@ -54,7 +55,9 @@ Mọi cảnh báo đều:
 - Tra cứu sản phẩm theo mã vạch qua [Open Beauty Facts](https://world.openbeautyfacts.org)
 - Chụp ảnh nhãn để đọc bảng thành phần (OCR)
 - Hồ sơ da: da nhạy cảm, đang mang thai…
-- Tài khoản người dùng, đồng bộ routine giữa các thiết bị
+- Mở tài khoản cho người dùng thật: đăng nhập bằng email + mật khẩu (xác thực email, quên mật khẩu) và đồng bộ routine đã có ở chế độ thử (link xác thực / đặt lại hiện ngay trên màn hình, không gửi email), cần dịch vụ email và tư vấn pháp lý trước khi mở
+
+Chi tiết và thứ tự ưu tiên: [plan/after-mvp.md](plan/after-mvp.md).
 
 ## Cách hoạt động
 
@@ -74,6 +77,8 @@ Routine (sản phẩm × buổi × ngày)  ──►  Bộ luật  ──►  C�
 - **Luật viết theo nhóm hoạt chất**, không theo từng chất riêng lẻ. Ví dụ: một luật "RETINOID + EXFOLIANT_ACID cùng buổi → thận trọng" áp dụng cho mọi sản phẩm chứa retinol, adapalene, glycolic acid, salicylic acid…
 - **Nhận diện gần như mọi tên thành phần.** Ngoài các hoạt chất, SkinWise nhận ra tên theo bảng chú giải của EU (khoảng 30.000 tên) và một số tên thông dụng tiếng Việt như "rau má", "trà xanh", kèm chức năng thường gặp (giữ ẩm, làm mềm da, bảo quản…). Phần này chỉ để giải thích, không tạo cảnh báo.
 - **Nói rõ khi văn bản dán vào không phải bảng thành phần đầy đủ**, ví dụ danh sách "thành phần nổi bật" của hãng: hoạt chất có thể nằm ở phần không được liệt kê, nên kết quả kiểm tra có thể thiếu.
+- **Đánh dấu chất gây dị ứng hương liệu** theo danh sách của EU (khoảng 80 chất, như limonene, linalool), kèm ngưỡng EU bắt buộc ghi riêng trên nhãn. Phần này chỉ để thông tin, không tạo cảnh báo.
+- **Ghi rõ sản phẩm rửa trôi hay để lại trên da** với sản phẩm có sẵn. Các nguồn hiện có không miễn cảnh báo cho sữa rửa mặt, nên SkinWise áp dụng luật như nhau cho hai loại và nói rõ điều đó.
 - **Không suy diễn nồng độ.** Bảng INCI không ghi nồng độ nên cảnh báo luôn dùng từ "có thể".
 - **Tránh nhận diện nhầm.** Ví dụ: Citric Acid thường chỉ là chất điều chỉnh pH, không được tính là AHA tẩy da chết.
 
@@ -115,10 +120,13 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    ```bash
    cd frontend
    npm install
-   npm run dev                    # mở http://localhost:5173
+   npm run dev                    # mở http://localhost:5173, tạo tài khoản bằng email bất kỳ:
+                                  # chế độ thử không gửi email, link xác thực hiện ngay trên màn hình
    ```
 
 4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`.
+
+5. Đọc bảng thành phần từ ảnh nhãn (không bắt buộc): cùng `ANTHROPIC_API_KEY`, chọn model bằng `LABEL_MODEL`. Dùng khoá của cổng hackathon thì thêm `ANTHROPIC_BASE_URL=https://proptit.dekthe.dev` và đặt `DRAFT_MODEL`, `LABEL_MODEL` là `claude-haiku-5-5` (xem `backend/.env.example`). Chỉ người đã đăng nhập mới gửi được ảnh.
 
    ```bash
    cd backend
@@ -132,15 +140,16 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Khung dự án: API, cơ sở dữ liệu, test
 - [x] Dữ liệu thành phần: phân tích bảng INCI, chuẩn hoá tên, nhóm hoạt chất, sản phẩm mẫu
 - [x] Bộ luật cảnh báo đầu tiên (đã đối chiếu nguồn) và engine kiểm tra routine
-- [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth, gửi câu hỏi
-- [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth, gửi câu hỏi
+- [x] API: tìm sản phẩm, phân tích bảng thành phần, kiểm tra routine, thẻ myth
+- [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth
 - [ ] Hoàn thiện demo
-- [x] Sau MVP: trang duyệt câu hỏi, AI soạn nháp thẻ myth, hiện câu hỏi đã được trả lời
+- [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
 
 ## Nguồn dữ liệu và ghi công
 
 - Bảng chú giải tên thành phần mỹ phẩm của EU, [Quyết định (EU) 2025/1175](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32025D1175): nhận diện tên thành phần trên nhãn. © Liên minh châu Âu, https://eur-lex.europa.eu
 - Danh mục thành phần mỹ phẩm của EU năm 2006, [Quyết định 2006/257/EC](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32006D0257): chức năng thường gặp của thành phần và định nghĩa từng chức năng. Danh mục này không còn hiệu lực pháp lý, chỉ dùng để tham khảo. © Liên minh châu Âu, https://eur-lex.europa.eu
+- Phụ lục III của [Quy định (EC) 1223/2009](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32009R1223) (bản hợp nhất), đã sửa đổi bởi [Quy định (EU) 2023/1545](https://eur-lex.europa.eu/legal-content/EN/TXT/?uri=CELEX:32023R1545): danh sách chất gây dị ứng hương liệu phải ghi riêng trên nhãn. © Liên minh châu Âu, https://eur-lex.europa.eu
 - [EU CosIng](https://single-market-economy.ec.europa.eu/sectors/cosmetics/cosmetic-ingredient-database_en): tham chiếu khi lập từ điển hoạt chất
 - [Open Beauty Facts](https://world.openbeautyfacts.org) (dự kiến): dữ liệu sản phẩm mở, giấy phép [ODbL](https://opendatacommons.org/licenses/odbl/1-0/)
 - Nguồn y khoa cho từng luật được liệt kê ngay trong cảnh báo tương ứng

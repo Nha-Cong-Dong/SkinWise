@@ -1,6 +1,6 @@
 """Resolve parsed INCI entries to canonical ingredients and functional groups."""
 
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 
 from sqlalchemy import bindparam, text
 from sqlalchemy.engine import Connection
@@ -21,6 +21,8 @@ class ResolvedEntry:
     # first being the one resolved above, and what is ambiguous about it.
     common_name_of: tuple[str, ...] = ()
     common_name_note: str | None = None
+    # Named in the EU fragrance allergen list (Annex III, Regulation 1223/2009). Shown only.
+    fragrance_allergen: bool = False
 
     @property
     def known(self) -> bool:
@@ -42,6 +44,10 @@ _LOOKUP = text(
 
 _EU_LOOKUP = text(
     "SELECT normalized_name, name, functions FROM inci_names WHERE normalized_name IN :names"
+).bindparams(bindparam("names", expanding=True))
+
+_ALLERGEN_LOOKUP = text(
+    "SELECT normalized_name FROM fragrance_allergens WHERE normalized_name IN :names"
 ).bindparams(bindparam("names", expanding=True))
 
 _COMMON_LOOKUP = text(
@@ -86,7 +92,9 @@ def resolve(db: Session | Connection, entries: list[InciEntry]) -> list[Resolved
         else:
             candidates = tuple(normalize_name(n) for n in hit.inci_names)
             one = _resolve_one(entry, candidates, known, eu)
-            resolved.append(_with_common(one, tuple(hit.inci_names), hit.note))
+            resolved.append(
+                replace(one, common_name_of=tuple(hit.inci_names), common_name_note=hit.note)
+            )
     return resolved
 
 
@@ -101,7 +109,7 @@ def _lookup(db: Session | Connection, names: list[str]) -> tuple[dict, dict]:
 def _resolve_one(
     entry: InciEntry, candidates: tuple[str, ...], known: dict, eu: dict
 ) -> ResolvedEntry:
-    row = next((known[name] for name in candidates if name in known), None)
+    row = _pick(candidates, known)
     eu_candidates = (*candidates, normalize_name(row.inci_name)) if row else candidates
     eu_row = next((eu[name] for name in eu_candidates if name in eu), None)
     return ResolvedEntry(
@@ -114,10 +122,32 @@ def _resolve_one(
     )
 
 
-def _with_common(r: ResolvedEntry, names: tuple[str, ...], note: str | None) -> ResolvedEntry:
-    return ResolvedEntry(
-        r.entry, r.ingredient_id, r.inci_name, r.groups, r.eu_name, r.functions, names, note
-    )
+def _pick(candidates: tuple[str, ...], known: dict):
+    """The dictionary row for an entry: its whole text if known; otherwise, among the parts of
+    "A (B)" / "A/B", an active's own INCI name before a synonym, so "Vitamin C (3-O-Ethyl
+    Ascorbic Acid)" is the derivative, not ascorbic acid (Vietnamese labels say "Vitamin C" for
+    derivatives too)."""
+    if candidates and candidates[0] in known:
+        return known[candidates[0]]
+    parts = [name for name in candidates[1:] if name in known]
+    own_name = [name for name in parts if normalize_name(known[name].inci_name) == name]
+    return known[(own_name or parts)[0]] if parts else None
+
+
+def _names_of(r: ResolvedEntry) -> set[str]:
+    return {*r.entry.candidates, *(normalize_name(n) for n in (r.eu_name, r.inci_name) if n)}
+
+
+def mark_allergens(db: Session | Connection, resolved: list[ResolvedEntry]) -> list[ResolvedEntry]:
+    """Flag entries the EU fragrance allergen list names, by the label name or the EU name.
+
+    Display only, so only the routes that show an ingredient list call it; checking a routine
+    never needs it."""
+    names = sorted({n for r in resolved for n in _names_of(r)})
+    if not names:
+        return resolved
+    allergens = set(db.execute(_ALLERGEN_LOOKUP, {"names": names}).scalars())
+    return [replace(r, fragrance_allergen=bool(_names_of(r) & allergens)) for r in resolved]
 
 
 def _common_keys(candidates: tuple[str, ...]) -> tuple[str, ...]:

@@ -23,6 +23,7 @@ class ProductRow:
     name: str
     market: str | None
     verification_status: str
+    application: str | None  # rinse_off | leave_on
 
 
 @dataclass(frozen=True)
@@ -33,7 +34,7 @@ class ProductDetailRow(ProductRow):
     ingredients: tuple[ResolvedEntry, ...]
 
 
-_COLUMNS = "p.id, p.slug, p.brand, p.name, p.market, p.verification_status"
+_COLUMNS = "p.id, p.slug, p.brand, p.name, p.market, p.verification_status, p.application"
 
 _ALL = text(f"SELECT {_COLUMNS} FROM products p ORDER BY p.brand, p.name LIMIT :limit")
 
@@ -77,12 +78,13 @@ def get_product(db: Session | Connection, product_id: int) -> ProductDetailRow |
     return ProductDetailRow(*columns, ingredients=tuple(resolve(db, parse_inci(raw or ""))))
 
 
-_EXISTING = text("SELECT id FROM products WHERE id IN :ids").bindparams(
+_APPLICATIONS = text("SELECT id, application FROM products WHERE id IN :ids").bindparams(
     bindparam("ids", expanding=True)
 )
 
 
-def existing_product_ids(db: Session | Connection, product_ids: list[int]) -> set[int]:
+def product_applications(db: Session | Connection, product_ids: list[int]) -> dict[int, str | None]:
+    """Rinse-off / leave-on of each existing product; ids not in the database are left out."""
     if not product_ids:
-        return set()
-    return set(db.execute(_EXISTING, {"ids": product_ids}).scalars())
+        return {}
+    return {row.id: row.application for row in db.execute(_APPLICATIONS, {"ids": product_ids})}

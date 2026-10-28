@@ -1,14 +1,29 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, type CosmeticFunction, type Group, type Severity } from './api'
+import { emailLink, useAccount } from './account'
+import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
+import { Dialog } from './components/Dialog'
+import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
 import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
-import { WarningsPanel } from './components/WarningsPanel'
+import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
+import { EmailLinkPage, SignIn } from './components/SignIn'
+import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
-import { useRoutine, useRoutineCheck } from './routine'
+import { useIncomingRoutine } from './share'
+import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
+import {
+  EMPTY_ADD_DRAFT,
+  currentResult,
+  isUsageNote,
+  useRoutine,
+  useRoutineCheck,
+  type CheckState,
+} from './routine'
 
 type Page = 'routine' | 'myths' | 'review'
 
@@ -19,13 +34,57 @@ const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
   const [page, setPage] = useState<Page>(pageFromHash)
+  const [adding, setAdding] = useState(false)
+  const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
+  const [sharing, setSharing] = useState(false)
+  const { incoming, dismiss } = useIncomingRoutine() // a shared routine link was opened
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
   const check = useRoutineCheck(actions.routine)
+  // Signing in is required (plan/h-accounts.md); the review page has its own sign-in.
+  const account = useAccount()
+  const me = account.state.kind === 'signed-in' ? account.state.me : null
+  const sync = useRoutineSync(actions, me?.email ?? null)
+  const [accountOpen, setAccountOpen] = useState(false)
+  const conflict = sync.state.kind === 'conflict' ? sync.state.server : null
+  // The conflict the user closed without choosing; a new conflict opens the dialog again.
+  const [hiddenConflict, setHiddenConflict] = useState<ServerCopy | null>(null)
+  // A #verify-email or #reset-password link opened in this tab; it acts only on a click.
+  const [link, setLink] = useState(() => emailLink(window.location.hash))
+  const [passwordReset, setPasswordReset] = useState(false) // show the "new password" line once
+
+  const leaveLink = () => {
+    history.replaceState(null, '', window.location.pathname) // the token must not stay in the address
+    setLink(null)
+  }
+
+  // Before a link signs this tab in: the current account's unsent routine goes to the server first.
+  const beforeLinkSignIn = async () =>
+    !me ||
+    (await sync.flush()) ||
+    confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Tiếp tục bây giờ sẽ mất các thay đổi đó. Vẫn tiếp tục?')
+
+  const signOut = async (everywhere: boolean) => {
+    const sent = await sync.flush()
+    if (
+      !sent &&
+      !confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Đăng xuất bây giờ sẽ mất các thay đổi đó. Vẫn đăng xuất?')
+    ) {
+      return
+    }
+    await (everywhere ? api.signOutEverywhere() : api.signOut()).catch(() => {})
+    sync.forget() // the next person on this device must not get this routine
+    setPasswordReset(false)
+    setAccountOpen(false)
+    void account.refresh()
+  }
 
   useEffect(() => {
-    const onHash = () => setPage(pageFromHash())
+    const onHash = () => {
+      setPage(pageFromHash())
+      setLink(emailLink(window.location.hash))
+    }
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
@@ -41,10 +100,9 @@ function App() {
     )
   }, [])
 
-  // Most severe warning per product; keeps the previous result while a new check runs.
+  // Most severe combination warning per product; keeps the previous result while a new check runs.
   const flagged = new Map<string, Severity>()
-  const result = check.kind === 'done' ? check.result : check.kind === 'loading' ? check.previous : null
-  for (const w of result?.warnings ?? []) {
+  for (const w of (currentResult(check)?.warnings ?? []).filter((w) => !isUsageNote(w))) {
     for (const key of w.product_keys) {
       const current = flagged.get(key)
       if (!current || SEVERITY_RANK.indexOf(w.rule.severity) < SEVERITY_RANK.indexOf(current)) {
@@ -53,77 +111,262 @@ function App() {
     }
   }
 
+  if (page !== 'review' && link && account.state.kind !== 'checking') {
+    return (
+      <EmailLinkPage
+        key={link.token}
+        link={link}
+        signedInAs={me?.email ?? null}
+        beforeSignIn={beforeLinkSignIn}
+        onSignedIn={(signedIn) => {
+          if (link.kind === 'reset-password') setPasswordReset(true)
+          leaveLink()
+          account.signedIn(signedIn)
+        }}
+        onLeave={leaveLink}
+      />
+    )
+  }
+
+  if (page !== 'review' && !me) {
+    if (account.state.kind === 'signed-out') return <SignIn onSignedIn={account.signedIn} />
+    return (
+      <div className="flex min-h-screen items-center justify-center px-4 text-sm text-ink-mute">
+        {account.state.kind === 'unreachable' ? (
+          <p>
+            Không kết nối được máy chủ SkinWise.{' '}
+            <button onClick={() => void account.refresh()} className="text-link underline underline-offset-2">
+              Thử lại
+            </button>
+          </p>
+        ) : (
+          <p>Đang tải…</p>
+        )}
+      </div>
+    )
+  }
+
   return (
     <GroupsContext value={groups}>
       <FunctionsContext value={functions}>
-      <div className="min-h-screen bg-slate-50 text-slate-900">
-        <header className="border-b border-slate-200 bg-white">
-          <div className="mx-auto flex max-w-6xl flex-wrap items-center gap-x-6 gap-y-2 px-4 py-3">
-            <div>
-              <h1 className="text-xl font-bold text-rose-600">SkinWise</h1>
-              <p className="text-xs text-slate-500">Routine skincare, trùng hoạt chất và kết hợp cần thận trọng</p>
-            </div>
-            <nav className="flex gap-1 text-sm">
-              {(
-                [
-                  ['routine', 'Routine của tôi'],
-                  ['myths', 'Sự thật hay myth'],
-                ] as const
-              ).map(([value, label]) => (
-                <button
-                  key={value}
-                  onClick={() => {
-                    if (window.location.hash) history.replaceState(null, '', window.location.pathname)
-                    setPage(value)
-                  }}
-                  aria-current={page === value ? 'page' : undefined}
-                  className={`rounded-md px-3 py-1.5 ${page === value ? 'bg-rose-50 font-medium text-rose-700' : 'text-slate-600 hover:bg-slate-100'}`}
-                >
-                  {label}
-                </button>
-              ))}
-            </nav>
-          </div>
-        </header>
-
-        <div className="mx-auto max-w-6xl px-4 pt-4">
-          <p className="rounded-md bg-amber-50 px-3 py-2 text-xs text-amber-900 ring-1 ring-amber-200">
-            SkinWise là công cụ nhắc nhở và giáo dục, không thay thế tư vấn của bác sĩ da liễu hay dược sĩ. Nếu bạn
-            đang mang thai, đang điều trị bệnh da hoặc dùng thuốc kê đơn, hãy hỏi ý kiến chuyên gia.
-          </p>
-        </div>
-
-        <main className="mx-auto max-w-6xl px-4 py-6">
-          {page === 'routine' ? (
-            <div className="grid gap-6 lg:grid-cols-[minmax(0,1fr)_380px]">
-              <div className="space-y-6">
-                <div className="grid gap-4 md:grid-cols-2">
-                  <AddProduct actions={actions} />
-                  <MyProducts actions={actions} />
-                </div>
-                <RoutineBoard actions={actions} flagged={flagged} />
+        <div className="min-h-screen">
+          <header className="bg-surface ring-1 ring-line">
+            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6">
+              <div className="flex items-center gap-2.5">
+                <Mark className="size-8" />
+                <span className="text-xl leading-none font-bold tracking-tight">
+                  SkinWise
+                </span>
               </div>
-              <aside className="lg:sticky lg:top-4 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto">
-                <WarningsPanel state={check} products={actions.routine.products} />
-              </aside>
+              <nav className="flex gap-1 text-[0.9375rem]" aria-label="Trang">
+                {(
+                  [
+                    ['routine', 'Routine của tôi'],
+                    ['myths', 'Sự thật hay myth'],
+                  ] as const
+                ).map(([value, label]) => (
+                  <button
+                    key={value}
+                    onClick={() => {
+                      // Leaving #review (or the #results anchor) for a page of the menu.
+                      if (window.location.hash) history.replaceState(null, '', window.location.pathname)
+                      setPage(value)
+                    }}
+                    aria-current={page === value ? 'page' : undefined}
+                    className={`rounded-full px-3.5 py-1.5 ${page === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
+                  >
+                    {label}
+                  </button>
+                ))}
+              </nav>
+              <p className="hidden text-sm text-ink-mute xl:ml-auto xl:block">
+                Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng.
+              </p>
+              {me && (
+                <button
+                  onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
+                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper xl:ml-0"
+                  title="Tài khoản"
+                >
+                  <span className="max-w-[14rem] truncate text-sm font-medium">{me.email}</span>
+                  <span className={`text-xs ${conflict || sync.state.kind === 'offline' ? 'text-caution-ink' : 'text-ink-mute'}`}>
+                    {syncLabel(sync.state) ?? 'Tài khoản'}
+                  </span>
+                </button>
+              )}
             </div>
-          ) : page === 'myths' ? (
-            <div className="mx-auto max-w-3xl">
-              <MythPage products={actions.routine.products} />
-            </div>
-          ) : (
-            <div className="mx-auto max-w-4xl">
-              <ReviewPage />
+          </header>
+
+          <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+            <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
+              SkinWise là công cụ nhắc nhở và giáo dục, không thay thế tư vấn của bác sĩ da liễu hay dược sĩ. Nếu bạn
+              đang mang thai, đang điều trị bệnh da hoặc dùng thuốc kê đơn, hãy hỏi ý kiến chuyên gia.
+            </p>
+          </div>
+
+          {passwordReset && (
+            <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+              <p className="flex max-w-2xl items-start gap-3 rounded-xl bg-surface p-3 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
+                <span className="flex-1">Đã đặt mật khẩu mới. Các thiết bị khác đã được đăng xuất.</span>
+                <button onClick={() => setPasswordReset(false)} className="shrink-0 text-link underline underline-offset-2">
+                  Đóng
+                </button>
+              </p>
             </div>
           )}
-        </main>
 
-        <footer className="mx-auto max-w-6xl px-4 pb-8 text-xs text-slate-400">
-          Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
-        </footer>
-      </div>
+          <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
+            {page === 'routine' ? (
+              <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
+                <div className="lg:col-start-1 lg:row-start-1">
+                  <MyProducts actions={actions} onAdd={() => setAdding(true)} />
+                </div>
+                <div className="lg:col-start-1 lg:row-start-2 xl:col-start-2 xl:row-start-1">
+                  <RoutineBoard actions={actions} flagged={flagged} onShare={() => setSharing(true)} />
+                </div>
+                <ResultsAside check={check}>
+                  <WarningsPanel state={check} products={actions.routine.products} />
+                </ResultsAside>
+              </div>
+            ) : page === 'myths' ? (
+              <div className="mx-auto max-w-2xl">
+                <MythPage />
+              </div>
+            ) : (
+              <div className="mx-auto max-w-4xl">
+                <ReviewPage />
+              </div>
+            )}
+          </main>
+
+          <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
+            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
+          </footer>
+        </div>
+
+        <Dialog
+          open={adding}
+          onClose={() => setAdding(false)}
+          title={<h2 className="text-xl font-bold">Thêm sản phẩm</h2>}
+        >
+          <AddProduct actions={actions} draft={addDraft} setDraft={setAddDraft} />
+        </Dialog>
+
+        {me && (
+          <Dialog open={accountOpen} onClose={() => setAccountOpen(false)} title={<h2 className="text-xl font-bold">Tài khoản</h2>}>
+            <AccountPanel
+              me={me}
+              sync={sync.state}
+              onSignOut={signOut}
+              onDeleted={() => {
+                sync.forget()
+                setAccountOpen(false)
+                void account.refresh()
+              }}
+            />
+          </Dialog>
+        )}
+
+        <Dialog
+          open={conflict !== null && conflict !== hiddenConflict}
+          onClose={() => setHiddenConflict(conflict)}
+          title={<h2 className="text-xl font-bold">Routine đã đổi trên thiết bị khác</h2>}
+        >
+          {conflict && (
+            <SyncConflict
+              local={actions.routine}
+              server={conflict}
+              onKeepThisDevice={sync.keepThisDevice}
+              onUseSynced={sync.useSynced}
+            />
+          )}
+        </Dialog>
+
+        <Dialog
+          open={sharing}
+          onClose={() => setSharing(false)}
+          title={<h2 className="text-xl font-bold">Lưu & chia sẻ routine</h2>}
+        >
+          <ShareRoutine actions={actions} onDone={() => setSharing(false)} />
+        </Dialog>
+
+        <Dialog
+          open={incoming !== null}
+          onClose={dismiss}
+          title={<h2 className="text-xl font-bold">Routine được chia sẻ với bạn</h2>}
+        >
+          {incoming?.kind === 'loading' && <p className="text-sm text-ink-mute">Đang mở routine…</p>}
+          {incoming?.kind === 'error' && <p className="text-sm text-avoid-ink">{incoming.message}</p>}
+          {incoming?.kind === 'ready' && (
+            <ReplaceConfirm
+              incoming={incoming}
+              current={actions.routine}
+              onAccept={() => {
+                actions.replace(incoming.routine)
+                dismiss()
+              }}
+              onCancel={dismiss}
+            />
+          )}
+        </Dialog>
       </FunctionsContext>
     </GroupsContext>
+  )
+}
+
+/**
+ * The check results: a sticky column on wide screens. On narrow screens they come after the
+ * schedule, so a bar at the bottom of the screen says how many warnings there are until the
+ * results scroll into view.
+ */
+function ResultsAside({ check, children }: { check: CheckState; children: ReactNode }) {
+  const ref = useRef<HTMLElement>(null)
+  const [inView, setInView] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!el || typeof IntersectionObserver === 'undefined') return
+    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [])
+
+  const result = currentResult(check)
+  const warnings = result?.warnings ?? []
+
+  return (
+    <>
+      <aside
+        ref={ref}
+        id="results"
+        className="scroll-mt-4 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain xl:col-start-3 xl:row-span-1"
+      >
+        {children}
+      </aside>
+      {check.kind !== 'empty' && !inView && (
+        <a
+          href="#results"
+          className="fixed inset-x-3 bottom-3 z-20 flex items-center gap-3 rounded-2xl bg-night py-2.5 pr-4 pl-3 text-sm text-night-text shadow-xl shadow-ink/30 lg:hidden"
+        >
+          <span className="min-w-0 flex-1">
+            {warnings.some((w) => !isUsageNote(w)) ? (
+              <SeverityCounts warnings={warnings} />
+            ) : check.kind === 'error' ? (
+              'Không kiểm tra được routine'
+            ) : check.kind === 'loading' && !result ? (
+              'Đang kiểm tra…'
+            ) : warnings.length > 0 ? (
+              // Only usage notes: about the combinations, the result is still empty.
+              `Chưa có cảnh báo kết hợp, không có nghĩa là chắc chắn an toàn · ${warnings.length} lưu ý khi dùng`
+            ) : (
+              // Silence reads as "safe", so even this short line says what it does not mean.
+              'Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn'
+            )}
+          </span>
+          <span className="shrink-0 font-semibold text-moon">Xem kết quả</span>
+        </a>
+      )}
+    </>
   )
 }
 
