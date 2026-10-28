@@ -1,6 +1,8 @@
 import type { Application, Rule, Session, Severity, Warning } from './api'
 
 export const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] // 0 = Monday
+/** Spoken names: a screen reader reads "T2" letter by letter. */
+export const DAY_NAMES = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật']
 export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6]
 
 export const SESSION_LABELS: Record<Session, string> = { AM: 'Sáng', PM: 'Tối' }

@@ -9,6 +9,7 @@ product containing it, wherever it is used (scope "routine").
 
 from collections import defaultdict
 from dataclasses import dataclass, field
+from datetime import date
 from itertools import combinations
 from typing import Literal
 
@@ -50,6 +51,7 @@ class Rule:
     title_vi: str
     explanation_vi: str
     sources: tuple[RuleSource, ...]
+    reviewed_at: date | None = None  # when a reviewer read the sources and published it
 
 
 @dataclass(frozen=True)
