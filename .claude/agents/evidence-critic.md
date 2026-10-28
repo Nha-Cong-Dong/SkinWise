@@ -1,6 +1,6 @@
 ---
 name: evidence-critic
-description: "Phản biện bằng chứng của SkinWise: kiểm đoạn trích có nguyên văn trên trang, có bị cắt khỏi ngữ cảnh không, nguồn có uy tín không, luật có nói quá nguồn không; kiểm bảng thành phần và tên tiếng Việt lấy từ trang hãng. Chỉ đọc và chạy script kiểm, không sửa file dự án. Được skinwise-orchestrator gọi sau source-researcher trong luồng tìm nguồn luật và luồng thêm dữ liệu mẫu."
+description: "Phản biện bằng chứng của SkinWise: kiểm đoạn trích có nguyên văn trên trang, có bị cắt khỏi ngữ cảnh không, nguồn có uy tín không, luật hay nội dung mục tiêu da có nói quá nguồn không; kiểm bảng thành phần và tên tiếng Việt lấy từ trang hãng. Chỉ đọc và chạy script kiểm, không sửa file dự án. Được skinwise-orchestrator gọi sau source-researcher trong luồng tìm nguồn luật, luồng nội dung và luồng thêm dữ liệu mẫu."
 # model: opus vì đây là kiểm chéo. Nếu bỏ lọt một đoạn trích bị cắt khỏi ngữ cảnh, app sẽ hiện cảnh báo sai cho người dùng.
 model: opus
 tools: Read, Grep, Glob, Bash

@@ -1,0 +1,1286 @@
+# Mục tiêu da (app/goals.py, GET /goals). Chỉ để hiển thị: không bao giờ ảnh hưởng tới cảnh báo.
+# [[goal]] code = "all": thẻ dùng chung, hiện ở mọi mục tiêu, không hiện thành chip.
+# [[item]] kind = "active" (cần group: mã trong functional_groups.toml) | "info" (không có group).
+# Mọi item để published = false cho tới khi người duyệt đọc nguồn; published = true cần
+# sources (url + quote nguyên văn) và reviewed_by / reviewed_at.
+# [[source]]: url có thể trùng [[source]] của rules.toml.
+
+[[goal]]
+code = "acne"
+name_vi = "Da dễ nổi mụn"
+description_vi = "Da hay nổi mụn đầu đen, mụn đầu trắng hoặc mụn viêm. Mục này gom các nhóm hoạt chất bôi da mà nguồn da liễu hay nhắc tới cho mụn, kèm lưu ý khi dùng. Đây không phải lời khuyên y khoa."
+position = 1
+
+[[goal]]
+code = "aging"
+name_vi = "Dấu hiệu lão hoá"
+description_vi = "Nếp nhăn nhỏ, da kém săn hoặc đốm nâu. Mục này gom các nhóm hoạt chất bôi da mà nguồn da liễu hay nhắc tới cho các dấu hiệu này, kèm lưu ý khi dùng."
+position = 2
+
+[[goal]]
+code = "dark-spots"
+name_vi = "Thâm và không đều màu"
+description_vi = "Đốm thâm, mảng sẫm màu hoặc da không đều màu, ví dụ vết thâm sau mụn, nám hoặc đốm nâu. Mục này gom các nhóm hoạt chất mà nguồn da liễu nhắc tới, kèm lưu ý khi dùng."
+position = 3
+
+[[goal]]
+code = "dry-sensitive"
+name_vi = "Da khô / nhạy cảm"
+description_vi = "Dành cho da hay khô, căng, bong tróc hoặc dễ châm chích, ửng đỏ khi dùng sản phẩm mới. Các thẻ dưới đây tóm tắt thói quen chăm sóc và cách chọn sản phẩm theo khuyến nghị của các nguồn y khoa."
+position = 4
+
+[[goal]]
+code = "oily-pores"
+name_vi = "Da dầu / lỗ chân lông to"
+description_vi = "Da nhanh bóng dầu hoặc lỗ chân lông dễ thấy. Mục này gom các nhóm hoạt chất và thói quen chăm da mà nguồn da liễu nhắc tới, kèm lưu ý khi dùng."
+position = 5
+
+[[goal]]
+code = "redness"
+name_vi = "Da đỏ / dễ kích ứng"
+description_vi = "Da hay ửng đỏ, châm chích hoặc rát khi dùng sản phẩm. Mục này gom các lưu ý chọn sản phẩm và chăm sóc nhẹ nhàng mà nguồn da liễu nhắc tới. Đây không phải lời khuyên y khoa."
+position = 6
+
+[[goal]]
+code = "all"
+name_vi = "Dùng chung"
+description_vi = "Thông tin dùng chung cho mọi mục tiêu: chống nắng."
+position = 7
+
+# ======================================================================================
+# Mục mới (28/10). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua phản biện;
+# lời văn là bản nháp do Claude soạn. CHƯA BẬT: người duyệt phải tự đọc nguồn trước khi đặt
+# published = true (kèm reviewed_by, reviewed_at).
+# ======================================================================================
+# --- acne ---
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: thêm đoạn trích về chống nắng (AAD treat); câu mang thai viết lại theo 'Some topical retinoids are contraindicated for use in pregnancy' (DermNet) và câu AAD adult-acne. Đã bỏ đoạn trích DermNet 'women of childbearing age must use effective contraception...' vì body không nói ý đó. Nguồn DermNet nói mạnh hơn: phụ nữ trong độ tuổi sinh đẻ phải tránh thai hiệu quả khi dùng retinoid (đoạn về retinoid thuốc, check_text OK); người duyệt có thể muốn thêm lại.
+#   - Câu AAD về mang thai nói chung về việc tự xử lý mụn, không nói riêng retinoid.
+#   - 'Không cần đơn' là tình trạng ở Mỹ; DermNet (NZ) xếp adapalene vào 'Prescribed topical retinoids'. Nguồn không nói gì về tình trạng pháp lý của adapalene ở Việt Nam.
+#   - Nhóm RETINOID của SkinWise gồm cả retinol mỹ phẩm. AAD treat và DermNet nói về retinoid thuốc; chỉ trang AAD skin-color nói retinol 'can unclog pores and fade dark spots'. Nguồn không so sánh hiệu quả retinol với adapalene.
+#   - Mốc 12 tuần của DermNet nói về retinoid thuốc bôi lúc đi ngủ, không nói riêng về retinol.
+#   - Đã kiểm lại 9/9 đoạn trích bằng check_text.py: OK.
+#   - Tôi tự kiểm lại: 9/9 đoạn trích OK bằng check_text.py trên _workspace/goals/pages/aad-acne-treat.txt, aad-adult-acne.txt, aad-acne-skin-color.txt, dermnet-topical-retinoids.txt (danh sách đoạn trích ở _workspace/goals/critic-acne/).
+#   - Ngữ cảnh: các câu của AAD treat nằm trong mục 'topical medications, all approved by the U.S. FDA, that dermatologists may include in an acne treatment plan'. Đây là retinoid dạng thuốc. Body câu 1 viết 'Retinoid bôi da' cho cả nhóm RETINOID (gồm retinol mỹ phẩm). Ý cho retinol chỉ có trang AAD skin-color đỡ ('Retinol: This can unclog pores and fade dark spots', trong mẹo cho mụn nhẹ ở da màu). Bản nháp đã ghi giới hạn này trong notes.
+#   - DermNet dòng 178 'Some topical retinoids are contraindicated for use in pregnancy' nằm trong mục Contraindications. Dòng 230 ghi rủi ro đặc biệt với tazarotene. Body không nói quá.
+#   - Trang AAD skin-color nhắc tên thương hiệu (Differin). Body không nhắc tên thương hiệu nào: đạt.
+#   - URL aad-adult-acne và aad-acne-skin-color chưa có khối [[source]] trong rules.toml hay goals.toml. goals.py sẽ báo lỗi 'has no [[source]] block' khi seed nếu không kèm new_source_blocks. Bản nháp tôi nhận không có trường này.
+[[item]]
+key = "acne-retinoid"
+goal = "acne"
+kind = "active"
+group = "RETINOID"
+title_vi = "Retinoid (vd. adapalene, retinol)"
+body_vi = "Retinoid bôi da có thể giúp thông lỗ chân lông, giảm mụn đầu đen, mụn đầu trắng và một số mụn viêm, đồng thời có thể làm mờ thâm sau mụn. Adapalene là retinoid mua được không cần đơn ở Mỹ; tretinoin, tazarotene, trifarotene là thuốc kê đơn, cần bác sĩ. Bác sĩ da liễu thường khuyên bôi retinoid vào buổi tối và bảo vệ da khỏi nắng trong thời gian dùng. Có thể mất 12 tuần hoặc lâu hơn mới thấy cải thiện. Một số retinoid bôi không được dùng khi mang thai; người đang hoặc muốn mang thai nên hỏi bác sĩ da liễu trước khi dùng."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Retinoid you apply to your skin: This medication works to clear your pores, and can treat blackheads, whiteheads, and some pimples." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "If you develop dark spots after acne clears, a retinoid can help lighten these spots." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Non-prescription retinoid Adapalene (You’ll find acne treatment that contains this retinoid online and in stores.)" },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "These instructions include protecting your skin from the sun while using a retinoid and applying this medication as directed." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "For example, dermatologists often recommend applying a topical retinoid in the evening." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "It may take 12 weeks or longer before improvement is seen." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Some topical retinoids are contraindicated for use in pregnancy" },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you’re pregnant or trying to get pregnant, consult a dermatologist before treating acne on your own." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Retinol: This can unclog pores and fade dark spots." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: bỏ câu 'nồng độ trong mỹ phẩm có thể thấp hơn' (không có nguồn), thay bằng câu chỉ nói điều nguồn có; thêm đoạn trích 'This makes it an effective treatment for different types of acne.'
+#   - Ý đã bỏ, để người duyệt biết: không nguồn nào nói nồng độ cụ thể hay azelaic acid nồng độ thấp trong mỹ phẩm. Trang AAD treat đặt azelaic acid trong mục thuốc bôi (Azelex, Finevin, kê đơn ở Mỹ); trang adult-acne lại xếp nó vào nhóm không kê đơn.
+#   - Không nguồn nào trong số đã tải nêu tác dụng phụ hay lưu ý riêng cho azelaic acid.
+#   - Đã kiểm lại 4/4 đoạn trích: OK.
+#   - Tôi tự kiểm lại: 4/4 đoạn trích OK.
+#   - Câu cuối của body 'Nguồn AAD nói về azelaic acid dạng thuốc bôi' chỉ đúng với trang AAD treat. Trang adult-acne (cũng của AAD) xếp azelaic acid vào nhóm sản phẩm không kê đơn. Người duyệt có thể viết lại thành 'Một trang AAD xếp azelaic acid vào thuốc bôi, trang khác nói có trong sản phẩm không cần đơn', hoặc bỏ câu này.
+#   - URL aad-adult-acne chưa có khối [[source]].
+[[item]]
+key = "acne-azelaic-acid"
+goal = "acne"
+kind = "active"
+group = "AZELAIC_ACID"
+title_vi = "Azelaic acid"
+body_vi = "Azelaic acid có thể giúp thông lỗ chân lông, tác động lên vi khuẩn gây mụn và giảm viêm do mụn, nên dùng được cho nhiều kiểu mụn. Nó cũng có thể làm mờ các vết thâm còn lại khi mụn lành. Nguồn AAD nói về azelaic acid dạng thuốc bôi."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Azelaic acid: This acne treatment opens clogged pores and helps keep them open, works on the bacteria that cause acne, and reduces inflammation due to acne." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "This makes it an effective treatment for different types of acne." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Azelaic acid can also treat the dark spots that appear when acne clears." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Azelaic acid: It fights acne and can also fade the dark spots that appear when an acne spot clears." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: trích thêm câu về nồng độ / dạng sản phẩm (AAD treat) và câu 'use the product as directed on the instructions' (AAD adult-acne).
+#   - Câu 'dùng theo hướng dẫn trên bao bì' dựa vào lời khuyên chung cho mọi sản phẩm cho mụn, không riêng salicylic acid; người duyệt có thể bỏ câu này.
+#   - Trang AAD treat nói 'whiteheads and pimples', không nhắc mụn đầu đen; chữ 'đầu đen' lấy từ trang adult-acne. Không nguồn nào nêu tác dụng phụ riêng của salicylic acid.
+#   - Đã kiểm lại 5/5 đoạn trích: OK.
+#   - Tôi tự kiểm lại: 5/5 đoạn trích OK.
+#   - Body không nêu tác dụng phụ hay lưu ý nào. Các nguồn đã tải cũng không nêu lưu ý riêng cho salicylic acid, nên đây không phải lỗi.
+#   - URL aad-adult-acne chưa có khối [[source]].
+[[item]]
+key = "acne-bha"
+goal = "acne"
+kind = "active"
+group = "BHA"
+title_vi = "Salicylic acid (BHA)"
+body_vi = "Salicylic acid có thể thông lỗ chân lông bị bít và tẩy tế bào chết, nên hợp nhất với mụn đầu trắng và mụn đầu đen. Có nhiều nồng độ và dạng sản phẩm khác nhau, như sữa rửa mặt hay kem dưỡng. Nên dùng theo hướng dẫn trên bao bì."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Salicylic acid: Because it unclogs pores and exfoliates the skin, salicylic acid works best on whiteheads and blackheads." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Salicylic acid: Used for years to treat acne, salicylic acid opens clogged pores and exfoliates the skin." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "It’s effective for treating whiteheads and pimples." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "You’ll find salicylic acid available in different strengths and in different forms, including cleansers and moisturizers." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Use that product for 6 to 8 weeks, taking care to use the product as directed on the instructions." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: thêm hai đoạn trích ('Many adults who have mild acne...' và 'When shopping for acne-fighting products...'). Body giữ nguyên.
+#   - Câu 'không thêm sản phẩm khác' trên trang nói về sản phẩm cho mụn trong 6–8 tuần, không phải mọi sản phẩm chăm da; body viết 'sản phẩm khác' trong ngữ cảnh đó.
+#   - Trang định nghĩa 'adult acne' là người 25 tuổi trở lên; body không nêu tuổi. Trang cập nhật 1/10/23, ghi tài trợ Ortho Dermatologics, và nêu mốc 'Fewer breakouts: 4 to 8 weeks; Clearing: 16 weeks'.
+#   - Đã kiểm lại 8/8 đoạn trích: OK.
+#   - Tôi tự kiểm lại: 8/8 đoạn trích OK.
+#   - Câu mang thai (dòng 642) có câu tiếp 'Some acne treatments you can buy without a prescription aren't safe to use during pregnancy.' Body không nói quá ý này. Nguồn nói 'dermatologist', body viết 'bác sĩ': chấp nhận được.
+#   - Body có 5 câu, không có chữ 'trị'/'chữa', không nhắc tên sản phẩm.
+#   - URL aad-adult-acne chưa có khối [[source]].
+[[item]]
+key = "acne-adult"
+goal = "acne"
+kind = "info"
+title_vi = "Mụn ở người trưởng thành"
+body_vi = "Theo bác sĩ da liễu AAD, nhiều người lớn bị mụn nhẹ (mụn đầu đen, đầu trắng, mụn nhỏ) có thể tự chăm sóc bằng sản phẩm không cần đơn. Nên chọn một sản phẩm có hoạt chất hợp với kiểu mụn, dùng đều 6–8 tuần, không thêm sản phẩm khác trong thời gian đó, và bôi một lớp mỏng lên cả vùng hay nổi mụn chứ không chỉ lên nốt mụn. Mụn to, đau, nằm sâu dưới da hoặc để lại sẹo thì cần gặp bác sĩ da liễu. Nếu đang mang thai hoặc muốn có thai, nên hỏi bác sĩ trước khi tự xử lý mụn."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Many adults who have mild acne can effectively treat it with over-the-counter (available without a prescription), acne-fighting products available today," },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Mild acne means that you may have blackheads and whiteheads along with small pimples, or just small pimples." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "When shopping for acne-fighting products, you want to find one product that contains an active ingredient which can effectively treat the type of acne you have." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Use that product for 6 to 8 weeks, taking care to use the product as directed on the instructions." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "During this time, don’t add another product." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "You want to apply a thin layer of acne medication to the whole area rather than just your acne spots." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you have large, painful pimples that sit deep in your skin or acne that leaves a scar when it clears, you’ll need to see a dermatologist for treatment." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you’re pregnant or trying to get pregnant, consult a dermatologist before treating acne on your own." },
+]
+
+# Lưu ý người duyệt:
+#   - Claim gốc có 'chống nắng' và 'kiên nhẫn'. Trang skin-color KHÔNG nhắc chống nắng ở thân bài, nên body bỏ ý chống nắng. Đã thử tải trang AAD về làm mờ vết thâm ở da màu nhưng đoán sai URL (404, xem problems); nếu cần ý chống nắng, nên tìm đúng URL trang đó.
+#   - Ý 'kiên nhẫn' chỉ được đỡ gián tiếp: 'dark spots ... can last much longer than the acne'. Body diễn đạt là 'thâm có thể kéo dài lâu hơn mụn', không khuyên thời gian cụ thể.
+#   - Câu 'nặn mụn tăng nguy cơ sẹo' nằm trong một khung riêng ('Do not pop pimples') chứ không trong thân mẹo; vẫn là chữ của trang.
+#   - AAD gộp người gốc châu Á vào 'skin of color'; không có nghĩa mọi người châu Á đều có da sẫm màu. Title dùng 'da sẫm màu'.
+#   - 7/7 đoạn trích OK trên aad-acne-skin-color.txt (và bản -full). Ngữ cảnh đúng: mẹo 1, khung 'Do not pop pimples', mẹo 7, mẹo 9.
+#   - Trang không có ngày cập nhật hiển thị (tài liệu dẫn mới nhất là 2016) và có ghi tài trợ Ortho Dermatologics.
+#   - Body bỏ ý chống nắng là đúng, vì trang này không nhắc. Trang có liên kết 'How to fade dark spots in skin of color' nếu muốn tìm nguồn cho ý đó.
+#   - Cần khối [[source]] cho URL skin-color (bản nháp không kèm new_source_blocks).
+[[item]]
+key = "acne-darker-skin-marks"
+goal = "acne"
+kind = "info"
+title_vi = "Mụn và vết thâm ở da sẫm màu"
+body_vi = "Với da màu (gồm người gốc châu Á), mụn thường để lại các đốm hoặc mảng thâm, và vết thâm có thể kéo dài lâu hơn cả mụn. Xử lý mụn là cách loại bỏ nguyên nhân gây thâm. Nặn, cạy mụn có thể làm tăng nguy cơ để lại sẹo; chăm sóc da nhẹ nhàng có thể giúp hơn là chà mạnh. Với da sẫm màu, peel hoá học, mài da hay laser (kể cả loại dùng tại nhà) có thể để lại thâm hoặc đốm sáng vĩnh viễn, nên gặp bác sĩ da liễu trước khi dùng."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "It includes people of African, Asian, Latino, Mediterranean, Middle Eastern, and Native American descent." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "For people with skin of color, acne is often accompanied by dark spots or patches called hyperpigmentation." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Many people seek a dermatologist's help for the dark spots, which can last much longer than the acne." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "When you get rid of the acne, you eliminate what's causing the dark spots." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "If you pick, pop, or squeeze acne, you increase your risk of getting a scar." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Science shows that what really works to clear acne is gentle skin care." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "If you have darkly pigmented skin, even the at-home versions of these acne treatments can cause side effects like permanent dark marks and light spots." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: đổi 'sản phẩm trị mụn' thành 'sản phẩm cho mụn'; trích thêm câu 'Store products that contain benzoyl peroxide according to instructions on the package.'
+#   - Chủ đề nhạy cảm, có thể thay đổi: trang cập nhật 3/25/25 và nói AAD sẽ tiếp tục cập nhật; trang dựa vào đợt FDA kiểm 95 sản phẩm tháng 3/2025. Người duyệt nên đọc lại trang trước khi bật.
+#   - Các khuyến nghị bảo quản / thay sau 10–12 tuần chỉ áp dụng 'If you are concerned'; body giữ điều kiện 'Nếu lo ngại'.
+#   - Trang nhắc kết quả JAAD: dùng BPO đều đặn không liên quan đến benzene máu cao hơn hay nguy cơ ung thư cao hơn; body không nêu, người duyệt có thể thêm. Trang khuyên vứt sản phẩm đã gặp nhiệt độ trên 78°F (~26°C), thấp hơn nhiệt độ phòng thường gặp ở Việt Nam; body không nhắc.
+#   - Đã kiểm lại 7/7 đoạn trích: OK.
+#   - Tôi tự kiểm lại: 7/7 đoạn trích OK.
+#   - Ngữ cảnh (dòng 593): các khuyến nghị bảo quản và thay sản phẩm sau 10–12 tuần nằm sau câu 'If you are concerned about using a product that contains benzoyl peroxide, the AAD recommends the following'. Body giữ đúng điều kiện 'Nếu lo ngại'. Cùng danh sách có 'Throw out products exposed to higher temperatures (e.g., greater than 78°F)'. Ngưỡng này (~26°C) rất đáng lưu ý với khí hậu Việt Nam, nên người duyệt nên cân nhắc thêm vào body.
+#   - Câu 'Options include adapalene, salicylic acid, or azelaic acid' có điều kiện 'If you are treating acne on your own and have concerns about benzoyl peroxide products'. Body viết 'nếu lo ngại': khớp.
+#   - Trang có thể đổi (AAD ghi sẽ cập nhật). Người duyệt nên đọc lại trang trước khi bật.
+#   - URL aad-bpo-faqs chưa có khối [[source]].
+[[item]]
+key = "acne-bpo-benzene"
+goal = "acne"
+kind = "info"
+title_vi = "Benzoyl peroxide và benzene"
+body_vi = "Benzene không phải thành phần cố ý thêm vào, nhưng benzoyl peroxide có thể phân huỷ thành benzene, nhất là khi gặp nhiệt độ cao hoặc để lâu. AAD cho biết đến nay chưa có bằng chứng rõ ràng rằng sản phẩm cho mụn chứa benzoyl peroxide có lượng benzene nguy hiểm, nhưng nghiên cứu về vấn đề này còn hạn chế. Nếu lo ngại, AAD khuyên bảo quản theo hướng dẫn trên bao bì và thay sản phẩm sau 10–12 tuần; hoặc cân nhắc hoạt chất khác như adapalene, salicylic acid, azelaic acid."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Benzene is not an intended ingredient." },
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Benzoyl peroxide can break down into benzene, especially when: Exposed to high temperatures Stored (remains in a container) for a long time" },
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Keep in mind that to date, there is no clear evidence that acne products containing benzoyl peroxide have dangerous levels of benzene." },
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Current research on this topic is limited." },
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Store products that contain benzoyl peroxide according to instructions on the package." },
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Replace products that contain benzoyl peroxide every 10-12 weeks." },
+  { url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs", quote = "Options include adapalene, salicylic acid, or azelaic acid." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: title và câu 1 nói rõ 'retinoid dạng thuốc', nêu tên chất và 'nhiều loại cần bác sĩ kê'; trích thêm 'Prescribed topical retinoids include...'; thêm câu cuối nói nguồn không nói về retinol mỹ phẩm. Thêm đoạn trích AAD adult-acne để đỡ ý 'cần gặp bác sĩ' (trước đó chỉ là suy ra từ 'not recommended as monotherapy').
+#   - 'Nhiều loại cần bác sĩ kê' thay vì 'tất cả': DermNet xếp adapalene vào nhóm kê đơn, còn AAD treat (Mỹ) nói adapalene bán không cần đơn.
+#   - Trang DermNet cập nhật 7/2021. AAD treat (6/2024) nói 'at least 6 to 8 weeks' để bắt đầu thấy ít mụn hơn (cho mọi phác đồ); hai mốc không mâu thuẫn.
+#   - Ý chống nắng trùng một phần với luật usage 'retinoid-sun-sensitivity' đã có.
+#   - Đã kiểm lại 6/6 đoạn trích: OK.
+#   - Tôi tự kiểm lại: 6/6 đoạn trích OK.
+#   - Câu chống nắng / dưỡng ẩm (DermNet dòng 192) nằm ngay sau 'Prescribed topical retinoids include ...' và câu bôi ban đêm. Ngữ cảnh là retinoid thuốc, body đã nói rõ điều này.
+#   - DermNet nói 'mild to moderately severe acne'. Body viết 'mụn nhẹ đến vừa': không nói quá.
+#   - Có trùng ý với acne-retinoid (12 tuần, buổi tối, chống nắng). Người duyệt có thể gộp hai mục.
+[[item]]
+key = "acne-retinoid-patience"
+goal = "acne"
+kind = "info"
+title_vi = "Retinoid dạng thuốc cho mụn: dùng buổi tối và kiên nhẫn"
+body_vi = "Retinoid dạng thuốc bôi (như adapalene, tretinoin, trifarotene; nhiều loại cần bác sĩ kê) thường được bôi lên mặt mỗi ngày một lần vào giờ đi ngủ và có thể giúp mụn nhẹ đến vừa. Có thể mất 12 tuần hoặc lâu hơn mới thấy cải thiện. Ban ngày nên dùng kem chống nắng / dưỡng ẩm để bớt nhạy cảm với nắng và khô da. Với mụn nặng, nhất là mụn mủ kèm nốt sâu và nang, retinoid bôi không nên dùng một mình; mụn to, đau, nằm sâu thì cần gặp bác sĩ da liễu. Nguồn này nói về retinoid dạng thuốc, không nói về retinol trong mỹ phẩm."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Prescribed topical retinoids include adapalene, alitretinoin , tazarotene, tretinoin, and trifarotene." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Applied to the face once daily at bedtime, topical retinoids such as adapalene, isotretinoin, tretinoin ( retinoic acid ), and trifarotene can help mild to moderately severe acne ." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "They are effective first-line treatment for comedonal and inflammatory acne, but are not recommended as monotherapy for severe acne, especially if there are pustules with deep nodules and cysts." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "It may take 12 weeks or longer before improvement is seen." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "The regular application of a sunscreen / moisturiser combination during the day will protect against the sun sensitivity and dryness." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you have large, painful pimples that sit deep in your skin or acne that leaves a scar when it clears, you’ll need to see a dermatologist for treatment." },
+]
+
+# Lưu ý người duyệt:
+#   - Trang gợi ý (AAD treat) là trang 'bác sĩ điều trị thế nào', KHÔNG có danh sách tiêu chí 'khi nào nên đi khám'. Tiêu chí (mụn sâu, đau, để lại sẹo, không đỡ sau vài tuần, thâm sau mụn) lấy từ trang AAD adult-acne-treatment, viết cho người lớn (25 tuổi trở lên).
+#   - Nguồn nói 'after weeks' / 'within a few months', không nêu số tuần cụ thể; body viết 'vài tuần'.
+#   - Danh mục AAD có trang 'When see a dermatologist' riêng (thấy trong menu) nhưng tôi không có URL chính xác nên không tải.
+#   - 6/6 đoạn trích OK. Ngữ cảnh đúng: mục 'Who can treat acne at home?' và 'Who should see a board-certified dermatologist?' (adult-acne), phần chẩn đoán và mục thuốc toàn thân (treat).
+#   - Trang adult-acne viết cho người 25 tuổi trở lên, cập nhật 1/10/23. Trang cũng nói 'It is never the wrong time to see a dermatologist', có thể thêm nếu muốn.
+#   - Câu 'chỉ bác sĩ mới kê được' là nghĩa của chữ thuốc kê đơn, không cần nguồn riêng.
+#   - Cần khối [[source]] cho adult-acne-treatment (bản nháp không kèm new_source_blocks).
+[[item]]
+key = "acne-see-dermatologist"
+goal = "acne"
+kind = "info"
+title_vi = "Khi nào nên gặp bác sĩ da liễu vì mụn"
+body_vi = "Nên gặp bác sĩ da liễu nếu có mụn to, đau, nằm sâu dưới da, hoặc mụn để lại sẹo khi lành; sản phẩm mua ngoài khó có tác dụng với các loại mụn này. Cũng nên đi khám nếu dùng sản phẩm vài tuần mà không thấy kết quả mong muốn, hoặc thấy vết thâm sau khi mụn lành. Đôi khi thứ trông giống mụn lại là bệnh da khác, cần bác sĩ chẩn đoán. Mụn vừa đến nặng có thể cần thuốc kê đơn, chỉ bác sĩ mới kê được."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you have large, painful pimples that sit deep in your skin or acne that leaves a scar when it clears, you’ll need to see a dermatologist for treatment." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Products that you can buy online or in a store are unlikely to treat these types of acne effectively." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you are not achieving the desired results after weeks of using your acne treatment, it is time to see your dermatologist." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you are seeing dark spots on your skin after acne clears, it’s also time to see a dermatologist." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Sometimes what looks like acne isn’t acne: What looks like acne may be another condition." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "If you have moderate-to-severe acne, you may need stronger medication, so your dermatologist may prescribe one of the following:" },
+]
+
+# --- aging ---
+
+# Lưu ý người duyệt:
+#   - URL gợi ý (mcpress.mayoclinic.org) trả 403, không đọc được; đã thay bằng hai bài tổng quan PMC.
+#   - Claim gốc nói vitamin C 'giảm nếp nhăn nhỏ'. Tôi KHÔNG đưa khẳng định này vào: bài Pullar 2017 nói bằng chứng giảm nếp nhăn 'less than convincing'; bài Telang 2013 không nêu thử nghiệm nếp nhăn cụ thể nào. body_vi nói thẳng là bằng chứng chưa thuyết phục.
+#   - Bài Telang 2013 là bài tổng quan tường thuật ngắn trên tạp chí nhỏ (Indian Dermatol Online J), không phải tổng quan hệ thống; các câu về tác dụng bảo vệ UV dựa trên nghiên cứu cũ, phần nhiều đo trong điều kiện thí nghiệm.
+#   - Bài nói về L-ascorbic acid (nhóm VITAMIN_C). Dẫn xuất (VITAMIN_C_DERIVATIVE) không được nguồn đỡ cùng mức; bài chỉ nói 'research is being directed to find stable compounds of Vitamin C'. Mục này chỉ nên gắn nhóm VITAMIN_C.
+#   - Nguồn dùng chữ 'antioxidant drug' và 'treat'; body_vi tránh chữ 'trị' theo quy tắc.
+#   - Đã tự chạy check_text.py trên pmc3673383-vitc.txt và pmc5579659-vitc.txt: cả 5 quote đều OK.
+#   - Ngữ cảnh: ý 'không thay được kem chống nắng' có căn cứ ở câu ngay sau quote trong Telang 2013: 'Vit. C does not absorb UV light but exerts an UV-protective effect by neutralizing free radicals'. Số liệu bảo vệ UV trong bài là 'Under laboratory conditions' với vitamin C 10%.
+#   - Đã kiểm: Telang 2013 không có chữ 'wrinkle' nào. Pullar 2017 nói 'less than convincing' về các nghiên cứu phần lớn dùng hỗn hợp vitamin C với chất khác. Vì vậy câu 'bằng chứng chưa thuyết phục' khớp với nguồn. Telang có câu 'Clinical studies have shown that the topical use of Vit. C increases collagen production', nhưng câu này không nói về nếp nhăn.
+#   - Telang còn ghi tác dụng phụ nhẹ: 'yellowish discoloration of the skin… staining of clothes'. Người duyệt có thể thêm nếu muốn.
+#   - Gắn nhóm VITAMIN_C (L-ascorbic acid) là đúng. Không nên mở rộng sang VITAMIN_C_DERIVATIVE.
+[[item]]
+key = "aging-vitamin-c"
+goal = "aging"
+kind = "active"
+group = "VITAMIN_C"
+title_vi = "Vitamin C"
+body_vi = "Vitamin C là chất chống oxy hoá; khi bôi lên da, nó có thể giúp hạn chế tác hại của tia UV lên da, và nên dùng kèm kem chống nắng chứ không thay được kem chống nắng. Bằng chứng về việc vitamin C bôi da làm giảm nếp nhăn hiện chưa thuyết phục. Vitamin C kém bền, dễ bị oxy hoá khi gặp ánh sáng và ngả vàng. Hiếm khi da bị châm chích, đỏ hoặc khô sau khi bôi."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "Vitamin C is a potent antioxidant drug that can be used topically in dermatology to treat and prevent changes associated with photoageing." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "To optimize UV protection, it is important to use sunscreens combined with a topical antioxidant." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5579659/", quote = "Generally the demonstration of wrinkle decrease in these studies is less than convincing, and the technology to measure these changes is limited." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "It is unstable and, on exposure to light, gets oxidized to Dehydro Ascorbic Acid (DHAA), which imparts a yellow color." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "Rarely, stinging, erythema and dryness are observed after use of topical Vit. C." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: (1) thêm câu hỏi bác sĩ da liễu kèm quote AAD; (2) tách vế 'giảm số lần dùng hoặc đổi loại nhẹ hơn' (lấy từ bài tổng quan PMC2699641, 'is normally advised') ra khỏi câu gán cho bác sĩ da liễu AAD; câu về bác sĩ giờ chỉ gồm điều Dr. Alster nói (loại nhẹ nhất, cách đêm, tăng dần, buổi tối, chống nắng). Gộp câu buổi tối vào câu 4 để giữ 5 câu. Mọi quote đã chạy lại check_text.py: OK.
+#   - Claim gốc nói về 'giai đoạn da làm quen (khô, đỏ)'. Không nguồn nào mô tả kích ứng là một 'giai đoạn làm quen' tạm thời, tự hết; nên body_vi không dùng cụm này.
+#   - 'Chỉ dùng buổi tối' là lời khuyên của một bác sĩ (Dr. Alster) được AAD trích, kèm lý do nhạy nắng; AAD không nói dùng ban ngày là sai.
+#   - Lưu ý da sẫm màu ('With skin of color, irritation can trigger dark marks') đã đưa vào mục aging-retinoid, không lặp lại ở thẻ này.
+#   - So sánh mức kích ứng trong PMC2699641 dựa trên các nghiên cứu nhỏ (vd. n = 6 trong 14 ngày cho một phép so).
+#   - check_text.py: cả 8 quote OK (aad-retinoid.txt, pmc2699641.txt). Câu 'Then there’s retinol...' có câu ngay sau là 'It is available over the counter in a dizzying array of products.' Câu này đỡ vế 'có trong nhiều mỹ phẩm bán tự do'. Câu 'tretinoin, tazarotene, and trifarotene ... by prescription for acne' nói về dạng kê đơn cho mụn. body_vi dùng nó để nói chúng là thuốc kê đơn, đúng với nguồn.
+#   - Cuối trang AAD có câu 'Bottom line: If you’re considering using a retinol product, talk to your dermatologist...' khớp hơn với câu cuối của body_vi. Có thể thay hoặc thêm quote này.
+#   - Thẻ không nhắc 'không dùng khi mang thai'. Ý này đã có ở aging-retinoid. Nếu thẻ info có thể hiện riêng thì người duyệt nên cân nhắc thêm.
+[[item]]
+key = "aging-retinoid-vs-retinol"
+goal = "aging"
+kind = "info"
+title_vi = "Retinoid và retinol khác nhau thế nào?"
+body_vi = "Retinoid là tên gọi chung cho các chất gốc vitamin A dùng trên da; retinol là một loại retinoid, có trong nhiều mỹ phẩm bán tự do. Một số retinoid khác như tretinoin, tazarotene, trifarotene là thuốc kê đơn, cần bác sĩ. Retinoid có thể gây rát, bong tróc hoặc viêm da kích ứng; retinol và retinaldehyde gây kích ứng ít hơn đáng kể so với tretinoin và tazarotene. Bác sĩ da liễu khuyên bắt đầu bằng loại nhẹ nhất, dùng cách đêm rồi tăng dần, và vì retinoid làm da nhạy nắng hơn, chỉ dùng buổi tối và chống nắng ban ngày. Nếu da kích ứng, thường nên giảm số lần dùng hoặc đổi sang loại nhẹ hơn; nếu đang cân nhắc dùng retinol, có thể hỏi bác sĩ da liễu xem có hợp với da mình không."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Today, the term \"retinoids\" is a catch-all for an array of vitamin A-based products used on skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Then there’s retinol, a type of retinoid that’s routinely used to improve uneven skin tone, pigmentation, and texture." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "tretinoin, tazarotene, and trifarotene are topical formulations available by prescription for acne" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2699641/", quote = "This problem is more prominent with tretinoin and tazarotene whereas other retinoids mainly represented by retinaldehyde and retinol are considerably less irritating." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Many patients want to start right off with tretinoin, but I advise them to use the least-intense retinoid formula they can find, and use it every other night to start, slowly building up" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Because retinoids can make skin more sensitive to sun, Dr. Alster advises using it only at night and always using sun protection during the day" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2699641/", quote = "To counteract the symptoms of retinoid reaction, reduction in the frequency of application or switching to a less irritating retinoid is normally advised." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "A board-certified dermatologist can help you decide if retinoids are right for your skin." },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: (1) câu thời gian thêm 'đôi khi ba tháng' và thêm câu gặp bác sĩ da liễu kèm quote AAD; (2) 'để ngừa đốm nâu mới' đổi thành 'vì chống nắng giúp ngừa đốm nâu mới' theo 'helps to prevent'. Mọi quote đã chạy lại check_text.py: OK.
+#   - URL gợi ý https://www.aad.org/news/age-and-skin-care không còn bài viết: chuyển hướng tới trang mục lục skin-care-secrets. Đã thay bằng hai trang AAD theo độ tuổi.
+#   - AAD chỉ có trang cho 40s–50s và 60s–70s; không tìm thấy trang AAD cho tuổi 20–30, nên body_vi không nói gì về nhóm tuổi trẻ hơn.
+#   - Trang 60s–70s còn ghi khô da có thể do thuốc hoặc bệnh ('Medications and medical conditions can also play a role') và khuyên dùng thuốc mỡ khi da rất khô; chưa đưa vào vì giới hạn độ dài.
+#   - AAD có trang 'Caring for your skin in menopause' với câu 'Consider using a skin care product that contains retinol or peptides. These ingredients can increase collagen in your skin.' Chưa đưa vào vì chỉ áp dụng cho phụ nữ mãn kinh.
+#   - 'không hương liệu' dịch từ 'fragrance-free'; trang 60s–70s còn lưu ý sản phẩm 'unscented' vẫn có thể có chất che mùi.
+#   - check_text.py: cả 8 quote OK (aad-40s50s, aad-60s70s, aad-selecting, aad-wrinkle-remedies). Đã đọc ngữ cảnh. Trang 60s–70s có tiêu đề 'Skin care changes dermatologists recommend', nên viết 'bác sĩ da liễu khuyên' là đúng. Câu 'most products take at least six weeks' nằm trong mục 'Give the product time to work'.
+#   - 'ngay sau khi tắm' dịch từ 'within 3 minutes of bathing'. Có thể ghi rõ 'trong vòng 3 phút' cho sát nguồn.
+#   - Các URL AAD 40s-50s, 60s-70s, selecting-anti-aging-products, wrinkle-remedies chưa có khối [[source]] trong rules.toml. Cần new_source_blocks.
+[[item]]
+key = "aging-by-age"
+goal = "aging"
+kind = "info"
+title_vi = "Chăm da theo độ tuổi"
+body_vi = "Hội Da liễu Hoa Kỳ (AAD) có hướng dẫn riêng cho tuổi 40–50 và 60–70. Ở tuổi 40–50, chống nắng là nền tảng của mọi kế hoạch chống lão hoá; da cũng khô dần theo tuổi nên kem dưỡng ẩm giúp da trông tươi hơn. Ở tuổi 60–70, da dễ khô và kích ứng; bác sĩ da liễu khuyên dùng kem dưỡng không hương liệu ngay sau khi tắm và trong ngày, và vẫn chống nắng, vì chống nắng giúp ngừa đốm nâu mới. Sản phẩm chống lão hoá thường chỉ cho kết quả khiêm tốn, và phần lớn cần ít nhất sáu tuần, đôi khi ba tháng, mới thấy tác dụng. Nếu vẫn không thấy kết quả như mong đợi, có thể gặp bác sĩ da liễu."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-40s-and-50s", quote = "Sun protection forms the foundation of every anti-aging skin-care plan." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-40s-and-50s", quote = "As we age, skin becomes drier. Fine lines and wrinkles appear. Moisturizer traps water in our skin, giving it a more youthful appearance." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-60s-and-70s", quote = "During our 60s and 70s, skin can feel dry and irritated." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-60s-and-70s", quote = "Apply a creamy, fragrance-free moisturizer formulated for dry skin within 3 minutes of bathing and throughout the day." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-60s-and-70s", quote = "At this stage in your life, sun protection still offers many benefits. It helps to prevent new age spots and blotchy skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/selecting-anti-aging-products", quote = "It’s important to remember that anti-aging skin care products deliver modest results." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/wrinkle-remedies", quote = "While a moisturizer can immediately plump up fine lines, most products take at least six weeks to work. Sometimes it can take three months." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/wrinkle-remedies", quote = "If after following these tips you still do not see the results you expected, you may want to see a board-certified dermatologist" },
+]
+
+# --- dark-spots ---
+
+# Lưu ý người duyệt:
+#   - Trang AAD có tiêu đề 'How to fade dark spots in darker skin tones': viết cho người da sẫm màu (tăng sắc tố sau viêm), không phải hướng dẫn chung cho mọi loại da.
+#   - AAD đặt tretinoin và tazarotene trong danh sách sản phẩm 'buy without a prescription', nhưng ở Mỹ tretinoin và tazarotene là thuốc kê đơn (adapalene 0,1% gel là OTC). Nguồn không giải thích điểm này; body_vi nói rõ các chất này cần bác sĩ.
+#   - Bài PMC nói về tretinoin/adapalene/tazarotene 0,1% (thuốc), không nói về retinol mỹ phẩm. Retinol chỉ có trong danh sách của AAD.
+#   - Bài PMC tập trung vào da sẫm màu (skin of colour), là tổng quan tường thuật (narrative review), mức khuyến cáo B.
+#   - Nguồn không nói về dùng sáng/tối hay chống nắng riêng cho retinoid; phần đó đã có ở luật usage retinoid hiện có, không đưa vào đây.
+#   - Đã tự chạy check_text.py trên _workspace/goals/pages/aad-fade-dark-spots.txt và pmc9165630.txt: cả 5 đoạn trích đều OK. File trang là trang thật (tiêu đề 'How to fade dark spots in darker skin tones' / bài Drugs in Context 'how to manage facial hyperpigmentation in skin of colour').
+#   - Ngữ cảnh đã đọc: câu 'first-line' nằm trong Key practice points; gạch con ngay sau ghi 'Adverse effects include burning, skin dryness, retinoid dermatitis and post-inflammatory hyperpigmentation', khớp với lưu ý kích ứng trong body_vi. Hydroquinone 4% mới là first-line mức A; retinoid là 'can also be used' mức B. body_vi không nói retinoid là lựa chọn số một, nên chấp nhận được.
+#   - Cả hai nguồn đều viết cho da sẫm màu. Câu 'da sẫm màu' chỉ có trong câu về kích ứng, còn câu mở đầu nói chung chung. Vì người dùng là người Việt (da trung bình, dễ thâm sau viêm) nên không chặn, nhưng người duyệt nên biết.
+#   - Việc AAD xếp tretinoin/tazarotene vào nhóm 'buy without a prescription' mâu thuẫn với thực tế. body_vi đã nói rõ cần bác sĩ kê, đúng quy tắc.
+[[item]]
+key = "dark-spots-retinoid"
+goal = "dark-spots"
+kind = "active"
+group = "RETINOID"
+title_vi = "Retinoid"
+body_vi = "Retinoid (retinol, adapalene, tretinoin, tazarotene) có trong danh sách thành phần mà Hiệp hội Da liễu Hoa Kỳ (AAD) nêu là có thể làm mờ đốm thâm. Một bài tổng quan cũng xếp tretinoin, adapalene và tazarotene vào nhóm lựa chọn đầu tay cho tăng sắc tố. Retinoid có thể gây kích ứng da, và ở da sẫm màu, kích ứng này có thể làm thâm nặng hơn; bài tổng quan gợi ý bắt đầu ở nồng độ thấp rồi tăng dần. Tretinoin, tazarotene và adapalene nồng độ kê đơn là thuốc, cần bác sĩ kê và theo dõi."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you choose this option, use a product that contains one of the following ingredients: Azelaic acid Glycolic acid Kojic acid Retinoid (retinol, tretinoin, adapalene gel, or tazarotene) Vitamin C" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "These ingredients can fade existing dark spots." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Retinoids including tretinoin 0.1%, adapalene 0.1% or tazarotene 0.1% can also be used as first-line therapy (strength of recommendation: B)" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "This side effect of retinoid dermatitis is concerning because this condition might cause or exacerbate PIH in patients with darker skin." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "It has been suggested that starting at lower dosages and slowly increasing the concentration of the retinoid might help mitigate these side effects." },
+]
+
+# Lưu ý người duyệt:
+#   - Lượt sửa: theo phản biện, đã thêm đoạn trích 'These treatment options have less evidence when compared to hydroquinone therapies' (check_text OK trên pmc9165630.txt) để đỡ vế 'có ít bằng chứng hơn hydroquinone'. body_vi giữ nguyên.
+#   - Các nghiên cứu trong bài PMC dùng azelaic acid 20% (so với hydroquinone 2–4%), chủ yếu trên nám (melasma). Ở nhiều nước 15–20% là nồng độ thuốc; sản phẩm mỹ phẩm thường thấp hơn. Nguồn không nói về hiệu quả ở nồng độ mỹ phẩm. Phản biện gợi ý (không bắt buộc) có thể thêm câu 'các nghiên cứu dùng nồng độ 20%'; để người duyệt quyết định.
+#   - AAD trang này viết cho da sẫm màu.
+#   - Đã tự chạy lại check_text.py trên _workspace/goals/pages/aad-fade-dark-spots.txt (18.858 byte, trang thật) và pmc9165630.txt (65.694 byte, bài Drugs in Context 2022 'how to manage facial hyperpigmentation in skin of colour'): cả 6 đoạn trích đều OK.
+#   - Ngữ cảnh AAD: danh sách nằm trong mục 'Use a product that can even out your skin tone', ngay trước câu 'You may have success with a product that you can buy without a prescription.' Ngay sau danh sách là 'These ingredients can fade existing dark spots.' Không có phủ định hay mục 'lời đồn' nào làm đổi nghĩa.
+#   - Ngữ cảnh PMC: mục 'Azelaic acid' (cơ chế, tác dụng phụ) đúng như body_vi. Gạch con 'less evidence when compared to hydroquinone therapies' nằm ngay dưới dòng Second-line, nên đỡ được vế so với hydroquinone. Hydroquinone được ghi là cần bác sĩ, đúng quy tắc.
+#   - Cả hai nguồn đều viết cho da màu trung bình đến sẫm (AAD: 'in darker skin tones'; PMC: 'skin of colour'). Cơ chế và tác dụng phụ không phụ thuộc màu da nên không chặn. Người duyệt có thể cân nhắc thêm cụm 'ở da sẫm màu' cho thống nhất với thẻ niacinamide.
+#   - Các nghiên cứu so sánh trong bài PMC dùng azelaic acid 20% trên nám. body_vi không nêu hiệu quả theo con số nên không nói quá nguồn. Việc có thêm câu về nồng độ hay không để người duyệt quyết định.
+#   - Chưa thấy khối [[source]] nào trong backend/data/rules.toml cho cả hai URL (fade-dark-spots, PMC9165630). Bản nháp được chuyển cho tôi không có new_source_blocks, nên cần kiểm lại phần này khi ghi TOML.
+[[item]]
+key = "dark-spots-azelaic-acid"
+goal = "dark-spots"
+kind = "active"
+group = "AZELAIC_ACID"
+title_vi = "Azelaic acid"
+body_vi = "Azelaic acid có trong danh sách thành phần mà AAD nêu là có thể làm mờ đốm thâm. Theo một bài tổng quan, azelaic acid làm giảm quá trình tạo sắc tố melanin; bài xếp nó vào nhóm lựa chọn hàng thứ hai, có ít bằng chứng hơn hydroquinone (thuốc cần bác sĩ). Tác dụng phụ thường thoáng qua: đỏ, kích ứng, khô, rát và ngứa."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you choose this option, use a product that contains one of the following ingredients: Azelaic acid Glycolic acid Kojic acid Retinoid (retinol, tretinoin, adapalene gel, or tazarotene) Vitamin C" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "These ingredients can fade existing dark spots." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "AA works to depigment lesions by acting as a tyrosinase inhibitor as well as producing selective cytotoxic and antiproliferative effects on melanocytes, ultimately decreasing melanogenesis." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Second-line topical treatments include azelaic acid, cosmeceuticals, topical tranexamic acid, kojic acid and cysteamine (strength of recommendation: B)" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "These treatment options have less evidence when compared to hydroquinone therapies" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Side effects associated with AA are generally transient, most commonly presenting as erythema, irritation, dryness, burning and pruritus." },
+]
+
+# Lưu ý người duyệt:
+#   - Nguồn chỉ nêu glycolic acid; nhóm AHA của app còn gồm lactic, mandelic... Nguồn không nói các AHA khác làm mờ thâm. Có thể cân nhắc chỉ hiển thị mục này khi nói rõ là glycolic acid (body_vi đã ghi).
+#   - Bài PMC9165630 có nhắc glycolic acid nhưng ở dạng peel 20–70% do bác sĩ làm, không phải sản phẩm dùng hằng ngày, nên không dùng làm nguồn cho mục này.
+#   - Hai câu về kích ứng nói chung về mọi sản phẩm, không riêng AHA; dùng làm lưu ý khi dùng vì đúng ngữ cảnh 'thâm'.
+#   - Trang AAD viết cho da sẫm màu.
+#   - Đã chạy check_text cho 4 đoạn trích trên aad-fade-dark-spots.txt: tất cả OK.
+#   - Ngữ cảnh: 'When a skin or hair care product irritates...' nằm ở mục nguyên nhân 'Skin care product'. Câu sau trên trang khuyên dùng sản phẩm dịu nhẹ, 'for sensitive skin', 'fragrance-free'. 'If a product burns or stings...' nằm trong danh sách phòng thâm tái phát. Cả hai nói về mọi sản phẩm, không riêng AHA, và body_vi dùng đúng như vậy.
+#   - body_vi đã nói rõ nguồn chỉ nhắc glycolic acid. Nhóm AHA trong app còn gồm lactic, mandelic..., nên khi hiển thị theo nhóm AHA người dùng có thể ngầm hiểu cho mọi AHA. Câu giới hạn trong body_vi là đủ.
+[[item]]
+key = "dark-spots-aha"
+goal = "dark-spots"
+kind = "active"
+group = "AHA"
+title_vi = "Glycolic acid (AHA)"
+body_vi = "Glycolic acid, một AHA, có trong danh sách thành phần mà AAD nêu là có thể làm mờ đốm thâm. AAD cũng lưu ý sản phẩm làm da kích ứng có thể tự gây thêm đốm thâm, nên nếu sản phẩm làm rát hoặc châm chích khi thoa thì ngừng dùng. Nguồn chỉ nhắc glycolic acid, không nói về các AHA khác."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you choose this option, use a product that contains one of the following ingredients: Azelaic acid Glycolic acid Kojic acid Retinoid (retinol, tretinoin, adapalene gel, or tazarotene) Vitamin C" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "These ingredients can fade existing dark spots." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "When a skin or hair care product irritates your skin, the product can cause dark spots on your skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If a product burns or stings when you apply it, stop using it." },
+]
+
+# Lưu ý người duyệt:
+#   - Lượt sửa: đã bỏ câu 'Bằng chứng cho niacinamide yếu hơn retinoid' (nói quá nguồn: retinoid first-line và cosmeceuticals second-line cùng mức khuyến cáo B). Thay bằng câu phản biện đề xuất. Thêm đoạn trích 'less evidence ... hydroquinone' và đoạn trích retinoid first-line để đỡ vế 'sau hydroquinone và retinoid'; cả hai check_text OK.
+#   - Lưu ý: retinoid và cosmeceuticals cùng mức khuyến cáo B; 'sau retinoid' chỉ nói thứ tự hàng (first-line/second-line), không nói bằng chứng yếu hơn retinoid.
+#   - Câu DermNet có khoảng trắng trước dấu phẩy ('wrinkles , hyperpigmented') vì trên trang 'wrinkles' là link; giữ nguyên, nếu không sẽ MISSING.
+#   - DermNet nói trong ngữ cảnh da lão hoá (nghiên cứu nicotinamide 5% ở 50 phụ nữ, do Procter & Gamble tài trợ); không nói riêng về thâm sau mụn.
+#   - Bài PMC tập trung vào da sẫm màu; câu 'therapeutic benefits' gộp niacinamide với arbutin, vitamin C, liquiritin, không nêu số liệu riêng cho niacinamide.
+#   - Niacinamide không có trong danh sách thành phần của trang AAD fade-dark-spots.
+#   - Đã tự chạy lại check_text.py: 5 đoạn trích PMC (pmc9165630.txt) và 1 đoạn trích DermNet (dermnet-nicotinamide.txt, dòng 170) đều OK. Câu DermNet có khoảng trắng trước dấu phẩy ('wrinkles , hyperpigmented') đúng như file trang.
+#   - Ngữ cảnh PMC mục 'Cosmeceuticals': câu ngay sau là 'These compounds should be considered for patients preferring a natural treatment option for their PIH or melasma in addition to photoprotection...'. Câu này khớp với body_vi và không làm đổi nghĩa.
+#   - Câu 'sau hydroquinone và retinoid' chỉ nói thứ tự hàng first-line/second-line. Retinoid và cosmeceuticals cùng mức khuyến cáo B. body_vi chỉ so bằng chứng với hydroquinone, đúng như gạch con của nguồn.
+#   - DermNet nói trong mục 'Anti-ageing skin care': nghiên cứu 5% trên 50 phụ nữ, do P&G tài trợ. Đây là đốm sắc tố do lão hoá, không riêng thâm sau mụn. body_vi chỉ nói 'đốm tăng sắc tố' nên chấp nhận được.
+#   - Chưa có khối [[source]] cho https://dermnetnz.org/topics/nicotinamide và PMC9165630 trong rules.toml, cần new_source_blocks khi ghi.
+[[item]]
+key = "dark-spots-niacinamide"
+goal = "dark-spots"
+kind = "active"
+group = "NIACINAMIDE"
+title_vi = "Niacinamide"
+body_vi = "Một bài tổng quan về tăng sắc tố ở da sẫm màu cho biết niacinamide (cùng arbutin, vitamin C, liquiritin) đã cho thấy lợi ích với các rối loạn sắc tố và thường dễ dung nạp, nhưng còn thiếu nghiên cứu dài hạn chặt chẽ. DermNet cũng ghi nhận niacinamide bôi da cải thiện đốm tăng sắc tố trong nhiều nghiên cứu lâm sàng. Bài tổng quan xếp nhóm này (cosmeceuticals, gồm niacinamide) vào lựa chọn hàng thứ hai, sau hydroquinone và retinoid; các lựa chọn hàng thứ hai có ít bằng chứng hơn hydroquinone."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Agents such as arbutin, ascorbic acid, liquiritin and niacinamide have all shown therapeutic benefits in treating pigmentary disorders in richly pigmented skin." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "These agents are generally well tolerated; however, more robust long-term studies are lacking." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Second-line topical treatments include azelaic acid, cosmeceuticals, topical tranexamic acid, kojic acid and cysteamine (strength of recommendation: B)" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "These treatment options have less evidence when compared to hydroquinone therapies" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Retinoids including tretinoin 0.1%, adapalene 0.1% or tazarotene 0.1% can also be used as first-line therapy (strength of recommendation: B)" },
+  { url = "https://dermnetnz.org/topics/nicotinamide", quote = "In multiple clinical studies, topical nicotinamide improved fine lines and wrinkles , hyperpigmented spots, red blotchiness, and skin sallowness (yellowing) as well as elasticity." },
+]
+
+# Lưu ý người duyệt:
+#   - Ứng viên muốn nói 'nám khác thâm sau mụn', nhưng trang melasma của AAD KHÔNG so sánh nám với thâm sau mụn (chỉ nói nám có thể bị nhầm với bệnh da khác). body_vi không đưa ý so sánh đó. Nếu cần, có thể ghép với câu của trang fade-dark-spots: thâm xuất hiện khi mụn lành (đã dùng ở thẻ cause-and-time).
+#   - Câu 'irritate darker skin... make it darker' nói riêng về da sẫm màu; body_vi giữ chữ 'da sẫm màu'.
+#   - Ý 'đợi sau sinh' trên trang kèm lý do: khó biết sản phẩm không kê đơn có an toàn khi mang thai không; nám có thể tự cải thiện sau sinh.
+#   - Thẻ có 8 trích dẫn; người duyệt có thể bỏ bớt (vd. câu vị trí, câu mang thai) nếu muốn thẻ ngắn hơn và sửa body_vi tương ứng.
+#   - Đã chạy check_text cho 8 đoạn trích trên aad-melasma-overview.txt: tất cả OK.
+#   - Ngữ cảnh đã đọc: câu 'irritate darker skin' nằm trong đoạn nói điều trị nám ở da sẫm màu cần cách khác. Câu 3–6 tháng nằm sau 'Some people need a prescription strength-cream, procedure, or both'. Câu 'wait until you have your baby' kèm lý do về an toàn khi mang thai. body_vi khớp với cả ba.
+#   - Ý 'nám dễ quay lại khi ra nắng' dựa trên câu chưa được trích ('It's common for melasma to return when you spend time outdoors without protecting your skin from the sun'), nhưng đoạn trích 'For this reason... getting darker or returning' đã đủ đỡ ý này. Người duyệt có thể thêm câu kia nếu muốn.
+#   - Ứng viên gốc muốn nói 'khác thâm sau mụn', nhưng trang không so sánh như vậy. body_vi đã bỏ ý này, đúng.
+[[item]]
+key = "dark-spots-melasma"
+goal = "dark-spots"
+kind = "info"
+title_vi = "Nám (melasma)"
+body_vi = "Nám là các mảng, đốm sẫm hơn màu da, thường ở mặt (má, trán, cằm, trên môi), hay xuất hiện ở phụ nữ khi mang thai hoặc khi bắt đầu dùng thuốc tránh thai. Kem có thể làm nhạt nám nhưng không làm nám biến mất vĩnh viễn; nám dễ quay lại khi ra nắng, nên cần chống nắng mỗi ngày và đội mũ rộng vành. Một số cách làm mờ nám có thể gây kích ứng da sẫm màu và làm nám đậm hơn. AAD khuyên dùng sản phẩm không kê đơn tối đa 3–6 tháng, không thấy kết quả thì gặp bác sĩ da liễu; nếu đang mang thai thì đợi sau sinh mới xử lý nám."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "Melasma is a skin condition that causes patches and spots, usually on the face, which are darker than your natural skin tone." },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "Many women first see these blotchy patches and freckle-like spots on their face during pregnancy or when they start taking birth control pills." },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "These usually appear on certain areas of face like the cheeks, forehead, chin, and even above the upper lip." },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "Treatments such as creams can help fade the discoloration, but treatments cannot make melasma go away forever." },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "For this reason, it is important to use sunscreen every day and wear a wide-brimmed hat to keep the spots from getting darker or returning." },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "For example, some melasma treatments can irritate darker skin, which can worsen melasma and make it darker." },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "If you use a non-prescription melasma treatment, dermatologists recommend using it for no longer than three to six months" },
+  { url = "https://www.aad.org/public/diseases/a-z/melasma-overview", quote = "However, if you are pregnant, wait until you have your baby to treat melasma." },
+]
+
+# Lưu ý người duyệt:
+#   - Trang nói về age spots (đốm nâu do tuổi/nắng, đồi mồi), không nói về thâm sau mụn hay nám. body_vi giới hạn đúng 'đốm nâu do tuổi và nắng'. Không nên diễn đạt thành 'mọi đốm thâm có thể là ung thư'.
+#   - Trang ghi 'Last updated: 9/28/21'.
+#   - Đã chạy check_text cho 3 đoạn trích trên aad-get-rid-spots.txt: tất cả OK.
+#   - Ngữ cảnh: mục 'Creams and lotions' khuyên gặp bác sĩ da liễu trước, liệt kê seborrheic keratoses, actinic keratoses, skin cancer. body_vi giới hạn đúng ở đốm nâu do tuổi và nắng. Khi hiển thị dưới mục tiêu 'dark-spots', tiêu đề 'Cho bác sĩ xem đốm trước khi tự làm mờ' có thể bị hiểu rộng cho mọi loại thâm. Người duyệt có thể cân nhắc thêm chữ 'đốm nâu do tuổi' vào title_vi.
+[[item]]
+key = "dark-spots-check-first"
+goal = "dark-spots"
+kind = "info"
+title_vi = "Cho bác sĩ xem đốm trước khi tự làm mờ"
+body_vi = "AAD khuyên nên gặp bác sĩ da liễu trước khi tự làm mờ đốm nâu do tuổi và nắng (đồi mồi), vì thứ trông giống đốm nâu có thể là ung thư da. Nếu dùng kem làm mờ lên một vết ung thư da, ung thư có thể có thêm thời gian để phát triển và lan rộng. Bác sĩ có thể khám và cho biết đốm nào có thể là ung thư da."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/cosmetic/age-spots-marks/get-rid-spots", quote = "What looks like an age spot could be skin cancer, so you should see a board-certified dermatologist for a skin exam before treating age spots." },
+  { url = "https://www.aad.org/public/cosmetic/age-spots-marks/get-rid-spots", quote = "If you use an age spot treatment to fade a skin cancer, this can give the cancer time to grow and possibly spread." },
+  { url = "https://www.aad.org/public/cosmetic/age-spots-marks/get-rid-spots", quote = "A dermatologist can examine your skin and tell you if any of the spots could be skin cancer." },
+]
+
+# --- dry-sensitive ---
+
+# Lưu ý người duyệt:
+#   - URL được gợi ý (aad.org/.../dry-skin-treatment) KHÔNG có các mẹo tắm: trang đó nói về điều trị da khô quá mức theo phác đồ bác sĩ và chỉ trỏ sang trang 'Dermatologists' top tips for relieving dry skin'. Tôi dùng trang mẹo đó thay thế.
+#   - Ngữ cảnh nguồn: mẹo cho da 'excessively dry' tại nhà, nói về tắm toàn thân (bath/shower), không riêng da mặt. Body_vi không nói riêng về mặt.
+#   - Lượt sửa: thêm câu 'gặp bác sĩ da liễu' theo phản biện. Ý 'có thể do một bệnh khác' dựa vào câu kế tiếp trên trang (viêm da cơ địa, vảy nến, bệnh thận); body_vi không kể tên bệnh để tránh gợi ý tự chẩn đoán.
+#   - Trang ghi 'Last updated: 1/2/26'.
+#   - check_text.py: cả 6 quote OK trên _workspace/goals/pages/aad-dry-tips.txt.
+#   - Đã tự chạy check_text.py trên _workspace/goals/pages/aad-dry-tips.txt (trang 'Dermatologists' top tips for relieving dry skin', file 17,6 KB, đúng trang thật, không phải trang chặn bot). Cả 6 quote đều OK.
+#   - Đã đọc ngữ cảnh (dòng 595 và 627): các mẹo nằm trong danh sách 'These tips from board-certified dermatologists can help you heal excessively dry skin at home'. Không có phủ định, không phải mục lời đồn. Câu 'gặp bác sĩ' đi ngay trước câu 'Your overly dry skin may be due to an underlying medical condition, such as atopic dermatitis, psoriasis, or kidney disease', nên ý 'có thể do một bệnh khác' trong body_vi có căn cứ.
+#   - Giới hạn còn lại (bản nháp đã ghi): nguồn nói về da khô quá mức và tắm toàn thân, không nói riêng về da mặt. Ngay trong đoạn này AAD còn có 'Wash your skin with a gentle cleanser' và 'Close your bathroom door while showering'. Có thể thêm sau nếu muốn, không bắt buộc.
+#   - URL aad.org/.../dermatologists-tips-relieve-dry-skin chưa có khối [[source]] trong backend/data/rules.toml, nên new_source_blocks ở cấp mục tiêu phải có URL này.
+[[item]]
+key = "dry-bathing-habits"
+goal = "dry-sensitive"
+kind = "info"
+title_vi = "Tắm ngắn bằng nước ấm, dưỡng ẩm khi da còn ẩm"
+body_vi = "Hội Da liễu Hoa Kỳ (AAD) khuyên chỉ tắm khoảng 5–10 phút và dùng nước ấm. Sau khi tắm, thấm nhẹ da bằng khăn sạch, khô thay vì chà xát, vì chà có thể làm da rất khô bị kích ứng. Thoa kem dưỡng ẩm không hương liệu ngay sau đó, khi da còn ẩm; có thể thoa lại khi rửa tay xong và khi thấy da khô. Nếu đã làm theo các mẹo này mà da vẫn khô, nên gặp bác sĩ da liễu, vì da khô kéo dài có thể do một bệnh khác gây ra."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Limit baths and showers to five to ten minutes, using warm water." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "To dry off after bathing, gently pat your skin with a clean, dry towel." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Rubbing your skin dry can irritate extremely dry skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "When you finish your shower or bath, gently pat your skin dry and immediately apply your fragrance-free moisturizer." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Be sure to apply your moisturizer when your skin is still damp after taking a shower or bath, after washing your hands, and when your skin feels dry." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "If you continue to have dry skin after trying the top tips that dermatologists recommend, it’s time to see a board-certified dermatologist." },
+]
+
+# Lưu ý người duyệt:
+#   - URL được gợi ý (skin-care-tips-dermatologists-use, '10 skin care secrets') KHÔNG nói về thêm từng sản phẩm hay thử trước; câu gần nhất chỉ là 'Use skin care products that match your skin's needs.' Không dùng trang này; thay bằng 3 trang AAD khác.
+#   - Câu 'one new product at a time' là lời trích một bác sĩ trong thông cáo báo chí về chăm sóc da cho tween/teen, không phải trang hướng dẫn chung cho người lớn; bản thân câu viết chung.
+#   - Ý 'dùng quá nhiều sản phẩm dễ kích ứng': nguồn chỉ nói về sản phẩm CHỐNG LÃO HOÁ dùng cùng lúc (trang maximize-anti-aging-products). body_vi giới hạn đúng như vậy.
+#   - Hai trang AAD lệch nhau về cách thử: test-skin-care-products nói 7–10 ngày, ngày hai lần, mặt trong cánh tay/khuỷu tay; maximize-anti-aging-products nói mặt trong cẳng tay, ngày hai lần, 4–5 ngày. body_vi dùng 7–10 ngày.
+#   - Lượt sửa: thêm câu 'nếu da bị phản ứng...' theo phản biện, body_vi giờ 4 câu nên không cần gộp. Không đưa ý retinol/glycolic châm chích 'normal and temporary' vì trang maximize lại khuyên ngừng sản phẩm gây châm chích (đồng ý với phản biện).
+#   - Trang test-skin-care-products ghi 'Last updated: 8/10/21', khá cũ.
+#   - check_text.py: cả 8 quote OK trên aad-news-guide.txt, aad-test-products.txt, aad-maximize.txt.
+#   - Đã tự chạy check_text.py. aad-news-guide.txt: 2/2 OK. aad-test-products.txt: 5/5 OK. aad-maximize.txt: 1/1 OK.
+#   - Ngữ cảnh aad-news-guide (dòng 927): đây là lời BS Marisa Garshick, MD, FAAD trong thông cáo về chăm sóc da cho tween/teen. Bản thân câu viết chung, không giới hạn theo tuổi. Viết 'một bác sĩ da liễu của AAD' tạm chấp nhận được vì bà là FAAD; chính xác hơn là 'một bác sĩ da liễu, thành viên AAD'.
+#   - Ngữ cảnh aad-test-products (dòng 595): ngay trước câu 'If you develop a skin reaction, gently wash the product off... don't use it again' trang có câu 'some ingredients, such as retinol and glycolic acid, can irritate your skin, particularly if your skin is sensitive. This is normal and temporary.' Trang aad-maximize thì nói nếu sản phẩm do bác sĩ kê gây châm chích, hãy hỏi bác sĩ trước khi ngừng. body_vi đặt câu 'không dùng lại' trong ngữ cảnh thử sản phẩm mới nên không sai nguồn. Tuy vậy người duyệt nên biết: với retinoid hay thuốc kê đơn, kích ứng nhẹ có thể là bình thường. Có thể thêm vế 'sản phẩm do bác sĩ kê thì hỏi bác sĩ trước khi ngừng' (có trong aad-maximize).
+#   - Câu về dùng nhiều sản phẩm cùng lúc đúng là chỉ nói về sản phẩm chống lão hoá (aad-maximize dòng 592), và body_vi đã giới hạn đúng như vậy.
+#   - Trang test-skin-care-products ghi 'Last updated: 8/10/21'.
+#   - Không URL nào trong 3 URL AAD của mục này có khối [[source]] trong rules.toml, nên cần có trong new_source_blocks.
+[[item]]
+key = "sensitive-one-product-at-a-time"
+goal = "dry-sensitive"
+kind = "info"
+title_vi = "Thêm từng sản phẩm mới một, thử trước khi dùng"
+body_vi = "Một bác sĩ da liễu của AAD khuyên mỗi lần chỉ thêm một sản phẩm mới để biết da có chịu được không; với da nhạy cảm, có thể thử một lượng nhỏ trước khi thoa cả mặt. AAD hướng dẫn thử ở một vùng nhỏ như mặt trong cánh tay hoặc khuỷu tay, ngày hai lần trong 7–10 ngày; nếu không bị đỏ, ngứa hay sưng thì có thể dùng. Nếu da bị phản ứng, rửa nhẹ sản phẩm đi càng sớm càng tốt và không dùng lại; phản ứng nặng, chườm mát không đỡ thì có thể cần gặp bác sĩ da liễu. Với sản phẩm chống lão hoá, AAD lưu ý dùng nhiều sản phẩm cùng lúc có thể làm da kích ứng."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/news/dermatologist-guide-skincare", quote = "When introducing new products to the skin, it is always best to introduce one new product at a time to ensure your skin can tolerate it" },
+  { url = "https://www.aad.org/news/dermatologist-guide-skincare", quote = "For those with sensitive skin, it can also help to apply a small amount of a new product to the skin to test it prior to applying to the whole face." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Apply the product to a test spot twice daily for seven to 10 days." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Choose a quarter-sized spot on your skin where the product won’t be rubbed or washed away, such as the underside of your arm or the bend of your elbow." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If after seven to 10 days you don’t have a skin reaction , such as red, itchy, or swollen skin, go ahead and use the product." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If you develop a skin reaction, gently wash the product off as soon as possible, and don’t use it again." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If your reaction to a product is severe and not relieved with cool compresses or petroleum jelly, you may need to see a dermatologist to help manage your symptoms." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/maximize-anti-aging-products", quote = "Start with one product. Using several anti-aging products at the same time can irritate your skin." },
+]
+
+# Lưu ý người duyệt:
+#   - URL Mayo Clinic được gợi ý bị chặn (403), nên dùng trang mẹo da khô của AAD thay thế.
+#   - Lời khuyên về sữa rửa nằm trong ngữ cảnh tắm toàn thân (nhắc nách, bẹn), không riêng da mặt; body_vi không nói 'sữa rửa mặt' mà nói 'sữa rửa'.
+#   - Trang còn liệt kê thành phần nên tìm trong kem/ointment: jojoba oil, dimethicone, glycerin, hyaluronic acid, lactic acid, lanolin, mineral oil, petrolatum, shea butter; và khuyên ngừng sản phẩm chứa alcohol, fragrance, retinoids khi da khô. Chưa đưa vào body_vi; có thể thành thẻ riêng.
+#   - check_text.py: cả 5 quote đều OK trên aad-dry-tips.txt (dòng 595, 609, 611).
+#   - Ý 'chất che mùi có thể gây kích ứng' nằm ở câu ngay sau quote 'unscented' trên trang: 'These chemicals can irritate dry, sensitive skin.' Chấp nhận được vì ý này ở ngay cạnh đoạn trích. Có thể thêm câu đó làm quote để chặt hơn.
+#   - Lời khuyên về sữa rửa thuộc ngữ cảnh tắm toàn thân (câu tiếp theo nhắc nách, bẹn). body_vi không viết 'sữa rửa mặt', nên không nói quá nguồn.
+#   - URL Mayo Clinic gợi ý ban đầu bị chặn (403) và đã được thay bằng trang AAD. Tôi không tự tải lại Mayo Clinic.
+#   - Câu 'gặp bác sĩ da liễu' của trang này đã đề nghị thêm vào thẻ dry-bathing-habits. Nếu người điều phối muốn, có thể đặt ở thẻ này thay vào đó.
+[[item]]
+key = "dry-cleanser-moisturizer"
+goal = "dry-sensitive"
+kind = "info"
+title_vi = "Sữa rửa dịu nhẹ, kem dưỡng không hương liệu"
+body_vi = "Với da khô, AAD khuyên dùng sữa rửa dịu nhẹ, chỉ vừa đủ để làm sạch, không cần tạo nhiều bọt. Một số sản phẩm như xà phòng khử mùi có thể quá mạnh với da khô, nhạy cảm; nên chọn sản phẩm ghi \"fragrance-free\" (không hương liệu). Chữ \"unscented\" (không mùi) chưa chắc là không hương liệu, vì có thể chứa chất che mùi gây kích ứng. Dạng kem hoặc dạng mỡ (ointment) giữ ẩm tốt hơn dạng lotion."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Apply enough cleanser to remove dirt and oil but avoid using so much that you see a thick lather." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Some skin care products, such as deodorant soaps, are too harsh for dry, sensitive skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Dermatologists recommend using products labeled \"fragrance-free.\"" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "If you see the word \"unscented,\" the product can contain chemicals that neutralize or hide the odors of other ingredients." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Ointments and creams add more moisture to skin and are more effective than lotions." },
+]
+
+# Lưu ý người duyệt:
+#   - Lượt sửa (theo phản biện, chọn cách 1): bỏ chữ 'hypoallergenic' và bỏ quote StatPearls về da nhạy cảm (đoạn đó không có trích dẫn, và câu kế tiếp khuyên chamomile, tránh chất bảo quản: nguồn yếu). Thay bằng 2 câu của AAD trên trang dry-tips về sản phẩm dịu nhẹ, 'fragrance-free'. AAD cũng nói 'Even hypoallergenic products can cause a skin reaction.' (trang maximize), nên không dùng nhãn hypoallergenic làm lời khuyên.
+#   - Lượt sửa: đổi tiêu đề sang dạng trung tính, không đặt ceramide lên đầu. Lưu ý: key 'dry-ceramide-fragrance-free' vẫn giữ để khớp bản trước; người điều phối có thể đổi key nếu muốn.
+#   - StatPearls (Harwood, Nassereddin, Krishnamurthy; cập nhật 12/02/2024) KHÔNG nói riêng ceramide phục hồi hàng rào da. Nó nói kem dưỡng nói chung phục hồi hàng rào, và ceramide là emollient 'filling in gaps between skin cells'. body_vi gắn ý 'phục hồi hàng rào' cho kem dưỡng nói chung.
+#   - Câu AAD nhắc ceramide nằm trong ngữ cảnh bác sĩ chọn kem dưỡng cho da khô quá mức, chỉ là nguồn phụ; body_vi không dựa vào nó.
+#   - Nguồn nói người da khô nói chung nên chọn dạng kem/ointment, không nói riêng 'rất khô'.
+#   - StatPearls là tài liệu đào tạo cho nhân viên y tế, không phải hướng dẫn cho người dùng.
+#   - check_text.py: cả 7 quote OK trên statpearls-moisturizers.txt, aad-dry-tips.txt, aad-dry-skin.txt.
+#   - Đã tự chạy check_text.py. statpearls-moisturizers.txt: 4/4 OK. aad-dry-tips.txt: 2/2 OK. aad-dry-skin.txt: 1/1 OK.
+#   - Ngữ cảnh StatPearls (dòng 57 và 71): 'Moisturizers work by hydrating and restoring the natural barrier function' nói về kem dưỡng nói chung, và body_vi viết đúng như vậy. Mục 'Dry Skin' (dòng 71) có thêm câu 'They should avoid using lightweight or gel-based moisturizers, as they may not provide enough hydration for very dry skin.' Câu này hợp với ý 'dạng đặc', có thể thêm nếu muốn.
+#   - Ngữ cảnh AAD dry-tips (dòng 609–625): 'Gentle, fragrance-free skin care products', và trang cảnh báo sản phẩm 'unscented' vẫn có thể chứa hoá chất gây kích ứng da khô, nhạy cảm. Danh sách thành phần AAD khuyên tìm trong kem hay ointment là jojoba oil, dimethicone, glycerin, hyaluronic acid, lactic acid, lanolin, mineral oil, petrolatum, shea butter. Danh sách này KHÔNG có ceramide, nên ceramide chỉ có căn cứ từ StatPearls (nguồn hợp lệ). Cùng trang còn có mục 'Dry skin? Stop using skin care products that contain... Alcohol, Fragrance, Retinoids'. Mục này liên quan tới phần 'active' của mục tiêu dry-sensitive; người điều phối nên cân nhắc thêm vào.
+#   - Quote của aad-dry-skin ('Your dermatologist will select a moisturizer...') nằm trong ngữ cảnh phác đồ của bác sĩ, và body_vi không dùng nó. Quote này vô hại nếu hiện kèm thẻ nhưng không đỡ thêm ý nào. Có thể bỏ cho gọn.
+#   - URL NBK545171 và 2 URL AAD chưa có khối [[source]] trong rules.toml, nên cần có trong new_source_blocks.
+#   - Ứng viên gốc 'dry-cleanser-moisturizer' (Mayo Clinic) không có trong bản nháp gửi phản biện. Bản nháp không nói vì sao bỏ; người điều phối nên kiểm xem mục này có bị sót không.
+[[item]]
+key = "dry-ceramide-fragrance-free"
+goal = "dry-sensitive"
+kind = "info"
+title_vi = "Kem dưỡng đặc, không hương liệu cho da khô, nhạy cảm"
+body_vi = "Kem dưỡng ẩm có tác dụng cấp nước và giúp phục hồi hàng rào bảo vệ tự nhiên của da. Theo StatPearls (tài liệu y khoa của thư viện NIH Hoa Kỳ), người da khô nên chọn kem dưỡng có thành phần như bơ hạt mỡ (shea butter), ceramide hoặc glycerin; dạng đặc như kem hay ointment giúp giữ ẩm. AAD lưu ý một số sản phẩm, như xà phòng khử mùi, quá mạnh với da khô, nhạy cảm, và khuyên dùng sản phẩm ghi \"fragrance-free\" (không hương liệu)."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.ncbi.nlm.nih.gov/sites/books/NBK545171/", quote = "Moisturizers work by hydrating and restoring the natural barrier function of the skin." },
+  { url = "https://www.ncbi.nlm.nih.gov/sites/books/NBK545171/", quote = "Emollients, such as shea butter and ceramides, help to smooth and soften the skin by filling in gaps between skin cells." },
+  { url = "https://www.ncbi.nlm.nih.gov/sites/books/NBK545171/", quote = "People with dry skin need to look for a moisturizer that contains rich, nourishing ingredients such as shea butter, ceramides, and glycerin." },
+  { url = "https://www.ncbi.nlm.nih.gov/sites/books/NBK545171/", quote = "A moisturizer with a thicker consistency, such as a cream or ointment, helps seal in moisture." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Some skin care products, such as deodorant soaps, are too harsh for dry, sensitive skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin", quote = "Dermatologists recommend using products labeled \"fragrance-free.\"" },
+  { url = "https://www.aad.org/public/diseases/a-z/dry-skin-treatment", quote = "Your dermatologist will select a moisturizer that contains the right amount of active ingredients, such as urea, ceramides, lactic acid, or glycerol, to heal your skin." },
+]
+
+# --- all ---
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: (1) thêm đoạn trích 'However, sunscreen alone cannot fully protect you.' để đỡ câu 'Riêng kem chống nắng thì không bảo vệ da được hoàn toàn'; (2) chọn cách (b): thêm đoạn trích 'Wear sun-protective clothing ... sunglasses with UV protection, when possible.' để đỡ cụm 'kính râm chống tia UV'. Vẫn giữ đoạn trích câu cuối trang vì nó đỡ ý 'tìm bóng râm' và 'AAD khuyên'; (3) thêm new_source_blocks cho hai URL.
+#   - Kiểm lại cả 6 đoạn trích bằng check_text.py ngày 2026-10-28 trên _workspace/goals/pages/aad-stats-sunscreen.txt và aad-choosing-sunscreen.txt: tất cả OK.
+#   - Nguồn nói 'approximately every two hours when outdoors' (khoảng mỗi 2 giờ KHI Ở NGOÀI TRỜI). body_vi giữ điều kiện 'khi ở ngoài trời'; nguồn không nói phải bôi lại mỗi 2 giờ khi ở trong nhà.
+#   - Nguồn nói 'apply sunscreen every day on skin not covered by clothing if you will be outside', tức là mỗi ngày nếu ra ngoài, không bắt buộc khi ở trong nhà. body_vi không khẳng định gì về việc dùng trong nhà.
+#   - Trang này viết cho bối cảnh Mỹ: FDA quản lý SPF và nhãn 'water resistant'. Nguồn cũng nói không kem nào 'waterproof'/'sweatproof'. Tôi dịch 'water resistance' là 'chống nước', không phải 'không trôi'. Nhãn ở Việt Nam/EU có thể ghi khác.
+#   - Trang stats-sunscreen (tiêu đề 'Sunscreen FAQs', 'Last updated: 2/11/25') là trang FAQ cho báo chí của AAD, không phải trang hướng dẫn cho người bệnh; về ba tiêu chí, nội dung khớp với trang choosing-right-sunscreen.
+#   - Critic tự kiểm ngày 2026-10-28: chạy check_text.py trên D:/dev-folder/hackathon_ncd/SkinWise/_workspace/goals/pages/aad-stats-sunscreen.txt (37 KB, nội dung thật, 'Last updated: 2/11/25') và aad-choosing-sunscreen.txt (16 KB). Cả 6 đoạn trích đều OK.
+#   - Đã đọc ngữ cảnh bằng grep. Câu 'The American Academy of Dermatology (AAD) recommends that everyone use sunscreen that offers the following: Broad-spectrum ... SPF 30 or higher Water resistance' có trên trang và đỡ cụm 'AAD khuyên mọi người'. Câu 'However, sunscreen alone cannot fully protect you.' đứng ngay sau ba tiêu chí, không có câu phủ định nào theo sau. 'Even on cloudy days' và 'when outdoors' được giữ đúng điều kiện.
+#   - Ở câu về quần áo che chắn, nguồn có chữ 'when possible' nhưng body_vi bỏ chữ này. Không làm sai nghĩa, người duyệt có thể thêm 'khi có thể' nếu muốn.
+#   - Kem chống nắng ở Mỹ được quản lý như thuốc không kê đơn (OTC), trang nói rõ. Thẻ không gọi nó là thuốc, cũng không dùng chữ 'trị', nên không có vấn đề.
+#   - Hai URL này CHƯA có khối [[source]] trong backend/data/rules.toml (đã grep). Bản nháp nói đã thêm new_source_blocks, nhưng payload critic nhận được không có trường này. Trước khi ghi, người điều phối phải kiểm rằng có khối nguồn cho cả hai URL.
+[[item]]
+key = "sun-spf30-broad-spectrum"
+goal = "all"
+kind = "info"
+title_vi = "Chọn kem chống nắng phổ rộng, SPF 30+, chống nước"
+body_vi = "Hội Da liễu Hoa Kỳ (AAD) khuyên mọi người dùng kem chống nắng có đủ ba điều: phổ rộng (chống cả tia UVA và UVB), SPF 30 trở lên và chống nước. Khi ở ngoài trời, nên bôi lại khoảng mỗi 2 giờ, kể cả ngày nhiều mây, và sau khi bơi hoặc ra mồ hôi. Riêng kem chống nắng thì không bảo vệ da được hoàn toàn, nên kết hợp tìm bóng râm và mặc quần áo che chắn như áo dài tay, quần dài, mũ rộng vành và kính râm chống tia UV."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "Just make sure it offers broad-spectrum (UVA and UVB) protection, has an SPF of 30 or higher, and is water resistant." },
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "Sunscreen should be reapplied approximately every two hours when outdoors, even on cloudy days, and after swimming or sweating." },
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "However, sunscreen alone cannot fully protect you." },
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "Wear sun-protective clothing such as a lightweight and long-sleeved shirt, pants, a wide-brimmed hat, and sunglasses with UV protection, when possible." },
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "In addition to applying a broad-spectrum, water-resistant sunscreen with an SPF of 30 or higher, the AAD also recommends that people seek shade and wear sun-protective clothing, including a lightweight and long-sleeved shirt, pants, a wide-brimmed hat, and sunglasses." },
+  { url = "https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/choosing-right-sunscreen", quote = "To protect your skin from the sun’s harmful rays, you want to use a sunscreen that offers all of the following: SPF 30 (or higher) Broad-spectrum protection (UVA/UVB) Water resistance" },
+]
+
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện: chỉ thêm new_source_blocks cho hai URL (dùng chung với mục sun-spf30-broad-spectrum). Nội dung không đổi. Đã kiểm lại cả 5 đoạn trích bằng check_text.py ngày 2026-10-28: tất cả OK.
+#   - QUAN TRỌNG: trang gợi ý (choosing-right-sunscreen) KHÔNG nói da nhạy cảm nên chọn kem khoáng. Ở mục 'Sensitive skin' trang chỉ khuyên chọn sản phẩm ghi 'sensitive skin' và tránh hương liệu, paraben, oxybenzone. Loại chỉ chứa zinc oxide và titanium dioxide được khuyên cho rosacea và da châm chích/rát khi bôi kem. Câu khuyên kem khoáng cho da nhạy cảm nằm ở trang AAD khác (media/stats-sunscreen).
+#   - Hai trang AAD khác nhau một chút: stats-sunscreen nói 'physical sunscreens' (titanium dioxide, zinc oxide, hoặc cả hai); choosing-right-sunscreen nói 'contains only zinc oxide and titanium dioxide'. Nguồn không nói kem 'hybrid' (lai) hợp với da nhạy cảm. body_vi tách ý theo từng nguồn.
+#   - Không đưa ý 'kem vật lý phản xạ tia nắng' vào body_vi vì tài liệu tham khảo của chính trang (Cole 2016) nói oxit kim loại bảo vệ chủ yếu bằng hấp thụ.
+#   - Đây là khuyến nghị chung của bác sĩ da liễu, không phải kết quả nghiên cứu so sánh; nguồn không nói kem hoá học gây hại cho da nhạy cảm. title_vi dùng 'có thể chọn'.
+#   - Mục này là 'info' nên không cần mã nhóm (zinc oxide / titanium dioxide không có trong functional_groups.toml).
+#   - Critic tự kiểm ngày 2026-10-28: check_text.py cho kết quả OK với cả 5 đoạn trích (3 đoạn trên aad-stats-sunscreen.txt, 2 đoạn trên aad-choosing-sunscreen.txt). Đã kiểm thêm câu Rosacea, cũng OK.
+#   - Ngữ cảnh khớp. Câu 'Dermatologists recommend physical sunscreens, also called mineral sunscreens, for people with sensitive skin.' đứng ngay sau định nghĩa kem vật lý (titanium dioxide, zinc oxide, hoặc cả hai). Không có câu nào sau đó giới hạn hay phủ định nó.
+#   - Bản nháp đã ghi đúng một điểm: mục 'Sensitive skin' của trang choosing-right-sunscreen (trang được gợi ý) không khuyên dùng kem khoáng. Câu khuyên dùng kem khoáng chỉ có ở trang stats-sunscreen. body_vi tách ý theo từng nguồn, như vậy là đúng.
+#   - Câu 'loại chỉ chứa zinc oxide và titanium dioxide' bám sát câu gốc 'contains only zinc oxide and titanium dioxide'. Trong ngữ cảnh, 'only' nói về thành phần hoạt tính chống nắng, không phải toàn bộ bảng thành phần. Người duyệt có thể cân nhắc viết 'chỉ có hoạt chất chống nắng là zinc oxide và titanium dioxide' cho dễ hiểu, nhưng như vậy là diễn giải thêm so với nguồn, nên critic không bắt sửa.
+#   - Trang còn có câu 'In addition to absorbing the sun’s rays, physical sunscreens reflect the sun’s rays.' Bản nháp cố ý không đưa ý 'phản xạ' vào thẻ. Lựa chọn này thận trọng và hợp lý.
+#   - Giống mục trên: hai URL chưa có khối [[source]] trong rules.toml. Phải có new_source_blocks (dùng chung với sun-spf30-broad-spectrum) trước khi ghi.
+[[item]]
+key = "sun-mineral-sensitive"
+goal = "all"
+kind = "info"
+title_vi = "Da nhạy cảm: có thể chọn kem chống nắng khoáng"
+body_vi = "Kem chống nắng có thành phần hoạt tính là zinc oxide, titanium dioxide hoặc cả hai được gọi là kem chống nắng vật lý (khoáng). Bác sĩ da liễu khuyên người da nhạy cảm dùng loại khoáng này. Nếu da bị châm chích hoặc rát khi bôi kem chống nắng, hoặc bị rosacea, AAD gợi ý dùng loại chỉ chứa zinc oxide và titanium dioxide. Với da nhạy cảm, AAD cũng gợi ý tránh sản phẩm có hương liệu, paraben hoặc oxybenzone. Dù chọn loại nào, kem vẫn cần phổ rộng, SPF 30 trở lên và chống nước."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "Dermatologists recommend physical sunscreens, also called mineral sunscreens, for people with sensitive skin." },
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "If the active ingredient in your sunscreen is titanium dioxide, zinc oxide, or both, you have a physical sunscreen." },
+  { url = "https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/choosing-right-sunscreen", quote = "Skin stings or burns when you apply sunscreen: Use a sunscreen that contains only zinc oxide and titanium dioxide." },
+  { url = "https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/choosing-right-sunscreen", quote = "Sensitive skin: Use a sunscreen with the words “sensitive skin” on the label. Avoid products with fragrance, parabens, or oxybenzone (benzophenone-2, benzophenone-3, diosybenzone, mexenone, sulisobenzone, or sulisobenzone sodium)." },
+  { url = "https://www.aad.org/media/stats-sunscreen", quote = "Any of these sunscreens can effectively protect you from the sun if you select one that is broad spectrum, water resistant, and has an SPF 30 or higher." },
+]
+
+# ======================================================================================
+# Sửa sau phản biện (28/10): 5 mục chưa qua lần đầu. Người điều phối áp đúng cách sửa người phản biện
+# đề xuất (câu trích mới đã được người phản biện kiểm), CHƯA qua phản biện lần hai. CHƯA BẬT.
+# ======================================================================================
+
+# Lưu ý người duyệt:
+#   - Đã bỏ lời khuyên 'dùng cách ngày' (chỉ có ở bài AAD cho da sẫm màu) theo phản biện. Câu bạc màu quần áo lấy từ trang skin-color, là đặc tính của chất.
+#   - Sửa theo phản biện: đổi 'hoạt chất trị mụn khác' thành 'hoạt chất khác'; viết lại câu phối hợp theo ngữ cảnh thuốc do bác sĩ kê và trích thêm câu 'For this reason, your dermatologist may prescribe...'.
+#   - App có luật conflict 'retinoid-benzoyl-peroxide-same-session' (caution) và 'benzoyl-peroxide-bha-same-session'. Câu phối hợp nói về thuốc phối hợp bác sĩ kê, không phải người dùng tự xếp hai sản phẩm; người duyệt vẫn có thể muốn bỏ hẳn câu này để tránh gây khó hiểu bên cạnh cảnh báo.
+#   - Trang gợi ý (AAD treat) không nói về mức 2.5% cho người dùng tự chọn; câu đó lấy từ hai trang AAD khác (adult-acne-treatment, skin-color). Trang skin-color ghi tài trợ Ortho Dermatologics; nội dung do AAD viết.
+#   - Đã kiểm lại 7/7 đoạn trích: OK.
+[[item]]
+key = "acne-benzoyl-peroxide"
+goal = "acne"
+kind = "active"
+group = "BENZOYL_PEROXIDE"
+title_vi = "Benzoyl peroxide"
+body_vi = "Benzoyl peroxide có thể giảm vi khuẩn gây mụn trên da. Nó hiệu quả hơn khi dùng cùng hoạt chất khác; bác sĩ da liễu có thể kê thuốc phối hợp benzoyl peroxide với retinoid hoặc kháng sinh (kháng sinh cần bác sĩ kê). Bác sĩ da liễu AAD khuyên bắt đầu với sản phẩm 2,5% để bớt khô, kích ứng, rát. Benzoyl peroxide có thể làm bạc màu quần áo, khăn, vỏ gối."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Benzoyl peroxide: This active ingredient reduces acne-causing bacteria on your skin." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "It’s most effective when used along with another acne treatment that works on the other causes of acne." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "For this reason, your dermatologist may prescribe a medication that contains benzoyl peroxide and another acne medication like a retinoid or an antibiotic." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "While you’ll find products that contain up to 10% benzoyl peroxide, it’s best to start with a product that contains 2.5%." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "That will help you avoid side effects like dry, irritated skin or a burning sensation." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "However, it will bleach clothing, sheets, pillow cases, and towels." },
+]
+
+# Lưu ý người duyệt:
+#   - Đã tách hai mức theo phản biện: da khô / dị ứng 'có thể không hợp' (probably not good candidates); da đỏ, viêm nhiều 'nên tránh' (should avoid).
+#   - Sửa theo phản biện: (1) thêm câu người da khô, dễ dị ứng, da đỏ/viêm nhiều nên hỏi bác sĩ da liễu, kèm 2 quote AAD; (2) thêm lưu ý da sẫm màu (kích ứng có thể để lại vết thâm; bắt đầu chậm và kem dưỡng ẩm giúp hạn chế), kèm 2 quote AAD. Để giữ 5 câu, đã gộp câu 'Retinoid là nhóm chất gốc vitamin A' vào câu về tretinoin. Mọi quote đã chạy lại check_text.py: OK.
+#   - AAD viết 'probably not good candidates' (có lẽ không hợp), nên body_vi dùng 'có thể không hợp'. Câu 'da đỏ và viêm nhiều' của Dr. Chapas gắn với rosacea; body_vi không nhắc rosacea.
+#   - Trang AAD còn nói người có sẹo mụn vừa/nặng hoặc mụn liên quan nội tiết nên gặp bác sĩ da liễu trước khi dùng retinoid; chưa đưa vào vì thuộc mục tiêu mụn, không phải lão hoá.
+#   - Câu 'reduces fine lines and wrinkles' của AAD nói về tretinoin (thuốc kê đơn). Về retinol, AAD chỉ nói 'improve uneven skin tone, pigmentation, and texture', không nói nếp nhăn. Bằng chứng nếp nhăn cho retinol chỉ dựa vào một thử nghiệm (Pierard-Franchimont 1998) được bài tổng quan 2006 nhắc lại; bài cũng ghi retinol yếu hơn tretinoin khoảng 20 lần và 'most of the studies have been carried out in patients presenting with photoaged skin'.
+#   - Bài PMC2699641 là bài tổng quan năm 2006, khá cũ; nhãn mỹ phẩm không bắt buộc ghi % retinol (AAD: 'there’s no standard requirement that the percentage of retinol be disclosed on the label or packaging').
+#   - AAD nói 'Retinoids should not be used during pregnancy' không kèm chi tiết, không phân biệt retinol mỹ phẩm với thuốc kê đơn. Giữ nguyên mức của nguồn.
+[[item]]
+key = "aging-retinoid"
+goal = "aging"
+kind = "active"
+group = "RETINOID"
+title_vi = "Retinoid / retinol"
+body_vi = "Retinoid là nhóm chất gốc vitamin A; theo Hội Da liễu Hoa Kỳ (AAD), tretinoin (thuốc kê đơn, cần bác sĩ) giúp tế bào bề mặt da thay mới nhanh hơn và tăng collagen, nhờ đó có thể làm giảm nếp nhăn nhỏ. AAD xem sản phẩm có retinoid là lựa chọn tốt cho người có nếp nhăn nhỏ mức nhẹ, và một thử nghiệm với retinol cho thấy nếp nhăn nhỏ cải thiện sau 12 tuần. Retinoid có thể gây rát, bong tróc; với da sẫm màu, kích ứng có thể để lại vết thâm, và bắt đầu chậm cùng kem dưỡng ẩm có thể giúp hạn chế điều này. Nên bắt đầu bằng loại nhẹ, dùng cách đêm rồi tăng dần, chỉ dùng buổi tối và chống nắng ban ngày; không dùng retinoid khi mang thai. Người da khô hoặc có dị ứng da có thể không hợp với retinoid; người da đỏ, viêm nhiều nên tránh retinoid và hỏi bác sĩ da liễu về cách khác."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "As it spurs faster turnover of surface skin cells and boosts collagen, it also improves skin tone and reduces fine lines and wrinkles." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "A skin product that contains retinoids is a good option for someone with mild acne, mild pigmentation irregularities, or mild fine lines and wrinkles" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2699641/", quote = "Pierard-Franchimont and colleagues (1998) first conducted a controlled clinical trial with retinol formulation. They observed that retinol formulation resulted in significant improvement in fine wrinkles after 12 weeks of treatment." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2699641/", quote = "Although retinoids show promise in the treatment of skin aging, irritant reactions such as burning, scaling or dermatitis associated with retinoid therapy limit their acceptance by patients." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "With skin of color, irritation can trigger dark marks, known as hyperpigmentation," },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "However, starting slowly and using moisturizer will help mitigate this possibility." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Many patients want to start right off with tretinoin, but I advise them to use the least-intense retinoid formula they can find, and use it every other night to start, slowly building up" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Because retinoids can make skin more sensitive to sun, Dr. Alster advises using it only at night and always using sun protection during the day" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "Retinoids should not be used during pregnancy." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "People who have skin allergies or dryness are probably not good candidates for a product that contains a retinoid." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "If someone has a lot of redness or inflammation in their skin, they should avoid retinoids and ask their dermatologist about other therapies" },
+]
+
+# Lưu ý người duyệt:
+#   - Theo phản biện: thêm đoạn trích cho câu 'dạng hoạt động của vitamin B3'; bỏ lời khuyên giảm số lần bôi (DermNet nói về gel cho mụn, không phải chống lão hoá).
+#   - Sửa theo phản biện: (1) bỏ lời khuyên 'vẫn cần chống nắng riêng' gán cho DermNet; câu cuối giờ tách hai ý: DermNet nói niacinamide không chống nắng, còn ý chống nắng là nền tảng lấy từ AAD (quote đã có trong _workspace, aad-40s50s.txt); (2) thêm lưu ý 'nếu da bị khô nhiều, có thể giảm số lần bôi' kèm quote DermNet. Lưu ý này DermNet viết cho nicotinamide gel trị mụn bôi 2 lần/ngày; đã ghi rõ trong context. Người duyệt có thể bỏ vế này nếu thấy không nên áp sang sản phẩm chống lão hoá. Mọi quote đã chạy lại check_text.py: OK.
+#   - Thử nghiệm chính DermNet mô tả (5%, 50 người, 12 tuần) do Procter & Gamble tài trợ; DermNet ghi rõ điều này. Thử nghiệm thứ hai: 30 phụ nữ Nhật, nếp nhăn mí mắt, 4%, 8 tuần.
+#   - DermNet có câu chung ở đầu trang: 'It has been increasingly studied for many different indications in the field of dermatology , but more research is needed to clarify its value.' — mức bằng chứng nhìn chung còn hạn chế.
+#   - Nguồn không nêu nồng độ có trong sản phẩm bán ngoài thị trường; body_vi dùng 'có thể' ở câu dung nạp, câu kết quả được ghi là 'theo DermNet, trong nghiên cứu'.
+[[item]]
+key = "aging-niacinamide"
+goal = "aging"
+kind = "active"
+group = "NIACINAMIDE"
+title_vi = "Niacinamide"
+body_vi = "Niacinamide (còn gọi là nicotinamide) là dạng hoạt động của vitamin B3. Theo DermNet, trong nhiều nghiên cứu lâm sàng, niacinamide bôi da cải thiện nếp nhăn nhỏ, đốm tăng sắc tố, mảng đỏ, da xỉn vàng và độ đàn hồi. Chất này thường dễ dung nạp, nên có thể là lựa chọn cho người không dùng được retinoid hay axit trái cây. Niacinamide không có tác dụng chống nắng; Hội Da liễu Hoa Kỳ (AAD) xem chống nắng là nền tảng của mọi kế hoạch chăm da chống lão hoá."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://dermnetnz.org/topics/nicotinamide", quote = "Nicotinamide, also known as niacinamide or nicotinic acid amide, is the water-soluble, active form of vitamin B3." },
+  { url = "https://dermnetnz.org/topics/nicotinamide", quote = "In multiple clinical studies, topical nicotinamide improved fine lines and wrinkles , hyperpigmented spots, red blotchiness, and skin sallowness (yellowing) as well as elasticity." },
+  { url = "https://dermnetnz.org/topics/nicotinamide", quote = "The researchers reported topical nicotinamide resulted in significant improvement in fine lines/wrinkles, pigmentation, texture and red blotchiness. The study was sponsored by Proctor and Gamble." },
+  { url = "https://dermnetnz.org/topics/nicotinamide", quote = "Nicotinamide is well tolerated and often can be used by those who cannot tolerate topical retinoids or fruit acids ." },
+  { url = "https://dermnetnz.org/topics/nicotinamide", quote = "Nicotinamide does not work as a sunscreen (and does not prevent sunburn)." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-40s-and-50s", quote = "Sun protection forms the foundation of every anti-aging skin-care plan." },
+]
+
+# Lưu ý người duyệt:
+#   - Theo phản biện: thay đoạn trích cụt bằng câu đầy đủ (bóng râm, đồ che chắn, SPF 30) và câu 'apply sunscreen every day'.
+#   - AAD nói 'foundation' và 'two most-effective anti-aging products' (cùng kem dưỡng ẩm), không nói chống nắng một mình là quan trọng nhất; tiêu đề dùng 'nền tảng'. URL Mayo Clinic gợi ý ban đầu trả 403, đã thay bằng trang AAD.
+#   - Sửa theo phản biện: thêm câu thứ 5 về gặp bác sĩ da liễu kèm quote AAD. Mọi quote đã chạy lại check_text.py: OK.
+#   - URL gợi ý (mcpress.mayoclinic.org) trả 403, không đọc được; đã thay bằng các trang AAD.
+#   - Claim gốc nói chống nắng là 'bước quan trọng nhất'. AAD dùng chữ 'foundation' (nền tảng) và 'two most-effective anti-aging products' (cùng kem dưỡng ẩm), không nói chống nắng một mình là quan trọng nhất; nên tiêu đề dùng 'nền tảng'.
+#   - Quote PMC 'single major factor' là nguồn phụ, body_vi không dùng; có thể bỏ.
+#   - SPF 30 / phổ rộng / chịu nước là khuyến nghị của AAD (Mỹ); không nói gì về chỉ số PA hay chuẩn ở Việt Nam.
+[[item]]
+key = "aging-sun-first"
+goal = "aging"
+kind = "info"
+title_vi = "Chống nắng là nền tảng để ngừa lão hoá"
+body_vi = "Theo Hội Da liễu Hoa Kỳ (AAD), ánh nắng đóng vai trò lớn trong việc làm da lão hoá sớm, và chống nắng là nền tảng của mọi kế hoạch chăm da chống lão hoá. Bác sĩ da liễu xem kem chống nắng và kem dưỡng ẩm là hai sản phẩm chống lão hoá hiệu quả nhất. Nên chống nắng mỗi ngày: tìm bóng râm, mặc đồ che chắn và dùng kem chống nắng phổ rộng, SPF 30 trở lên, chịu nước. Chống nắng còn giúp da có cơ hội tự phục hồi một phần tổn thương. Nếu các dấu hiệu lão hoá làm bạn bận tâm, có thể gặp bác sĩ da liễu."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "The sun plays a major role in prematurely aging our skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "You can protect your skin by seeking shade, covering up with sun-protective clothing — such as a lightweight and long-sleeved shirt, pants, a wide-brimmed hat, and sunglasses with UV protection — and using sunscreen that is broad-spectrum, SPF 30 (or higher), and water-resistant." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "You should apply sunscreen every day to all skin that is not covered by clothing." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-40s-and-50s", quote = "Sun protection forms the foundation of every anti-aging skin-care plan." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/selecting-anti-aging-products", quote = "Dermatologists agree that sunscreen and moisturizer are the two most-effective anti-aging products you can buy." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "By protecting your skin from the sun, you give it a chance to repair some of the damage." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "If signs of aging skin bother you, you may want to see a dermatologist" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2699641/", quote = "Yet solar UV radiation unquestionably is the single major factor responsible for skin aging" },
+]
+
+# Lưu ý người duyệt:
+#   - Theo phản biện: ghi rõ bài AAD viết cho da màu trung bình đến sẫm (mốc 6–12 tháng thuộc bài này); bỏ chữ 'hằng ngày' không có trong đoạn trích.
+#   - Lượt sửa (2 điểm theo phản biện): (1) câu 6–12 tháng nay mở đầu bằng 'Sau khi đã tìm và bỏ được nguyên nhân', thêm đoạn trích 'Once what’s causing ... fading can take time.' (check_text OK); (2) đổi 'Ngoài các nhóm hoạt chất trên' thành 'Ngoài azelaic acid, glycolic acid, retinoid và vitamin C' để thẻ đọc độc lập được; cả bốn có trong đoạn trích danh sách AAD.
+#   - Mốc 6–12 tháng chỉ áp dụng cho đốm sẫm hơn da vài tông; trang viết cho da sẫm màu (tăng sắc tố sau viêm).
+#   - Kojic acid không có nhóm trong functional_groups.toml nên chỉ nhắc ở thẻ info, không phải mục active. 'Dễ gây viêm da tiếp xúc hơn' không có vế so sánh, đúng như nguồn.
+#   - AAD khuyên cụ thể kem chống nắng có màu chứa iron oxide; body_vi chỉ nói chung 'chống nắng hằng ngày', không nói quá nguồn.
+[[item]]
+key = "dark-spots-cause-and-time"
+goal = "dark-spots"
+kind = "info"
+title_vi = "Tìm nguyên nhân trước, rồi kiên nhẫn"
+body_vi = "Theo AAD (bài viết cho người da màu trung bình đến sẫm), làm mờ thâm bắt đầu bằng việc tìm ra vì sao có đốm thâm (mụn, vết thương, sản phẩm gây kích ứng, thuốc đang dùng, thay đổi nội tiết); bỏ được nguyên nhân thì nhiều đốm có thể tự mờ. Sau khi đã tìm và bỏ được nguyên nhân, đốm chỉ sẫm hơn màu da vài tông thường mờ trong 6–12 tháng, còn sắc tố nằm sâu có thể mất nhiều năm. Điều trị đốm thâm bắt đầu bằng kem chống nắng. Nếu nghi do thuốc đang dùng, đừng tự ngừng thuốc mà hãy hỏi bác sĩ đã kê. Ngoài azelaic acid, glycolic acid, retinoid và vitamin C, AAD cũng nêu kojic acid; một bài tổng quan lưu ý kojic acid dễ gây viêm da tiếp xúc hơn."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Getting rid of hyperpigmentation begins with finding out why you get these dark spots or patches." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you can eliminate the cause, many spots will clear on their own and you can prevent new ones from appearing." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Once what’s causing the dark spots or patches is found and stopped, fading can take time." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "A spot that is a few shades darker than your natural skin color will usually fade within 6 to 12 months." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If the color lies deep in your skin, however, fading can take years." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Effective treatment for dark spots and patches begins with sunscreen." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Don’t stop taking medication, even if you think it’s causing dark spots on your skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you choose this option, use a product that contains one of the following ingredients: Azelaic acid Glycolic acid Kojic acid Retinoid (retinol, tretinoin, adapalene gel, or tazarotene) Vitamin C" },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/", quote = "Kojic acid has an increased risk of contact dermatitis" },
+]
+
+# ======================================================================================
+# Đợt 2 (28/10): mục tiêu da dầu / lỗ chân lông, da đỏ; thẻ thử sản phẩm, vitamin C cho thâm. Nguồn do
+# Claude tìm, đoạn trích đã kiểm và qua phản biện (pores-dont-pick: người điều phối áp đúng cách sửa
+# lời văn người phản biện đề xuất, chưa phản biện lần hai). CHƯA BẬT.
+# ======================================================================================
+
+# Lưu ý người duyệt:
+#   - Nguồn chỉ nói về salicylic acid và chỉ ở dạng SỮA RỬA MẶT (rửa trôi). Nhóm BHA trong dữ liệu có thể gồm chất khác; trang không nói gì về sản phẩm để lại trên da (toner, serum BHA).
+#   - Ngữ cảnh là mục 'Treat acne': salicylic acid được nêu cho lỗ chân lông bị tắc do mụn, không phải cho mọi trường hợp lỗ chân lông to (vd. do da chảy xệ). body_vi giữ ý 'lỗ chân lông bị tắc'.
+#   - Trang cũng viết 'Many people who have acne need more than salicylic acne to control their acne' (lỗi chính tả 'acne' trên trang), nên không trích câu này; ý: nhiều người bị mụn cần nhiều hơn salicylic acid.
+#   - Trang có danh sách tài liệu tham khảo là sách (Kunin 2005, Leffell 2000), không phải nghiên cứu cụ thể cho câu 'Studies show'.
+#   - Đã tự kiểm: check_text.py trên _workspace/goals/pages/aad-large-pores.txt (15154 byte, đúng trang AAD, không phải trang chặn bot) cho 4 đoạn trích và câu ngữ cảnh 'Use a mild, non-comedogenic cleanser when you wake up and the salicylic acid cleanser before bed.': tất cả OK.
+#   - Ngữ cảnh: cả 4 câu nằm liền nhau trong mục 'Treat acne'. Không có câu phủ định nào theo sau. Câu kế tiếp là 'Many people who have acne need more than salicylic acne to control their acne.' (lỗi chính tả có sẵn trên trang). body_vi giữ đúng ý 'lỗ chân lông bị tắc do mụn'.
+#   - Nhóm BHA trong functional_groups.toml là 'chủ yếu là salicylic acid và các dẫn xuất', nên khớp với chất mà nguồn nói. Nguồn chỉ nói về sữa rửa mặt (rửa trôi), bản nháp đã ghi điều này.
+#   - Lệch nhỏ, không chặn: trang ghi buổi sáng dùng sữa rửa mặt 'mild, non-comedogenic', còn body_vi chỉ viết 'dịu nhẹ'. Có thể thêm 'không gây bít tắc lỗ chân lông' cho sát nguồn.
+#   - Trang AAD về da dầu (aad-oily-skin.txt) có câu 'Ingredients like salicylic acid, glycolic acid, and lactic acid can help reduce oiliness, but they may be too harsh for your skin. Stop using the product, or use it less often, if your skin becomes irritated.' (đã có trên trang). Câu này có thể dùng làm nguồn thứ hai cho ý giảm dầu kèm lưu ý kích ứng.
+#   - Cả hai URL (treat-large-pores, dry/oily-skin) đều CHƯA có khối [[source]] trong rules.toml hay goals.toml (đã grep). Bản nháp tôi nhận không có new_source_blocks, nên seed sẽ báo 'has no [[source]] block' nếu không bổ sung. Việc này áp dụng cho cả 4 mục.
+[[item]]
+key = "oily-pores-bha"
+goal = "oily-pores"
+kind = "active"
+group = "BHA"
+title_vi = "Salicylic acid (BHA) trong sữa rửa mặt cho lỗ chân lông bị tắc"
+body_vi = "Mụn làm tắc lỗ chân lông, khiến lỗ chân lông trông rõ hơn. Theo Hiệp hội Da liễu Hoa Kỳ (AAD), dùng sữa rửa mặt có salicylic acid có thể giúp, vì các nghiên cứu cho thấy salicylic acid có thể làm thông lỗ chân lông. Nếu salicylic acid làm da khô hoặc kích ứng, có thể dùng xen kẽ: buổi sáng dùng sữa rửa mặt dịu nhẹ, buổi tối trước khi ngủ dùng loại có salicylic acid."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Acne clogs your pores, which can make your pores more noticeable." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Using a cleanser with salicylic acid may help." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Studies show salicylic acid can unclog pores." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "If the salicylic acid dries or irritates your skin, try alternating cleansers." },
+]
+
+# Lưu ý người duyệt:
+#   - Nguồn chỉ nói về retinol và retinyl palmitate (mỹ phẩm). Nhóm RETINOID còn gồm tretinoin, adapalene… mà trang này không nhắc; body_vi chỉ nêu hai chất này, nhưng thẻ gắn cả nhóm.
+#   - Câu cấm khi mang thai / cho con bú chỉ nói về retinol và retinyl palmitate, không nói về các retinoid khác.
+#   - Trang viết 'prevent this' (ngăn kích ứng); body_vi viết nhẹ hơn là 'hạn chế', không hứa ngăn hẳn.
+#   - Trang không nói cần bao lâu mới thấy hiệu quả, nên body_vi không nêu thời gian.
+#   - Đã tự kiểm: 6/6 đoạn trích OK bằng check_text.py trên aad-large-pores.txt. Các câu nằm trong mục 'Use retinol'. Câu về mang thai / cho con bú là dòng riêng ngay sau mục này.
+#   - body_vi không nói quá nguồn: có 'có thể giúp'; ghi 'hạn chế' kích ứng, nhẹ hơn chữ 'prevent' của trang; không nêu thời gian thấy hiệu quả, vì nguồn không nói.
+#   - Nhóm RETINOID (functional_groups.toml) gồm cả adapalene và tretinoin, là thuốc. Nguồn chỉ nói về retinol và retinyl palmitate trong mỹ phẩm. body_vi chỉ nêu hai chất này nên không vi phạm quy tắc về thuốc kê đơn. Tuy vậy, nếu giao diện liệt kê mọi chất trong nhóm cạnh thẻ này, người đọc có thể hiểu là trang AAD nói về cả tretinoin / adapalene. Bản nháp đã ghi điều này.
+[[item]]
+key = "oily-pores-retinoid"
+goal = "oily-pores"
+kind = "active"
+group = "RETINOID"
+title_vi = "Retinol / retinyl palmitate cho lỗ chân lông trông to"
+body_vi = "Da dầu, mụn nhẹ hoặc da kém săn hơn trước có thể làm lỗ chân lông trông to hơn. Theo AAD, dùng sản phẩm chăm da có retinol hoặc retinyl palmitate có thể giúp; nên bôi trước khi đi ngủ. Một số người bị kích ứng; có thể hạn chế bằng cách rửa mặt rồi đợi 30 phút mới bôi. Không dùng sản phẩm có retinol hoặc retinyl palmitate khi đang mang thai hoặc cho con bú."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "If you have oily skin, mild acne, or your skin appears less firm than it once was, pores can look larger." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Using a skin care product with retinol or retinyl palmitate may help." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "For best results, apply the product before going to bed." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Some people find that this type of skin care product irritates their skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "You can prevent this by washing your face and then waiting 30 minutes to apply the product." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "If you’re pregnant or breastfeeding, you shouldn’t use a product containing retinol or retinyl palmitate." },
+]
+
+# Lưu ý người duyệt:
+#   - 'tối đa hai lần' dịch từ 'up to twice daily'. Trang lỗ chân lông to (cùng AAD) lại viết 'Cleanse your face twice a day'; hai trang không mâu thuẫn nhưng diễn đạt khác.
+#   - Trang có câu 'Ingredients like salicylic acid, glycolic acid, and lactic acid can help reduce oiliness, but they may be too harsh for your skin.' Không đưa vào body_vi vì ngoài phạm vi claim; có thể dùng sau làm nguồn cho mục AHA/BHA (kèm lưu ý dừng hoặc giảm tần suất nếu kích ứng).
+#   - Trang còn khuyên chọn kem chống nắng có zinc oxide / titanium dioxide, không hương liệu và dầu, để tránh nổi mụn; không đưa vào vì claim không nêu.
+#   - Trang nằm trong mục 'dry' của URL (skin-care-basics/dry/oily-skin) nhưng nội dung là da dầu.
+#   - Đã tự kiểm: 7/7 đoạn trích OK bằng check_text.py trên _workspace/goals/pages/aad-oily-skin.txt (14071 byte, đúng trang AAD 'How to control oily skin', cập nhật 9/3/24, có danh sách bác sĩ duyệt).
+#   - Ngữ cảnh: các câu đều thuộc danh sách '10 do's and don'ts from dermatologists' và không câu nào bị phủ định ngay sau. Câu khuyên gặp bác sĩ da liễu đã có trong body_vi.
+#   - Câu cuối được trích tới trước dấu chấm vì có link. Như vậy là hợp lệ, check_text vẫn OK.
+[[item]]
+key = "oily-skin-care"
+goal = "oily-pores"
+kind = "info"
+title_vi = "Chăm sóc da dầu hằng ngày"
+body_vi = "Theo AAD: rửa mặt tối đa hai lần mỗi ngày và sau khi ra mồ hôi, không chà mạnh, kể cả khi tẩy trang. Sữa rửa mặt quá mạnh có thể kích ứng da và làm da tiết thêm dầu, nên chọn loại dịu nhẹ. Chọn sản phẩm ghi \"oil free\" và \"noncomedogenic\". Da dầu vẫn cần dưỡng ẩm sau khi rửa mặt. Có thể dùng giấy thấm dầu: ấn nhẹ lên mặt vài giây, không chà. Nếu lo về lượng dầu trên da hoặc đang khổ vì mụn đầu đen, mụn, hãy gặp bác sĩ da liễu."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "DO cleanse your face up to twice daily and after sweating." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "While washing, resist the temptation to scrub your skin, even to remove makeup." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "However, using a face wash that is too harsh can irritate your skin and trigger increased oil production." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "DO choose skin care products that are labeled “oil free” and “noncomedogenic.”" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "Although you have oily skin, it is still important to apply moisturizer to keep your skin hydrated." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "Gently press the paper against your face and leave it on for a few seconds to absorb the oil." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "If you are concerned about the amount of oil your skin is producing or if you’re struggling with blackheads or acne, partner with a board-certified dermatologist" },
+]
+
+# Lưu ý người duyệt:
+#   - Người điều phối áp cách sửa của người phản biện: thêm 'có thể' theo 'can' của nguồn; 'digging into' dịch là 'khều'.
+#   - Lượt sửa theo phản biện: thêm câu cuối về da chùng nhão và gặp bác sĩ da liễu (mục 'Treat sagging skin' của trang), kèm hai đoạn trích. Chữ 'theo tuổi' bám câu đứng trước trên trang: 'As we age, our skin loses its firmness and starts to sag.' Thêm 'nên bôi mỗi ngày, kể cả khi trời mưa hay lạnh' theo gợi ý không chặn, kèm đoạn trích. body_vi giờ có 5 câu, nằm trong giới hạn 2–5.
+#   - Đã kiểm lại 9/9 đoạn trích bằng check_text.py trên _workspace/goals/pages/aad-large-pores.txt: tất cả OK.
+#   - Trang nói 'board-certified dermatologist' (bác sĩ da liễu có chứng chỉ hội đồng, chuẩn ở Mỹ); body_vi viết gọn là 'bác sĩ da liễu'. Trang nói thêm nhiều thủ thuật làm tại phòng khám; không đưa vào vì không nêu thủ thuật cụ thể.
+#   - Trang nói da càng bị nắng làm hại thì càng kém săn (tác hại tích luỹ theo thời gian); body_vi bám theo câu này.
+#   - Trang KHÔNG nói chống nắng làm lỗ chân lông nhỏ lại; nó chỉ nói chống nắng giúp ngăn da bị nắng làm hại. body_vi chỉ nối các câu của trang, không thêm kết luận đó.
+#   - Trang còn khuyên gặp bác sĩ da liễu nếu chưa chắc có nên tẩy da chết (mục 'Exfoliate'). Không đưa vào vì thẻ này không nói về tẩy da chết.
+#   - Tôi đã tự chạy check_text.py trên _workspace/goals/pages/aad-large-pores.txt (đây là trang thật, có nội dung bài viết đầy đủ): cả 9/9 đoạn trích đều OK.
+#   - Đã đọc ngữ cảnh cả bài (dòng 594 và 598 trong file trang). Không có câu phủ định hay mục lời đồn nào. Mọi đoạn trích nằm trong phần 'Here's what dermatologists recommend' và áp dụng cho mọi người. Chữ 'theo tuổi' có căn cứ ở câu 'As we age, our skin loses its firmness and starts to sag.' Câu 'da càng bị nắng làm hại thì càng kém săn' bám đúng nguồn. Bản nháp không nói chống nắng làm lỗ chân lông nhỏ lại, và nguồn cũng không nói vậy.
+#   - Nguồn là AAD, thuộc danh sách nguồn chấp nhận. Bản nháp không có chữ 'trị' hay 'chữa', không nêu tên sản phẩm hay thuốc kê đơn. Có nhắc gặp bác sĩ da liễu đúng như nguồn.
+#   - URL treat-large-pores hiện chưa có khối [[source]] trong backend/data/rules.toml hay goals.toml, nhưng bản nháp chưa kèm new_source_blocks. Cần bổ sung trước khi đưa vào goals.toml.
+#   - Không có vấn đề về nguồn hay ngữ cảnh. Hai lỗi ở trên chỉ là lời văn thiếu 'có thể', sửa nhanh được.
+[[item]]
+key = "pores-dont-pick"
+goal = "oily-pores"
+kind = "info"
+title_vi = "Lỗ chân lông to: đừng nặn, cạy và nhớ chống nắng"
+body_vi = "Theo AAD, khi lỗ chân lông bị tắc, chúng giãn ra và có thể trông rõ hơn. Cạy, nặn hay khều vào lỗ chân lông có thể làm da kích ứng, khiến lỗ chân lông lộ hơn; đừng bao giờ chà, cạy hay nặn da mặt. Da càng bị nắng làm hại thì càng kém săn, và khi da kém săn thì lỗ chân lông trông rõ hơn. Kem chống nắng phổ rộng, chống nước, SPF 30 trở lên giúp ngăn da bị nắng làm hại; nên bôi mỗi ngày, kể cả khi trời mưa hay lạnh. Lỗ chân lông cũng trông to hơn khi da chùng nhão theo tuổi; bác sĩ da liễu có thể khám và cho biết cách giúp da săn lại."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "When pores clog, they expand, which can make your pores look more noticeable." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Picking at, squeezing, or digging into your pores can also irritate your skin, making pores look more noticeable." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Never scrub, rub, pick at, or squeeze the skin on your face." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "The more sun damaged your skin, the less firmness it has." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "When skin starts to lose its firmness, pores look more noticeable." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Applying a broad-spectrum, water resistant sunscreen with an SPF 30 or higher helps prevent sun-damaged skin." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "To protect your skin, apply sunscreen every day, even when it’s raining or cold outside." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Pores look larger when skin sags." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "A board-certified dermatologist can examine your skin and tell you what can tighten your skin." },
+]
+
+# Lưu ý người duyệt:
+#   - Lượt sửa: chỉ đổi title_vi theo phản biện (tiêu đề cũ nói chung cho 'da dễ kích ứng', nguồn chỉ nói về rosacea). body_vi và đoạn trích giữ nguyên; check_text.py OK lại cả 5 đoạn trên _workspace/goals/pages/aad-rosacea-tips.txt (danh sách kiểm: _workspace/goals/check/r3-tips.txt).
+#   - Trang nói về da bị ROSACEA, không phải 'da đỏ / dễ kích ứng' nói chung. Trang có câu 'Rosacea often makes skin sensitive and easily irritated', nhưng không nói danh sách này áp dụng cho mọi người da nhạy cảm.
+#   - 'Alcohol' trên trang không nói rõ loại nào; trang KHÔNG phân biệt cồn khô (ethanol, alcohol denat.) với cồn béo (cetyl/cetearyl alcohol). body_vi giữ nguyên chữ 'cồn (alcohol)' như nguồn. Người đọc có thể né cả cồn béo; muốn tách hai loại thì cần nguồn khác.
+#   - Glycolic acid và lactic acid là AHA, nhưng trang chỉ nêu hai chất này, không nói cả nhóm AHA hay BHA/PHA. Không nên mở rộng thành 'tránh mọi acid tẩy da chết' dựa trên câu này.
+#   - Đoạn trích thứ hai dài vì là câu dẫn + danh sách; từng mục trong danh sách là từ đơn nên tự nó không đỡ được khẳng định.
+#   - Tên 'long não' cho camphor là dịch của tôi, không có trên trang.
+#   - Tôi tự kiểm lại 5 đoạn trích bằng check_text.py trên _workspace/goals/pages/aad-rosacea-tips.txt (17 KB, là trang thật, có tên người viết/người duyệt và ngày 'Last updated: 4/3/24'). Cả 5 đoạn đều OK.
+#   - Ngữ cảnh: danh sách 8 thành phần nằm dưới 'Choose rosacea friendly skin care products', mở đầu bằng câu 'Rosacea often makes skin sensitive and easily irritated'. Danh sách chỉ nói cho người bị rosacea. title_vi và body_vi đã giới hạn đúng phạm vi đó. Không có câu phủ định và không phải mục 'lời đồn'.
+#   - Thẻ này hiện dưới mục tiêu 'redness', nhưng nội dung chỉ nói về rosacea. Người da đỏ vì nguyên nhân khác có thể né cả glycolic/lactic acid hay mọi loại 'cồn' khi không cần (bản nháp đã ghi rằng nguồn không phân biệt cồn khô với cồn béo).
+#   - Ba URL rosacea (triggers/tips, what-is/overview, treatment/redness) chưa có khối [[source]] trong backend/data/goals.toml hay rules.toml. Trong _workspace/goals/*.json tôi cũng không thấy new_source_blocks cho ba URL này. Cần thêm trước khi seed.
+#   - Thẻ kem chống nắng đã có trong goals.toml (khoảng dòng 710) cũng nhắc loại khoáng cho rosacea, nên hai thẻ trùng một phần. Chỉ cần biết, không phải lỗi.
+[[item]]
+key = "redness-avoid-ingredients"
+goal = "redness"
+kind = "info"
+title_vi = "Da bị rosacea: thành phần bác sĩ da liễu khuyên tránh"
+body_vi = "Với da bị rosacea (bệnh da làm mặt hay đỏ), nhiều sản phẩm chăm da và mỹ phẩm có thể gây kích ứng. Để giảm nguy cơ đó, bác sĩ da liễu khuyên tránh sản phẩm có một trong các thành phần: cồn (alcohol), long não (camphor), hương liệu, glycolic acid, lactic acid, menthol, sodium lauryl sulfate và urea. Nên chọn sản phẩm không hương liệu (ghi \"fragrance-free\", không phải chỉ ghi \"unscented\"), có ghi dành cho da nhạy cảm và không gây bít lỗ chân lông (non-comedogenic). Nên thử sản phẩm trước khi bôi lên mặt."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "When you have rosacea, many skin care products and cosmetics can irritate your skin." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "To reduce the likelihood of using a product that will irritate your skin, dermatologists recommend that you avoid products that contain any of the following ingredients: Alcohol Camphor Fragrance Glycolic acid Lactic acid Menthol Sodium lauryl sulfate (often found in shampoos and toothpaste) Urea" },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "To reduce the likelihood of a product irritating your skin, choose fragrance-free (rather than unscented) products." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Select products that say they are made for sensitive skin and non-comedogenic (won’t clog pores)." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Test skin care products and makeup before applying them to your face." },
+]
+
+# Lưu ý người duyệt:
+#   - Lượt sửa: chỉ đổi title_vi theo phản biện để nêu rõ phạm vi rosacea. body_vi và đoạn trích giữ nguyên; check_text.py OK lại cả 10 đoạn.
+#   - SPF 30+ phổ rộng, chống nước là khuyên cho mọi người bị rosacea; loại khoáng và không hương liệu chỉ được gợi ý 'If you find that a sunscreen irritates your skin'. body_vi giữ đúng điều kiện này.
+#   - 'Choose a cream instead of a lotion or gel' nằm trong danh sách chọn sản phẩm nói chung, không nói riêng kem dưỡng.
+#   - 'If you exfoliate your skin, stop.' không nói acid cụ thể nào, nên mục này chỉ là thẻ thông tin, không phải luật.
+#   - Cụm 'nước se khít' cho astringent là cách dịch của tôi, không có trên trang.
+#   - Danh sách kem chống nắng cho da kích ứng trên trang còn mục Silicone; tôi không đưa vào body_vi cho gọn.
+#   - Tôi tự kiểm lại 10 đoạn trích bằng check_text.py trên aad-rosacea-tips.txt. Cả 10 đoạn đều OK.
+#   - Ngữ cảnh khớp. 'If you exfoliate your skin, stop.' nằm trong danh sách 'Be gentle with your skin… To prevent this:', và không nói tới acid cụ thể nào. Điều kiện 'If you find that a sunscreen irritates your skin' đứng trước gợi ý kem khoáng / không hương liệu, và body_vi giữ đúng điều kiện này. 'Choose a cream instead of a lotion or gel' thuộc danh sách 'To reduce irritation, it's also best to:', nói về sản phẩm nói chung.
+#   - Cuối trang có câu 'If you have trouble finding gentle skin care products or makeup, ask your dermatologist to recommend products.' Người duyệt có thể thêm câu này nếu muốn có ý 'hỏi bác sĩ da liễu'. Không bắt buộc.
+#   - Giống thẻ trên: URL triggers/tips chưa có khối [[source]].
+[[item]]
+key = "redness-gentle-care"
+goal = "redness"
+kind = "info"
+title_vi = "Chăm sóc nhẹ nhàng khi bị rosacea"
+body_vi = "Với da bị rosacea, bất cứ thứ gì làm da kích ứng đều có thể khiến tình trạng bùng lên. AAD khuyên rửa mặt bằng đầu ngón tay, không dùng khăn hay bông mút rửa mặt, không chà xát hay mát-xa da; nếu đang tẩy da chết thì nên dừng. Không dùng toner hoặc astringent (nước se khít), chọn sữa rửa mặt dịu nhẹ thay cho xà phòng, và khi chọn sản phẩm thì ưu tiên dạng kem hơn lotion hay gel. Dùng kem chống nắng phổ rộng, SPF 30 trở lên, chống nước; nếu kem chống nắng làm da kích ứng, có thể chọn loại khoáng (zinc oxide, titanium dioxide) không hương liệu."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Anything that irritates your skin can cause rosacea to flare." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Use your fingertips to gently wash and rinse your face, without using a washcloth or facial sponge." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Avoid rubbing, scrubbing, or massaging skin with rosacea." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "If you exfoliate your skin, stop." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Never use an astringent or toner." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Choose a mild, rosacea friendly cleanser (not soap)." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Choose a cream instead of a lotion or gel." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Apply sunscreen that offers broad-spectrum protection, SPF 30 or higher, and water resistance." },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "If you find that a sunscreen irritates your skin, look for a sunscreen that contains: Zinc oxide, titanium dioxide, or both (also called a mineral sunscreen)" },
+  { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "No fragrance (label may say “fragrance free,” but if it says “unscented” choose another sunscreen)" },
+]
+
+# Lưu ý người duyệt:
+#   - SỬA THEO PHẢN BIỆN: (1) thêm câu lưu ý retinol / glycolic acid ('bình thường và tạm thời') vào body_vi, đặt trước câu 'Nếu da bị phản ứng', kèm nguồn mới cùng URL với đoạn trích hai câu đúng như phản biện đề nghị; (2) gộp câu mở đầu với câu 'Cách thử' để body_vi vẫn đúng 5 câu.
+#   - Người duyệt cần biết: trang AAD không nói cách phân biệt kích ứng 'bình thường và tạm thời' với 'skin reaction' phải ngừng dùng. Trang chỉ đặt hai câu liền nhau. body_vi giữ đúng thứ tự đó, không tự thêm tiêu chí phân biệt.
+#   - TRÙNG NỘI DUNG: goals.toml đã có mục 'sensitive-one-product-at-a-time' (goal = "dry-sensitive", đã published, dòng ~582, gần như cùng các đoạn trích). Mục mới này dành cho goal = "all". Người duyệt chọn: giữ cả hai, chuyển thẻ cũ sang 'all', hoặc bỏ một thẻ.
+#   - Hai URL được gợi ý không đỡ được khẳng định chính: trang '10 skin care secrets' (skin-care-tips-dermatologists-use) không nói về thử sản phẩm; trang rosacea/triggers/tips chỉ nói 'Test skin care products and makeup before applying them to your face.' cho người bị rosacea. Vì vậy dùng thẳng trang test-skin-care-products.
+#   - Claim gốc ghi 'mỗi ngày khoảng một tuần'; nguồn nói 'twice daily for seven to 10 days'. body_vi viết theo nguồn.
+#   - Câu 'one new product at a time' chỉ có trong thông cáo báo chí AAD (lời một bác sĩ, bài về tween/teen), không có trên trang hướng dẫn. Câu viết chung, không giới hạn tuổi; body_vi ghi rõ là lời 'một bác sĩ da liễu thành viên AAD'.
+#   - Trang tách bài thử tại nhà với 'patch testing' (xét nghiệm ở bác sĩ da liễu). Key 'patch-test-new-products' chỉ là định danh nội bộ; giao diện không nên gọi thẻ này là 'patch test'.
+#   - 'quarter-sized spot' (cỡ đồng 25 xu Mỹ, khoảng 2,4 cm) viết là 'một vùng nhỏ'. 'cool compresses or petroleum jelly' rút gọn thành 'chườm mát' (bỏ vaseline); người duyệt có thể thêm lại nếu muốn.
+#   - Trang test-skin-care-products ghi 'Last updated: 8/10/21' (khá cũ).
+#   - check_text.py: 8/8 OK trên _workspace/goals/pages/aad-test-skin-care-products.txt (gồm đoạn trích hai câu mới về retinol/glycolic acid), 1/1 OK trên _workspace/goals/pages/aad-news-guide-2.txt.
+#   - Cả hai URL đã có khối [[source]] trong backend/data/goals.toml, nên không cần new_source_blocks. Đã bỏ trường thừa ' notes_for_reviewer' (tên có dấu cách) của bản trước.
+#   - Critic đã tự kiểm: check_text.py cho 8/8 OK trên D:\dev-folder\hackathon_ncd\SkinWise\_workspace\goals\pages\aad-test-skin-care-products.txt (là trang thật, 13 KB, có nội dung bài và 'Last updated: 8/10/21') và 1/1 OK trên D:\dev-folder\hackathon_ncd\SkinWise\_workspace\goals\pages\aad-news-guide-2.txt. Danh sách đoạn trích dùng để kiểm: D:\dev-folder\hackathon_ncd\SkinWise\_workspace\goals\critic\q-patch-aad.txt.
+#   - Ngữ cảnh: tất cả đoạn trích AAD nằm liền nhau trong danh sách 'To test a skin care product, dermatologists recommend the following tips:'. Không có câu phủ định, không nằm trong mục lời đồn, áp dụng cho mọi người. Trang nói việc thử 'can help predict' phản ứng. body_vi không hứa chắc kết quả, nên không nói quá.
+#   - Câu của BS Garshick nằm trong thông cáo về tween/teen, nhưng bản thân câu viết chung. Câu ngay sau nó ('For those with sensitive skin, it can also help to apply a small amount... to test it') chỉ khuyên thử trước cho da nhạy cảm. body_vi lấy hướng dẫn thử từ trang hướng dẫn chung, không lấy từ câu này, nên không lệch đối tượng.
+#   - Lời văn: không có chữ 'trị'/'chữa', không có tên sản phẩm. Có câu khi nào cần gặp bác sĩ da liễu. Retinol/glycolic acid chỉ được nhắc như ví dụ chất gây kích ứng, không phải gợi ý dùng.
+#   - TRÙNG NỘI DUNG (quan trọng nhất cho người duyệt): goals.toml dòng ~582 đã có 'sensitive-one-product-at-a-time' (goal dry-sensitive), dùng gần như cùng các đoạn trích. Người duyệt nên chọn giữ cả hai, chuyển thẻ cũ sang 'all', hoặc bỏ một thẻ. Key 'patch-test-new-products' chưa có trong goals.toml / rules.toml.
+#   - Trang AAD không nói cách phân biệt kích ứng 'bình thường và tạm thời' (retinol, glycolic acid) với 'skin reaction' phải ngừng dùng. body_vi đặt hai ý theo đúng thứ tự trên trang. Người không có nền y khoa có thể thấy hai câu này khó hiểu khi đặt cạnh nhau. Nguồn không cho thêm tiêu chí nào, nên không thêm.
+#   - goals.toml dòng 571 ghi trang AAD khác (maximize-anti-aging-products) nói thử 4–5 ngày ở mặt trong cẳng tay. Thẻ này theo trang test-skin-care-products (7–10 ngày).
+#   - Cả hai URL đã có khối [[source]] trong backend/data/goals.toml (dòng 895 và 973), nên không cần new_source_blocks.
+[[item]]
+key = "patch-test-new-products"
+goal = "all"
+kind = "info"
+title_vi = "Thử sản phẩm mới trước khi dùng lên mặt"
+body_vi = "AAD khuyên thử sản phẩm trước khi thêm vào routine: thoa một ít lên một vùng nhỏ không bị cọ xát hay rửa trôi (mặt trong cánh tay, chỗ gập khuỷu tay), ngày hai lần trong 7–10 ngày; sản phẩm rửa đi như sữa rửa mặt thì để trên da khoảng 5 phút hoặc theo hướng dẫn. Nếu sau 7–10 ngày da không đỏ, ngứa hay sưng thì có thể dùng. AAD lưu ý một số chất như retinol và glycolic acid có thể làm da kích ứng, nhất là da nhạy cảm; điều này bình thường và tạm thời. Nếu da bị phản ứng, rửa nhẹ sản phẩm đi càng sớm càng tốt và không dùng lại; phản ứng nặng, chườm mát không đỡ thì có thể cần gặp bác sĩ da liễu. Một bác sĩ da liễu thành viên AAD cũng khuyên mỗi lần chỉ thêm một sản phẩm mới để biết da có chịu được không."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Before you add a skin care product to your routine, dermatologists recommend testing it." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Apply the product to a test spot twice daily for seven to 10 days." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Choose a quarter-sized spot on your skin where the product won’t be rubbed or washed away, such as the underside of your arm or the bend of your elbow." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If you’re testing something that you would usually wash off, like a cleanser, keep it on your skin for five minutes or as long as the instructions say." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If after seven to 10 days you don’t have a skin reaction , such as red, itchy, or swollen skin, go ahead and use the product." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Keep in mind that some ingredients, such as retinol and glycolic acid, can irritate your skin , particularly if your skin is sensitive. This is normal and temporary." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If you develop a skin reaction, gently wash the product off as soon as possible, and don’t use it again." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "If your reaction to a product is severe and not relieved with cool compresses or petroleum jelly, you may need to see a dermatologist to help manage your symptoms." },
+  { url = "https://www.aad.org/news/dermatologist-guide-skincare", quote = "When introducing new products to the skin, it is always best to introduce one new product at a time to ensure your skin can tolerate it" },
+]
+
+# Lưu ý người duyệt:
+#   - Đã chạy check_text.py trên _workspace/goals/pages/aad-fade-dark-spots.txt (18.858 byte, tiêu đề trang 'How to fade dark spots in darker skin tones'): cả 5 đoạn trích OK.
+#   - Trang chỉ ghi 'Vitamin C' chung chung, không nói dạng nào (L-ascorbic acid hay dẫn xuất). Mục gán nhóm VITAMIN_C (theo functional_groups.toml là ascorbic acid nguyên chất); dự án còn nhóm riêng VITAMIN_C_DERIVATIVE. Nguồn không cho biết dẫn xuất có tác dụng tương tự hay không, nên không mở rộng sang nhóm đó.
+#   - Bài viết cho người có màu da trung bình đến sẫm ('darker skin tones'); body_vi đã nói rõ điều này. Nguồn không nói gì về da sáng màu.
+#   - Nguồn KHÔNG nói: nồng độ vitamin C, bôi buổi sáng hay tối, bao lâu thì thấy kết quả (mốc 6–12 tháng trên trang là thời gian thâm tự mờ sau khi bỏ nguyên nhân, không phải thời gian tác dụng của vitamin C). Vì vậy body_vi không đưa các ý này.
+#   - Nguồn không nói vitamin C làm chậm sản xuất melanin cụ thể; câu 'In some cases, the ingredient can also slow down production of melanin' nói chung cho cả danh sách, nên không đưa vào body_vi.
+#   - Câu 'stop using it' nằm ở phần phòng ngừa chung, không nói riêng về vitamin C; body_vi viết như lưu ý chung khi dùng sản phẩm.
+#   - URL đã có khối [[source]] trong backend/data/goals.toml (dòng ~967), nên không cần new_source_blocks. description_vi giữ nguyên bản đang có trong goals.toml vì đã đúng phạm vi.
+#   - Tôi tự kiểm lại: chạy check_text.py trên D:\dev-folder\hackathon_ncd\SkinWise\_workspace\goals\pages\aad-fade-dark-spots.txt (18.858 byte, trang thật, tiêu đề 'How to fade dark spots in darker skin tones', cập nhật 3/10/25, không phải trang chặn bot). Cả 5 đoạn trích đều OK.
+#   - Ngữ cảnh: danh sách thành phần nằm trong mục 'Use a product that can even out your skin tone'. Câu đứng ngay trước là 'You may have success with a product that you can buy without a prescription.', câu ngay sau là 'These ingredients can fade existing dark spots.' Không có câu phủ định, không nằm trong mục lời đồn. Vế 'loại bỏ nguyên nhân + chống nắng trước' có trong câu mở đầu của mục này, và phần giới thiệu cũng đỡ ('Getting rid of hyperpigmentation begins with finding out why...'). Câu 'stop using it' nằm trong danh sách phòng thâm tái phát và nói chung cho mọi sản phẩm; body_vi cũng viết như một lưu ý chung. Câu 'see a dermatologist' nằm ở mục 'How a dermatologist can help'. body_vi đã đưa ý này vào, đúng như mục 9 yêu cầu.
+#   - Phạm vi: trang viết cho người có màu da trung bình đến sẫm. body_vi đã nói rõ điều này, nên không vi phạm tiêu chí về nhóm người.
+#   - Nhóm: trang chỉ ghi 'Vitamin C' mà không nói dạng nào. Bản nháp gán VITAMIN_C (L-ascorbic acid) và không mở rộng sang VITAMIN_C_DERIVATIVE. Cách gán này thận trọng và hợp lý. Người dùng có sản phẩm chứa dẫn xuất sẽ không thấy mục này, đây là chủ ý.
+#   - body_vi không có chữ 'trị'/'chữa', không nêu tên sản phẩm, có dùng 'có thể', không thêm nồng độ hay thời điểm bôi mà nguồn không nói.
+#   - Về chữ dùng: body_vi viết 'Viện Da liễu Hoa Kỳ (AAD)', trong khi mục dark-spots-retinoid đã duyệt viết 'Hiệp hội Da liễu Hoa Kỳ (AAD)'. Nên thống nhất một cách gọi; việc này không ảnh hưởng độ chính xác. Tiêu đề 'Vitamin C cho đốm thâm' cũng khác kiểu của các mục cùng mục tiêu ('Retinoid', 'Azelaic acid'), cũng chỉ là chuyện thống nhất cách viết.
+#   - Seed: key dark-spots-vitamin-c chưa có trong goals.toml. URL đã có khối [[source]] trong backend/data/goals.toml (khoảng dòng 979), nên không cần new_source_blocks. Khi ghi vào TOML nhớ để published = false và không ghi reviewed_by/reviewed_at.
+[[item]]
+key = "dark-spots-vitamin-c"
+goal = "dark-spots"
+kind = "active"
+group = "VITAMIN_C"
+title_vi = "Vitamin C cho đốm thâm"
+body_vi = "Vitamin C nằm trong danh sách thành phần mà Viện Da liễu Hoa Kỳ (AAD) nêu cho sản phẩm không cần kê đơn dùng để làm mờ đốm thâm; theo nguồn, các thành phần này có thể làm mờ đốm thâm đã có. Bài này viết cho người có màu da trung bình đến sẫm. Nguồn khuyên tìm và loại bỏ nguyên nhân gây thâm, đồng thời chống nắng trước; khi đó sản phẩm làm mờ thâm thường hiệu quả hơn. Nếu sản phẩm gây rát hoặc châm chích khi bôi thì ngừng dùng. Nếu cách đang dùng không cho kết quả như mong muốn, bạn có thể cần gặp bác sĩ da liễu."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you choose this option, use a product that contains one of the following ingredients: Azelaic acid Glycolic acid Kojic acid Retinoid (retinol, tretinoin, adapalene gel, or tazarotene) Vitamin C" },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "These ingredients can fade existing dark spots." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Once you eliminate what’s causing the dark spots and protect your skin from sunlight, a product that can fade dark spots (or even out your skin tone) tends to be more effective." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If a product burns or stings when you apply it, stop using it." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If the treatment you’re using fails to deliver the results you want, you may want to see a dermatologist." },
+]
+
+# ======================================================================================
+# Nguồn (url đã có trong rules.toml thì không khai báo lại)
+# ======================================================================================
+
+[[source]]
+url = "https://dermnetnz.org/topics/nicotinamide"
+title = "Nicotinamide"
+publisher = "DermNet"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC2699641/"
+title = "Retinoids in the treatment of skin aging: an overview of clinical efficacy and safety (Clin Interv Aging, 2006)"
+publisher = "PubMed Central, U.S. National Library of Medicine"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/"
+title = "Vitamin C in dermatology (Indian Dermatol Online J, 2013)"
+publisher = "PubMed Central, U.S. National Library of Medicine"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5579659/"
+title = "The Roles of Vitamin C in Skin Health (Nutrients, 2017)"
+publisher = "PubMed Central, U.S. National Library of Medicine"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC9165630/"
+title = "Dermatology: how to manage facial hyperpigmentation in skin of colour (Drugs in Context, 2022)"
+publisher = "Moolla S, Miller-Monthrope Y — Drugs in Context (PMC)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/media/stats-sunscreen"
+title = "Sunscreen FAQs"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/news/dermatologist-guide-skincare"
+title = "A dermatologist’s guide to skincare from growing up to glowing up"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/cosmetic/age-spots-marks/get-rid-spots"
+title = "Age spots: How to get rid of them"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/diseases/a-z/benzoyl-peroxide-faqs"
+title = "Benzoyl peroxide: FAQs (benzene)"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/diseases/a-z/dry-skin-treatment"
+title = "Dry skin: Diagnosis and treatment"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/diseases/a-z/melasma-overview"
+title = "Melasma: Overview"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment"
+title = "Adult acne: Treat it yourself (How to treat adult acne at home)"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/diseases/acne/diy/skin-color"
+title = "Acne in skin of color: 10 tips"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-40s-and-50s"
+title = "Skin care in your 40s and 50s"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-basics/care/skin-care-in-your-60s-and-70s"
+title = "How to care for your skin in your 60s and 70s"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/dermatologists-tips-relieve-dry-skin"
+title = "Dermatologists' top tips for relieving dry skin"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/maximize-anti-aging-products"
+title = "How to maximize results from anti-aging skin care products"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/selecting-anti-aging-products"
+title = "How to select anti-aging skin care products"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/wrinkle-remedies"
+title = "Wrinkle remedies"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products"
+title = "How to test skin care products"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots"
+title = "How to fade dark spots in darker skin tones"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/sun-protection/shade-clothing-sunscreen/choosing-right-sunscreen"
+title = "How to select a sunscreen"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.ncbi.nlm.nih.gov/sites/books/NBK545171/"
+title = "Moisturizers (StatPearls)"
+publisher = "StatPearls Publishing / NCBI Bookshelf"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin"
+title = "11 ways to reduce premature skin aging"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/diseases/rosacea/triggers/tips"
+title = "7 rosacea skin care tips dermatologists recommend"
+publisher = "American Academy of Dermatology (AAD)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin"
+title = "How to control oily skin"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores"
+title = "What can treat large facial pores?"
+publisher = "American Academy of Dermatology"
+accessed_at = 2026-10-28

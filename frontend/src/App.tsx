@@ -4,6 +4,7 @@ import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
 import { Dialog } from './components/Dialog'
+import { GoalsPage } from './components/GoalsPage'
 import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
@@ -12,6 +13,7 @@ import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { EmailLinkPage, SignIn } from './components/SignIn'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
+import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
 import { useIncomingRoutine } from './share'
@@ -25,7 +27,7 @@ import {
   type CheckState,
 } from './routine'
 
-type Page = 'routine' | 'myths' | 'review'
+type Page = 'routine' | 'goals' | 'myths' | 'review'
 
 // The review page has no nav entry for users; reviewers open #review.
 const pageFromHash = (): Page => (window.location.hash === '#review' ? 'review' : 'routine')
@@ -75,6 +77,7 @@ function App() {
     }
     await (everywhere ? api.signOutEverywhere() : api.signOut()).catch(() => {})
     sync.forget() // the next person on this device must not get this routine
+    clearSelectedGoals() // nor these goals
     setPasswordReset(false)
     setAccountOpen(false)
     void account.refresh()
@@ -162,6 +165,7 @@ function App() {
                 {(
                   [
                     ['routine', 'Routine của tôi'],
+                    ['goals', 'Mục tiêu'],
                     ['myths', 'Sự thật hay myth'],
                   ] as const
                 ).map(([value, label]) => (
@@ -228,6 +232,10 @@ function App() {
                   <WarningsPanel state={check} products={actions.routine.products} />
                 </ResultsAside>
               </div>
+            ) : page === 'goals' ? (
+              <div className="mx-auto max-w-3xl">
+                <GoalsPage routine={actions.routine} />
+              </div>
             ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">
                 <MythPage />
@@ -260,6 +268,7 @@ function App() {
               onSignOut={signOut}
               onDeleted={() => {
                 sync.forget()
+                clearSelectedGoals()
                 setAccountOpen(false)
                 void account.refresh()
               }}

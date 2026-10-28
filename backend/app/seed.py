@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
+from app.goals import SHARED_GOAL, goal_problems
 from app.inci import normalize_name, parse_inci
 from app.ingredients import resolve
 from app.rules import rule_problems
@@ -66,6 +67,11 @@ def seed(engine: Engine) -> dict[str, int]:
     if problems:
         raise ValueError("rules.toml:\n  " + "\n  ".join(problems))
 
+    goals_data = load_toml("goals.toml")
+    goal_urls = known_urls | {s["url"] for s in goals_data.get("source", [])}
+    if problems := goal_problems(goals_data, {g["code"] for g in groups}, goal_urls):
+        raise ValueError("goals.toml:\n  " + "\n  ".join(problems))
+
     eu_names, functions = load_eu_names(), load_functions()
     used = {code for _, _, codes in eu_names.values() for code in codes}
     if untranslated := used - {f["code"] for f in functions}:
@@ -88,6 +94,8 @@ def seed(engine: Engine) -> dict[str, int]:
         source_ids = {s["url"]: _seed_source(conn, s) for s in sources}
         for rule in rules:
             _seed_rule(conn, rule, source_ids)
+        seed_goals(conn, goals_data, source_ids)
+    items = goals_data.get("item", [])
     return {
         "groups": len(groups),
         "ingredients": len(ingredients),
@@ -95,6 +103,9 @@ def seed(engine: Engine) -> dict[str, int]:
         "products": len(products),
         "rules": len(rules),
         "published_rules": sum(1 for r in rules if r.get("published")),
+        "goals": len(goals_data.get("goal", [])),
+        "goal_items": len(items),
+        "published_goal_items": sum(1 for i in items if i.get("published")),
     }
 
 
@@ -332,3 +343,72 @@ def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) 
             ),
             {"r": rule_id, "pos": position, "s": source_ids[s["url"]], "q": s["quote"]},
         )
+
+
+def seed_goals(conn: Connection, data: dict[str, Any], source_ids: dict[str, int]) -> None:
+    """Upsert goals.toml (checked by goal_problems first). `source_ids` holds the rules.toml
+    sources; the goals.toml ones are added. Items and goals gone from the file are deleted."""
+    source_ids = {**source_ids, **{s["url"]: _seed_source(conn, s) for s in data.get("source", [])}}
+    goals, items = data.get("goal", []), data.get("item", [])
+    for g in goals:
+        conn.execute(
+            text(
+                """
+                INSERT INTO goals (code, name_vi, description_vi, position, shared)
+                VALUES (:code, :name_vi, :description_vi, :position, :shared)
+                ON CONFLICT (code) DO UPDATE SET name_vi = excluded.name_vi,
+                  description_vi = excluded.description_vi, position = excluded.position,
+                  shared = excluded.shared
+                """
+            ),
+            {
+                **{k: g[k] for k in ("code", "name_vi", "description_vi", "position")},
+                "shared": g["code"] == SHARED_GOAL,
+            },
+        )
+    conn.execute(
+        text("DELETE FROM goal_items WHERE NOT (key = ANY(:keys))"),
+        {"keys": [i["key"] for i in items]},
+    )
+    for position, item in enumerate(items, start=1):
+        item_id = conn.execute(
+            text(
+                """
+                INSERT INTO goal_items (key, goal_code, kind, group_code, title_vi, body_vi,
+                                        position, published, reviewed_by, reviewed_at)
+                VALUES (:key, :goal, :kind, :group, :title_vi, :body_vi, :position,
+                        :published, :reviewed_by, :reviewed_at)
+                ON CONFLICT (key) DO UPDATE SET
+                  goal_code = excluded.goal_code, kind = excluded.kind,
+                  group_code = excluded.group_code, title_vi = excluded.title_vi,
+                  body_vi = excluded.body_vi, position = excluded.position,
+                  published = excluded.published, reviewed_by = excluded.reviewed_by,
+                  reviewed_at = excluded.reviewed_at
+                RETURNING id
+                """
+            ),
+            {
+                **{k: item[k] for k in ("key", "goal", "kind", "title_vi", "body_vi")},
+                "group": item.get("group"),
+                "position": position,
+                "published": bool(item.get("published")),
+                "reviewed_by": item.get("reviewed_by"),
+                "reviewed_at": item.get("reviewed_at"),
+            },
+        ).scalar_one()
+        conn.execute(text("DELETE FROM goal_item_sources WHERE item_id = :id"), {"id": item_id})
+        for pos, s in enumerate(item.get("sources", []), start=1):
+            conn.execute(
+                text(
+                    """
+                    INSERT INTO goal_item_sources (item_id, position, source_id, quote)
+                    VALUES (:i, :pos, :s, :q)
+                    """
+                ),
+                {"i": item_id, "pos": pos, "s": source_ids[s["url"]], "q": s["quote"]},
+            )
+    # Only after the items moved: an item may have pointed at a goal that is gone (renamed).
+    conn.execute(
+        text("DELETE FROM goals WHERE NOT (code = ANY(:codes))"),
+        {"codes": [g["code"] for g in goals]},
+    )
