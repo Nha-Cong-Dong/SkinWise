@@ -1,6 +1,6 @@
 ---
 name: rule-source-research
-description: "Quy trình tìm nguồn và soạn luật cảnh báo (conflict, duplicate), thẻ myth và lưu ý khi dùng (usage) cho SkinWise: chọn nguồn uy tín, trích nguyên văn, đọc ngữ cảnh, ghi lưu ý cho người duyệt, soạn khối [[rule]] / [[source]] TOML với published = false, kèm tiêu chí phản biện. Dùng cho source-researcher và evidence-critic trong luồng tìm nguồn của skinwise-orchestrator, và khi được hỏi 'luật / myth X có nguồn không', 'tìm nguồn cho ...', 'kiểm lại nguồn của luật ...'. Không dùng để bật luật: chỉ người duyệt bật."
+description: "Quy trình tìm nguồn và soạn luật cảnh báo (conflict, duplicate), thẻ myth và lưu ý khi dùng (usage) cho SkinWise: chọn nguồn uy tín, trích nguyên văn, đọc ngữ cảnh, ghi lưu ý cho người duyệt, soạn khối [[rule]] / [[source]] TOML với published = false, kèm tiêu chí phản biện; mục 9: nội dung có nguồn không phải luật (hoạt chất cho mục tiêu da, thẻ thông tin trong goals.toml). Dùng cho source-researcher và evidence-critic trong luồng tìm nguồn của skinwise-orchestrator, và khi được hỏi 'luật / myth X có nguồn không', 'tìm nguồn cho ...', 'kiểm lại nguồn của luật ...', 'tìm nguồn cho mục tiêu da / thẻ thông tin ...'. Không dùng để bật luật: chỉ người duyệt bật."
 ---
 
 # Tìm nguồn và soạn luật / thẻ myth
@@ -142,3 +142,24 @@ Kiểm lần lượt. Mỗi tiêu chí không đạt là một `issue`.
 6. **Lời văn**: `explanation_vi` không nói quá nguồn, có "có thể", lời khuyên nào cũng có trong nguồn, gọi đúng tên chất. `title_vi` không gây hoảng.
 7. **An toàn khi seed**: `key` không trùng luật đã có; `published = false`; không có `reviewed_by` / `reviewed_at`; mọi URL có khối `[[source]]` (cũ hoặc trong `new_source_blocks`).
 8. **Lưu ý người duyệt đủ chưa**: giới hạn nào bạn thấy ở bước 2 mà bản nháp không ghi thì thêm vào `issues` (để sửa) hoặc `notes_for_reviewer` (nếu chỉ cần biết).
+
+## 9. Nội dung có nguồn không phải luật (mục tiêu da, thẻ thông tin)
+
+Dùng trong luồng nội dung của orchestrator (`references/flow-content.md`). Các mục này không tạo cảnh báo. Chúng hiển thị nguyên văn trên trang "Mục tiêu", nên lời văn chính là thứ người dùng đọc. Các mục 2–4 vẫn áp dụng (nguồn, tìm, đọc ngữ cảnh). Mục 5 (severity, scope, evidence_level) không áp dụng.
+
+**Cách viết:**
+- `title_vi`: ngắn, trung tính, không hứa hẹn kết quả ("Salicylic acid (BHA) cho mụn đầu đen", không viết "Hết mụn với BHA").
+- `body_vi`: 2–5 câu tiếng Việt dễ hiểu. Mỗi ý phải có trong đoạn trích hoặc ngay cạnh nó trên trang. Dùng "có thể" khi nguồn chỉ nói "may" / "can help".
+  - Mục `active`: nói vì sao nhóm này hợp mục tiêu, kèm lưu ý dùng mà nguồn có nêu (nồng độ khởi đầu, bôi buổi tối, cần bao lâu mới thấy).
+- **Không dùng chữ "trị" hay "chữa"** cho mỹ phẩm, vì đó là ngôn ngữ của thuốc (quy định quảng cáo mỹ phẩm ASEAN). Viết "dùng cho", "giúp", "hỗ trợ".
+- **Thuốc kê đơn** (tretinoin, hydroquinone, kháng sinh, adapalene ở nồng độ kê đơn, isotretinoin uống): chỉ nhắc kèm câu "cần bác sĩ kê đơn". Không viết như thể người dùng tự mua được. Nguồn là trang thuốc thì ghi rõ trong `notes_for_reviewer`.
+- **Không gợi ý sản phẩm hay thương hiệu cụ thể**, kể cả khi nguồn có nhắc tên.
+- Nguồn có nói "gặp bác sĩ da liễu khi…" thì đưa vào `body_vi`. Đây là thông tin có ích nhất cho người không có nền y khoa.
+- `group` của mục `active` phải là mã có trong `functional_groups.toml`. Nguồn nói về một chất cụ thể (vd. adapalene) mà mục dùng cả nhóm (RETINOID) thì ghi vào `notes_for_reviewer` rằng nguồn chỉ nói về chất đó.
+
+**Phản biện:** dùng tiêu chí 1–3 và 8 ở mục 8, cộng thêm:
+- lời văn vi phạm một trong các điều ở trên (nói quá nguồn, có chữ "trị", thuốc kê đơn viết như hàng tự mua, có tên sản phẩm);
+- đoạn trích nói về nhóm người khác với người dùng đọc (vd. chỉ da sẫm màu, chỉ viêm da cơ địa) mà `body_vi` viết như áp dụng cho mọi người;
+- mục `active` có nhóm không khớp với chất mà nguồn nói.
+
+Mỗi lỗi là một `issue` gắn với `key` của mục.
