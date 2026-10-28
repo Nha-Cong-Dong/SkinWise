@@ -93,6 +93,30 @@ export type Rule = {
 
 export type RulesResponse = { rules: Rule[]; notice_vi: string | null }
 
+/** Skin goals (GET /goals): reviewed, sourced reading per goal. Never changes a warning. */
+export type GoalItem = {
+  key: string
+  kind: 'active' | 'info'
+  group: string | null // group code; set only for `active`
+  title_vi: string
+  body_vi: string
+  sources: Source[]
+}
+
+export type Goal = {
+  code: string
+  name_vi: string
+  description_vi: string
+  actives: GoalItem[]
+  infos: GoalItem[]
+}
+
+export type GoalsResponse = {
+  goals: Goal[] // without the shared "all" goal
+  shared_infos: GoalItem[] // items of "all", shown with every goal
+  notice_vi: string // always set: not a substitute for a dermatologist
+}
+
 export type RoutineCheckRequest = {
   products: { key: string; product_id?: number; inci?: string }[]
   items: { product_key: string; session: Session; days: number[]; step: number }[]
@@ -227,6 +251,8 @@ export const api = {
     for (const g of params.groups ?? []) query.append('groups', g)
     return request<RulesResponse>(`/rules?${query}`)
   },
+  /** The same for everyone: the user's chosen goals stay in this browser and are never sent. */
+  goals: () => request<GoalsResponse>('/goals'),
   login: (name: string, password: string) =>
     post<{ token: string; name: string; expires_at: string }>('/review/login', { name, password }),
   // User accounts; the session is an HttpOnly cookie the browser sends by itself.

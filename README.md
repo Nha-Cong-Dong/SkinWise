@@ -144,6 +144,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth
 - [ ] Hoàn thiện demo
 - [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
+- [ ] Mục tiêu da: chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn (xong code, nội dung chờ duyệt)
 
 ## Nguồn dữ liệu và ghi công
 

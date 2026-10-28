@@ -15,6 +15,7 @@ from app.engine import (
     check_routine,
     rule_matches,
 )
+from app.goals import load_goals
 from app.inci import read_label_text
 from app.ingredients import (
     ResolvedEntry,
@@ -36,6 +37,9 @@ from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
     FunctionOut,
+    GoalItemOut,
+    GoalOut,
+    GoalsResponse,
     GroupOut,
     InciAnalysis,
     InciAnalyzeRequest,
@@ -94,6 +98,10 @@ TEXT_NOTICES_VI = {
         "kiểm tra có thể thiếu cảnh báo."
     ),
 }
+GOALS_NOTICE_VI = (
+    "Đây là thông tin chung có nguồn, không thay cho tư vấn của bác sĩ da liễu. Mụn viêm nhiều, "
+    "đau hoặc để lại sẹo, hay đốm da thay đổi bất thường, nên đi khám."
+)
 DbSession = Annotated[Session, Depends(get_session)]
 
 router = APIRouter()
@@ -102,6 +110,20 @@ router = APIRouter()
 @router.get("/groups")
 def groups(db: DbSession) -> list[GroupOut]:
     return [GroupOut.model_validate(g) for g in list_groups(db)]
+
+
+@router.get("/goals")
+def goals(db: DbSession) -> GoalsResponse:
+    """Skin goals with their published, sourced items. Display only: the goals a user picks
+    stay in the browser and never reach the warning engine."""
+    all_goals = load_goals(db)
+    return GoalsResponse(
+        goals=[GoalOut.model_validate(g) for g in all_goals if not g.shared],
+        shared_infos=[
+            GoalItemOut.model_validate(i) for g in all_goals if g.shared for i in g.infos
+        ],
+        notice_vi=GOALS_NOTICE_VI,
+    )
 
 
 @router.get("/functions")

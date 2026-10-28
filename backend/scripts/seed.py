@@ -11,5 +11,6 @@ if __name__ == "__main__":
         f"Seeded {counts['groups']} groups, {counts['ingredients']} ingredients, "
         f"{counts['eu_names']} EU ingredient names, {counts['products']} products, "
         f"{counts['rules']} rules "
-        f"({counts['published_rules']} published)."
+        f"({counts['published_rules']} published), {counts['goals']} goals, "
+        f"{counts['goal_items']} goal items ({counts['published_goal_items']} published)."
     )

@@ -132,6 +132,29 @@ class RuleOut(FromAttributes):
     sources: list[SourceOut]
 
 
+class GoalItemOut(FromAttributes):
+    key: str
+    kind: Literal["active", "info"]
+    group: str | None  # functional group code, active items only
+    title_vi: str
+    body_vi: str
+    sources: list[SourceOut]
+
+
+class GoalOut(FromAttributes):
+    code: str
+    name_vi: str
+    description_vi: str
+    actives: list[GoalItemOut]
+    infos: list[GoalItemOut]
+
+
+class GoalsResponse(BaseModel):
+    goals: list[GoalOut]  # without the shared goal "all"
+    shared_infos: list[GoalItemOut]  # items of "all", shown with every goal
+    notice_vi: str  # always set: general sourced information, not a doctor's advice
+
+
 class RulesResponse(BaseModel):
     rules: list[RuleOut]
     notice_vi: str | None  # set when nothing matched: no rule does not mean safe
