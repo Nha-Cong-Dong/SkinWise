@@ -89,6 +89,7 @@ export type Rule = {
   title_vi: string
   explanation_vi: string
   sources: Source[]
+  reviewed_at: string | null // YYYY-MM-DD: when a reviewer read the sources and published the rule
 }
 
 export type RulesResponse = { rules: Rule[]; notice_vi: string | null }
@@ -199,6 +200,9 @@ export type EmailSent = {
   dev_link: string | null // dev mode only; null when no link was made (e.g. the email already has an account)
 }
 
+/** A list copied off a label photo by an AI model (ProductOrigin in routine.ts). */
+export type StoredOrigin = { kind: 'photo'; confirmed: boolean }
+
 /** The routine kept on the server; same shape as Routine in routine.ts. */
 export type StoredRoutine = {
   data: {
@@ -210,6 +214,7 @@ export type StoredRoutine = {
       inci: string | null
       groups: string[]
       notices?: TextNotice[]
+      origin?: StoredOrigin | null // missing in routines saved before it existed
     }[]
     entries: { id: string; productKey: string; session: Session; days: number[] }[]
   } | null

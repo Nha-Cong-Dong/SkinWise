@@ -6,7 +6,7 @@ import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
-import { ReadFromPhoto } from './ReadFromPhoto'
+import { PhotoReaderStatus, ReadFromPhoto } from './ReadFromPhoto'
 
 type Props = { actions: RoutineActions }
 
@@ -140,6 +140,7 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
     },
     () => !text.trim() || confirm('Thay bảng thành phần đang dán bằng chữ đọc từ ảnh?'),
   )
+  const reading = reader.state === 'loading'
   const unreadable = text.split(UNREADABLE).length - 1
   // A list read off a photo is analysed only once the user has checked it against the package.
   const unchecked = origin?.kind === 'photo' && !origin.confirmed
@@ -199,10 +200,16 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
             </button>
           )}
           <p className="mt-2 text-xs">
-            <button onClick={clear} className="font-medium text-link underline underline-offset-2">
+            <button
+              onClick={clear}
+              disabled={reading}
+              className="font-medium text-link underline underline-offset-2 disabled:opacity-40"
+            >
               Bỏ, tự dán bảng khác
             </button>
           </p>
+          {/* A photo pasted over a list already read: say that it is being read, or what failed. */}
+          <PhotoReaderStatus state={reader.state} alone />
         </div>
       ) : (
         <ReadFromPhoto reader={reader} />
@@ -223,9 +230,10 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
           setState('idle')
         }}
         rows={6}
+        disabled={reading} // the text read off the photo would replace what is typed meanwhile
         placeholder="Ingredients: Aqua, Glycerin, Niacinamide, …"
         aria-label="Bảng thành phần"
-        className={`${field} text-sm leading-relaxed`}
+        className={`${field} text-sm leading-relaxed disabled:opacity-60`}
       />
       {unreadable > 0 && (
         <p className="text-sm text-caution-ink">

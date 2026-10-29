@@ -22,7 +22,7 @@ export function AccountPanel({
 }: {
   me: Me
   sync: SyncState
-  onSignOut: (everywhere: boolean) => Promise<void>
+  onSignOut: (everywhere: boolean) => Promise<string | null> // null: signed out; else the error to show
   onDeleted: () => void
 }) {
   const [policyOpen, setPolicyOpen] = useState(false)
@@ -30,6 +30,17 @@ export function AccountPanel({
   const [confirm, setConfirm] = useState('')
   const [error, setError] = useState<string | null>(null)
   const [busy, setBusy] = useState(false)
+  const [signingOut, setSigningOut] = useState(false)
+  const [signOutError, setSignOutError] = useState<string | null>(null)
+
+  const signOut = (everywhere: boolean) => {
+    setSigningOut(true)
+    setSignOutError(null)
+    void onSignOut(everywhere).then((problem) => {
+      setSigningOut(false)
+      setSignOutError(problem)
+    })
+  }
   const synced = sync.kind === 'synced' ? when(sync.at) : when(me.routine_updated_at)
   const consent = me.consents.at(-1)
 
@@ -73,12 +84,13 @@ export function AccountPanel({
         <a href={EXPORT_URL} download className={secondary}>
           Tải toàn bộ dữ liệu
         </a>
-        <button onClick={() => void onSignOut(false)} className={secondary}>
+        <button onClick={() => signOut(false)} disabled={signingOut} className={secondary}>
           Đăng xuất
         </button>
-        <button onClick={() => void onSignOut(true)} className={secondary}>
+        <button onClick={() => signOut(true)} disabled={signingOut} className={secondary}>
           Đăng xuất mọi thiết bị
         </button>
+        {signOutError && <p className="w-full text-avoid-ink">{signOutError}</p>}
       </section>
 
       <section className="border-t border-line pt-4">

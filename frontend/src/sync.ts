@@ -59,14 +59,20 @@ export type SyncState =
 const isEmpty = (r: Routine) => r.products.length === 0 && r.entries.length === 0
 
 const toServer = (r: Routine): NonNullable<StoredRoutine['data']> => ({
-  products: r.products.map(({ key, name, brand, productId, inci, groups, notices }) => ({
-    key, name, brand, productId, inci, groups, notices: notices ?? [],
+  products: r.products.map(({ key, name, brand, productId, inci, groups, notices, origin }) => ({
+    key, name, brand, productId, inci, groups, notices: notices ?? [], ...(origin && { origin }),
   })), // prettier-ignore
   entries: r.entries.map(({ id, productKey, session, days }) => ({ id, productKey, session, days })),
 })
 
 const fromServer = (s: StoredRoutine): ServerCopy => ({
-  routine: s.data ?? { products: [], entries: [] },
+  routine: s.data
+    ? {
+        ...s.data,
+        // The server may answer `origin: null`; the routine has no origin then.
+        products: s.data.products.map(({ origin, ...p }) => ({ ...p, ...(origin && { origin }) })),
+      }
+    : { products: [], entries: [] },
   version: s.version,
   updatedAt: s.updated_at,
 })
@@ -90,6 +96,7 @@ export function useRoutineSync(actions: RoutineActions, email: string | null) {
   const placed = useRef<Routine | null>(null)
   const ready = useRef(false) // reconciled with the server since signing in
   const timer = useRef<ReturnType<typeof setTimeout>>(undefined)
+  const inflight = useRef<Promise<void> | null>(null) // the write being sent; one at a time
 
   const setMeta = (next: Meta | null) => {
     meta.current = next
@@ -111,20 +118,44 @@ export function useRoutineSync(actions: RoutineActions, email: string | null) {
     [email],
   )
 
+  /** The write being sent, if any, has answered (and any write queued behind it). */
+  const settled = async () => {
+    while (inflight.current) await inflight.current
+  }
+
   const push = useCallback(
     async (baseVersion?: number) => {
+      // Two writes at once would both name the same base version, and the second would read as
+      // a conflict with the first. Wait, then read the base version the first one left.
+      const waited = inflight.current !== null
+      // Inline, not `await settled()`: the extra tick of an async helper would let another call
+      // start its write between the loop ending and this one claiming `inflight`.
+      while (inflight.current) await inflight.current
       if (!email || !meta.current) return
-      setState({ kind: 'syncing' })
-      try {
-        const saved = await api.saveRoutine(toServer(routine.current), baseVersion ?? meta.current.baseVersion)
-        setMeta({ email, baseVersion: saved.version, dirty: false })
-        setState({ kind: 'synced', at: saved.updated_at })
-      } catch (e) {
-        if (e instanceof ApiError && e.status === 409) {
-          setState({ kind: 'conflict', server: fromServer(e.body as StoredRoutine) })
-        } else {
-          setState({ kind: 'offline' })
+      if (waited && baseVersion === undefined && !meta.current.dirty) return // already sent
+      const base = baseVersion ?? meta.current.baseVersion
+      const sent = routine.current
+      const run = (async () => {
+        setState({ kind: 'syncing' })
+        try {
+          const saved = await api.saveRoutine(toServer(sent), base)
+          if (meta.current?.email !== email) return // forgotten meanwhile (signed out, account deleted)
+          // A change made while this write was on its way is still unsent.
+          setMeta({ email, baseVersion: saved.version, dirty: routine.current !== sent })
+          setState({ kind: 'synced', at: saved.updated_at })
+        } catch (e) {
+          if (e instanceof ApiError && e.status === 409) {
+            setState({ kind: 'conflict', server: fromServer(e.body as StoredRoutine) })
+          } else {
+            setState({ kind: 'offline' })
+          }
         }
+      })()
+      inflight.current = run
+      try {
+        await run
+      } finally {
+        if (inflight.current === run) inflight.current = null
       }
     },
     [email],
@@ -133,6 +164,7 @@ export function useRoutineSync(actions: RoutineActions, email: string | null) {
   /** Compare with the server and do the one safe thing, or ask. */
   const reconcile = useCallback(async () => {
     if (!email) return
+    await settled() // compare with what the server holds after the write being sent
     let server: ServerCopy
     try {
       server = fromServer(await api.myRoutine())
@@ -207,7 +239,8 @@ export function useRoutineSync(actions: RoutineActions, email: string | null) {
     },
     /** Before signing out: send what is not sent yet. False if it could not be sent. */
     flush: async (): Promise<boolean> => {
-      clearTimeout(timer.current)
+      clearTimeout(timer.current) // a write waiting for its pause goes now
+      await settled()
       if (!meta.current?.dirty) return true
       await push()
       return !meta.current?.dirty

@@ -28,7 +28,9 @@ Cỡ: S ≈ vài ngày, M ≈ 1–2 tuần, L ≈ hơn 2 tuần (một người 
 
 Hiện app chỉ chạy trên máy: frontend gọi backend qua proxy Vite, PostgreSQL cài trực tiếp, chưa có CI (không có `.github/`).
 
-- [ ] Chọn nơi chạy: PostgreSQL 17 có sẵn `pg_trgm` + `unaccent` (kiểm tra trước khi chọn), backend FastAPI, frontend tĩnh; HTTPS
+- [ ] Chọn nơi chạy: PostgreSQL 17 có sẵn `pg_trgm` + `unaccent` (kiểm tra trước khi chọn), backend FastAPI, frontend tĩnh; HTTPS. Đặt tại Việt Nam nếu sau này có tài khoản (hướng H, chốt 26/10)
+- [x] Tự lưu font trên máy chủ thay vì tải từ Google Fonts, để trình duyệt người xem không gửi IP ra nước ngoài (26/10: `frontend/src/fonts/`, giấy phép SIL OFL 1.1; Lighthouse điện thoại: hiện nội dung đầu tiên 3,0 s → 1,9 s)
+- [ ] Khi có địa chỉ công khai: thêm `og:url` và `og:image` (1200×630, URL tuyệt đối) vào `frontend/index.html`; các thẻ `og:` khác đã có
 - [ ] Frontend gọi API khác origin: cấu hình CORS cho đúng domain, thay cho proxy `/api` lúc dev
 - [ ] Migration: chuyển sang Alembic trước lần đổi schema đầu tiên sau khi có dữ liệu thật (tài khoản, routine); `schema.sql` chạy lặp lại được nhưng không đổi được kiểu cột hay xoá cột
 - [ ] Sao lưu các bảng có dữ liệu không sinh lại được từ `data/*.toml` (tài khoản, routine, nháp thẻ myth)
@@ -49,6 +51,19 @@ Từ [phase-4-ui.md](phase-4-ui.md):
 Mở rộng nhỏ:
 - [ ] Xuất/nhập routine (file JSON hoặc link chia sẻ mã hoá routine trong URL): chuyển máy, gửi cho người khác xem mà chưa cần tài khoản
 - [ ] Nút "báo cảnh báo sai" trên từng thẻ cảnh báo: chỉ lưu mã luật (không có ô nhập tự do), để người duyệt đọc lại nguồn. Bảng câu hỏi đã bỏ (27/10) nên cần bảng riêng
+
+Sửa theo bản đánh giá sản phẩm (26/10, mục "Làm ngay", PR #8; đo bằng Lighthouse và Chrome DevTools trên bản build):
+- [x] Nút "Thử với routine mẫu" ở trạng thái rỗng: 4 sản phẩm bán ở Việt Nam, ra 1 cảnh báo kết hợp, 1 thẻ myth, 3 lưu ý khi dùng; ghi rõ không phải gợi ý cách dùng (`sampleRoutine()` trong `routine.ts`)
+- [x] Lời giải thích dài trong khung kết quả chỉ hiện 4 dòng, có "Xem thêm" / "Thu gọn"; chỉ ẩn bằng CSS, văn bản vẫn đủ nguyên văn trong trang. Trang myth giữ nguyên
+- [x] Xoá sản phẩm: thông báo "Hoàn tác" 8 giây, trả sản phẩm và các bước về đúng chỗ; thay cho hộp hỏi `confirm()`
+- [x] Nút +Sáng/+Tối/Thành phần/Xoá cao 40 px trên điện thoại; nút ↑ ↓ × lớn hơn
+- [x] Lỗi kiểm tra routine: câu dễ hiểu + nút "Thử lại", chi tiết kỹ thuật thu vào "Chi tiết kỹ thuật"
+- [x] Thẻ luật hiện ngày người duyệt đọc nguồn ("đã duyệt 22/10/2026"; `reviewed_at` trong `RuleOut`). Không hiện tên người duyệt
+- [x] Khả năng tiếp cận: `h1` cho trang Routine và trang duyệt; hộp thoại có tên (`aria-labelledby`); nút lặp lại trên mỗi sản phẩm có tên kèm sản phẩm ("Xoá “Retinol…”"), nhóm ngày "Ngày dùng “…”, buổi tối", ngày đọc "T2, Thứ Hai"; khung kết quả không còn là vùng tự đọc, thay bằng một dòng trạng thái ("Đã kiểm tra routine: 1 thận trọng; 1 thông tin; 3 lưu ý khi dùng.")
+- [x] `robots.txt`; thẻ `og:` cho link chia sẻ; tiêu đề trang có mô tả
+- [x] Trang duyệt tải riêng khi mở `#review` (20 KB không còn trong bundle chính)
+- Kết quả Lighthouse (bản build, trang lúc mới mở): điện thoại Performance 89 → 97, SEO 91 → 100, Accessibility và Best Practices giữ 100; máy tính 100 cả bốn mục. Còn lại: khoảng 50 KB JavaScript chưa dùng lúc mở trang (chủ yếu React), CLS 0,014 do font hiện sau chữ dự phòng (vẫn trong ngưỡng tốt 0,1)
+- [ ] Nghe thử bằng NVDA / VoiceOver (chưa làm được tự động): nhảy theo tiêu đề, danh sách nút, thêm sản phẩm, bật/tắt ngày, mở/đóng hộp thoại
 
 ## C. Độ chính xác dữ liệu và engine
 
