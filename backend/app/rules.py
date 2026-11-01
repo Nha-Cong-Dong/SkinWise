@@ -36,7 +36,8 @@ def rule_problems(rule: dict[str, Any], known_urls: set[str]) -> list[str]:
 _PUBLISHED_RULES = text(
     """
     SELECT r.id, r.key, r.kind, r.severity, r.scope, r.evidence_level, r.group_a, r.group_b,
-           r.title_vi, r.explanation_vi, s.title, s.publisher, s.url, rs.quote
+           r.title_vi, r.explanation_vi, r.reviewed_at::date AS reviewed_at,
+           s.title, s.publisher, s.url, rs.quote
     FROM rules r
     JOIN rule_sources rs ON rs.rule_id = r.id
     JOIN sources s ON s.id = rs.source_id
@@ -60,6 +61,7 @@ def load_published_rules(db: Session | Connection) -> list[Rule]:
             rules[row.id] = Rule(
                 row.id, row.key, row.kind, row.severity, row.scope, row.evidence_level,
                 row.group_a, row.group_b, row.title_vi, row.explanation_vi, (source,),
+                row.reviewed_at,
             )  # fmt: skip
     return list(rules.values())
 

@@ -1,5 +1,5 @@
-import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
-import { api, type CosmeticFunction, type Group, type Severity } from './api'
+import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
+import { ApiError, api, type CosmeticFunction, type Group, type Severity } from './api'
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
@@ -82,6 +82,7 @@ function App() {
   // Signing in is required (plan/h-accounts.md); the review page has its own sign-in.
   const account = useAccount()
   const me = account.state.kind === 'signed-in' ? account.state.me : null
+  const accountOffline = account.state.kind === 'signed-in' && account.state.offline === true
   const sync = useRoutineSync(actions, me?.email ?? null)
   const profile = useProfileOwner(me?.email ?? null)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -103,21 +104,36 @@ function App() {
     (await sync.flush()) ||
     confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Tiếp tục bây giờ sẽ mất các thay đổi đó. Vẫn tiếp tục?')
 
-  const signOut = async (everywhere: boolean) => {
+  /** Null once signed out; otherwise what to tell the user. */
+  const signOut = async (everywhere: boolean): Promise<string | null> => {
     const sent = await sync.flush()
     if (
       !sent &&
       !confirm('Routine trên thiết bị này chưa lưu lên máy chủ được (mất kết nối). Đăng xuất bây giờ sẽ mất các thay đổi đó. Vẫn đăng xuất?')
     ) {
-      return
+      return null
     }
-    await (everywhere ? api.signOutEverywhere() : api.signOut()).catch(() => {})
-    sync.forget() // the next person on this device must not get this routine
-    clearSelectedGoals() // nor these goals
-    clearAllDrafts() // nor unsent posts
+    try {
+      await (everywhere ? api.signOutEverywhere() : api.signOut())
+    } catch (e) {
+      // 401: the session had already ended. Anything else: the cookie may still be valid, so this
+      // device stays signed in and keeps the routine until the server confirms.
+      if (!(e instanceof ApiError && e.status === 401)) return 'Chưa đăng xuất được (mất kết nối). Hãy thử lại.'
+    }
+    forgetDevice()
     setPasswordReset(false)
     setAccountOpen(false)
     void account.refresh()
+    return null
+  }
+
+  /** Signed out or account deleted: the next person on this device must not get this routine or draft. */
+  const forgetDevice = () => {
+    sync.forget()
+    clearSelectedGoals() // the next person on this device must not get these goals
+    setAddDraft(EMPTY_ADD_DRAFT) // the label photo and the list being typed
+    setAdding(false)
+    clearAllDrafts() // nor unsent posts
   }
 
   useEffect(() => {
@@ -226,8 +242,8 @@ function App() {
                   title="Tài khoản"
                 >
                   <span className="max-w-[11rem] truncate text-sm font-medium sm:max-w-[16rem]">{me.email}</span>
-                  <span className={`text-xs ${conflict || sync.state.kind === 'offline' ? 'text-caution-ink' : 'text-ink-mute'}`}>
-                    {syncLabel(sync.state) ?? 'Tài khoản'}
+                  <span className={`text-xs ${conflict || sync.state.kind === 'offline' || accountOffline ? 'text-caution-ink' : 'text-ink-mute'}`}>
+                    {accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? 'Tài khoản')}
                   </span>
                 </button>
               )}
@@ -259,6 +275,8 @@ function App() {
               {/* The three columns have their own headings; the page needs one above them. */}
               <h1 className="sr-only">Routine của tôi</h1>
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
+                {/* The three columns have visible h2 titles; the page title is for screen readers. */}
+                <h1 className="sr-only">Routine của tôi</h1>
                 <div className="lg:col-start-1 lg:row-start-1">
                   <MyProducts actions={actions} onAdd={() => setAdding(true)} />
                 </div>
@@ -280,7 +298,10 @@ function App() {
               </div>
             ) : page === 'review' ? (
               <div className="mx-auto max-w-4xl">
-                <ReviewPage />
+                <h1 className="sr-only">Trang duyệt</h1>
+                <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải trang duyệt…</p>}>
+                  <ReviewPage />
+                </Suspense>
               </div>
             ) : route.page === 'blog' ? (
               <div className="mx-auto max-w-6xl">
@@ -323,8 +344,8 @@ function App() {
 
           <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
             <p>
-              Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên máy này và đồng
-              bộ với tài khoản của bạn trên máy chủ SkinWise.
+              Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này và
+              đồng bộ với tài khoản SkinWise của bạn.
             </p>
             <p className="mt-2">
               Góp ý hoặc báo lỗi:{' '}
@@ -356,9 +377,7 @@ function App() {
               sync={sync.state}
               onSignOut={signOut}
               onDeleted={() => {
-                sync.forget()
-                clearSelectedGoals()
-                clearAllDrafts() // nor unsent posts
+                forgetDevice()
                 setAccountOpen(false)
                 void account.refresh()
               }}

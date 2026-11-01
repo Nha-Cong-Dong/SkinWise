@@ -15,7 +15,6 @@ from typing import Any
 import anthropic
 from pydantic import BaseModel
 
-from app.accounts import RateLimit
 from app.config import get_settings
 from app.drafts import FALLBACK_MODELS
 
@@ -46,27 +45,9 @@ names (usually English). If there is only one list, transcribe it, whatever the 
 """
 
 
-# Each photo is a billed call, and in dev mode anyone can make accounts without a real email.
-# In memory, per process, like the account limits (app/accounts.py).
-PER_USER_LIMIT = (10, 3600.0)  # photos per user and hour
-SERVER_LIMIT = (100, 86400.0)  # photos per day for the whole server
-_per_user = RateLimit({"email": PER_USER_LIMIT})
-_server = RateLimit({"email": SERVER_LIMIT})
-
-
-def allow_label_read(user_id: str) -> bool:
-    """Count one photo for this user and the server; False once either limit is reached
-    (nothing is counted then)."""
-    if _per_user.blocked(user_id, None) or _server.blocked("all", None):
-        return False
-    _per_user.record(user_id, None)
-    _server.record("all", None)
-    return True
-
-
-def reset_label_limits() -> None:
-    _per_user.clear()
-    _server.clear()
+# 429: the AI service is overloaded, or this server already has as many calls running as
+# it allows (label_api). 503 only ever means "not set up".
+AI_BUSY = "the AI service is busy; try again in a minute"
 
 
 class LabelReadingError(Exception):
@@ -133,7 +114,7 @@ def call_model(media_type: str, data: str) -> ModelLabel:
     except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
         raise LabelReadingError(f"reading photos is not set up: {e.message}", 503) from e
     except anthropic.RateLimitError as e:
-        raise LabelReadingError("the AI service is busy; try again in a minute", 503) from e
+        raise LabelReadingError(AI_BUSY, 429) from e
     except anthropic.BadRequestError as e:
         # Mostly an image the API cannot open (corrupt, or not the declared type).
         raise LabelReadingError(f"the AI service could not read the image: {e.message}", 422) from e

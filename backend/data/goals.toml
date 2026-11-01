@@ -737,7 +737,9 @@ kind = "active"
 group = "BENZOYL_PEROXIDE"
 title_vi = "Benzoyl peroxide"
 body_vi = "Benzoyl peroxide có thể giảm vi khuẩn gây mụn trên da. Nó hiệu quả hơn khi dùng cùng hoạt chất khác; bác sĩ da liễu có thể kê thuốc phối hợp benzoyl peroxide với retinoid hoặc kháng sinh (kháng sinh cần bác sĩ kê). Bác sĩ da liễu AAD khuyên bắt đầu với sản phẩm 2,5% để bớt khô, kích ứng, rát. Benzoyl peroxide có thể làm bạc màu quần áo, khăn, vỏ gối."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Benzoyl peroxide: This active ingredient reduces acne-causing bacteria on your skin." },
   { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "It’s most effective when used along with another acne treatment that works on the other causes of acne." },
@@ -762,7 +764,9 @@ kind = "active"
 group = "RETINOID"
 title_vi = "Retinoid / retinol"
 body_vi = "Retinoid là nhóm chất gốc vitamin A; theo Hội Da liễu Hoa Kỳ (AAD), tretinoin (thuốc kê đơn, cần bác sĩ) giúp tế bào bề mặt da thay mới nhanh hơn và tăng collagen, nhờ đó có thể làm giảm nếp nhăn nhỏ. AAD xem sản phẩm có retinoid là lựa chọn tốt cho người có nếp nhăn nhỏ mức nhẹ, và một thử nghiệm với retinol cho thấy nếp nhăn nhỏ cải thiện sau 12 tuần. Retinoid có thể gây rát, bong tróc; với da sẫm màu, kích ứng có thể để lại vết thâm, và bắt đầu chậm cùng kem dưỡng ẩm có thể giúp hạn chế điều này. Nên bắt đầu bằng loại nhẹ, dùng cách đêm rồi tăng dần, chỉ dùng buổi tối và chống nắng ban ngày; không dùng retinoid khi mang thai. Người da khô hoặc có dị ứng da có thể không hợp với retinoid; người da đỏ, viêm nhiều nên tránh retinoid và hỏi bác sĩ da liễu về cách khác."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "As it spurs faster turnover of surface skin cells and boosts collagen, it also improves skin tone and reduces fine lines and wrinkles." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/retinoid-retinol", quote = "A skin product that contains retinoids is a good option for someone with mild acne, mild pigmentation irregularities, or mild fine lines and wrinkles" },
@@ -790,7 +794,9 @@ kind = "active"
 group = "NIACINAMIDE"
 title_vi = "Niacinamide"
 body_vi = "Niacinamide (còn gọi là nicotinamide) là dạng hoạt động của vitamin B3. Theo DermNet, trong nhiều nghiên cứu lâm sàng, niacinamide bôi da cải thiện nếp nhăn nhỏ, đốm tăng sắc tố, mảng đỏ, da xỉn vàng và độ đàn hồi. Chất này thường dễ dung nạp, nên có thể là lựa chọn cho người không dùng được retinoid hay axit trái cây. Niacinamide không có tác dụng chống nắng; Hội Da liễu Hoa Kỳ (AAD) xem chống nắng là nền tảng của mọi kế hoạch chăm da chống lão hoá."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://dermnetnz.org/topics/nicotinamide", quote = "Nicotinamide, also known as niacinamide or nicotinic acid amide, is the water-soluble, active form of vitamin B3." },
   { url = "https://dermnetnz.org/topics/nicotinamide", quote = "In multiple clinical studies, topical nicotinamide improved fine lines and wrinkles , hyperpigmented spots, red blotchiness, and skin sallowness (yellowing) as well as elasticity." },
@@ -814,7 +820,9 @@ goal = "aging"
 kind = "info"
 title_vi = "Chống nắng là nền tảng để ngừa lão hoá"
 body_vi = "Theo Hội Da liễu Hoa Kỳ (AAD), ánh nắng đóng vai trò lớn trong việc làm da lão hoá sớm, và chống nắng là nền tảng của mọi kế hoạch chăm da chống lão hoá. Bác sĩ da liễu xem kem chống nắng và kem dưỡng ẩm là hai sản phẩm chống lão hoá hiệu quả nhất. Nên chống nắng mỗi ngày: tìm bóng râm, mặc đồ che chắn và dùng kem chống nắng phổ rộng, SPF 30 trở lên, chịu nước. Chống nắng còn giúp da có cơ hội tự phục hồi một phần tổn thương. Nếu các dấu hiệu lão hoá làm bạn bận tâm, có thể gặp bác sĩ da liễu."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "The sun plays a major role in prematurely aging our skin." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/anti-aging/reduce-premature-aging-skin", quote = "You can protect your skin by seeking shade, covering up with sun-protective clothing — such as a lightweight and long-sleeved shirt, pants, a wide-brimmed hat, and sunglasses with UV protection — and using sunscreen that is broad-spectrum, SPF 30 (or higher), and water-resistant." },
@@ -838,7 +846,9 @@ goal = "dark-spots"
 kind = "info"
 title_vi = "Tìm nguyên nhân trước, rồi kiên nhẫn"
 body_vi = "Theo AAD (bài viết cho người da màu trung bình đến sẫm), làm mờ thâm bắt đầu bằng việc tìm ra vì sao có đốm thâm (mụn, vết thương, sản phẩm gây kích ứng, thuốc đang dùng, thay đổi nội tiết); bỏ được nguyên nhân thì nhiều đốm có thể tự mờ. Sau khi đã tìm và bỏ được nguyên nhân, đốm chỉ sẫm hơn màu da vài tông thường mờ trong 6–12 tháng, còn sắc tố nằm sâu có thể mất nhiều năm. Điều trị đốm thâm bắt đầu bằng kem chống nắng. Nếu nghi do thuốc đang dùng, đừng tự ngừng thuốc mà hãy hỏi bác sĩ đã kê. Ngoài azelaic acid, glycolic acid, retinoid và vitamin C, AAD cũng nêu kojic acid; một bài tổng quan lưu ý kojic acid dễ gây viêm da tiếp xúc hơn."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Getting rid of hyperpigmentation begins with finding out why you get these dark spots or patches." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you can eliminate the cause, many spots will clear on their own and you can prevent new ones from appearing." },
@@ -875,7 +885,9 @@ kind = "active"
 group = "BHA"
 title_vi = "Salicylic acid (BHA) trong sữa rửa mặt cho lỗ chân lông bị tắc"
 body_vi = "Mụn làm tắc lỗ chân lông, khiến lỗ chân lông trông rõ hơn. Theo Hiệp hội Da liễu Hoa Kỳ (AAD), dùng sữa rửa mặt có salicylic acid có thể giúp, vì các nghiên cứu cho thấy salicylic acid có thể làm thông lỗ chân lông. Nếu salicylic acid làm da khô hoặc kích ứng, có thể dùng xen kẽ: buổi sáng dùng sữa rửa mặt dịu nhẹ, buổi tối trước khi ngủ dùng loại có salicylic acid."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Acne clogs your pores, which can make your pores more noticeable." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Using a cleanser with salicylic acid may help." },
@@ -898,7 +910,9 @@ kind = "active"
 group = "RETINOID"
 title_vi = "Retinol / retinyl palmitate cho lỗ chân lông trông to"
 body_vi = "Da dầu, mụn nhẹ hoặc da kém săn hơn trước có thể làm lỗ chân lông trông to hơn. Theo AAD, dùng sản phẩm chăm da có retinol hoặc retinyl palmitate có thể giúp; nên bôi trước khi đi ngủ. Một số người bị kích ứng; có thể hạn chế bằng cách rửa mặt rồi đợi 30 phút mới bôi. Không dùng sản phẩm có retinol hoặc retinyl palmitate khi đang mang thai hoặc cho con bú."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "If you have oily skin, mild acne, or your skin appears less firm than it once was, pores can look larger." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Using a skin care product with retinol or retinyl palmitate may help." },
@@ -922,7 +936,9 @@ goal = "oily-pores"
 kind = "info"
 title_vi = "Chăm sóc da dầu hằng ngày"
 body_vi = "Theo AAD: rửa mặt tối đa hai lần mỗi ngày và sau khi ra mồ hôi, không chà mạnh, kể cả khi tẩy trang. Sữa rửa mặt quá mạnh có thể kích ứng da và làm da tiết thêm dầu, nên chọn loại dịu nhẹ. Chọn sản phẩm ghi \"oil free\" và \"noncomedogenic\". Da dầu vẫn cần dưỡng ẩm sau khi rửa mặt. Có thể dùng giấy thấm dầu: ấn nhẹ lên mặt vài giây, không chà. Nếu lo về lượng dầu trên da hoặc đang khổ vì mụn đầu đen, mụn, hãy gặp bác sĩ da liễu."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "DO cleanse your face up to twice daily and after sweating." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-basics/dry/oily-skin", quote = "While washing, resist the temptation to scrub your skin, even to remove makeup." },
@@ -952,7 +968,9 @@ goal = "oily-pores"
 kind = "info"
 title_vi = "Lỗ chân lông to: đừng nặn, cạy và nhớ chống nắng"
 body_vi = "Theo AAD, khi lỗ chân lông bị tắc, chúng giãn ra và có thể trông rõ hơn. Cạy, nặn hay khều vào lỗ chân lông có thể làm da kích ứng, khiến lỗ chân lông lộ hơn; đừng bao giờ chà, cạy hay nặn da mặt. Da càng bị nắng làm hại thì càng kém săn, và khi da kém săn thì lỗ chân lông trông rõ hơn. Kem chống nắng phổ rộng, chống nước, SPF 30 trở lên giúp ngăn da bị nắng làm hại; nên bôi mỗi ngày, kể cả khi trời mưa hay lạnh. Lỗ chân lông cũng trông to hơn khi da chùng nhão theo tuổi; bác sĩ da liễu có thể khám và cho biết cách giúp da săn lại."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "When pores clog, they expand, which can make your pores look more noticeable." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/face/treat-large-pores", quote = "Picking at, squeezing, or digging into your pores can also irritate your skin, making pores look more noticeable." },
@@ -983,7 +1001,9 @@ goal = "redness"
 kind = "info"
 title_vi = "Da bị rosacea: thành phần bác sĩ da liễu khuyên tránh"
 body_vi = "Với da bị rosacea (bệnh da làm mặt hay đỏ), nhiều sản phẩm chăm da và mỹ phẩm có thể gây kích ứng. Để giảm nguy cơ đó, bác sĩ da liễu khuyên tránh sản phẩm có một trong các thành phần: cồn (alcohol), long não (camphor), hương liệu, glycolic acid, lactic acid, menthol, sodium lauryl sulfate và urea. Nên chọn sản phẩm không hương liệu (ghi \"fragrance-free\", không phải chỉ ghi \"unscented\"), có ghi dành cho da nhạy cảm và không gây bít lỗ chân lông (non-comedogenic). Nên thử sản phẩm trước khi bôi lên mặt."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "When you have rosacea, many skin care products and cosmetics can irritate your skin." },
   { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "To reduce the likelihood of using a product that will irritate your skin, dermatologists recommend that you avoid products that contain any of the following ingredients: Alcohol Camphor Fragrance Glycolic acid Lactic acid Menthol Sodium lauryl sulfate (often found in shampoos and toothpaste) Urea" },
@@ -1009,7 +1029,9 @@ goal = "redness"
 kind = "info"
 title_vi = "Chăm sóc nhẹ nhàng khi bị rosacea"
 body_vi = "Với da bị rosacea, bất cứ thứ gì làm da kích ứng đều có thể khiến tình trạng bùng lên. AAD khuyên rửa mặt bằng đầu ngón tay, không dùng khăn hay bông mút rửa mặt, không chà xát hay mát-xa da; nếu đang tẩy da chết thì nên dừng. Không dùng toner hoặc astringent (nước se khít), chọn sữa rửa mặt dịu nhẹ thay cho xà phòng, và khi chọn sản phẩm thì ưu tiên dạng kem hơn lotion hay gel. Dùng kem chống nắng phổ rộng, SPF 30 trở lên, chống nước; nếu kem chống nắng làm da kích ứng, có thể chọn loại khoáng (zinc oxide, titanium dioxide) không hương liệu."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Anything that irritates your skin can cause rosacea to flare." },
   { url = "https://www.aad.org/public/diseases/rosacea/triggers/tips", quote = "Use your fingertips to gently wash and rinse your face, without using a washcloth or facial sponge." },
@@ -1049,7 +1071,9 @@ goal = "all"
 kind = "info"
 title_vi = "Thử sản phẩm mới trước khi dùng lên mặt"
 body_vi = "AAD khuyên thử sản phẩm trước khi thêm vào routine: thoa một ít lên một vùng nhỏ không bị cọ xát hay rửa trôi (mặt trong cánh tay, chỗ gập khuỷu tay), ngày hai lần trong 7–10 ngày; sản phẩm rửa đi như sữa rửa mặt thì để trên da khoảng 5 phút hoặc theo hướng dẫn. Nếu sau 7–10 ngày da không đỏ, ngứa hay sưng thì có thể dùng. AAD lưu ý một số chất như retinol và glycolic acid có thể làm da kích ứng, nhất là da nhạy cảm; điều này bình thường và tạm thời. Nếu da bị phản ứng, rửa nhẹ sản phẩm đi càng sớm càng tốt và không dùng lại; phản ứng nặng, chườm mát không đỡ thì có thể cần gặp bác sĩ da liễu. Một bác sĩ da liễu thành viên AAD cũng khuyên mỗi lần chỉ thêm một sản phẩm mới để biết da có chịu được không."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Before you add a skin care product to your routine, dermatologists recommend testing it." },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/prevent-skin-problems/test-skin-care-products", quote = "Apply the product to a test spot twice daily for seven to 10 days." },
@@ -1084,7 +1108,9 @@ kind = "active"
 group = "VITAMIN_C"
 title_vi = "Vitamin C cho đốm thâm"
 body_vi = "Vitamin C nằm trong danh sách thành phần mà Viện Da liễu Hoa Kỳ (AAD) nêu cho sản phẩm không cần kê đơn dùng để làm mờ đốm thâm; theo nguồn, các thành phần này có thể làm mờ đốm thâm đã có. Bài này viết cho người có màu da trung bình đến sẫm. Nguồn khuyên tìm và loại bỏ nguyên nhân gây thâm, đồng thời chống nắng trước; khi đó sản phẩm làm mờ thâm thường hiệu quả hơn. Nếu sản phẩm gây rát hoặc châm chích khi bôi thì ngừng dùng. Nếu cách đang dùng không cho kết quả như mong muốn, bạn có thể cần gặp bác sĩ da liễu."
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
 sources = [
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "If you choose this option, use a product that contains one of the following ingredients: Azelaic acid Glycolic acid Kojic acid Retinoid (retinol, tretinoin, adapalene gel, or tazarotene) Vitamin C" },
   { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "These ingredients can fade existing dark spots." },

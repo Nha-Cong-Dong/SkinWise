@@ -10,7 +10,7 @@ export const POLICY_VERSION = '2026-10-26-draft'
 export type AccountState =
   | { kind: 'checking' }
   | { kind: 'signed-out' }
-  | { kind: 'signed-in'; me: Me }
+  | { kind: 'signed-in'; me: Me; offline?: true } // offline: the last refresh got no answer; still signed in
   | { kind: 'unreachable' } // the server did not answer
 
 export function useAccount() {
@@ -20,7 +20,15 @@ export function useAccount() {
     () =>
       api.me().then(
         (me) => setState({ kind: 'signed-in', me }),
-        (e) => setState(e instanceof ApiError && e.status === 401 ? { kind: 'signed-out' } : { kind: 'unreachable' }),
+        (e) =>
+          setState((prev) =>
+            e instanceof ApiError && e.status === 401
+              ? { kind: 'signed-out' }
+              : // A passing network error must not shut a signed-in user out; the next focus tries again.
+                prev.kind === 'signed-in'
+                ? { ...prev, offline: true }
+                : { kind: 'unreachable' },
+          ),
       ),
     [],
   )

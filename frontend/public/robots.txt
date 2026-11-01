@@ -1,0 +1,3 @@
+# The whole app may be indexed; the review page (#review) is behind a sign-in.
+User-agent: *
+Allow: /

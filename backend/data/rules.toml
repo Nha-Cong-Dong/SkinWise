@@ -482,6 +482,299 @@ sources = [
 ]
 
 # ======================================================================================
+# Ứng viên mới (28/10). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang; lời giải thích do Claude soạn.
+# Người duyệt (Vân Anh) duyệt và bật cả bốn luật dưới đây ngày 28/10.
+# ======================================================================================
+
+# Nguồn: nhãn thuốc FINACEA Foam (azelaic acid 15%, LEO Pharma, DailyMed, sửa đổi 12/2020): dặn tránh chất làm
+#   se, chà xát và "peeling agents"; trong thử nghiệm lâm sàng, các sản phẩm đó được gọi là "products which may
+#   cause local irritation".
+# Lưu ý người duyệt:
+#   - Nguồn gián tiếp: nhãn nói 'peeling agents' (chất làm bong da), không nêu tên AHA, BHA, PHA, glycolic hay
+#   salicylic acid. Việc xếp acid tẩy da chết vào 'peeling agents' là suy diễn của luật. Vì vậy để
+#   evidence_level = low, không để expert_opinion như các luật dựa trên nhãn thuốc nói thẳng tên chất.
+#   - Nhãn nói về thuốc kê đơn azelaic acid 15% cho người bị rosacea (da nhạy cảm). Nhãn không nói về azelaic
+#   acid nồng độ thấp trong mỹ phẩm, cũng không nói về da thường hay da mụn.
+#   - Phạm vi: nhãn dặn tránh các sản phẩm đó trong cả thời gian dùng thuốc, không nói 'cùng buổi'. same_session
+#   hẹp hơn điều nhãn nói. Đồng thời nhãn không có dữ liệu về kết hợp, chỉ là lời dặn.
+#   - Câu thứ hai (mục 14) là điều kiện của thử nghiệm: người tham gia được dặn tránh các sản phẩm 'which may
+#   cause local irritation'. Câu này cho thấy hãng coi peeling agents là thứ có thể gây kích ứng, nhưng không
+#   phải kết quả đo kích ứng khi dùng chung.
+#   - Bằng chứng chiều ngược lại, cần cân nhắc: tổng quan Pharmaceuticals 2025 (PMC12472904, đã là nguồn của
+#   myth azelaic-acid-retinoid-myth) mô tả azelaic acid dùng 'in synergistic combinations with agents like
+#   glycolic acid or tretinoin', và nghiên cứu Kakita (24 tuần, azelaic acid 20% + glycolic acid 15–20%) chỉ
+#   thấy kích ứng 'mild, transient', 'slightly more frequent than with hydroquinone 4%', không ai bỏ điều trị.
+#   Câu trích nguyên văn (đã kiểm OK trên https://pmc.ncbi.nlm.nih.gov/articles/PMC12472904/): 'Similarity, a
+#   24-week study by Kakita et al. [ 75 ] involving AzA 20% (combined with 15–20% glycolic acid) reported mild,
+#   transient local irritation, slightly more frequent than with hydroquinone 4%; yet, all symptoms remained
+#   within the “trace” to “mild” range.' Lưu ý: so sánh là với hydroquinone, không phải với azelaic acid dùng
+#   riêng, nên nghiên cứu này không cho biết kết hợp làm tăng kích ứng bao nhiêu.
+#   - Vì có bằng chứng ngược chiều (kết hợp với glycolic acid được dùng và dung nạp được trong nghiên cứu),
+#   người duyệt có thể cân nhắc: (a) giữ luật caution/low như bản nháp; (b) hạ xuống info; hoặc (c) bỏ với lý do
+#   'chỉ có nhãn thuốc nói chung về peeling agents, nghiên cứu kết hợp với glycolic acid thấy dung nạp tốt'. Tôi
+#   nghiêng về (a) hoặc (b), không chắc chắn.
+#   - DermNet (trang azelaic acid) nói azelaic acid tự nó 'is both exfoliative and comedolytic' (đã kiểm OK)
+#   nhưng không nói gì về dùng chung với AHA/BHA, nên không dùng làm nguồn cho luật.
+#   - Nhãn Finacea Gel cũ (Intendis, setid 63773349-...) có câu tương tự: 'Avoid alcoholic cleansers, tinctures
+#   and astringents, abrasives and peeling agents.' Nhãn AZELEX 20% (Almirall, sửa đổi 02/2024) không có lời dặn
+#   này.
+#   - explanation_vi không đưa lời khuyên 'dùng xen kẽ' hay 'dùng khác buổi' vì nguồn không nói. Key mới, không
+#   trùng luật nào trong rules.toml (chỉ có azelaic-acid-retinoid-myth). published = false.
+#   - Luật chỉ dựa trên một suy diễn: coi AHA/BHA/PHA trong mỹ phẩm là 'peeling agents' (chất làm bong da). Nhãn
+#   thuốc không định nghĩa từ này, không nêu tên acid nào và không đưa lý do. Câu hỏi then chốt cho người duyệt:
+#   có chấp nhận suy diễn này không. Nếu không thì nên bỏ luật.
+#   - Bằng chứng chiều ngược lại (đã tự kiểm, có trên trang): tổng quan PMC12472904 gọi azelaic acid + glycolic
+#   acid là kết hợp 'synergistic'. Nghiên cứu Kakita dùng azelaic acid 20% + glycolic acid 15–20% trong 24 tuần,
+#   chỉ thấy kích ứng nhẹ, thoáng qua, không ai bỏ điều trị. explanation_vi hiện không nhắc chiều này. Nếu giữ
+#   caution, người duyệt có thể muốn thêm một câu nói rằng trong một nghiên cứu điều trị nám, kết hợp với
+#   glycolic acid gây kích ứng nhẹ. Nếu không thì hạ xuống info.
+#   - Phạm vi: Finacea Foam bôi 2 lần/ngày (sáng và tối) và nhãn dặn tránh trong suốt thời gian dùng thuốc. Vì
+#   vậy same_session hẹp hơn điều nhãn nói. Bản nháp đã ghi lưu ý này.
+#   - Câu ngay trước câu trích trên nhãn là 'Cosmetics may be applied after the application of FINACEA Foam has
+#   dried.' Nhãn không coi mỹ phẩm nói chung là vấn đề, chỉ coi các loại cụ thể (chất làm se, chà xát, làm bong
+#   da) là vấn đề.
+#   - Nhóm EXFOLIANT_ACID gồm cả PHA và BHA nồng độ thấp trong sữa rửa mặt. Luật sẽ cảnh báo cả những trường hợp
+#   này, dù nhãn không nói gì về chúng.
+[[rule]]
+key = "azelaic-acid-exfoliant-acid-same-session"
+kind = "conflict"
+severity = "caution"
+scope = "same_session"
+evidence_level = "low"
+group_a = "AZELAIC_ACID"
+group_b = "EXFOLIANT_ACID"
+title_vi = "Azelaic acid và acid tẩy tế bào chết trong cùng một buổi"
+explanation_vi = "Hướng dẫn sử dụng của thuốc azelaic acid 15% (Finacea, trị rosacea) dặn người bệnh tránh các chất làm bong da (peeling agents), chất làm se và sản phẩm chà xát. Trong thử nghiệm lâm sàng của thuốc này, đó được xem là những sản phẩm có thể gây kích ứng tại chỗ. Hướng dẫn không nêu tên AHA, BHA hay PHA, và không nói về azelaic acid trong mỹ phẩm, nên đây chỉ là lưu ý thận trọng."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=9fabd24e-4c3b-49a0-aa5f-c8d75ae67572", quote = "Instruct patients to avoid use of alcoholic cleansers, tinctures and astringents, abrasives and peeling agents." },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=9fabd24e-4c3b-49a0-aa5f-c8d75ae67572", quote = "Subjects were also instructed to avoid use of products which may cause local irritation such as soaps, alcohol-containing cleansers, tinctures and astringents, abrasives and peeling agents during the study." },
+]
+
+# Nguồn: nhãn thuốc OTC CeraVe Acne Foaming Cleanser (benzoyl peroxide 4%, DailyMed) — dùng cùng lúc với một
+#   thuốc trị mụn bôi khác làm da dễ khô và kích ứng hơn; nhãn thuốc kê đơn AZELEX (azelaic acid 20%, DailyMed)
+#   — azelaic acid dạng thuốc được chỉ định trị mụn; Costa & Bagatin, Sao Paulo Med J 2013 (PMC10852114) —
+#   benzoyl peroxide được ưu tiên phối hợp (cố định hoặc lần lượt) với retinoid, azelaic acid, kháng sinh. # Lưu
+#   ý người duyệt: bằng chứng gián tiếp. Không nguồn nào nêu tên cặp azelaic acid + benzoyl peroxide gây kích
+#   ứng; nhãn azelaic acid không có cảnh báo dùng chung (FINACEA: 'no formal studies of the interaction'). Căn
+#   cứ coi azelaic acid là 'thuốc trị mụn' chỉ là nhãn thuốc kê đơn 20%; nhóm AZELAIC_ACID còn gồm Potassium
+#   Azeloyl Diglycinate và azelaic acid nồng độ mỹ phẩm, chưa rõ cảnh báo có áp dụng cho chúng. Nguồn nói 'at
+#   the same time', luật dùng cùng buổi; bài 2013 không nói về thời điểm bôi.
+# Lưu ý người duyệt:
+#   - Lượt sửa theo phản biện (2 điểm, đồng ý cả hai): (1) câu đầu explanation_vi đổi thành 'Benzoyl peroxide là
+#   hoạt chất trị mụn; azelaic acid ở dạng thuốc (vd. kem 20%) cũng được dùng để trị mụn.' và thêm câu cuối nêu
+#   giới hạn với azelaic acid nồng độ thấp / Potassium Azeloyl Diglycinate; giới hạn này cũng đã ghi vào dòng '#
+#   Lưu ý người duyệt' trong source_summary. (2) bỏ chữ 'thường' (nguồn chỉ nói 'preferably'), thêm '(trong cùng
+#   một thuốc hoặc lần lượt)' theo 'fixed or sequential combinations'. Không đổi nguồn, câu trích, kind,
+#   severity, scope; cả ba câu trích kiểm lại bằng check_text.py: OK.
+#   - Bằng chứng GIÁN TIẾP, nên để evidence_level = low (không phải expert_opinion như luật BPO + BHA). Không
+#   tìm thấy nguồn nào nói TRỰC TIẾP rằng azelaic acid + benzoyl peroxide làm kích ứng hơn. Luật dựa vào câu
+#   cảnh báo chung trên nhãn benzoyl peroxide ('another topical acne medication'), cộng nhãn AZELEX cho thấy
+#   azelaic acid dạng thuốc là thuốc trị mụn.
+#   - Khác với luật BPO + BHA: ở đó nhãn của CẢ HAI chất đều có câu cảnh báo. Ở đây chỉ nhãn benzoyl peroxide
+#   có; nhãn azelaic acid (AZELEX, FINACEA gel) không nhắc dùng chung. Nhãn FINACEA gel còn ghi: 'There have
+#   been no formal studies of the interaction of FINACEA Gel with other drugs.' (DailyMed setid
+#   9f40cd45-58a6-4376-9220-84bfe7d7e358, file dailymed-finacea-gel.txt).
+#   - Nhóm AZELAIC_ACID trong backend/data/ingredients.toml gồm cả Potassium Azeloyl Diglycinate (dòng 163-165,
+#   groups = ["AZELAIC_ACID"]) và azelaic acid nồng độ mỹ phẩm. Nhãn AZELEX nói về thuốc 20%. Lời giải thích nay
+#   nói rõ giới hạn này cho người dùng; luật vẫn có thể báo thừa với các sản phẩm đó vì engine không phân biệt
+#   nồng độ/dẫn xuất.
+#   - Hai chiều bằng chứng: tổng quan Sao Paulo Med J 2013 cho biết benzoyl peroxide được ƯU TIÊN phối hợp với
+#   azelaic acid trong điều trị mụn trung bình–nặng, nên lời giải thích nói cả hai ý và mức là caution chứ không
+#   phải avoid. 'sequential combinations' có thể là dùng lần lượt (khác thời điểm), không nhất thiết cùng buổi.
+#   - Bài 2013 là tổng quan tường thuật của một tạp chí Brazil, không phải hướng dẫn chính thức; câu trích dựa
+#   vào hướng dẫn của Đức 2010. Hướng dẫn AAD/JAAD 2024 (Reynolds et al.) không đọc được: jaad.org trả 403,
+#   không có bản PMC.
+#   - Nguồn nói 'at the same time' (cùng lúc), luật dùng same_session (cùng buổi), giống tiền lệ luật BPO + BHA.
+#   - Vì sao không chọn myth/info: không tìm thấy nguồn uy tín nào ghi nhận lời đồn 'không được dùng chung
+#   azelaic acid với benzoyl peroxide' để bác bỏ, và nhãn FDA có câu cảnh báo kích ứng áp dụng được. Phương án
+#   thay thế: thẻ myth severity info, evidence_level low, cùng ba nguồn (xem open_questions).
+#   - Lời khuyên 'chỉ dùng một sản phẩm trị mụn mỗi lần nếu kích ứng' có nguyên văn trên nhãn benzoyl peroxide;
+#   không thêm lời khuyên nào khác (vd. bôi sáng/tối khác nhau) vì không nguồn nào nói.
+#   - Bằng chứng gián tiếp: không nguồn nào nêu tên cặp azelaic acid + benzoyl peroxide gây kích ứng. Luật suy
+#   ra từ câu cảnh báo chung 'another topical acne medication' trên nhãn BPO, cộng nhãn AZELEX (thuốc 20%) cho
+#   thấy azelaic acid là thuốc trị mụn. Đã để evidence_level = low.
+#   - Engine sẽ báo cả với Potassium Azeloyl Diglycinate và azelaic acid nồng độ mỹ phẩm (cùng nhóm
+#   AZELAIC_ACID), trong khi căn cứ chỉ là thuốc 20%. Lời giải thích đã nói rõ giới hạn này, nhưng người duyệt
+#   nên cân nhắc việc có thể báo thừa.
+#   - Hai chiều bằng chứng: bài tổng quan 2013 nói BPO được ưu tiên phối hợp với azelaic acid (cố định hoặc lần
+#   lượt). Phương án thay thế là thẻ myth info/low (như azelaic-acid-retinoid-myth); bản nháp chọn conflict
+#   caution vì không có nguồn ghi nhận lời đồn. Cả hai đều chấp nhận được, người duyệt chọn.
+#   - explanation_vi dài khoảng 6 câu, hơn mức 1-3 câu trong hướng dẫn mục 5; nội dung đều có căn cứ, có thể rút
+#   gọn nếu muốn.
+#   - Hướng dẫn AAD/JAAD 2024 không đọc được (403), nên nguồn mạnh nhất về việc phối hợp vẫn chưa được kiểm.
+[[rule]]
+key = "azelaic-acid-benzoyl-peroxide-same-session"
+kind = "conflict"
+severity = "caution"
+scope = "same_session"
+evidence_level = "low"
+group_a = "AZELAIC_ACID"
+group_b = "BENZOYL_PEROXIDE"
+title_vi = "Azelaic acid và benzoyl peroxide trong cùng một buổi"
+explanation_vi = "Benzoyl peroxide là hoạt chất trị mụn; azelaic acid ở dạng thuốc (vd. kem 20%) cũng được dùng để trị mụn. Một bài tổng quan (2013) cho biết khi điều trị mụn mức trung bình và nặng, benzoyl peroxide được ưu tiên dùng phối hợp (trong cùng một thuốc hoặc lần lượt) với các thuốc khác, trong đó có azelaic acid. Tuy vậy, nhãn thuốc benzoyl peroxide (theo quy định của FDA Mỹ) ghi rằng dùng cùng lúc với một sản phẩm trị mụn bôi khác có thể làm da khô và kích ứng hơn. Nhãn không nhắc riêng azelaic acid. Nếu da bị kích ứng, nhãn khuyên chỉ dùng một sản phẩm trị mụn mỗi lần. Cảnh báo này suy ra từ nhãn thuốc; chưa rõ có áp dụng cho azelaic acid nồng độ thấp hay dẫn xuất (Potassium Azeloyl Diglycinate) trong mỹ phẩm hay không."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=d9c11b75-14ee-46e3-9b1d-c349a102e2fd", quote = "skin irritation and dryness is more likely to occur if you use another topical acne medication at the same time. If irritation occurs, only use one topical acne medication at a time" },
+  { url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=ebdfcaf7-b5d6-47e1-be87-ccaba4b97e75", quote = "cream is indicated for the topical treatment of mild-to-moderate inflammatory acne vulgaris." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC10852114/", quote = "Benzoyl peroxide (BPO) is used for treating moderate and severe forms of acne alone or, preferably, in fixed or sequential combinations with topical retinoids, azelaic acid and topical or systemic antibiotics." },
+]
+
+# Nguồn: J Clin Aesthet Dermatol 2017 review (Al-Niaimi & Chiang, PMC5605218) — vitamin C above 20% (in a
+#   product) does not increase biological significance and might cause some irritation (citing Pinnell 2001);
+#   optimal concentration depends on formulation. Indian Dermatol Online J 2013 review (Telang, PMC3673383) —
+#   efficacy of a vitamin C serum is proportional to concentration only up to 20%. Neither source discusses
+#   layering several vitamin C products.
+# Lưu ý người duyệt:
+#   - Sửa theo phản biện (lượt 2): explanation_vi bỏ chữ 'Vì vậy', nói rõ ngưỡng 20% là nồng độ trong MỘT sản
+#   phẩm, và thêm câu 'các bài này không nói trực tiếp về việc bôi chồng nhiều sản phẩm'. Ý 'có thể không làm
+#   tăng hiệu quả thêm' là suy luận của người soạn, không phải kết luận của nguồn.
+#   - Nguồn GIÁN TIẾP, giống hai luật duplicate đã bật: cả hai bài nói về nồng độ vitamin C trong MỘT sản phẩm
+#   ('for a product', 'the Vit. C serum'), không bài nào nói về chồng nhiều sản phẩm vitamin C trong một buổi,
+#   và không nói nồng độ của hai sản phẩm bôi chồng có cộng lại trên da hay không. Ví dụ hai serum 10%: lập luận
+#   bão hoà ở 20% chỉ đúng nếu nồng độ cộng lại, điều không nguồn nào nói. Vì vậy evidence_level = low.
+#   - MỚI: ngưỡng 20% phụ thuộc công thức. PMC5605218 mở đầu mục bằng "The optimal concentration of vitamin C
+#   depends on its formulation." và ở đoạn khác dẫn một nghiên cứu dùng vitamin C 25% kèm chất tăng thấm giảm
+#   nám có ý nghĩa sau 16 tuần: "A clinical study examining the effect of a topical formulation containing
+#   25-percent vitamin C and a chemical penetration enhancer reported a significant decrease in pigmentation
+#   caused by melasma after 16 weeks." Câu này làm yếu ý 'trên 20% không tăng tác dụng'.
+#   - MỚI: PMC3673383 coi việc bôi lặp lại là có ích: "A persistent reservoir of Vit. C is important for
+#   adequate photoprotection, and can be achieved by regular 8-hourly applications." Câu này nói về bôi lại theo
+#   thời gian (mỗi 8 giờ), không phải chồng nhiều sản phẩm trong cùng buổi, nhưng đi ngược tinh thần 'nhiều hơn
+#   không có lợi'.
+#   - Đề xuất severity = info (không phải caution như các luật duplicate khác): PMC5605218 chỉ nói 'might cause
+#   some irritation' ở trên 20%; PMC3673383 nói kích ứng (châm chích, đỏ, khô) là hiếm ('Rarely') và chữa dễ
+#   bằng kem dưỡng; cộng thêm hai điểm mới ở trên (ngưỡng phụ thuộc công thức, nguồn khuyên bôi lặp lại theo
+#   thời gian). Người duyệt có thể nâng lên caution nếu muốn thống nhất, nhưng bằng chứng không ủng hộ.
+#   - Cả hai bài là tổng quan dẫn lại, không phải dữ liệu gốc: PMC5605218 dẫn Pinnell 2001 (Dermatol Surg,
+#   nghiên cứu hấp thu qua da); PMC3673383 dẫn một chương sách (Farris 2009). Chưa đọc được bài Pinnell gốc
+#   (không có bản PMC; PubMed chặn tải tự động), nên không xác minh được nghiên cứu đo trên da người hay da động
+#   vật.
+#   - Cả hai nguồn chỉ nói về L-ascorbic acid (nhóm VITAMIN_C), không nói về dẫn xuất (VITAMIN_C_DERIVATIVE);
+#   luật không áp dụng cho dẫn xuất là đúng.
+#   - PMC3673383 có câu nói vitamin C dùng chung an toàn với kem chống nắng, tretinoin, chất chống oxy hoá khác
+#   và glycolic acid. Không mâu thuẫn trực tiếp với luật (luật nói về nhiều sản phẩm vitamin C), nhưng cho thấy
+#   nguồn không nhấn mạnh rủi ro kích ứng.
+#   - explanation_vi không đưa lời khuyên (bỏ một sản phẩm, dùng xen kẽ...) vì không nguồn nào nói.
+#   - Scope same_session là suy ra từ khung luật duplicate; nguồn không nói gì về buổi / thời điểm.
+#   - Hai bài: tạp chí có bình duyệt; PMC5605218 ghi không có tài trợ, không xung đột lợi ích; PMC3673383 ghi
+#   'Conflict of Interest: None declared'. PMC5605218 có nhắc tên một sản phẩm thương mại (SkinCeuticals) ở đoạn
+#   khác, không liên quan câu trích.
+#   - Mọi câu trích (cả trong context và notes) đã kiểm lại bằng check_text.py trên file trang: đều OK.
+#   - Luật này gần như chỉ là thông tin: nguồn nói về nồng độ trong MỘT sản phẩm, không nói nồng độ của hai sản
+#   phẩm bôi chồng có cộng lại hay không. Bản nháp đã ghi rõ điều này cả trong explanation_vi lẫn ghi chú. Bỏ
+#   luật (ghi ❌ Bỏ vào plan/README.md) cũng là lựa chọn hợp lý.
+#   - Vế 'cao hơn mức đó không tăng tác dụng' trong explanation_vi được viết như một khẳng định chắc chắn. Câu
+#   này đúng với nguồn, nhưng chính PMC5605218 cũng nhắc một công thức 25% có chất tăng thấm vẫn giảm nám. Nếu
+#   muốn thận trọng hơn, người duyệt có thể đổi thành 'cao hơn mức đó có thể không tăng tác dụng'. Không bắt
+#   buộc.
+#   - Severity info hợp lý hơn caution: câu nói về kích ứng chỉ có 'might cause some irritation', và PMC3673383
+#   nói kích ứng là hiếm.
+#   - Trong new_source_blocks chưa có accessed_at. Khi ghi vào TOML thì thêm accessed_at = 2026-10-28.
+#   - Ý nghĩa của luật vẫn phụ thuộc vào câu trích dẫn lại Pinnell 2001, và bài gốc chưa đọc được.
+[[rule]]
+key = "vitamin-c-duplicate-same-session"
+kind = "duplicate"
+severity = "info"
+scope = "same_session"
+evidence_level = "low"
+group_a = "VITAMIN_C"
+title_vi = "Nhiều sản phẩm chứa vitamin C (ascorbic acid) trong cùng một buổi"
+explanation_vi = "Các bài tổng quan cho biết tác dụng của vitamin C (L-ascorbic acid) trong một sản phẩm tăng theo nồng độ nhưng chỉ đến khoảng 20%; cao hơn mức đó không tăng tác dụng mà có thể gây kích ứng. Dùng nhiều sản phẩm chứa vitamin C trong cùng một buổi có thể không làm tăng hiệu quả thêm; các bài này không nói trực tiếp về việc bôi chồng nhiều sản phẩm."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5605218/", quote = "Studies have shown that a concentration above 20 percent does not increase its biological significance and, conversely, might cause some irritation." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/", quote = "From a clinical point of view, it is important to note that the efficacy of the Vit. C serum is proportional to the concentration, but only up to 20%." },
+]
+
+# Nguồn: J Clin Aesthet Dermatol 2021 (PMC8594539): RCT mù đôi chia nửa mặt, 21 người. Gel BPO 2,5% bôi 10 phút
+#   rồi rửa trôi, sau đó bôi kem niacinamide 5% so với kem nền, 2 lần/ngày trong 12 tuần. Cả hai bên dung nạp
+#   tốt, tác dụng phụ không khác biệt có ý nghĩa thống kê. (Đã bỏ PMC9433072 theo phản biện.)
+# Lưu ý người duyệt:
+#   - Lượt sửa theo phản biện: (1) Câu 1 của explanation_vi đã viết lại: bôi gel BPO 2,5%, để 10 phút, rửa sạch
+#   rồi mới bôi niacinamide. Thêm đoạn trích Methods 'Patients were asked to apply ... for 10 minutes before
+#   facial washing.' (check_text OK). (2) Đã bỏ PMC9433072 khỏi luật (cả 2 đoạn trích và khối source), làm theo
+#   cách sửa được ưu tiên. Lý do: kem Duo+ có salicylic acid và octyl salicylic acid (BHA), nên sẽ đụng luật đã
+#   bật benzoyl-peroxide-bha-same-session. Ngoài ra nhóm phối hợp có nhiều ca châm chích và rát hơn, và bài
+#   không so sánh thống kê. (3) Câu kết đã thu hẹp: chỉ nói về BPO 2,5% rửa trôi, 'có thể không làm kích ứng
+#   nhiều hơn rõ rệt', và ghi rõ chưa thử loại để lại trên da hay nồng độ cao hơn.
+#   - Bằng chứng giờ chỉ còn MỘT RCT nhỏ (21 người). Chưa có tổng quan hay hướng dẫn (AAD, DermNet) nào nói
+#   riêng về cặp này. Đề xuất severity = info, evidence_level = low. Người duyệt nên cân nhắc xem chỉ một nguồn
+#   như vậy đã đủ để bật thẻ chưa.
+#   - Giới hạn quan trọng: engine không phân biệt rinse_off và leave_on, nên thẻ sẽ hiện cả với BPO để lại trên
+#   da (kem/gel 5–10%). Giới hạn này nay đã ghi trong explanation_vi để người dùng cũng thấy.
+#   - Nghiên cứu không có nhóm nào không dùng BPO, nên không cho biết niacinamide có làm giảm kích ứng do BPO
+#   hay không. Luật không nói niacinamide 'làm dịu' BPO.
+#   - Không nguồn nào khuyên nên bôi cách nhau bao lâu, nên explanation_vi không đưa lời khuyên về cách dùng.
+#   - Phạm vi same_session khớp với nghiên cứu: rửa BPO rồi bôi niacinamide ngay trong cùng buổi, 2 lần/ngày.
+#   - Không dùng nhãn sản phẩm thương mại (CeraVe Acne Foaming Cream Cleanser) làm nguồn.
+#   - Có thật sự có lời đồn 'không được dùng niacinamide với benzoyl peroxide' không? Không nguồn bình duyệt nào
+#   nhắc lời đồn này. Người duyệt quyết định có giữ thẻ myth không.
+#   - Chỉ còn một RCT 21 người: như vậy đã đủ để bật thẻ chưa, hay nên chờ thêm nguồn (vd. bài MDPI 2024) hoặc
+#   chuyển sang no_source?
+#   - Key: dùng 'niacinamide-benzoyl-peroxide-myth' (hậu tố -myth giống các thẻ myth khác) hay giữ key ứng viên?
+#   - Bảng 3 cho thấy có thể chỉ 19/21 người được phân tích tác dụng phụ: 5 người rát = 26%, 7 người da nhờn =
+#   37%, tức mẫu số là 19. Bài không nói rõ có người bỏ cuộc hay không. explanation_vi ghi '21 người' là đúng số
+#   người tham gia; người duyệt có thể cân nhắc thêm câu 'phân tích tác dụng phụ trên khoảng 19 người'.
+#   - Kích ứng không hiếm. Ở tuần 2, khoảng 1/4 số người bị rát và khoảng 1/5 bị ngứa, ở CẢ HAI nửa mặt (do
+#   BPO). Bài viết 'A few patients' và explanation_vi viết 'một số người', cả hai không sai, nhưng người duyệt
+#   nên biết mức độ thật.
+#   - Thiết kế chia nửa mặt, và cả hai nửa đều dùng BPO. Vì vậy nghiên cứu chỉ cho thấy thêm niacinamide không
+#   làm tác dụng phụ tăng có ý nghĩa thống kê so với BPO + kem nền. Nó không chứng minh hai chất 'an toàn' khi
+#   dùng chung theo nghĩa rộng. Bản nháp đã ghi đúng điều này.
+#   - Chỉ có một RCT nhỏ, nên severity info và evidence_level low là phù hợp. Có bật thẻ hay không và có thật sự
+#   tồn tại lời đồn hay không là quyết định của người duyệt (open_questions trong bản nháp).
+#   - File _workspace/rules-niacinamide-bpo/pages/pmc9433072.txt vẫn còn trong workspace, nhưng bản nháp đã bỏ
+#   nguồn này. Không ảnh hưởng tới TOML.
+[[rule]]
+key = "niacinamide-benzoyl-peroxide-myth"
+kind = "myth"
+severity = "info"
+scope = "same_session"
+evidence_level = "low"
+group_a = "NIACINAMIDE"
+group_b = "BENZOYL_PEROXIDE"
+title_vi = "Niacinamide và benzoyl peroxide: đã được dùng chung trong nghiên cứu, chưa thấy lý do phải tách riêng"
+explanation_vi = "Một thử nghiệm ngẫu nhiên mù đôi nhỏ (21 người bị mụn, 12 tuần) cho người bệnh bôi gel benzoyl peroxide 2,5% lên mặt, để 10 phút rồi rửa sạch, sau đó bôi kem niacinamide 5% lên một nửa mặt, nửa kia bôi kem nền. Cả hai nửa mặt đều dung nạp tốt: một số người bị ngứa, rát, đóng vảy nhưng các triệu chứng này giảm dần, và hai nửa mặt không khác nhau có ý nghĩa thống kê. Nghiên cứu còn nhỏ và chỉ thử benzoyl peroxide 2,5% rửa trôi sau 10 phút, chưa thử loại để lại trên da hay nồng độ cao hơn, nên chỉ cho thấy dùng chung theo cách này có thể không làm kích ứng nhiều hơn rõ rệt; SkinWise chưa tìm thấy nguồn nào cho thấy dùng chung gây hại."
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-10-28
+sources = [
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "Patients were asked to apply a 2.5% benzoyl peroxide water-based gel 2 FTU (1g) on their entire face for 10 minutes before facial washing." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "After washing off the 2.5% benzoyl peroxide water-based gel, the patients were randomly assigned to apply 5% niacinamide cream 1 FTU (0.5 g) on one half of the face and the cream base 1 FTU (0.5g) on the other half." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "Both treatments were well tolerated." },
+  { url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/", quote = "A few patients experienced itchiness, burning, crusting, greasy skin, and dermatitis, but these symptoms decreased by the end of the treatment in both groups, with no statistically significant differences between groups." },
+]
+
+# Nguồn mạnh hơn đề xuất cho hai luật ĐÃ BẬT (workflow wf_f45d98f1-4a7, 28/10). CHỈ LÀ GHI CHÚ: luật đã bật
+# không đổi. Người duyệt đọc nguồn rồi tự quyết có thêm vào `sources` của luật hay không.
+#   exfoliant-acid-duplicate-same-session:
+#   - https://www.govinfo.gov/content/pkg/CFR-2025-title21-vol5/xml/CFR-2025-title21-vol5-sec333-350.xml: "skin
+#   irritation and dryness is more likely to occur if you use another topical acne medication at the same time.
+#   If irritation occurs, only use one topical acne medication at a time"
+#   Phạm vi: FDA, 21 CFR 333.350(c)(1)(ii) (bản CFR 2025, govinfo; khối [[source]] đã có trong rules.toml, dùng
+#   lại) — nhãn bắt buộc của thuốc trị mụn OTC (gồm salicylic acid 0,5–2%): dùng thêm một thuốc trị mụn bôi khác
+#   cùng lúc làm kích ứng và khô da dễ xảy ra hơn; nếu kích ứng thì chỉ dùng một thuốc trị mụn bôi tại một thời
+#   điểm. Chỉ áp dụng khi cả hai sản phẩm là salicylic acid nồng độ thuốc; không nói về AHA/PHA.
+#   retinoid-duplicate-same-session:
+#   - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0739d631-171b-42a8-bd55-0022b8df2d8a: "Irritation
+#   (redness, itching, dryness, burning) is more likely to occur: • In the first weeks of use. • If using
+#   abrasive skin cleansers, products with drying effects or more than one topical acne medication at a time."
+#   - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0739d631-171b-42a8-bd55-0022b8df2d8a: "You may
+#   want to delay starting Differin Gel until any irritation from using the other product(s) has gone away."
+#   - https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=0739d631-171b-42a8-bd55-0022b8df2d8a: "Applying
+#   more than directed will not provide faster or better results, but may worsen skin irritation."
+#   Phạm vi: Nhãn OTC Differin Gel (adapalene 0.1%, DailyMed). Kích ứng (đỏ, ngứa, khô, rát) dễ xảy ra hơn khi
+#   dùng nhiều hơn một thuốc trị mụn bôi cùng lúc; nên hoãn bắt đầu Differin tới khi hết kích ứng do sản phẩm
+#   kia. Bôi nhiều hơn hướng dẫn không cho kết quả nhanh hơn hay tốt hơn, mà có thể làm kích ứng nặng hơn.
+
+# ======================================================================================
 # Nguồn
 # ======================================================================================
 
@@ -640,3 +933,39 @@ url = "https://www.govinfo.gov/content/pkg/FR-2010-03-04/html/2010-4424.htm"
 title = "Classification of Benzoyl Peroxide as Safe and Effective and Revision of Labeling to Drug Facts Format; Topical Acne Drug Products for Over-The-Counter Human Use; Final Rule (75 FR 9767, 2010)"
 publisher = "Federal Register, via U.S. Government Publishing Office (govinfo)"
 accessed_at = 2026-10-26
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=9fabd24e-4c3b-49a0-aa5f-c8d75ae67572"
+title = "FINACEA FOAM- azelaic acid aerosol, foam"
+publisher = "LEO Pharma Inc (nhãn thuốc, sửa đổi 12/2020), via DailyMed (U.S. National Library of Medicine)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://dailymed.nlm.nih.gov/dailymed/drugInfo.cfm?setid=ebdfcaf7-b5d6-47e1-be87-ccaba4b97e75"
+title = "AZELEX- azelaic acid cream — prescription drug label (Almirall, LLC)"
+publisher = "DailyMed, U.S. National Library of Medicine (FDA drug label)"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC10852114/"
+title = "Evidence on acne therapy"
+publisher = "Sao Paulo Medical Journal (2013), via PubMed Central"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC5605218/"
+title = "Topical Vitamin C and the Skin: Mechanisms of Action and Clinical Applications"
+publisher = "J Clin Aesthet Dermatol (2017), via PubMed Central"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC3673383/"
+title = "Vitamin C in dermatology"
+publisher = "Indian Dermatol Online J (2013), via PubMed Central"
+accessed_at = 2026-10-28
+
+[[source]]
+url = "https://pmc.ncbi.nlm.nih.gov/articles/PMC8594539/"
+title = "Clinical Comparison of Topical 2.5% Benzoyl Peroxide plus 5% Niacinamide to 2.5% Benzoyl Peroxide Alone in the Treatment of Mild to Moderate Facial Acne Vulgaris"
+publisher = "J Clin Aesthet Dermatol (2021), via PubMed Central"
+accessed_at = 2026-10-28

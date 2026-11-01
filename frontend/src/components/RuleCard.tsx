@@ -1,10 +1,17 @@
-import { useState, type ReactNode } from 'react'
+import { useEffect, useId, useRef, useState, type ReactNode } from 'react'
 import type { Rule } from '../api'
 import { EVIDENCE_LABELS, KIND_LABELS } from '../labels'
 import { SeverityBadge } from './Icons'
 
+type Props = {
+  rule: Rule
+  children?: ReactNode
+  /** Show the first lines of a long explanation, with "Xem thêm" (where many cards stack up). */
+  collapsible?: boolean
+}
+
 /** A rule exactly as reviewed: title and explanation are shown verbatim, never reworded. */
-export function RuleCard({ rule, children }: { rule: Rule; children?: ReactNode }) {
+export function RuleCard({ rule, children, collapsible = false }: Props) {
   return (
     <article
       className={`rounded-xl bg-surface p-4 ring-1 ${rule.severity === 'avoid' ? 'ring-2 ring-avoid/60' : 'ring-line'}`}
@@ -15,50 +22,60 @@ export function RuleCard({ rule, children }: { rule: Rule; children?: ReactNode 
       </div>
       <h3 className="mt-2 text-base leading-snug font-semibold text-pretty">{rule.title_vi}</h3>
       {children}
-      <Explanation text={rule.explanation_vi} />
+      <Explanation text={rule.explanation_vi} title={rule.title_vi} collapsible={collapsible} />
       <Sources rule={rule} />
     </article>
   )
 }
 
-const LONG_WORDS = 70 // longer explanations start folded
-const LEAD_WORDS = 30 // the folded view shows whole sentences up to about this many words
-
-const words = (text: string) => text.split(/\s+/).filter(Boolean).length
-
 /**
- * Where the folded view ends: after the first whole sentences reaching LEAD_WORDS words, or
- * null when the text is short enough to show in full. The text itself is never changed: the
- * folded view is its beginning, cut at a sentence end.
+ * The explanation, clamped to a few lines when collapsible. Clamping only hides the rest from
+ * view: the whole text stays in the page (screen readers read all of it) and is never shortened.
  */
-function leadEnd(text: string): number | null {
-  if (words(text) <= LONG_WORDS) return null
-  const ends = [...text.matchAll(/[.;:](?=\s+\p{Lu})/gu)].map((m) => m.index + 1)
-  const end = ends.find((i) => words(text.slice(0, i)) >= LEAD_WORDS)
-  return end !== undefined && words(text.slice(end)) >= 15 ? end : null
+function Explanation({ text, title, collapsible }: { text: string; title: string; collapsible: boolean }) {
+  const ref = useRef<HTMLParagraphElement>(null)
+  const id = useId()
+  const [open, setOpen] = useState(false)
+  const [overflows, setOverflows] = useState(false)
+
+  useEffect(() => {
+    const el = ref.current
+    if (!collapsible || !el || typeof ResizeObserver === 'undefined') return
+    // Called once on observe and again on every resize: is text hidden by the clamp?
+    const observer = new ResizeObserver(() => setOverflows(el.scrollHeight > el.clientHeight + 1))
+    observer.observe(el)
+    return () => observer.disconnect()
+  }, [collapsible, text])
+
+  const clamped = collapsible && !open
+  return (
+    <>
+      <p
+        ref={ref}
+        id={id}
+        className={`mt-3 text-[0.9375rem] leading-relaxed text-ink-soft ${clamped ? 'line-clamp-4' : ''}`}
+      >
+        {text}
+      </p>
+      {collapsible && (overflows || open) && (
+        <button
+          onClick={() => setOpen((o) => !o)}
+          aria-expanded={open}
+          aria-controls={id}
+          aria-label={`${open ? 'Thu gọn' : 'Xem thêm'}: ${title}`}
+          className="mt-1 min-h-8 text-sm font-medium text-link underline-offset-2 hover:underline"
+        >
+          {open ? 'Thu gọn' : 'Xem thêm'}
+        </button>
+      )}
+    </>
+  )
 }
 
-function Explanation({ text }: { text: string }) {
-  const [open, setOpen] = useState(false)
-  const end = leadEnd(text)
-  return (
-    <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
-      {end === null || open ? text : text.slice(0, end)}
-      {end !== null && (
-        <>
-          {' '}
-          <button
-            type="button"
-            onClick={() => setOpen((o) => !o)}
-            aria-expanded={open}
-            className="text-sm font-medium text-link underline underline-offset-2"
-          >
-            {open ? 'Thu gọn' : 'Đọc tiếp'}
-          </button>
-        </>
-      )}
-    </p>
-  )
+/** "2026-10-22" -> "22/10/2026", without going through Date (no time zone shift). */
+function formatDate(isoDate: string): string {
+  const [y, m, d] = isoDate.split('-')
+  return `${d}/${m}/${y}`
 }
 
 function Sources({ rule }: { rule: Rule }) {
@@ -71,7 +88,15 @@ function Sources({ rule }: { rule: Rule }) {
           </span>{' '}
           Nguồn ({rule.sources.length} đoạn trích)
         </span>
-        <span className="text-xs text-ink-mute">Mức bằng chứng: {EVIDENCE_LABELS[rule.evidence_level]}</span>
+        <span className="text-xs text-ink-mute">
+          Mức bằng chứng: {EVIDENCE_LABELS[rule.evidence_level]}
+          {rule.reviewed_at && (
+            <span title="Ngày người duyệt đọc các nguồn này và bật luật">
+              {' '}
+              · đã duyệt {formatDate(rule.reviewed_at)}
+            </span>
+          )}
+        </span>
       </summary>
       <ul className="mt-3 space-y-4">
         {rule.sources.map((s, i) => (

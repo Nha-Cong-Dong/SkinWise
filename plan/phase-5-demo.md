@@ -40,6 +40,15 @@ Khoá cổng hackathon (`ANTHROPIC_BASE_URL`) hết hạn **10/11 lúc 01:47**, 
 - [x] Ô tìm sản phẩm: placeholder ngắn, gợi ý ghi rõ chỉ tìm theo tên (chưa theo hoạt chất); không thấy thì có nút chuyển sang "Dán thành phần"
 - [x] Test giới hạn đăng nhập sai: đồng hồ của `app.accounts` đứng yên trong test, không còn phụ thuộc máy chậm / máy ngủ
 
+## Gộp `main` vào `feat/blog` (1/11)
+
+`main` (PR #8–#16) đã có sẵn nhiều bản sửa trùng với các mục trên; khi gộp lấy bản của `main`, bỏ bản của nhánh này:
+- Giới hạn đọc ảnh nhãn: của `main` (10 ảnh / 10 phút / tài khoản, 30 / IP, tối đa 4 lời gọi cùng lúc), giữ thêm trần 100 ảnh / ngày cho cả máy chủ
+- Lỗi kiểm tra routine + nút Thử lại, dòng thông báo cho trình đọc màn hình, nhãn nút có tên sản phẩm: của `main`
+- Gập lời giải thích dài: của `main` (`line-clamp`, nút "Xem thêm"), thay cho bản cắt ở cuối câu
+- Font tự host: của `main` (`src/fonts/`, Vite đóng gói vào `/assets/`), bỏ `public/fonts/`
+- Thẻ OG: giữ ảnh `og.png` + `SITE_URL` của nhánh này, tiêu đề trang của `main`
+
 ## Còn lại
 
 - Dự phòng ngày demo (mục trên): quay video, chuẩn bị máy demo
