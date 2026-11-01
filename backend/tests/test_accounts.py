@@ -390,7 +390,21 @@ def test_unverified_needs_the_right_password_to_learn_it(client: TestClient) -> 
     assert unverified.json() == {"detail": "email not verified"}
 
 
-def test_too_many_wrong_passwords_block_even_the_right_one(client: TestClient) -> None:
+@pytest.fixture
+def frozen_clock(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Stop the rate limits' clock, so a slow or suspended run cannot let events expire
+    from the window halfway through a test."""
+    from types import SimpleNamespace
+
+    import app.accounts
+
+    # Only app.accounts sees the stopped clock, not the rest of the process.
+    monkeypatch.setattr(app.accounts, "time", SimpleNamespace(monotonic=lambda: 1000.0))
+
+
+def test_too_many_wrong_passwords_block_even_the_right_one(
+    client: TestClient, frozen_clock: None
+) -> None:
     email = new_email()
     sign_up(client, email)
     client.cookies.clear()
@@ -406,7 +420,7 @@ def test_right_passwords_are_not_counted(client: TestClient) -> None:
     assert all(login(client, email).status_code == 200 for _ in range(7))
 
 
-def test_wrong_passwords_from_one_ip_are_limited(client: TestClient) -> None:
+def test_wrong_passwords_from_one_ip_are_limited(client: TestClient, frozen_clock: None) -> None:
     statuses = [login(client, new_email()).status_code for _ in range(21)]
     assert statuses == [401] * 20 + [429]
 

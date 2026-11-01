@@ -30,9 +30,20 @@ Khoá cổng hackathon (`ANTHROPIC_BASE_URL`) hết hạn **10/11 lúc 01:47**, 
 - [x] CI: `.github/workflows/ci.yml` (ruff, pytest với Postgres 17, oxlint, build)
 - [x] Cấu hình triển khai mẫu `deploy/`: nginx (HTTPS, gzip, cache, CSP và header bảo mật, `X-Forwarded-For` chống giả), systemd (1 worker vì giới hạn trong bộ nhớ, `--forwarded-allow-ips 127.0.0.1`), sao lưu 30 ngày. CSP đã thử với bản build: không vi phạm. Cấu hình nginx chưa chạy `nginx -t` (máy dev không có nginx)
 
+## Các vấn đề còn lại của bản đánh giá (1/11)
+
+- [x] Tiêu đề thẻ myth azelaic acid + retinoid: "để trị nám" → "trong nghiên cứu về nám", giải thích "trong điều trị nám" → "trong các nghiên cứu về nám". Nghĩa không đổi, nguồn không đổi, giữ `reviewed_by` / `reviewed_at`; **người duyệt đọc lại câu mới**. Các câu "sản phẩm trị mụn" khác giữ nguyên: dịch sát nhãn thuốc trị mụn của FDA (thuốc, không phải mỹ phẩm)
+- [x] Header: một hàng trên máy tính (64 px), logo + tài khoản rồi menu trên điện thoại (140 px, trước ~330 px); bỏ câu giới thiệu trùng
+- [x] Giải thích dài (> 70 từ) gập lại ở cuối câu, nút "Đọc tiếp" / "Thu gọn"; văn bản vẫn nguyên văn
+- [x] `h1` ẩn cho trang routine (các trang khác đã có)
+- [x] Nút đăng nhập / tạo tài khoản / quên mật khẩu / xác thực bị khoá thì ghi "Còn thiếu: email, mật khẩu, tích ô đồng ý."
+- [x] Ô tìm sản phẩm: placeholder ngắn, gợi ý ghi rõ chỉ tìm theo tên (chưa theo hoạt chất); không thấy thì có nút chuyển sang "Dán thành phần"
+- [x] Test giới hạn đăng nhập sai: đồng hồ của `app.accounts` đứng yên trong test, không còn phụ thuộc máy chậm / máy ngủ
+
 ## Còn lại
 
-- Tiêu đề thẻ myth azelaic acid + retinoid dùng chữ "trị nám" (`rules.toml`): người duyệt quyết định có sửa lời không
+- Dự phòng ngày demo (mục trên): quay video, chuẩn bị máy demo
 - Chọn máy chủ tại Việt Nam và triển khai thật theo `deploy/README.md`
 - Migration thay cho `schema.sql` thuần (hiện: sao lưu trước khi đổi schema)
+- Tìm sản phẩm theo tên hoạt chất (hiện chỉ theo tên hãng / sản phẩm, giao diện đã nói rõ)
 - Theo dõi lỗi: hiện chỉ có journald + log nginx; dịch vụ ngoài (Sentry…) là chuyển dữ liệu ra nước ngoài, cần cân nhắc theo Luật 91/2025

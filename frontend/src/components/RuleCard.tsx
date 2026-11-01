@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useState, type ReactNode } from 'react'
 import type { Rule } from '../api'
 import { EVIDENCE_LABELS, KIND_LABELS } from '../labels'
 import { SeverityBadge } from './Icons'
@@ -15,9 +15,49 @@ export function RuleCard({ rule, children }: { rule: Rule; children?: ReactNode 
       </div>
       <h3 className="mt-2 text-base leading-snug font-semibold text-pretty">{rule.title_vi}</h3>
       {children}
-      <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">{rule.explanation_vi}</p>
+      <Explanation text={rule.explanation_vi} />
       <Sources rule={rule} />
     </article>
+  )
+}
+
+const LONG_WORDS = 70 // longer explanations start folded
+const LEAD_WORDS = 30 // the folded view shows whole sentences up to about this many words
+
+const words = (text: string) => text.split(/\s+/).filter(Boolean).length
+
+/**
+ * Where the folded view ends: after the first whole sentences reaching LEAD_WORDS words, or
+ * null when the text is short enough to show in full. The text itself is never changed: the
+ * folded view is its beginning, cut at a sentence end.
+ */
+function leadEnd(text: string): number | null {
+  if (words(text) <= LONG_WORDS) return null
+  const ends = [...text.matchAll(/[.;:](?=\s+\p{Lu})/gu)].map((m) => m.index + 1)
+  const end = ends.find((i) => words(text.slice(0, i)) >= LEAD_WORDS)
+  return end !== undefined && words(text.slice(end)) >= 15 ? end : null
+}
+
+function Explanation({ text }: { text: string }) {
+  const [open, setOpen] = useState(false)
+  const end = leadEnd(text)
+  return (
+    <p className="mt-3 text-[0.9375rem] leading-relaxed text-ink-soft">
+      {end === null || open ? text : text.slice(0, end)}
+      {end !== null && (
+        <>
+          {' '}
+          <button
+            type="button"
+            onClick={() => setOpen((o) => !o)}
+            aria-expanded={open}
+            className="text-sm font-medium text-link underline underline-offset-2"
+          >
+            {open ? 'Thu gọn' : 'Đọc tiếp'}
+          </button>
+        </>
+      )}
+    </p>
   )
 }
 

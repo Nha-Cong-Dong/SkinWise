@@ -17,6 +17,13 @@ const LINK_USED = {
   'reset-password': 'Link đã hết hạn hoặc đã được dùng. Hãy yêu cầu link mới bằng Quên mật khẩu.',
 } as const
 
+/** Why the submit button is still disabled ("Còn thiếu: email, mật khẩu."), or null when nothing is missing. */
+function Missing({ items }: { items: [boolean, string][] }) {
+  const missing = items.filter(([ok]) => !ok).map(([, label]) => label)
+  if (missing.length === 0) return null
+  return <p className="text-xs text-ink-mute">Còn thiếu: {missing.join(', ')}.</p>
+}
+
 /** The sentence for a 422 the route itself returns (its `detail`), or null for any other 422. */
 function invalidInput(e: ApiError): string | null {
   switch (e.message) {
@@ -270,6 +277,7 @@ function SignInForm({ email, setEmail, onSignedIn, onSent, go }: FormProps & { o
           Quên mật khẩu?
         </button>
       </div>
+      <Missing items={[[!!email.trim(), 'email'], [!!password, 'mật khẩu']]} />
       <p className="border-t border-line pt-4 text-sm text-ink-soft">
         Chưa có tài khoản?{' '}
         <button type="button" onClick={() => go('register')} className={`font-medium ${textLink}`}>
@@ -332,6 +340,13 @@ function RegisterForm({ email, setEmail, onSent, go }: FormProps) {
       >
         {state.kind === 'busy' ? 'Đang gửi…' : 'Tạo tài khoản'}
       </button>
+      <Missing
+        items={[
+          [!!email.trim(), 'email'],
+          [!!password, 'mật khẩu'],
+          [consent, 'tích ô đồng ý'],
+        ]}
+      />
       <p className="border-t border-line pt-4 text-sm text-ink-soft">
         Đã có tài khoản?{' '}
         <button type="button" onClick={() => go('sign-in')} className={`font-medium ${textLink}`}>
@@ -376,6 +391,7 @@ function ForgotForm({ email, setEmail, onSent, go }: FormProps) {
       <button type="submit" disabled={!email.trim() || state.kind === 'busy'} className={primary}>
         {state.kind === 'busy' ? 'Đang gửi…' : 'Gửi link đặt lại mật khẩu'}
       </button>
+      <Missing items={[[!!email.trim(), 'email']]} />
       <button type="button" onClick={() => go('sign-in')} className={`block text-sm ${textLink}`}>
         Quay lại đăng nhập
       </button>
@@ -481,6 +497,7 @@ export function EmailLinkPage({
                 {signedInAs ? 'Huỷ' : 'Quay lại đăng nhập'}
               </button>
             </div>
+            <Missing items={[[!!password, 'mật khẩu']]} />
           </form>
         )}
       </div>

@@ -198,35 +198,34 @@ function App() {
       <ProfileContext value={profile.value}>
         <div className="min-h-screen">
           <header className="bg-surface ring-1 ring-line">
-            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6">
-              <div className="flex items-center gap-2.5">
+            {/* Small screens: logo and account on one row, the menu below. Wide screens: one row. */}
+            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6 lg:flex-nowrap">
+              <div className="flex shrink-0 items-center gap-2.5">
                 <Mark className="size-8" />
-                <span className="text-xl leading-none font-bold tracking-tight">
-                  SkinWise
-                </span>
+                <span className="text-xl leading-none font-bold tracking-tight">SkinWise</span>
               </div>
-              <nav className="flex flex-wrap gap-1 text-[0.9375rem]" aria-label="Trang">
+              <nav
+                className="order-last flex w-full flex-wrap gap-1 text-sm sm:text-[0.9375rem] lg:order-none lg:w-auto"
+                aria-label="Trang"
+              >
                 {MENU.map(([target, label, isCurrent]) => (
                   <a
                     key={label}
                     href={href(target)}
                     aria-current={isCurrent(route) ? 'page' : undefined}
-                    className={`rounded-full px-3.5 py-1.5 whitespace-nowrap ${isCurrent(route) ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
+                    className={`rounded-full px-3 py-1.5 whitespace-nowrap sm:px-3.5 ${isCurrent(route) ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
                   >
                     {label}
                   </a>
                 ))}
               </nav>
-              <p className="hidden text-sm text-ink-mute xl:ml-auto xl:block">
-                Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng.
-              </p>
               {me && (
                 <button
                   onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
-                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper xl:ml-0"
+                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper"
                   title="Tài khoản"
                 >
-                  <span className="max-w-[14rem] truncate text-sm font-medium">{me.email}</span>
+                  <span className="max-w-[11rem] truncate text-sm font-medium sm:max-w-[16rem]">{me.email}</span>
                   <span className={`text-xs ${conflict || sync.state.kind === 'offline' ? 'text-caution-ink' : 'text-ink-mute'}`}>
                     {syncLabel(sync.state) ?? 'Tài khoản'}
                   </span>
@@ -256,6 +255,9 @@ function App() {
           <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
             <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải…</p>}>
             {page === 'routine' ? (
+              <>
+              {/* The three columns have their own headings; the page needs one above them. */}
+              <h1 className="sr-only">Routine của tôi</h1>
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
                 <div className="lg:col-start-1 lg:row-start-1">
                   <MyProducts actions={actions} onAdd={() => setAdding(true)} />
@@ -267,6 +269,7 @@ function App() {
                   <WarningsPanel state={check} products={actions.routine.products} />
                 </ResultsAside>
               </div>
+              </>
             ) : page === 'goals' ? (
               <div className="mx-auto max-w-3xl">
                 <GoalsPage routine={actions.routine} />
