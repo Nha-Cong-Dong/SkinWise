@@ -491,3 +491,47 @@ def test_product_and_routine_names_are_flagged(make_user, product_ids) -> None:
     }
     with_routine = create(author, product_ids, routine=routine)
     assert with_routine["status"] == "pending" and with_routine["flags"] == ["phone"]
+
+
+def test_writes_are_limited_per_user_and_hour(make_user, product_ids) -> None:
+    from app.blog import LIMITS
+
+    author = make_user(handle())
+    posts = [
+        author.post("/blog/posts", json=post_body(product_ids)) for _ in range(LIMITS["post"][0])
+    ]
+    assert all(p.status_code == 201 for p in posts)
+    assert author.post("/blog/posts", json=post_body(product_ids)).status_code == 429
+    # Editing is not a new post and is not counted.
+    first = posts[0].json()["id"]
+    assert author.put(f"/blog/posts/{first}", json=post_body(product_ids)).status_code == 200
+
+    reader = make_user(handle())
+    url = f"/blog/posts/{first}/comments"
+    comments = [
+        reader.post(url, json={"body": "Cảm ơn"}).status_code
+        for _ in range(LIMITS["comment"][0] + 1)
+    ]
+    assert comments == [201] * LIMITS["comment"][0] + [429]
+    # Each user has their own budget.
+    assert make_user(handle()).post(url, json={"body": "Cảm ơn"}).status_code == 201
+
+    reports = [
+        reader.post(
+            "/blog/reports",
+            json={"target_kind": "post", "target_id": p.json()["id"], "reason": "advertising"},
+        ).status_code
+        for p in posts
+    ]
+    assert reports == [202] * len(posts)
+
+
+def test_reports_are_limited_per_user_and_hour(make_user, product_ids) -> None:
+    from app.blog import LIMITS, allow
+
+    author, reader = make_user(handle()), make_user(handle())
+    post = create(author, product_ids)
+    for _ in range(LIMITS["report"][0]):
+        assert allow("report", reader.user_id)
+    report = {"target_kind": "post", "target_id": post["id"], "reason": "advertising"}
+    assert reader.post("/blog/reports", json=report).status_code == 429

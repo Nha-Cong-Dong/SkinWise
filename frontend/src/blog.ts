@@ -84,6 +84,9 @@ export const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' })
 
 export const SESSION_EXPIRED = 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
+// 429 from the per-user hourly limits of backend/app/blog.py (LIMITS).
+export const TOO_MANY = 'Bạn đã gửi khá nhiều trong một giờ qua. Hãy thử lại sau ít phút.'
+export const isTooMany = (e: unknown) => (e as { status?: number } | null)?.status === 429
 
 /** The session cookie expired or was signed out elsewhere. */
 export const isSignedOut = (e: unknown) => (e as { status?: number } | null)?.status === 401

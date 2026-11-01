@@ -126,7 +126,7 @@ def test_upload_rate_limit(make_user, monkeypatch) -> None:
     from app import blog
 
     user = make_user(handle())
-    monkeypatch.setattr(blog, "_image_uploads", blog.RateLimit({"email": (2, 3600.0)}))
+    monkeypatch.setitem(blog._limits, "image", blog.RateLimit({"email": (2, 3600.0)}))
     assert upload(user, png_bytes()).status_code == 201
     assert upload(user, png_bytes()).status_code == 201
     assert upload(user, png_bytes()).status_code == 429

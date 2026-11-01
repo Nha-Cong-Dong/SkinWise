@@ -1,6 +1,6 @@
 import { useEffect, useRef, useState, type ClipboardEvent, type FormEvent } from 'react'
 import { ApiError, api, type Disclosure, type PostDetail, type PostIn, type SkinType } from '../../api'
-import { BODY_MAX, BODY_MIN, MAX_PRODUCTS, SESSION_EXPIRED, TITLE_MAX, TITLE_MIN, mayBeFlagged } from '../../blog'
+import { BODY_MAX, BODY_MIN, MAX_PRODUCTS, SESSION_EXPIRED, TITLE_MAX, TOO_MANY, TITLE_MIN, mayBeFlagged } from '../../blog'
 import { DISCLOSURE_LABELS, SESSION_LABELS, SKIN_TYPE_LABELS } from '../../labels'
 import { PROFILE_LOAD_ERROR, isProfileRequired, useProfile } from '../../profile'
 import { ALL_POSTS, href, navigate } from '../../router'
@@ -213,6 +213,7 @@ function PostForm({
       }
       const status = e instanceof ApiError ? e.status : 0
       if (status === 401) return fail(SESSION_EXPIRED)
+      if (status === 429) return fail(TOO_MANY)
       if (status === 403) return fail('Bạn chỉ sửa được bài của chính mình.')
       if (status === 404) {
         return fail(post ? 'Bài viết không còn nữa, hoặc có sản phẩm không còn trong danh sách của SkinWise.' : 'Có sản phẩm không còn trong danh sách của SkinWise. Hãy bỏ sản phẩm đó rồi lưu lại.')

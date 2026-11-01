@@ -1,0 +1,28 @@
+# Copy to /etc/systemd/system/skinwise-api.service, then:
+#   systemctl daemon-reload && systemctl enable --now skinwise-api
+# The code is in /srv/skinwise/app (a checkout), config in /srv/skinwise/app/backend/.env.
+
+[Unit]
+Description=SkinWise API (FastAPI)
+After=network.target postgresql.service
+Requires=postgresql.service
+
+[Service]
+User=skinwise
+Group=skinwise
+WorkingDirectory=/srv/skinwise/app/backend
+# One worker only: the rate limits (app/accounts.py, app/blog.py, app/label_reader.py) are kept
+# in memory per process; several workers would each allow the full limit.
+# --forwarded-allow-ips: trust X-Forwarded-For from nginx on this host only.
+ExecStart=/usr/local/bin/uv run --no-sync uvicorn app.main:app --host 127.0.0.1 --port 8000 --workers 1 --proxy-headers --forwarded-allow-ips 127.0.0.1 --no-server-header
+Restart=on-failure
+RestartSec=3
+# Hardening: the service only writes its upload folder.
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true
+ReadWritePaths=/srv/skinwise/uploads
+
+[Install]
+WantedBy=multi-user.target

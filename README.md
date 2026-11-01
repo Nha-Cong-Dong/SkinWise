@@ -144,6 +144,8 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    uv run python -m scripts.demo_blog --reset   # xoá rồi tạo lại, chỉ đụng tài khoản @skinwise.test
    ```
 
+7. Triển khai lên máy chủ: xem [deploy/README.md](deploy/README.md) (nginx, HTTPS, systemd, sao lưu). Chưa triển khai ở đâu.
+
 ## Lộ trình
 
 Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).

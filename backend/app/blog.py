@@ -26,20 +26,34 @@ Kind = Literal["post", "comment"]
 
 EXCERPT_LENGTH = 200
 UNATTACHED_IMAGE_HOURS = 24
-# Uploads per user and hour. In memory, per process, like the account limits; the key is the
-# sha256 of the user id.
-_image_uploads = RateLimit({"email": (30, 3600.0)})
+# Writes per user and hour, against spam. In memory, per process, like the account limits;
+# the key is the sha256 of the user id.
+LIMITS: dict[str, tuple[int, float]] = {
+    "image": (30, 3600.0),
+    "post": (10, 3600.0),
+    "comment": (30, 3600.0),
+    "report": (20, 3600.0),
+}
+_limits = {kind: RateLimit({"email": limit}) for kind, limit in LIMITS.items()}
 
 
-def allow_image_upload(user_id: str) -> bool:
-    if _image_uploads.blocked(user_id, None):
+def allow(kind: str, user_id: str) -> bool:
+    """Count one write of this kind; False once the user reached the hourly limit."""
+    limit = _limits[kind]
+    if limit.blocked(user_id, None):
         return False
-    _image_uploads.record(user_id, None)
+    limit.record(user_id, None)
     return True
 
 
+def allow_image_upload(user_id: str) -> bool:
+    return allow("image", user_id)
+
+
 def reset_image_limit() -> None:
-    _image_uploads.clear()
+    """Clear every blog write limit (images, posts, comments, reports)."""
+    for limit in _limits.values():
+        limit.clear()
 
 
 # --- Profiles ---

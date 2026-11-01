@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { ApiError, api, type ReportIn, type ReportReason } from '../../api'
-import { REPORT_NOTE_MAX, SESSION_EXPIRED } from '../../blog'
+import { REPORT_NOTE_MAX, SESSION_EXPIRED, TOO_MANY } from '../../blog'
 import { REPORT_REASON_LABELS } from '../../labels'
 import { Dialog } from '../Dialog'
 import { field, primary, secondary } from './parts'
@@ -22,7 +22,7 @@ export function ReportDialog({ target, onClose }: { target: ReportTarget | null;
 function ReportForm({ target, onClose }: { target: ReportTarget; onClose: () => void }) {
   const [reason, setReason] = useState<ReportReason | null>(null)
   const [note, setNote] = useState('')
-  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'own' | 'gone' | 'signed-out' | 'error'>('idle')
+  const [state, setState] = useState<'idle' | 'sending' | 'sent' | 'own' | 'gone' | 'signed-out' | 'too-many' | 'error'>('idle')
 
   const submit = (e: FormEvent) => {
     e.preventDefault()
@@ -32,7 +32,7 @@ function ReportForm({ target, onClose }: { target: ReportTarget; onClose: () => 
       () => setState('sent'),
       (err) => {
         const status = err instanceof ApiError ? err.status : 0
-        setState(status === 400 ? 'own' : status === 404 ? 'gone' : status === 401 ? 'signed-out' : 'error')
+        setState(status === 400 ? 'own' : status === 404 ? 'gone' : status === 401 ? 'signed-out' : status === 429 ? 'too-many' : 'error')
       },
     )
   }
@@ -85,6 +85,7 @@ function ReportForm({ target, onClose }: { target: ReportTarget; onClose: () => 
         {state === 'gone' && <p className="text-avoid-ink">Nội dung này không còn nữa.</p>}
         {state === 'signed-out' && <p className="text-avoid-ink">{SESSION_EXPIRED}</p>}
         {state === 'error' && <p className="text-avoid-ink">Không gửi được báo cáo. Hãy thử lại.</p>}
+        {state === 'too-many' && <p className="text-avoid-ink">{TOO_MANY}</p>}
       </div>
       <div className="flex flex-wrap gap-2">
         <button type="submit" disabled={!reason || state === 'sending'} className={primary}>

@@ -1,6 +1,6 @@
 import { useState, type FormEvent } from 'react'
 import { api, type CommentOut } from '../../api'
-import { COMMENT_MAX, SESSION_EXPIRED, actionError, formatDate, isSignedOut, mayBeFlagged } from '../../blog'
+import { COMMENT_MAX, SESSION_EXPIRED, TOO_MANY, actionError, formatDate, isSignedOut, isTooMany, mayBeFlagged } from '../../blog'
 import { flagReasons } from '../../labels'
 import { PROFILE_LOAD_ERROR, isProfileRequired, useProfile } from '../../profile'
 import { href } from '../../router'
@@ -84,7 +84,7 @@ export function Comments({ postId, onReport }: { postId: number; onReport: (targ
 function CommentForm({ postId, onAdded }: { postId: number; onAdded: (comment: CommentOut) => void }) {
   const profile = useProfile()
   const [body, setBody] = useState('')
-  const [state, setState] = useState<'idle' | 'sending' | 'error' | 'no-profile' | 'profile-error' | 'signed-out'>('idle')
+  const [state, setState] = useState<'idle' | 'sending' | 'error' | 'too-many' | 'no-profile' | 'profile-error' | 'signed-out'>('idle')
 
   const send = async (retried = false): Promise<void> => {
     setState('sending')
@@ -100,7 +100,7 @@ function CommentForm({ postId, onAdded }: { postId: number; onAdded: (comment: C
         setState('no-profile')
         return
       }
-      setState(isSignedOut(e) ? 'signed-out' : 'error')
+      setState(isSignedOut(e) ? 'signed-out' : isTooMany(e) ? 'too-many' : 'error')
     }
   }
 
@@ -146,6 +146,7 @@ function CommentForm({ postId, onAdded }: { postId: number; onAdded: (comment: C
       </div>
       <div aria-live="polite" className="text-sm">
         {state === 'error' && <p className="text-avoid-ink">Không gửi được bình luận. Hãy thử lại.</p>}
+        {state === 'too-many' && <p className="text-avoid-ink">{TOO_MANY}</p>}
         {state === 'no-profile' && <p className="text-ink-soft">Cần đặt biệt danh trước khi bình luận.</p>}
         {state === 'profile-error' && <p className="text-avoid-ink">{PROFILE_LOAD_ERROR}</p>}
         {state === 'signed-out' && <p className="text-avoid-ink">{SESSION_EXPIRED}</p>}

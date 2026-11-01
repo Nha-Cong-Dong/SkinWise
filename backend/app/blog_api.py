@@ -126,12 +126,18 @@ def posts(
     return PostList.model_validate(blog.list_posts(db, user.id, query))
 
 
+def _limit(kind: str, user_id: str) -> None:
+    if not blog.allow(kind, user_id):
+        raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, f"too many {kind}s; wait")
+
+
 @router.post("/blog/posts", status_code=status.HTTP_201_CREATED)
 def create_post(db: DbSession, user: CurrentUser, body: PostIn) -> PostDetail:
     """A post with auto flags (app/moderation.py) waits for a reviewer: only its author sees
-    it, with the reasons in `flags`."""
+    it, with the reasons in `flags`. 10 new posts per hour and user."""
     _require_profile(db, user.id)
     data = _post_data(body)
+    _limit("post", user.id)
     post_id = _write(lambda: blog.create_post(db, user.id, data))
     db.commit()
     return _detail(db, post_id, user.id)
@@ -229,6 +235,7 @@ def comments(db: DbSession, user: CurrentUser, post_id: int) -> list[CommentOut]
 def add_comment(db: DbSession, user: CurrentUser, post_id: int, body: CommentIn) -> CommentOut:
     _seen_post(db, post_id, user.id)  # a post the user cannot see is 404, profile or not
     _require_profile(db, user.id)
+    _limit("comment", user.id)  # 30 per hour and user
     comment_id = blog.add_comment(db, post_id, user.id, body.body)
     db.commit()
     comment = blog.get_comment(db, comment_id, user.id)
@@ -267,6 +274,7 @@ def report(db: DbSession, user: CurrentUser, body: ReportIn) -> dict:
         raise _not_found()
     if state.author_id == user.id:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "you cannot report your own writing")
+    _limit("report", user.id)  # 20 per hour and user
     blog.add_report(db, body.target_kind, body.target_id, user.id, body.reason, body.note or None)
     db.commit()
     return {}

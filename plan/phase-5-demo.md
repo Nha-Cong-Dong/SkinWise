@@ -20,9 +20,19 @@ Khoá cổng hackathon (`ANTHROPIC_BASE_URL`) hết hạn **10/11 lúc 01:47**, 
 - [ ] Kịch bản demo chính không cần AI: chọn sản phẩm mẫu → xếp lịch → cảnh báo + nguồn → thẻ myth → mục tiêu da → review cộng đồng (`scripts.demo_blog`)
 - [ ] Tài khoản demo tạo sẵn và đã đăng nhập trên máy demo (chế độ dev)
 
-## Còn lại từ đánh giá (chưa làm)
+## Ngắn hạn (1/11)
+
+- [x] Giới hạn blog mỗi tài khoản mỗi giờ: 10 bài mới, 30 bình luận, 20 báo cáo (ảnh vẫn 30); 429 → câu tiếng Việt. Sửa bài không tính
+- [x] Tách code: trang duyệt và các trang blog tải theo nhu cầu (bundle chính 398 → 323 KB, gzip 116 → 97 KB)
+- [x] Font tự host (`public/fonts/`, OFL), bỏ Google Fonts: không còn request nào ra máy chủ khác. Lighthouse điện thoại 75 → 84, LCP 4,9 → 3,6 s (đo trên server thử không gzip)
+- [x] Thẻ OG + ảnh xem trước 1200×630 (`public/og.png`); địa chỉ tuyệt đối lấy từ `SITE_URL` lúc build
+- [x] Góp ý: link GitHub Issues ở chân trang (người dùng chọn 1/11), nhắc đừng ghi thông tin cá nhân vì issue công khai
+- [x] CI: `.github/workflows/ci.yml` (ruff, pytest với Postgres 17, oxlint, build)
+- [x] Cấu hình triển khai mẫu `deploy/`: nginx (HTTPS, gzip, cache, CSP và header bảo mật, `X-Forwarded-For` chống giả), systemd (1 worker vì giới hạn trong bộ nhớ, `--forwarded-allow-ips 127.0.0.1`), sao lưu 30 ngày. CSP đã thử với bản build: không vi phạm. Cấu hình nginx chưa chạy `nginx -t` (máy dev không có nginx)
+
+## Còn lại
 
 - Tiêu đề thẻ myth azelaic acid + retinoid dùng chữ "trị nám" (`rules.toml`): người duyệt quyết định có sửa lời không
-- Hiệu năng điện thoại: tách code (`React.lazy` cho `#review` và blog), tự host font
-- Triển khai: gzip, cache, HTTPS, header bảo mật, `--forwarded-allow-ips` (giới hạn theo IP dùng `request.client.host`)
-- CI (pytest, ruff, build), thẻ OG, kênh nhận phản hồi, giới hạn tần suất cho blog
+- Chọn máy chủ tại Việt Nam và triển khai thật theo `deploy/README.md`
+- Migration thay cho `schema.sql` thuần (hiện: sao lưu trước khi đổi schema)
+- Theo dõi lỗi: hiện chỉ có journald + log nginx; dịch vụ ngoài (Sentry…) là chuyển dữ liệu ra nước ngoài, cần cân nhắc theo Luật 91/2025

@@ -1,13 +1,8 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { Suspense, lazy, useEffect, useRef, useState, type ReactNode } from 'react'
 import { api, type CosmeticFunction, type Group, type Severity } from './api'
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
-import { AuthorPage } from './components/blog/AuthorPage'
-import { BlogListPage, SavedPage } from './components/blog/BlogList'
-import { EditPage, WritePage } from './components/blog/PostForm'
-import { PostPage } from './components/blog/PostPage'
-import { ProductPage } from './components/blog/ProductPage'
 import { clearAllDrafts } from './components/blog/draft'
 import { ProfileDialog } from './components/blog/ProfileDialog'
 import { Dialog } from './components/Dialog'
@@ -15,7 +10,6 @@ import { GoalsPage } from './components/GoalsPage'
 import { Mark } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
-import { ReviewPage } from './components/ReviewPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { EmailLinkPage, SignIn } from './components/SignIn'
@@ -35,6 +29,20 @@ import {
   useRoutineCheck,
   type CheckState,
 } from './routine'
+
+// Pages most visits never open load on demand, so the routine page downloads less.
+const ReviewPage = lazy(() => import('./components/ReviewPage').then((m) => ({ default: m.ReviewPage })))
+const BlogListPage = lazy(() => import('./components/blog/BlogList').then((m) => ({ default: m.BlogListPage })))
+const SavedPage = lazy(() => import('./components/blog/BlogList').then((m) => ({ default: m.SavedPage })))
+const WritePage = lazy(() => import('./components/blog/PostForm').then((m) => ({ default: m.WritePage })))
+const EditPage = lazy(() => import('./components/blog/PostForm').then((m) => ({ default: m.EditPage })))
+const PostPage = lazy(() => import('./components/blog/PostPage').then((m) => ({ default: m.PostPage })))
+const ProductPage = lazy(() => import('./components/blog/ProductPage').then((m) => ({ default: m.ProductPage })))
+const AuthorPage = lazy(() => import('./components/blog/AuthorPage').then((m) => ({ default: m.AuthorPage })))
+
+// Feedback goes to GitHub, not a form on SkinWise: nothing to store or moderate here
+// (the in-app question form was dropped on 27/10, plan/decisions.md).
+const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
 
 // The review page has no nav entry for users; reviewers open #review.
 const MENU: [Route, string, (route: Route) => boolean][] = [
@@ -246,6 +254,7 @@ function App() {
           )}
 
           <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
+            <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải…</p>}>
             {page === 'routine' ? (
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
                 <div className="lg:col-start-1 lg:row-start-1">
@@ -306,11 +315,26 @@ function App() {
                 </a>
               </div>
             )}
+            </Suspense>
           </main>
 
           <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
-            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên máy này và đồng bộ
-            với tài khoản của bạn trên máy chủ SkinWise.
+            <p>
+              Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên máy này và đồng
+              bộ với tài khoản của bạn trên máy chủ SkinWise.
+            </p>
+            <p className="mt-2">
+              Góp ý hoặc báo lỗi:{' '}
+              <a
+                href={FEEDBACK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-link underline underline-offset-2"
+              >
+                mở một issue trên GitHub
+              </a>{' '}
+              (cần tài khoản GitHub; nội dung hiện công khai, đừng ghi email, số điện thoại hay ảnh da của bạn).
+            </p>
           </footer>
         </div>
 
