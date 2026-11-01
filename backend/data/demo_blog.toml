@@ -1,0 +1,167 @@
+# Made-up community reviews for the blog demo (scripts.demo_blog). NOT loaded by scripts.seed.
+# Every account is @skinwise.test; every text here was written for the demo (no text copied
+# from brands or other blogs). Exactly one post uses the word "trị" on purpose, so the review
+# queue (#review, tab "Cộng đồng") has something to show.
+#
+# [[account]]: n -> demo<n>@skinwise.test
+# [[post]]: author = account n; products = sample product slugs (data/products.toml);
+#   routine (optional) = steps [slug, "AM" | "PM", [days, 0 = Monday]]; likes = account numbers;
+#   comments = [account n, text].
+
+[[account]]
+n = 1
+handle = "mai.dadau"
+skin_type = "oily"
+
+[[account]]
+n = 2
+handle = "lan_dakho"
+skin_type = "dry"
+
+[[account]]
+n = 3
+handle = "minh.honhop"
+skin_type = "combination"
+
+[[account]]
+n = 4
+handle = "thu_nhaycam"
+skin_type = "sensitive"
+
+[[account]]
+n = 5
+handle = "an.dathuong"
+skin_type = "normal"
+
+[[post]]
+author = 1
+title = "Ba tuần dùng serum niacinamide buổi sáng"
+rating = 4
+skin_type = "oily"
+disclosure = "none"
+products = ["the-ordinary-niacinamide-10-zinc-1"]
+body = """Mình da dầu, hay bóng ở vùng chữ T từ khoảng 2 giờ chiều.
+
+Mình dùng serum này buổi sáng, sau toner và trước kem chống nắng, khoảng 3 giọt cho cả mặt. Kết cấu hơi sệt, lúc đầu thoa nhiều quá thì bị vón khi tán kem chống nắng lên trên, giảm lượng thì hết.
+
+Cảm nhận riêng của mình: sau ba tuần mặt đỡ bóng hơn vào buổi chiều, nhưng chưa rõ là nhờ serum hay nhờ trời đã mát hơn. Sẽ dùng tiếp thêm một tháng rồi viết lại."""
+likes = [2, 3, 5]
+comments = [
+  [3, "Mình cũng bị vón khi dùng chung với kem chống nắng, giảm lượng là ổn thật."],
+  [5, "Cảm ơn bạn đã ghi rõ thứ tự các bước."],
+]
+
+[[post]]
+author = 2
+title = "Sữa rửa mặt dịu nhẹ cho mùa hanh khô"
+rating = 5
+skin_type = "dry"
+disclosure = "none"
+products = ["cerave-sua-rua-mat-danh-cho-da-kho"]
+body = """Da mình khô, mùa này rửa mặt xong hay bị căng.
+
+Chai này tạo rất ít bọt, rửa xong không có cảm giác căng như loại cũ mình dùng. Mùi gần như không có. Mình dùng cả sáng và tối, mỗi lần một lượng bằng hạt đậu.
+
+Điểm trừ duy nhất là vòi nhấn hơi khó dùng khi gần hết chai."""
+likes = [1, 4]
+comments = [[4, "Da mình nhạy cảm cũng thấy dễ chịu với dòng này."]]
+
+[[post]]
+author = 3
+title = "Routine tối có retinol của mình (kèm lịch dùng)"
+rating = 4
+skin_type = "combination"
+disclosure = "gifted"
+products = ["the-ordinary-retinol-05-in-squalane", "la-roche-posay-cicaplast-baume-b5-plus"]
+routine = [
+  ["the-ordinary-retinol-05-in-squalane", "PM", [0, 3]],
+  ["la-roche-posay-cicaplast-baume-b5-plus", "PM", [0, 1, 2, 3, 4, 5, 6]],
+]
+body = """Chai retinol này mình được bạn tặng, không phải nhãn hàng.
+
+Mình mới bắt đầu nên chỉ dùng hai tối mỗi tuần (thứ Hai và thứ Năm), các tối còn lại chỉ dưỡng ẩm. Tuần đầu hơi bong nhẹ quanh mũi, sang tuần thứ ba thì không còn.
+
+Mình đính kèm routine để mọi người xem lịch, ai muốn thử thì nhớ đọc phần thông tin có nguồn bên dưới bài."""
+likes = [1, 2, 4, 5]
+comments = [
+  [1, "Bạn có dùng kem chống nắng ban ngày đều không?"],
+  [3, "Có bạn ơi, ngày nào mình cũng dùng."],
+]
+
+[[post]]
+author = 4
+title = "Kem dưỡng phục hồi, dùng khi da đang khó chịu"
+rating = 4
+skin_type = "sensitive"
+disclosure = "none"
+products = ["la-roche-posay-cicaplast-baume-b5-plus"]
+body = """Da mình dễ đỏ khi đổi thời tiết. Mình giữ tuýp này để dùng những hôm da đang khó chịu.
+
+Kết cấu khá dày, thoa xong hơi trắng mặt một lúc rồi mới thấm. Mình chỉ dùng buổi tối vì ban ngày thấy hơi bí.
+
+Không dám nói gì nhiều hơn cảm nhận của mình, mỗi người da mỗi khác."""
+likes = [2]
+comments = []
+
+[[post]]
+author = 5
+title = "Thử toner AHA-BHA-PHA được một tháng"
+rating = 3
+skin_type = "normal"
+disclosure = "sponsored"
+products = ["some-by-mi-aha-bha-pha-30-days-miracle-toner"]
+body = """Bài này có tài trợ: mình nhận sản phẩm và một khoản phí nhỏ để viết cảm nhận. Nhận xét bên dưới vẫn là ý kiến của mình.
+
+Mình dùng tối cách ngày, thấm bằng bông. Mấy lần đầu hơi châm chích nhẹ, sau đó quen. Da mình bề mặt mịn hơn một chút, nhưng chưa thấy khác biệt lớn.
+
+Mùi hơi nồng, ai nhạy cảm với mùi nên thử ở vùng nhỏ trước."""
+likes = [1]
+comments = [[2, "Cảm ơn bạn đã ghi rõ là có tài trợ."]]
+
+[[post]]
+author = 1
+title = "Kem chống nắng dạng lỏng cho da dầu"
+rating = 5
+skin_type = "oily"
+disclosure = "none"
+products = ["la-roche-posay-anthelios-uvmune-400-invisible-fluid-spf50"]
+routine = [
+  ["the-ordinary-niacinamide-10-zinc-1", "AM", [0, 1, 2, 3, 4, 5, 6]],
+  ["la-roche-posay-anthelios-uvmune-400-invisible-fluid-spf50", "AM", [0, 1, 2, 3, 4, 5, 6]],
+]
+body = """Kết cấu lỏng như nước, tán nhanh, không để lại vệt trắng trên da mình.
+
+Mình dùng sau serum niacinamide mỗi sáng (routine đính kèm). Đến trưa vẫn có bóng dầu nhưng ít hơn loại kem đặc mình dùng trước đây.
+
+Nhớ lắc kỹ trước khi dùng, mình từng quên và thấy chất kem không đều."""
+likes = [3, 4, 5]
+comments = [[4, "Kem này có làm cay mắt bạn không?"], [1, "Mình không bị, nhưng thoa gần mắt thì hơi cay."]]
+
+[[post]]
+author = 2
+title = "Vitamin C buổi sáng, cảm nhận sau hai tuần"
+rating = 3
+skin_type = "dry"
+disclosure = "none"
+products = ["the-ordinary-ascorbyl-glucoside-solution-12"]
+body = """Mình chọn dạng này vì nghe nói dễ chịu hơn với da khô.
+
+Hai tuần đầu không thấy kích ứng. Da trông tươi hơn một chút vào buổi sáng, nhưng có thể do mình ngủ đủ hơn dạo này. Mình sẽ cập nhật sau một tháng.
+
+Chai thủy tinh nhỏ, nên cất chỗ mát."""
+likes = [3]
+comments = []
+
+# The one post that uses the word "trị" on purpose: it waits in the review queue.
+[[post]]
+author = 3
+title = "Sữa rửa mặt này trị mụn nhanh lắm mọi người ơi"
+rating = 5
+skin_type = "combination"
+disclosure = "none"
+products = ["cerave-acne-foaming-cream-cleanser"]
+body = """Mình dùng sữa rửa mặt này được hai tuần, mình thấy nó trị mụn ẩn ở cằm nhanh hơn mình nghĩ.
+
+Bài này cố ý dùng chữ "trị" để thử hàng chờ duyệt của bản demo."""
+likes = []
+comments = []

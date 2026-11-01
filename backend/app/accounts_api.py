@@ -19,7 +19,7 @@ from fastapi import (
 )
 from fastapi.responses import JSONResponse
 
-from app import mailer
+from app import blog, images, mailer
 from app.accounts import (
     POLICY_VERSION,
     SESSION_TTL,
@@ -346,7 +346,7 @@ def save_routine(db: DbSession, user: CurrentUser, body: RoutinePut) -> RoutineO
 def export(db: DbSession, user: CurrentUser) -> JSONResponse:
     """Everything SkinWise keeps about the user (Law 91/2025/QH15 Art. 4)."""
     return JSONResponse(
-        export_user(db, user),
+        {**export_user(db, user), **blog.export_blog(db, user.id)},
         headers={"Content-Disposition": 'attachment; filename="skinwise-tai-khoan.json"'},
     )
 
@@ -355,6 +355,9 @@ def export(db: DbSession, user: CurrentUser) -> JSONResponse:
 def delete_me(db: DbSession, user: CurrentUser, body: DeleteAccount, response: Response) -> None:
     if normalize_email(body.confirm_email) != user.email:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "type your email to confirm")
-    delete_user(db, user)
+    files = blog.image_files_of(db, user.id)
+    delete_user(db, user)  # posts, comments, likes, saves, reports and images cascade
+    blog.drop_orphan_reports(db)  # others' reports about the user's posts and comments
     db.commit()
+    images.delete_files(files)
     response.delete_cookie(COOKIE, path="/")

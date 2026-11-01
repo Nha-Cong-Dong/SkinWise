@@ -305,3 +305,106 @@ CREATE TABLE IF NOT EXISTS goal_item_sources (
   quote     text NOT NULL, -- verbatim passage; checked against the live page (scripts.verify_quotes)
   PRIMARY KEY (item_id, position)
 );
+
+-- Community reviews (blog, demo with made-up data only; not open to the public). Posts,
+-- comments and reports never reach the warning engine, the rules or resolve(): the sourced
+-- part of a post page is built from /products, /inci/analyze and /routine/check alone.
+-- Deleting an account removes everything below that belongs to it (ON DELETE CASCADE); image
+-- files on disk are removed by app code after the commit.
+CREATE TABLE IF NOT EXISTS user_profiles (
+  user_id    uuid PRIMARY KEY REFERENCES users(id) ON DELETE CASCADE,
+  handle     text NOT NULL UNIQUE, -- shown instead of the email, which never leaves the server
+  skin_type  text CHECK (skin_type IN ('oily', 'dry', 'combination', 'normal', 'sensitive')),
+  created_at timestamptz NOT NULL DEFAULT now(),
+  updated_at timestamptz NOT NULL DEFAULT now()
+);
+
+CREATE TABLE IF NOT EXISTS blog_posts (
+  id          bigserial PRIMARY KEY,
+  author_id   uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  title       text NOT NULL,
+  body        text NOT NULL, -- plain text
+  rating      smallint CHECK (rating BETWEEN 1 AND 5),
+  skin_type   text CHECK (skin_type IN ('oily', 'dry', 'combination', 'normal', 'sensitive')),
+  disclosure  text NOT NULL DEFAULT 'none' CHECK (disclosure IN ('none', 'gifted', 'sponsored')),
+  routine     jsonb, -- a routine file (frontend share.ts), checked for shape only
+  -- pending: auto flags, waits for a reviewer; hidden: reported by 3 people; removed: by a reviewer
+  status      text NOT NULL DEFAULT 'visible'
+    CHECK (status IN ('visible', 'pending', 'hidden', 'removed')),
+  flags       text[] NOT NULL DEFAULT '{}', -- app/moderation.py auto_flags of title + body
+  reviewed_at timestamptz, -- last reviewer decision; only reports after it count
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  updated_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS blog_posts_status_created ON blog_posts (status, created_at);
+CREATE INDEX IF NOT EXISTS blog_posts_skin_type ON blog_posts (skin_type);
+CREATE INDEX IF NOT EXISTS blog_posts_author ON blog_posts (author_id);
+
+-- A catalogue product, or a name with a pasted ingredient list.
+CREATE TABLE IF NOT EXISTS blog_post_products (
+  post_id    bigint NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  position   smallint NOT NULL,
+  product_id integer REFERENCES products(id),
+  name       text,
+  inci       text,
+  PRIMARY KEY (post_id, position),
+  CONSTRAINT blog_post_products_one_source
+    CHECK ((product_id IS NULL) = (name IS NOT NULL AND inci IS NOT NULL))
+);
+CREATE INDEX IF NOT EXISTS blog_post_products_product ON blog_post_products (product_id);
+
+-- Uploaded photos, re-encoded as WebP without metadata (app/images.py). post_id NULL: uploaded,
+-- not attached yet; removed after 24 hours.
+CREATE TABLE IF NOT EXISTS blog_images (
+  id         bigserial PRIMARY KEY,
+  owner_id   uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  post_id    bigint REFERENCES blog_posts(id) ON DELETE SET NULL,
+  position   smallint,
+  file_name  text NOT NULL UNIQUE, -- random; never the name the user sent
+  width      integer NOT NULL,
+  height     integer NOT NULL,
+  caption    text,
+  created_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS blog_images_post ON blog_images (post_id);
+
+CREATE TABLE IF NOT EXISTS blog_likes (
+  post_id    bigint NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  user_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (post_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS blog_saves (
+  post_id    bigint NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  user_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (post_id, user_id)
+);
+
+CREATE TABLE IF NOT EXISTS blog_comments (
+  id          bigserial PRIMARY KEY,
+  post_id     bigint NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  author_id   uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  body        text NOT NULL,
+  status      text NOT NULL DEFAULT 'visible'
+    CHECK (status IN ('visible', 'pending', 'hidden', 'removed')),
+  flags       text[] NOT NULL DEFAULT '{}',
+  reviewed_at timestamptz,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS blog_comments_post ON blog_comments (post_id, created_at);
+
+-- One report per person and target. The target has no foreign key (post or comment); reports
+-- whose target is gone are removed by app code (app/blog.py drop_orphan_reports).
+CREATE TABLE IF NOT EXISTS blog_reports (
+  id          bigserial PRIMARY KEY,
+  target_kind text NOT NULL CHECK (target_kind IN ('post', 'comment')),
+  target_id   bigint NOT NULL,
+  reporter_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  reason      text NOT NULL
+    CHECK (reason IN ('medical_claim', 'personal_info', 'advertising', 'offensive', 'other')),
+  note        text,
+  created_at  timestamptz NOT NULL DEFAULT now(),
+  UNIQUE (target_kind, target_id, reporter_id)
+);

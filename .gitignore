@@ -16,3 +16,6 @@ dist/
 # Intermediate files of the agent harness (.claude/skills/skinwise-orchestrator)
 _workspace/
 _workspace_*/
+
+# Browser automation logs
+.playwright-mcp/

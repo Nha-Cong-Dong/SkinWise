@@ -3,6 +3,13 @@ import { api, type CosmeticFunction, type Group, type Severity } from './api'
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
+import { AuthorPage } from './components/blog/AuthorPage'
+import { BlogListPage, SavedPage } from './components/blog/BlogList'
+import { EditPage, WritePage } from './components/blog/PostForm'
+import { PostPage } from './components/blog/PostPage'
+import { ProductPage } from './components/blog/ProductPage'
+import { clearAllDrafts } from './components/blog/draft'
+import { ProfileDialog } from './components/blog/ProfileDialog'
 import { Dialog } from './components/Dialog'
 import { GoalsPage } from './components/GoalsPage'
 import { Mark } from './components/Icons'
@@ -16,6 +23,8 @@ import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
+import { ProfileContext, useProfileOwner } from './profile'
+import { ALL_POSTS, href, isBlogPage, useRoute, type Route } from './router'
 import { useIncomingRoutine } from './share'
 import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
 import {
@@ -27,15 +36,33 @@ import {
   type CheckState,
 } from './routine'
 
-type Page = 'routine' | 'goals' | 'myths' | 'review'
-
 // The review page has no nav entry for users; reviewers open #review.
-const pageFromHash = (): Page => (window.location.hash === '#review' ? 'review' : 'routine')
+const MENU: [Route, string, (route: Route) => boolean][] = [
+  [{ page: 'routine' }, 'Routine của tôi', (r) => r.page === 'routine'],
+  [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals'],
+  [{ page: 'myths' }, 'Sự thật hay myth', (r) => r.page === 'myths'],
+  [ALL_POSTS, 'Review cộng đồng', isBlogPage],
+]
+
+/** A key per page, to scroll to the top when the page changes (not on a filter change). */
+function pageKey(route: Route): string {
+  switch (route.page) {
+    case 'post':
+    case 'edit':
+    case 'product':
+      return `${route.page}:${route.id}`
+    case 'author':
+      return `author:${route.handle}`
+    default:
+      return route.page
+  }
+}
 
 const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
-  const [page, setPage] = useState<Page>(pageFromHash)
+  const route = useRoute()
+  const page = route.page
   const [adding, setAdding] = useState(false)
   const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
   const [sharing, setSharing] = useState(false)
@@ -48,6 +75,7 @@ function App() {
   const account = useAccount()
   const me = account.state.kind === 'signed-in' ? account.state.me : null
   const sync = useRoutineSync(actions, me?.email ?? null)
+  const profile = useProfileOwner(me?.email ?? null)
   const [accountOpen, setAccountOpen] = useState(false)
   const conflict = sync.state.kind === 'conflict' ? sync.state.server : null
   // The conflict the user closed without choosing; a new conflict opens the dialog again.
@@ -78,19 +106,26 @@ function App() {
     await (everywhere ? api.signOutEverywhere() : api.signOut()).catch(() => {})
     sync.forget() // the next person on this device must not get this routine
     clearSelectedGoals() // nor these goals
+    clearAllDrafts() // nor unsent posts
     setPasswordReset(false)
     setAccountOpen(false)
     void account.refresh()
   }
 
   useEffect(() => {
-    const onHash = () => {
-      setPage(pageFromHash())
-      setLink(emailLink(window.location.hash))
-    }
+    const onHash = () => setLink(emailLink(window.location.hash))
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
+
+  // A new page starts at the top; "#results" (an anchor on the routine page) scrolls by itself.
+  const currentPage = pageKey(route)
+  const shownPage = useRef(currentPage)
+  useEffect(() => {
+    if (shownPage.current === currentPage) return
+    shownPage.current = currentPage
+    if (window.location.hash !== '#results') window.scrollTo(0, 0)
+  }, [currentPage])
 
   useEffect(() => {
     api.groups().then(
@@ -152,6 +187,7 @@ function App() {
   return (
     <GroupsContext value={groups}>
       <FunctionsContext value={functions}>
+      <ProfileContext value={profile.value}>
         <div className="min-h-screen">
           <header className="bg-surface ring-1 ring-line">
             <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6">
@@ -161,26 +197,16 @@ function App() {
                   SkinWise
                 </span>
               </div>
-              <nav className="flex gap-1 text-[0.9375rem]" aria-label="Trang">
-                {(
-                  [
-                    ['routine', 'Routine của tôi'],
-                    ['goals', 'Mục tiêu'],
-                    ['myths', 'Sự thật hay myth'],
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    onClick={() => {
-                      // Leaving #review (or the #results anchor) for a page of the menu.
-                      if (window.location.hash) history.replaceState(null, '', window.location.pathname)
-                      setPage(value)
-                    }}
-                    aria-current={page === value ? 'page' : undefined}
-                    className={`rounded-full px-3.5 py-1.5 ${page === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
+              <nav className="flex flex-wrap gap-1 text-[0.9375rem]" aria-label="Trang">
+                {MENU.map(([target, label, isCurrent]) => (
+                  <a
+                    key={label}
+                    href={href(target)}
+                    aria-current={isCurrent(route) ? 'page' : undefined}
+                    className={`rounded-full px-3.5 py-1.5 whitespace-nowrap ${isCurrent(route) ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
                   >
                     {label}
-                  </button>
+                  </a>
                 ))}
               </nav>
               <p className="hidden text-sm text-ink-mute xl:ml-auto xl:block">
@@ -240,9 +266,44 @@ function App() {
               <div className="mx-auto max-w-2xl">
                 <MythPage />
               </div>
-            ) : (
+            ) : page === 'review' ? (
               <div className="mx-auto max-w-4xl">
                 <ReviewPage />
+              </div>
+            ) : route.page === 'blog' ? (
+              <div className="mx-auto max-w-6xl">
+                <BlogListPage filter={route.filter} />
+              </div>
+            ) : route.page === 'saved' ? (
+              <div className="mx-auto max-w-6xl">
+                <SavedPage />
+              </div>
+            ) : route.page === 'write' ? (
+              <div className="mx-auto max-w-3xl">
+                <WritePage key={route.product ?? 'new'} actions={actions} product={route.product} account={me?.email ?? ''} />
+              </div>
+            ) : route.page === 'edit' ? (
+              <div className="mx-auto max-w-3xl">
+                <EditPage key={route.id} id={route.id} actions={actions} account={me?.email ?? ''} />
+              </div>
+            ) : route.page === 'post' ? (
+              <div className="mx-auto max-w-3xl">
+                <PostPage key={route.id} id={route.id} actions={actions} />
+              </div>
+            ) : route.page === 'product' ? (
+              <div className="mx-auto max-w-6xl">
+                <ProductPage key={route.id} id={route.id} />
+              </div>
+            ) : route.page === 'author' ? (
+              <div className="mx-auto max-w-6xl">
+                <AuthorPage key={route.handle} handle={route.handle} />
+              </div>
+            ) : (
+              <div className="mx-auto max-w-2xl space-y-3 text-sm text-ink-soft">
+                <p>Không tìm thấy trang này.</p>
+                <a href={href({ page: 'routine' })} className="text-link underline underline-offset-2">
+                  Về routine của tôi
+                </a>
               </div>
             )}
           </main>
@@ -269,6 +330,7 @@ function App() {
               onDeleted={() => {
                 sync.forget()
                 clearSelectedGoals()
+                clearAllDrafts() // nor unsent posts
                 setAccountOpen(false)
                 void account.refresh()
               }}
@@ -318,6 +380,8 @@ function App() {
             />
           )}
         </Dialog>
+        <ProfileDialog {...profile.dialog} />
+      </ProfileContext>
       </FunctionsContext>
     </GroupsContext>
   )

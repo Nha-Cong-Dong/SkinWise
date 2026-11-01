@@ -1,0 +1,55 @@
+import { useEffect, useState } from 'react'
+import { api, type PostQuery, type PostSummary } from '../../api'
+import { PAGE_SIZE } from '../../blog'
+import { useLoad } from '../../useLoad'
+
+/** One post; a 404 covers "no such post" and "waiting for review, and not yours". */
+export function usePost(id: number) {
+  return useLoad(`post:${id}`, () => api.post(id))
+}
+
+export type ListState =
+  | { kind: 'loading' }
+  | { kind: 'error' }
+  | { kind: 'ready'; items: PostSummary[]; total: number; ratingAvg: number | null; ratingCount: number; more: 'idle' | 'loading' | 'error' }
+
+/** Posts of a query, twenty at a time with "Xem thêm". */
+export function usePostList(query: PostQuery) {
+  const key = JSON.stringify(query)
+  const [attempt, setAttempt] = useState(0)
+  const token = `${attempt}#${key}`
+  const [answer, setAnswer] = useState<{ token: string; list: ListState } | null>(null)
+
+  useEffect(() => {
+    const controller = new AbortController()
+    api.posts({ ...(JSON.parse(key) as PostQuery), offset: 0, limit: PAGE_SIZE }, controller.signal).then(
+      (list) => setAnswer({ token, list: { kind: 'ready', items: list.items, total: list.total, ratingAvg: list.rating_avg, ratingCount: list.rating_count, more: 'idle' } }),
+      () => {
+        if (!controller.signal.aborted) setAnswer({ token, list: { kind: 'error' } })
+      },
+    )
+    return () => controller.abort()
+  }, [key, token])
+
+  const state: ListState = answer?.token === token ? answer.list : { kind: 'loading' }
+
+  const patch = (change: (list: Extract<ListState, { kind: 'ready' }>) => ListState) =>
+    setAnswer((a) => (a && a.token === token && a.list.kind === 'ready' ? { token, list: change(a.list) } : a))
+
+  const loadMore = () => {
+    if (state.kind !== 'ready') return
+    patch((l) => ({ ...l, more: 'loading' }))
+    api.posts({ ...(JSON.parse(key) as PostQuery), offset: state.items.length, limit: PAGE_SIZE }).then(
+      (page) =>
+        patch((l) => {
+          const seen = new Set(l.items.map((p) => p.id)) // a new post may shift the pages
+          return { ...l, items: [...l.items, ...page.items.filter((p) => !seen.has(p.id))], total: page.total, more: 'idle' }
+        }),
+      () => patch((l) => ({ ...l, more: 'error' })),
+    )
+  }
+
+  return { state, loadMore, retry: () => setAttempt((n) => n + 1) }
+}
+
+export type PostListHandle = ReturnType<typeof usePostList>

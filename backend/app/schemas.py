@@ -1,9 +1,18 @@
 """Request and response models for the API."""
 
+import re
 from datetime import datetime
 from typing import Annotated, Literal
 
-from pydantic import BaseModel, ConfigDict, Field, StringConstraints, model_validator
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    Field,
+    StringConstraints,
+    field_validator,
+    model_serializer,
+    model_validator,
+)
 
 MAX_INCI_LENGTH = 10_000
 
@@ -418,3 +427,243 @@ class RoutinePut(BaseModel):
 
 class DeleteAccount(BaseModel):
     confirm_email: Annotated[str, StringConstraints(strip_whitespace=True, max_length=254)]
+
+
+# --- Community reviews (app/blog_api.py; demo with made-up data, not open to the public) ---
+
+
+SkinType = Literal["oily", "dry", "combination", "normal", "sensitive"]
+Disclosure = Literal["none", "gifted", "sponsored"]
+ContentStatus = Literal["visible", "pending", "hidden", "removed"]
+ReportReason = Literal["medical_claim", "personal_info", "advertising", "offensive", "other"]
+HANDLE_PATTERN = r"^[a-z0-9_.]+$"
+
+
+class ProfileIn(BaseModel):
+    handle: str  # 2-30 of a-z 0-9 _ . after trimming and lower-casing
+    skin_type: SkinType | None = None
+
+    @field_validator("handle")
+    @classmethod
+    def _handle(cls, value: str) -> str:
+        handle = value.strip().lower()
+        if not 2 <= len(handle) <= 30 or not re.match(HANDLE_PATTERN, handle):
+            raise ValueError("2 to 30 characters: a-z, 0-9, '_' or '.'")
+        return handle
+
+
+class ProfileOut(BaseModel):
+    handle: str | None  # None: not set yet, so the user cannot post or comment
+    skin_type: SkinType | None
+
+
+class SharedProduct(BaseModel):
+    """A product of a routine file (frontend share.ts PortableRoutine), camelCase on the wire.
+    Absent fields stay absent in responses: the frontend tells the two kinds apart by them."""
+
+    model_config = ConfigDict(populate_by_name=True)
+
+    key: Annotated[str, StringConstraints(min_length=1, max_length=100)]
+    name: Annotated[str, StringConstraints(max_length=200)] = ""
+    product_id: Annotated[int, Field(gt=0)] | None = Field(default=None, alias="productId")
+    # Trimmed; a blank list counts as none, as in share.ts parsePortable.
+    inci: Annotated[str, StringConstraints(strip_whitespace=True,
+                                           max_length=MAX_INCI_LENGTH)] | None = None  # fmt: skip
+
+    @model_validator(mode="after")
+    def _one_source(self) -> "SharedProduct":
+        if not self.inci:
+            self.inci = None
+        if (self.product_id is None) == (self.inci is None):
+            raise ValueError("give exactly one of productId or inci")
+        return self
+
+    @model_serializer(mode="wrap")
+    def _drop_none(self, handler):  # noqa: ANN001, ANN202
+        return {k: v for k, v in handler(self).items() if v is not None}
+
+
+class SharedEntry(BaseModel):
+    model_config = ConfigDict(populate_by_name=True)
+
+    product_key: Annotated[str, StringConstraints(min_length=1, max_length=100)] = Field(
+        alias="productKey"
+    )
+    session: Literal["AM", "PM"]
+    days: Annotated[list[Annotated[int, Field(ge=0, le=6)]], Field(max_length=7)]
+
+
+class SharedRoutine(BaseModel):
+    """A routine attached to a post, in the shape of a routine file (share.ts). Checked for
+    shape and limits only; nothing else is derived from it on the server."""
+
+    format: Literal["skinwise-routine"]
+    version: Literal[1]
+    products: Annotated[list[SharedProduct], Field(max_length=50)]
+    entries: Annotated[list[SharedEntry], Field(max_length=200)]
+
+    @model_validator(mode="after")
+    def _entries_point_to_products(self) -> "SharedRoutine":
+        keys = [p.key for p in self.products]
+        if len(keys) != len(set(keys)):
+            raise ValueError("product keys must be unique")
+        if any(e.product_key not in set(keys) for e in self.entries):
+            raise ValueError("a step refers to a product that is not in the routine")
+        return self
+
+
+class PostProductIn(BaseModel):
+    """Exactly one source: a catalogue product, or a name with a pasted ingredient list."""
+
+    product_id: int | None = None
+    name: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1,
+                                           max_length=120)] | None = None  # fmt: skip
+    inci: InciText | None = None
+
+    @model_validator(mode="after")
+    def _one_source(self) -> "PostProductIn":
+        pasted = self.name is not None or self.inci is not None
+        if self.product_id is not None and pasted:
+            raise ValueError("give either product_id or name and inci, not both")
+        if self.product_id is None and (self.name is None or self.inci is None):
+            raise ValueError("give product_id, or both name and inci")
+        return self
+
+
+class PostIn(BaseModel):
+    title: Annotated[str, StringConstraints(strip_whitespace=True, min_length=5, max_length=120)]
+    body: Annotated[str, StringConstraints(strip_whitespace=True, min_length=20,
+                                           max_length=10_000)]  # fmt: skip
+    rating: Annotated[int, Field(ge=1, le=5)] | None = None
+    skin_type: SkinType | None = None
+    disclosure: Disclosure = "none"
+    products: Annotated[list[PostProductIn], Field(min_length=1, max_length=10)]
+    image_ids: Annotated[list[int], Field(max_length=4)] = []
+    routine: SharedRoutine | None = None
+
+    @field_validator("image_ids")
+    @classmethod
+    def _distinct(cls, ids: list[int]) -> list[int]:
+        if len(ids) != len(set(ids)):
+            raise ValueError("an image is listed twice")
+        return ids
+
+
+class PostProductOut(BaseModel):
+    position: int
+    product_id: int | None
+    name: str  # from the catalogue when product_id is set
+    brand: str | None  # None for a pasted list
+    inci: str | None  # pasted lists only
+
+
+class AuthorRef(BaseModel):
+    handle: str
+    skin_type: SkinType | None
+
+
+class ImageOut(BaseModel):
+    id: int
+    url: str  # /blog/images/{id}
+    width: int
+    height: int
+    caption: str | None
+
+
+class PostSummary(BaseModel):
+    cover: ImageOut | None  # the first image
+    id: int
+    title: str
+    excerpt: str  # the first 200 characters of the body at most
+    rating: int | None
+    skin_type: SkinType | None
+    disclosure: Disclosure
+    author: AuthorRef
+    products: list[PostProductOut]
+    like_count: int
+    comment_count: int  # visible comments
+    has_routine: bool
+    status: ContentStatus
+    created_at: datetime
+
+
+class PostDetail(PostSummary):
+    body: str
+    images: list[ImageOut]
+    routine: SharedRoutine | None
+    flags: list[str]  # why it waits for review; the author's own posts only, else []
+    liked: bool
+    saved: bool
+    is_mine: bool
+    updated_at: datetime
+
+
+class PostList(BaseModel):
+    items: list[PostSummary]
+    total: int  # every matching post, not just this page
+    # Over every matching post that has a rating (not just this page); None when none has.
+    rating_avg: float | None
+    rating_count: int
+
+
+class LikeOut(BaseModel):
+    liked: bool
+    like_count: int
+
+
+class SaveOut(BaseModel):
+    saved: bool
+
+
+class CommentIn(BaseModel):
+    body: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+
+
+class CommentOut(BaseModel):
+    id: int
+    post_id: int
+    author: AuthorRef
+    body: str
+    status: ContentStatus
+    flags: list[str]  # the user's own comments only, else []
+    is_mine: bool
+    created_at: datetime
+
+
+class ReportIn(BaseModel):
+    target_kind: Literal["post", "comment"]
+    target_id: int
+    reason: ReportReason
+    note: Annotated[str, StringConstraints(strip_whitespace=True, max_length=300)] | None = None
+
+
+class AuthorOut(BaseModel):
+    handle: str
+    skin_type: SkinType | None
+    post_count: int  # visible posts
+    posts: list[PostSummary]  # visible only, newest first
+
+
+class ModerationImage(BaseModel):
+    id: int  # GET /review/blog/images/{id} with the reviewer token
+    caption: str | None
+
+
+class ModerationItem(BaseModel):
+    kind: Literal["post", "comment"]
+    id: int
+    post_id: int
+    title: str | None  # None for a comment
+    body: str
+    author: str  # handle
+    status: ContentStatus
+    flags: list[str]
+    report_count: int  # distinct people since the last reviewer decision
+    report_reasons: list[str]
+    report_notes: list[str]  # notes of the reports counted in report_count
+    images: list[ModerationImage]  # the post's images; [] for a comment
+    created_at: datetime
+
+
+class ModerationAction(BaseModel):
+    action: Literal["approve", "remove"]

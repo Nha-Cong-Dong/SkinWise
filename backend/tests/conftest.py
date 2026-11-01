@@ -4,7 +4,7 @@ from collections.abc import Iterator
 import pytest
 from fastapi.testclient import TestClient
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from sqlalchemy import Engine, create_engine
+from sqlalchemy import Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
 from app.db import get_session, init_schema
@@ -38,3 +38,72 @@ def client(engine: Engine) -> Iterator[TestClient]:
     app.dependency_overrides[get_session] = session_override
     with TestClient(app) as client:
         yield client
+
+
+# --- Community reviews (blog): signed-in users without going through email ---
+
+
+@pytest.fixture
+def upload_dir(tmp_path, monkeypatch):
+    from app.config import get_settings
+
+    path = tmp_path / "uploads"
+    monkeypatch.setattr(get_settings(), "upload_dir", str(path))
+    return path
+
+
+@pytest.fixture
+def make_user(engine: Engine, upload_dir) -> Iterator:
+    """make_user(handle=None) -> a TestClient signed in as a new verified user, with a profile
+    when a handle is given. Users are deleted afterwards."""
+    import uuid
+
+    from app.accounts import create_session
+    from app.blog import put_profile, reset_image_limit
+
+    reset_image_limit()
+    clients: list[TestClient] = []
+    emails: list[str] = []
+
+    def session_override() -> Iterator[Session]:
+        with sessionmaker(bind=engine)() as session:
+            yield session
+
+    app = create_app()
+    app.dependency_overrides[get_session] = session_override
+
+    def make(handle: str | None = None, skin_type: str | None = None) -> TestClient:
+        email = f"blog-{uuid.uuid4().hex[:10]}@example.com"
+        with engine.begin() as conn:
+            user_id = conn.execute(
+                text(
+                    "INSERT INTO users (email, email_verified_at) VALUES (:e, now()) "
+                    "RETURNING id::text"
+                ),
+                {"e": email},
+            ).scalar_one()
+            session_id = create_session(conn, user_id)
+            if handle:
+                put_profile(conn, user_id, handle, skin_type)
+        client = TestClient(app)
+        client.cookies.set("skinwise_session", session_id)
+        client.email = email  # type: ignore[attr-defined]
+        client.user_id = user_id  # type: ignore[attr-defined]
+        clients.append(client)
+        emails.append(email)
+        return client
+
+    yield make
+    for c in clients:
+        c.close()
+    with engine.begin() as conn:
+        conn.execute(text("DELETE FROM users WHERE email = ANY(:e)"), {"e": emails})
+        conn.execute(
+            text(
+                "DELETE FROM blog_reports r WHERE (r.target_kind = 'post' AND NOT EXISTS "
+                "(SELECT 1 FROM blog_posts p WHERE p.id = r.target_id)) OR "
+                "(r.target_kind = 'comment' AND NOT EXISTS "
+                "(SELECT 1 FROM blog_comments c WHERE c.id = r.target_id))"
+            )
+        )
+    reset_image_limit()

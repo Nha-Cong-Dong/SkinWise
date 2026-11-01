@@ -49,6 +49,7 @@ Mọi cảnh báo đều:
 |---|---|
 | Trang duyệt (`#review`) | Người duyệt đăng nhập bằng tài khoản riêng để nhờ AI soạn nháp thẻ myth và xem các bản nháp |
 | AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
+| Review cộng đồng (bản demo) | Người dùng viết bài review kèm sản phẩm, ảnh và routine; lọc theo loại da, thích, lưu, bình luận, báo cáo, "Thử routine này". Cuối mỗi bài, phần "Thông tin có nguồn (SkinWise)" tách riêng khỏi trải nghiệm của người viết. Nội dung bài không bao giờ ảnh hưởng cảnh báo. Bài có chữ "trị/chữa", số điện thoại, email, link thì chờ duyệt; 3 báo cáo thì tạm ẩn. Chỉ dùng dữ liệu mẫu, chưa mở công khai |
 
 ### Dự kiến sau hackathon
 
@@ -112,7 +113,7 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    uv sync
    uv run python -m scripts.seed          # tạo bảng và nạp dữ liệu mẫu (chạy lại an toàn)
    uv run uvicorn app.main:app --reload   # API tại http://127.0.0.1:8000, tài liệu API tại /docs
-   uv run pytest                  # chạy test
+   LOGIN_EMAIL_MODE=dev SMTP_HOST= uv run pytest   # chạy test (ở chế độ thử, không gửi email thật)
    ```
 
 3. Frontend (mở terminal khác):
@@ -133,6 +134,14 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    uv run python -m scripts.reviewers add "Tên người duyệt"   # hỏi mật khẩu
    ```
 
+6. Dữ liệu demo cho review cộng đồng (không bắt buộc): tạo 5 tài khoản `demo1…demo5@skinwise.test` và 8 bài review mẫu. Ảnh lưu ở `backend/uploads/` (đổi bằng `UPLOAD_DIR`).
+
+   ```bash
+   cd backend
+   uv run python -m scripts.demo_blog           # hỏi mật khẩu chung (hoặc đặt DEMO_BLOG_PASSWORD)
+   uv run python -m scripts.demo_blog --reset   # xoá rồi tạo lại, chỉ đụng tài khoản @skinwise.test
+   ```
+
 ## Lộ trình
 
 Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
@@ -145,6 +154,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [ ] Hoàn thiện demo
 - [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
 - [ ] Mục tiêu da: chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn (xong code, nội dung chờ duyệt)
+- [x] Review cộng đồng (bản demo, dữ liệu mẫu, chưa mở công khai)
 
 ## Nguồn dữ liệu và ghi công
 

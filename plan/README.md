@@ -12,6 +12,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
 | — | Tài khoản bắt buộc + đồng bộ (hướng H), chế độ thử, chưa mở cho người dùng thật | 26/10 | 🚧 Xong code, nhánh `feat/accounts` (chưa có PR) | [h-accounts.md](h-accounts.md) |
 | — | Mục tiêu da: nhóm hoạt chất + thẻ thông tin có nguồn theo mục tiêu (`goals.toml`, `GET /goals`, trang "Mục tiêu") | 28/10 | 🚧 Xong code, 23 mục chờ duyệt (`published = false`), 5 mục cần sửa lời văn | [decisions.md](decisions.md) |
+| — | Review cộng đồng (bản demo): bài review + sản phẩm + ảnh + routine, thích / lưu / bình luận / báo cáo, hàng chờ duyệt ở `#review`, router theo hash | 28–29/10 | 🚧 Xong code + QA 3 lượt + review (10 lỗi đã sửa), 281 test đạt; nhánh `feat/blog`, chưa commit, chưa có PR | [decisions.md](decisions.md) |
 | — | Sau MVP: những gì chưa làm được, thứ tự đề xuất | sau 10/11 | 🚧 Phần C (độ chính xác) + giao diện mới + phần B (xuất/nhập routine) + thiết kế H + phần E (gộp từ PR #6 để gỡ xung đột): xong code 26/10, chờ review + merge PR #7 | [after-mvp.md](after-mvp.md), [h-accounts.md](h-accounts.md) |
 
 **Chạy song song từ 21/10:** tìm nguồn và duyệt 5–8 luật cảnh báo + 2–3 thẻ myth, xong trước **31/10**. Đây là đường găng. Hiện (25/10): 6 luật + 4 thẻ myth đã bật — **đạt mục tiêu**. Ngày 26/10 bật thêm 4 lưu ý khi dùng (nhạy nắng).
