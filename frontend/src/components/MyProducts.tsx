@@ -109,6 +109,7 @@ function ProductRow({ product, uses, actions, onView }: RowProps) {
           <button
             key={session}
             onClick={() => actions.addEntry(product.key, session)}
+            aria-label={`Thêm “${product.name}” vào buổi ${SESSION_LABELS[session].toLowerCase()}`}
             className={`rounded-full px-2.5 py-1 font-medium ${
               session === 'AM'
                 ? 'bg-paper text-ink ring-1 ring-line hover:ring-ink'
@@ -119,7 +120,10 @@ function ProductRow({ product, uses, actions, onView }: RowProps) {
           </button>
         ))}
         <span className="flex-1" />
-        <button onClick={onView} className="rounded-full px-2 py-1 text-ink-soft hover:bg-paper hover:text-ink">
+        <button
+          onClick={onView}
+          aria-label={`Xem thành phần của “${product.name}”`}
+          className="rounded-full px-2 py-1 text-ink-soft hover:bg-paper hover:text-ink">
           Thành phần
         </button>
         <button
@@ -128,6 +132,7 @@ function ProductRow({ product, uses, actions, onView }: RowProps) {
               actions.removeProduct(product.key)
             }
           }}
+          aria-label={`Xoá “${product.name}”`}
           className="rounded-full px-2 py-1 text-ink-mute hover:bg-avoid-soft hover:text-avoid-ink"
         >
           Xoá

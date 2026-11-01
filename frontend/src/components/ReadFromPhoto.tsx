@@ -49,6 +49,11 @@ export function ReadFromPhoto({ reader }: Props) {
         {state === 'off' && (
           <p className="mt-2 text-avoid-ink">Máy chủ này chưa bật chức năng đọc ảnh. Hãy dán bảng thành phần.</p>
         )}
+        {state === 'busy' && (
+          <p className="mt-2 text-avoid-ink">
+            Đã đọc nhiều ảnh trong thời gian ngắn. Hãy thử lại sau, hoặc dán bảng thành phần.
+          </p>
+        )}
         {state === 'error' && (
           <p className="mt-2 text-avoid-ink">Không đọc được ảnh lúc này. Hãy thử lại, hoặc dán bảng thành phần.</p>
         )}

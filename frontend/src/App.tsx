@@ -309,7 +309,8 @@ function App() {
           </main>
 
           <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
-            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này.
+            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên máy này và đồng bộ
+            với tài khoản của bạn trên máy chủ SkinWise.
           </footer>
         </div>
 

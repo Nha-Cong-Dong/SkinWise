@@ -15,6 +15,7 @@ from typing import Any
 import anthropic
 from pydantic import BaseModel
 
+from app.accounts import RateLimit
 from app.config import get_settings
 from app.drafts import FALLBACK_MODELS
 
@@ -43,6 +44,29 @@ names (usually English). If there is only one list, transcribe it, whatever the 
 - Leave out everything else: marketing text, directions, warnings, addresses, batch numbers.
 - If no ingredient list is visible, set found to false and text to an empty string.
 """
+
+
+# Each photo is a billed call, and in dev mode anyone can make accounts without a real email.
+# In memory, per process, like the account limits (app/accounts.py).
+PER_USER_LIMIT = (10, 3600.0)  # photos per user and hour
+SERVER_LIMIT = (100, 86400.0)  # photos per day for the whole server
+_per_user = RateLimit({"email": PER_USER_LIMIT})
+_server = RateLimit({"email": SERVER_LIMIT})
+
+
+def allow_label_read(user_id: str) -> bool:
+    """Count one photo for this user and the server; False once either limit is reached
+    (nothing is counted then)."""
+    if _per_user.blocked(user_id, None) or _server.blocked("all", None):
+        return False
+    _per_user.record(user_id, None)
+    _server.record("all", None)
+    return True
+
+
+def reset_label_limits() -> None:
+    _per_user.clear()
+    _server.clear()
 
 
 class LabelReadingError(Exception):

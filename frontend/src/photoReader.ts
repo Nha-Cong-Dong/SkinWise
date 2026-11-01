@@ -28,7 +28,7 @@ async function prepare(file: File): Promise<{ data: string; preview: string }> {
   return { data: preview.slice(preview.indexOf(',') + 1), preview }
 }
 
-export type PhotoReaderState = 'idle' | 'loading' | 'none' | 'bad_image' | 'signed_out' | 'off' | 'error'
+export type PhotoReaderState = 'idle' | 'loading' | 'none' | 'bad_image' | 'signed_out' | 'off' | 'busy' | 'error'
 
 /** The image in a paste event (a screenshot or a copied photo), if there is one. */
 export function pastedImage(e: ClipboardEvent): File | null {
@@ -64,7 +64,15 @@ export function usePhotoReader(onRead: (text: string, photo: string) => void, ma
       (e) => {
         const status = e instanceof ApiError ? e.status : 0
         setState(
-          status === 401 ? 'signed_out' : status === 503 ? 'off' : status === 422 ? 'bad_image' : 'error',
+          status === 401
+            ? 'signed_out'
+            : status === 503
+              ? 'off'
+              : status === 429
+                ? 'busy'
+                : status === 422
+                  ? 'bad_image'
+                  : 'error',
         )
       },
     )

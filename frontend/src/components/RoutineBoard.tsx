@@ -120,6 +120,8 @@ type EntryProps = {
  * at the same place, so reading one column top to bottom gives what is used that day.
  */
 function EntryRow({ entry, step, last, product, severity, actions, tone, night }: EntryProps) {
+  const name = `“${product.name}”`
+  const session = night ? 'buổi tối' : 'buổi sáng'
   const iconButton = `rounded-full p-1 disabled:opacity-25 disabled:hover:bg-transparent ${tone.button}`
   return (
     <li className={`grid grid-cols-[1.75rem_minmax(0,1fr)] items-start gap-x-3 gap-y-2.5 border-t py-3 first:border-t-0 ${tone.line}`}>
@@ -139,7 +141,7 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
               className={iconButton}
               disabled={step === 1}
               onClick={() => actions.moveEntry(entry.id, -1)}
-              aria-label="Lên một bước"
+              aria-label={`Đưa ${name} lên một bước`}
               title="Lên một bước"
             >
               <Glyph name="up" className="size-4" />
@@ -148,7 +150,7 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
               className={iconButton}
               disabled={last}
               onClick={() => actions.moveEntry(entry.id, 1)}
-              aria-label="Xuống một bước"
+              aria-label={`Đưa ${name} xuống một bước`}
               title="Xuống một bước"
             >
               <Glyph name="down" className="size-4" />
@@ -156,7 +158,7 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
             <button
               className={`rounded-full p-1 ${night ? 'text-night-mute hover:bg-avoid hover:text-white' : 'text-ink-mute hover:bg-avoid-soft hover:text-avoid-ink'}`}
               onClick={() => actions.removeEntry(entry.id)}
-              aria-label={`Bỏ bước ${step}`}
+              aria-label={`Bỏ bước ${step} (${name}) khỏi ${session}`}
               title="Bỏ bước này"
             >
               <Glyph name="close" className="size-4" />
@@ -172,7 +174,7 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
         )}
       </div>
       <div className="col-start-2 flex flex-wrap items-center gap-x-3 gap-y-1">
-        <div className="grid grid-cols-[repeat(7,2.25rem)] gap-1" role="group" aria-label="Ngày dùng">
+        <div className="grid grid-cols-[repeat(7,2.25rem)] gap-1" role="group" aria-label={`Ngày dùng ${name}, ${session}`}>
           {ALL_DAYS.map((day) => {
             const on = entry.days.includes(day)
             return (
@@ -195,6 +197,7 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
           {entry.days.length < 7 && (
             <button
               onClick={() => actions.setDays(entry.id, [...ALL_DAYS])}
+              aria-label={`Dùng ${name} cả tuần, ${session}`}
               className={`underline-offset-2 hover:underline ${tone.mute}`}
             >
               Cả tuần

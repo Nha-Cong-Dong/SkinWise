@@ -16,7 +16,11 @@ export function WarningsPanel({ state, products }: Props) {
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
-    <section aria-labelledby="results-title" aria-live="polite">
+    <section aria-labelledby="results-title">
+      {/* Only this short summary is announced: the cards below can run to hundreds of words. */}
+      <p className="sr-only" aria-live="polite">
+        {liveSummary(state)}
+      </p>
       <div className="flex items-baseline justify-between gap-3">
         <h2 id="results-title" className="text-xl font-bold">
           Kết quả kiểm tra
@@ -30,7 +34,19 @@ export function WarningsPanel({ state, products }: Props) {
         )}
         {state.kind === 'error' && (
           <div className="rounded-xl bg-avoid-soft p-4 text-sm text-avoid-ink">
-            Không kiểm tra được routine ({state.message}). Hãy thử lại sau.
+            <p>
+              Không kiểm tra được routine: mất kết nối tới máy chủ SkinWise hoặc máy chủ đang gặp lỗi. Routine của bạn
+              vẫn được giữ nguyên.
+            </p>
+            {state.retry && (
+              <button
+                type="button"
+                onClick={state.retry}
+                className="mt-3 rounded-full bg-avoid-ink px-4 py-1.5 font-semibold text-white"
+              >
+                Thử lại
+              </button>
+            )}
           </div>
         )}
         {incomplete.length > 0 && (
@@ -84,6 +100,22 @@ export function WarningsPanel({ state, products }: Props) {
       </div>
     </section>
   )
+}
+
+/** What a screen reader announces when the result changes. */
+function liveSummary(state: CheckState): string {
+  if (state.kind === 'loading') return 'Đang kiểm tra routine…'
+  if (state.kind === 'error') return 'Không kiểm tra được routine.'
+  const result = currentResult(state)
+  if (!result) return ''
+  const combinations = result.warnings.filter((w) => !isUsageNote(w))
+  const notes = result.warnings.length - combinations.length
+  const counts = (Object.keys(SEVERITY) as Severity[])
+    .map((severity) => [severity, combinations.filter((w) => w.rule.severity === severity).length] as const)
+    .filter(([, n]) => n > 0)
+    .map(([severity, n]) => `${n} ${SEVERITY[severity].label.toLowerCase()}`)
+  const head = counts.length > 0 ? `Kết quả kiểm tra: ${counts.join(', ')}` : 'Kết quả kiểm tra: chưa có cảnh báo kết hợp'
+  return notes > 0 ? `${head}, ${notes} lưu ý khi dùng.` : `${head}.`
 }
 
 /**

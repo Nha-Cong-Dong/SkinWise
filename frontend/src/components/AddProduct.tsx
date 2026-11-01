@@ -109,6 +109,7 @@ function SearchProducts({ actions }: Props) {
                 onClick={() =>
                   actions.addProduct({ name: p.name, brand: p.brand, productId: p.id, inci: null, groups: p.groups })
                 }
+                aria-label={`${isAdded ? 'Đã thêm' : 'Thêm'} ${p.brand ? `${p.brand} ` : ''}${p.name}`}
                 className="shrink-0 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-white hover:bg-link disabled:bg-paper disabled:text-ink-mute"
               >
                 {isAdded ? 'Đã thêm' : 'Thêm'}

@@ -9,7 +9,7 @@ Hạn MVP: **10/11/2026**. Mỗi giai đoạn làm trên một nhánh riêng và
 | 2 | Engine luật + script kiểm tra đoạn trích nguồn | 28/10–1/11 | ✅ Xong sớm (22/10) | [phase-2-rules-engine.md](phase-2-rules-engine.md) |
 | 3 | API: tìm sản phẩm, phân tích INCI, kiểm tra routine, myth, nhận câu hỏi người dùng | 2–3/11 | ✅ Xong sớm (23/10, PR #4) | [phase-3-api.md](phase-3-api.md) |
 | 4 | Giao diện: thêm sản phẩm, xếp lịch, cảnh báo, thẻ myth, form gửi câu hỏi | 3–7/11 | ✅ Xong code (23–25/10), chờ review giao diện + merge PR #5 | [phase-4-ui.md](phase-4-ui.md), [phase-4b-ingredient-coverage.md](phase-4b-ingredient-coverage.md) |
-| 5 | Hoàn thiện demo, dự phòng | 8–10/11 | ⏳ | |
+| 5 | Hoàn thiện demo, dự phòng | 8–10/11 | 🚧 Bắt đầu 1/11 (sửa theo đánh giá sản phẩm) | [phase-5-demo.md](phase-5-demo.md) |
 | — | Tài khoản bắt buộc + đồng bộ (hướng H), chế độ thử, chưa mở cho người dùng thật | 26/10 | 🚧 Xong code, nhánh `feat/accounts` (chưa có PR) | [h-accounts.md](h-accounts.md) |
 | — | Mục tiêu da: nhóm hoạt chất + thẻ thông tin có nguồn theo mục tiêu (`goals.toml`, `GET /goals`, trang "Mục tiêu") | 28/10 | 🚧 Xong code, 23 mục chờ duyệt (`published = false`), 5 mục cần sửa lời văn | [decisions.md](decisions.md) |
 | — | Review cộng đồng (bản demo): bài review + sản phẩm + ảnh + routine, thích / lưu / bình luận / báo cáo, hàng chờ duyệt ở `#review`, router theo hash | 28–29/10 | 🚧 Xong code + QA 3 lượt + review (10 lỗi đã sửa), 281 test đạt; nhánh `feat/blog`, chưa commit, chưa có PR | [decisions.md](decisions.md) |

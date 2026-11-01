@@ -179,7 +179,7 @@ export type CheckState =
   | { kind: 'empty' } // nothing scheduled yet
   | { kind: 'loading'; previous: RoutineCheckResponse | null }
   | { kind: 'done'; result: RoutineCheckResponse }
-  | { kind: 'error'; message: string }
+  | { kind: 'error'; message: string; retry?: () => void }
 
 /** The result to show: the last finished check, kept while a newer one runs. */
 export function currentResult(state: CheckState): RoutineCheckResponse | null {
@@ -201,6 +201,8 @@ export function useRoutineCheck(routine: Routine): CheckState {
   const empty = request.items.length === 0
   // The last finished check and the request it answered; loading = it answered an older request.
   const [last, setLast] = useState<{ body: string; result?: RoutineCheckResponse; error?: string } | null>(null)
+  // Bumped by "Thử lại": runs the same request again.
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
     if (empty) return
@@ -217,9 +219,17 @@ export function useRoutineCheck(routine: Routine): CheckState {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [body, empty])
+  }, [body, empty, attempt])
 
   if (empty) return { kind: 'empty' }
   if (last?.body !== body) return { kind: 'loading', previous: last?.result ?? null }
-  return last.result ? { kind: 'done', result: last.result } : { kind: 'error', message: last.error ?? '' }
+  if (last.result) return { kind: 'done', result: last.result }
+  return {
+    kind: 'error',
+    message: last.error ?? '',
+    retry: () => {
+      setLast(null)
+      setAttempt((n) => n + 1)
+    },
+  }
 }

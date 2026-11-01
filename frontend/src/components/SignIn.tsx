@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { POLICY_VERSION, type EmailLink } from '../account'
 import { ApiError, api, type EmailSent, type Me } from '../api'
 import { Dialog } from './Dialog'
-import { Mark } from './Icons'
+import { Mark, SeverityBadge } from './Icons'
 import { PolicyText } from './PolicyText'
 
 const field =
@@ -52,9 +52,9 @@ function emailRequestError(e: unknown): string {
   return 'Không gửi được email. Hãy thử lại sau.'
 }
 
-function Shell({ children }: { children: ReactNode }) {
+function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-start justify-center px-4 py-10 sm:items-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 lg:flex-row lg:items-center lg:gap-10">
       <main className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-line sm:p-8">
         <div className="flex items-center gap-2.5">
           <Mark className="size-9" />
@@ -65,7 +65,41 @@ function Shell({ children }: { children: ReactNode }) {
         </p>
         {children}
       </main>
+      {aside}
     </div>
+  )
+}
+
+/**
+ * What the app does, for someone who has not signed in yet (sign-in is required, decisions.md
+ * 26/10). Static: the example quotes a published rule's title word for word.
+ */
+function Intro() {
+  return (
+    <section aria-labelledby="intro-title" className="w-full max-w-md text-sm leading-relaxed text-ink-soft">
+      <h2 id="intro-title" className="text-base font-semibold text-ink">
+        SkinWise làm gì?
+      </h2>
+      <ul className="mt-2 list-disc space-y-1.5 pl-5">
+        <li>Chọn sản phẩm bạn đang dùng (khoảng 30 sản phẩm có sẵn) hoặc dán bảng thành phần in trên bao bì.</li>
+        <li>Xếp lịch sáng / tối theo từng ngày trong tuần, theo thứ tự các bước.</li>
+        <li>
+          SkinWise nhận ra hoạt chất và báo khi sản phẩm trùng hoạt chất hoặc kết hợp cần thận trọng. Mỗi cảnh báo
+          kèm giải thích tiếng Việt và đoạn trích nguyên văn từ nguồn đáng tin cậy.
+        </li>
+      </ul>
+      <figure className="mt-4 rounded-xl bg-surface p-4 ring-1 ring-line">
+        <figcaption className="text-xs text-ink-mute">Ví dụ kết quả kiểm tra</figcaption>
+        <div className="mt-2">
+          <SeverityBadge severity="caution" />
+        </div>
+        <p className="mt-2 font-semibold text-ink">Retinoid và acid tẩy tế bào chết trong cùng một buổi</p>
+        <p className="mt-1 text-xs text-ink-mute">Serum retinol + toner BHA · Tối: mỗi ngày · Có nguồn và đoạn trích</p>
+      </figure>
+      <p className="mt-4 text-xs text-ink-mute">
+        Bản demo cho hackathon, chưa mở cho người dùng thật.
+      </p>
+    </section>
   )
 }
 
@@ -83,7 +117,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
   }
 
   return (
-    <Shell>
+    <Shell aside={<Intro />}>
       {sent ? (
         <Sent sent={sent} onBack={() => go('sign-in')} />
       ) : mode === 'sign-in' ? (

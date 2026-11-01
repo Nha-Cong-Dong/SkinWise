@@ -152,7 +152,7 @@ function RoutineAnalysis({ routine }: { routine: PortableRoutine }) {
       : loaded.kind === 'ready'
         ? { kind: 'done', result: loaded.value }
         : loaded.kind === 'error'
-          ? { kind: 'error', message: (loaded.error as Error).message ?? '' }
+          ? { kind: 'error', message: (loaded.error as Error).message ?? '', retry }
           : { kind: 'loading', previous: null }
 
   if (state.kind === 'empty') {

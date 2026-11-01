@@ -30,6 +30,7 @@ def photo(data: str = PIXEL, media_type: str = "image/png") -> dict:
 def signed_in(client: TestClient) -> TestClient:
     """The client with a fresh verified account signed in: each photo is a billed call."""
     reset_rate_limits()
+    label_reader.reset_label_limits()
     email, password = f"label-{uuid.uuid4().hex[:8]}@example.com", "mot cum tu de nho"
     registered = client.post(
         "/auth/register",
@@ -89,6 +90,27 @@ def test_read_label_refuses_bad_input_before_calling_the_model(
     assert signed_in.post("/label/read", json=photo(data="not base64!")).status_code == 422
     assert signed_in.post("/label/read", json=photo(media_type="image/heic")).status_code == 422
     assert signed_in.post("/label/read", json=photo(data="")).status_code == 422
+
+
+def test_read_label_limits_photos_per_user(
+    signed_in: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(label_reader, "call_model", lambda m, d: ModelLabel(found=False, text=""))
+    limit = label_reader.PER_USER_LIMIT[0]
+    statuses = [signed_in.post("/label/read", json=photo()).status_code for _ in range(limit + 1)]
+    assert statuses == [200] * limit + [429]
+
+
+def test_read_label_limits_photos_per_server(
+    signed_in: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Many throwaway accounts still share the server's daily budget.
+    monkeypatch.setattr(label_reader, "call_model", lambda m, d: ModelLabel(found=False, text=""))
+    for i in range(label_reader.SERVER_LIMIT[0]):
+        assert label_reader.allow_label_read(f"other-user-{i // 5}")
+    assert signed_in.post("/label/read", json=photo()).status_code == 429
+    label_reader.reset_label_limits()
+    assert signed_in.post("/label/read", json=photo()).status_code == 200
 
 
 def test_read_label_passes_on_model_errors(
