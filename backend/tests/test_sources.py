@@ -36,8 +36,18 @@ class FakeResponse:
         pass
 
 
-def test_bot_challenge_page_raises_instead_of_reporting_missing_quotes(monkeypatch) -> None:
-    challenge = "<script>grecaptcha.enterprise.execute('x')</script>"
+@pytest.mark.parametrize(
+    "challenge",
+    [
+        "<script>grecaptcha.enterprise.execute('x')</script>",
+        # hadalabo.com.vn, 05/11: reloads itself after 5 s; no visible content
+        "<html><head><title>One moment, please...</title><script>setTimeout(function(){"
+        "window.location.reload();}, 5000);</script></head><body><div class=spinner></div></body>",
+    ],
+)
+def test_bot_challenge_page_raises_instead_of_reporting_missing_quotes(
+    monkeypatch, challenge: str
+) -> None:
     monkeypatch.setattr(sources.urllib.request, "urlopen", lambda *a, **k: FakeResponse(challenge))
     with pytest.raises(BlockedError):
         sources.fetch_text("https://example.org")
