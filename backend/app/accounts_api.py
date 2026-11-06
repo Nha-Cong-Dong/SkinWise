@@ -44,8 +44,8 @@ from app.accounts import (
     session_user,
     verify_email,
 )
-from app.api import DbSession
 from app.config import get_settings
+from app.db import DbSession
 from app.mailer import MailNotConfigured
 from app.passwords import MAX_LENGTH, MIN_LENGTH, password_problem
 from app.schemas import (

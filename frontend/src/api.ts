@@ -22,6 +22,8 @@ export type ProductSummary = {
   verification_status: 'unverified' | 'user_confirmed' | 'verified'
   application: Application | null
   groups: string[]
+  // Ingredients (as printed on the label) that made the product match a search; [] when none.
+  matched_ingredients: string[]
 }
 
 /** Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only. */
@@ -50,7 +52,8 @@ export type CosmeticFunction = {
   definition_en: string | null
 }
 
-export type ProductDetail = ProductSummary & {
+// matched_ingredients belongs to search results only; /products/{id} may or may not carry it.
+export type ProductDetail = Omit<ProductSummary, 'matched_ingredients'> & {
   ingredients_source: string
   source_url: string | null
   source_retrieved_at: string | null
@@ -69,6 +72,7 @@ export type InciAnalysis = {
   unresolved_count: number
   notices: TextNotice[] // signs the text is not a full INCI list
   one_percent_marker: string | null
+  suggestions_truncated: boolean // some unrecognised lines were not checked for close names
 }
 
 /** The ingredient list an AI model copied off a label photo, for the user to check. */
@@ -90,6 +94,7 @@ export type Rule = {
   group_b: string | null
   title_vi: string
   explanation_vi: string
+  plain_vi: string | null // reviewed plain-language rewording of explanation_vi; null when none
   sources: Source[]
   reviewed_at: string | null // YYYY-MM-DD: when a reviewer read the sources and published the rule
 }
@@ -133,8 +138,24 @@ export type Warning = {
 
 export type RoutineCheckResponse = {
   warnings: Warning[]
-  products: { key: string; groups: string[]; possible_actives: string[]; application: Application | null }[]
+  products: {
+    key: string
+    groups: string[]
+    possible_actives: string[]
+    suggestions_truncated: boolean // some unrecognised lines were not checked for close names
+    application: Application | null
+    group_ingredients: GroupIngredient[] // display only: which label line put the product in which group
+    ingredient_count: number // lines in the list `position` counts in
+    ordered: boolean // false: key-ingredient list or Drug Facts label, not in order of weight
+  }[]
   notice_vi: string | null
+}
+
+/** A label line that puts a product in a group (parent groups included). Display only. */
+export type GroupIngredient = {
+  group: string
+  name: string // as printed on the label
+  position: number // 1-based line number in the list as read
 }
 
 // Review page (backend/app/review_api.py).
@@ -176,6 +197,34 @@ export class ApiError extends Error {
     this.status = status
     this.body = body
   }
+}
+
+export const SESSION_EXPIRED = 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
+
+/**
+ * Sent on `window` when a request with the user's session cookie gets a 401: the session has
+ * ended, so `useAccount` checks again and the app goes back to the sign-in form.
+ */
+export const SIGNED_OUT_EVENT = 'skinwise:signed-out'
+
+/** The sentence shown when a pasted list had more unrecognised names than were checked for typos. */
+export const SUGGESTIONS_TRUNCATED_VI =
+  'Bảng này có nhiều tên SkinWise chưa nhận ra, nên chưa kiểm hết được các tên có thể bị gõ sai. Có thể đang thiếu cảnh báo.'
+// 429: too many requests from this address (nginx limit_req on /routine/check and /inci/analyze).
+export const TOO_FAST = 'Bạn thao tác quá nhanh, thử lại sau ít phút.'
+
+/** Why a request failed, in the terms the user can act on. */
+export type RequestProblem = 'signed-out' | 'too-many' | 'failed'
+
+export function requestProblem(e: unknown): RequestProblem {
+  const status = e instanceof ApiError ? e.status : 0
+  return status === 401 ? 'signed-out' : status === 429 ? 'too-many' : 'failed'
+}
+
+/** The message for a failed request: a 401 or 429 says so, anything else is `fallback`. */
+export function requestError(e: unknown, fallback: string): string {
+  const problem = requestProblem(e)
+  return problem === 'signed-out' ? SESSION_EXPIRED : problem === 'too-many' ? TOO_FAST : fallback
 }
 
 // --- User accounts (backend/app/accounts_api.py) ---
@@ -370,6 +419,13 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
   const res = await fetch(`/api${path}`, { ...init, headers })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
+    // Not for a reviewer token or reviewer routes (#review), the sign-in routes (a wrong password is
+    // a 401), or GET /me, which is how `useAccount` checks the session (it would ask itself forever).
+    const method = init?.method ?? 'GET'
+    const exempt = path.startsWith('/auth/') || path.startsWith('/review/') || (path === '/me' && method === 'GET')
+    if (res.status === 401 && !token && !exempt) {
+      window.dispatchEvent(new Event(SIGNED_OUT_EVENT))
+    }
     const detail = typeof body?.detail === 'string' ? body.detail : res.statusText
     throw new ApiError(res.status, detail, body)
   }

@@ -15,4 +15,4 @@ mkdir -p "$BACKUP_DIR"
 umask 077
 pg_dump --format=custom --file="$BACKUP_DIR/db-$stamp.dump" "$DB"
 tar -czf "$BACKUP_DIR/uploads-$stamp.tar.gz" -C "$UPLOAD_DIR" .
-find "$BACKUP_DIR" -type f \( -name 'db-*.dump' -o -name 'uploads-*.tar.gz' \) -mtime +"$KEEP_DAYS" -delete
+find "$BACKUP_DIR" -type f \( -name 'db-*.dump' -o -name 'uploads-*.tar.gz' \) -mtime +"$((KEEP_DAYS - 1))" -delete

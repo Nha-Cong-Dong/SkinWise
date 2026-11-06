@@ -1,18 +1,24 @@
 import { useEffect, useState } from 'react'
-import { api, type InciAnalysis, type ProductDetail } from '../api'
+import { api, requestError, SUGGESTIONS_TRUNCATED_VI, type InciAnalysis, type ProductDetail } from '../api'
 import { APPLICATION_LABELS, SESSION_LABELS, VERIFICATION_LABELS } from '../labels'
-import { maybeIncomplete, sampleRoutine, type MyProduct, type RemovedProduct, type RoutineActions } from '../routine'
+import { maybeIncomplete, sampleRoutine, type LabelGroups, type MyProduct, type RemovedProduct, type RoutineActions } from '../routine'
 import { Dialog } from './Dialog'
-import { GroupChips } from './GroupChips'
+import { GroupChips, LABEL_CHIP_NOTE, UNORDERED_NOTE } from './GroupChips'
 import { Glyph } from './Icons'
 import { IngredientList } from './IngredientList'
+import { DataNote } from './Notice'
 
-type Props = { actions: RoutineActions; onAdd: () => void }
+type Props = {
+  actions: RoutineActions
+  onAdd: () => void
+  /** Label lines behind each product's groups (product key), from the last check. */
+  found: Map<string, LabelGroups>
+}
 
 const UNDO_MS = 8000
 
 /** The user's shelf: every product they added, ready to place in a session. */
-export function MyProducts({ actions, onAdd }: Props) {
+export function MyProducts({ actions, onAdd, found }: Props) {
   const { products } = actions.routine
   const [viewing, setViewing] = useState<MyProduct | null>(null)
   // The last removal, offered for "Hoàn tác" for a few seconds (instead of asking first).
@@ -89,6 +95,7 @@ export function MyProducts({ actions, onAdd }: Props) {
             <ProductRow
               key={p.key}
               product={p}
+              found={found.get(p.key)}
               actions={actions}
               onView={() => setViewing(p)}
               onRemove={() => setRemoved(actions.removeProduct(p.key))}
@@ -105,8 +112,9 @@ export function MyProducts({ actions, onAdd }: Props) {
               {viewing.brand && <p className="text-sm text-ink-mute">{viewing.brand}</p>}
               <h2 className="text-lg leading-snug font-semibold">{viewing.name}</h2>
               <div className="mt-1.5">
-                <GroupChips codes={viewing.groups} />
+                <GroupChips codes={viewing.groups} found={found.get(viewing.key)} />
               </div>
+              <ChipNote found={found.get(viewing.key)} />
             </>
           )
         }
@@ -145,6 +153,7 @@ export function MyProducts({ actions, onAdd }: Props) {
 
 type RowProps = {
   product: MyProduct
+  found: LabelGroups | undefined
   actions: RoutineActions
   onView: () => void
   onRemove: () => void
@@ -154,7 +163,7 @@ type RowProps = {
 // starts with the visible word); at least 40 px tall on phones (WCAG 2.2 asks 24 px, fingers need more).
 const ROW_BUTTON = 'inline-flex min-h-10 items-center rounded-full md:min-h-8'
 
-function ProductRow({ product, actions, onView, onRemove }: RowProps) {
+function ProductRow({ product, found, actions, onView, onRemove }: RowProps) {
   return (
     <li className="flex w-72 shrink-0 snap-start flex-col rounded-xl bg-surface p-3 ring-1 ring-line md:w-auto">
       <p className="leading-snug text-pretty">
@@ -172,7 +181,7 @@ function ProductRow({ product, actions, onView, onRemove }: RowProps) {
         <p className="mt-1 text-xs text-caution-ink">Bảng thành phần có thể chưa đầy đủ, cảnh báo có thể bị thiếu</p>
       )}
       <div className="mt-1.5">
-        <GroupChips codes={product.groups} empty="Không có hoạt chất trong danh sách theo dõi" />
+        <GroupChips codes={product.groups} found={found} empty="Không có hoạt chất trong danh sách theo dõi" />
       </div>
       <div className="mt-auto flex flex-wrap items-center gap-1 pt-3 text-sm">
         {(['AM', 'PM'] as const).map((session) => (
@@ -206,6 +215,17 @@ function ProductRow({ product, actions, onView, onRemove }: RowProps) {
         </button>
       </div>
     </li>
+  )
+}
+
+/** Under the chips of the details dialog, once they name an ingredient (tooltips are not read on phones). */
+function ChipNote({ found }: { found: LabelGroups | undefined }) {
+  if (!found || found.ingredients.length === 0) return null
+  return (
+    <p className="mt-1.5 text-xs leading-relaxed font-normal text-ink-mute">
+      {LABEL_CHIP_NOTE}
+      {!found.ordered && ` ${UNORDERED_NOTE}`}
+    </p>
   )
 }
 
@@ -243,13 +263,22 @@ function SeededIngredients({ productId }: { productId: number }) {
 
 function PastedIngredients({ inci }: { inci: string }) {
   const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    api.analyzeInci(inci).then(setAnalysis, () => setError(true))
+    api.analyzeInci(inci).then(setAnalysis, (e) => setError(requestError(e, 'Không phân tích được bảng thành phần.')))
   }, [inci])
 
-  if (error) return <p className="text-sm text-avoid-ink">Không phân tích được bảng thành phần.</p>
+  if (error) return <p className="text-sm text-avoid-ink">{error}</p>
   if (!analysis) return <p className="text-sm text-ink-mute">Đang tải…</p>
-  return <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
+  return (
+    <>
+      {analysis.suggestions_truncated && (
+        <div className="mb-3">
+          <DataNote title="Chưa kiểm hết bảng thành phần">{SUGGESTIONS_TRUNCATED_VI}</DataNote>
+        </div>
+      )}
+      <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
+    </>
+  )
 }

@@ -41,6 +41,9 @@ class ProductSummary(FromAttributes):
     # Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only.
     application: Literal["rinse_off", "leave_on"] | None
     groups: list[str]
+    # Label names of the ingredient lines that matched a /products search query (at most 5,
+    # in label order); [] otherwise. Display only.
+    matched_ingredients: list[str] = []
 
 
 class SuggestionOut(FromAttributes):
@@ -104,6 +107,8 @@ class InciAnalysis(BaseModel):
     # Signs the text is not a full INCI list; a routine check on it may miss warnings.
     notices: list[TextNotice]
     one_percent_marker: str | None  # the capped ingredient that marks the 1% line
+    # Some unrecognised lines got no suggestion lookup because the budget ran out.
+    suggestions_truncated: bool = False
 
 
 class LabelImage(BaseModel):
@@ -140,6 +145,9 @@ class RuleOut(FromAttributes):
     explanation_vi: str
     sources: list[SourceOut]
     reviewed_at: date | None  # when a reviewer read the sources and published the rule
+    # Reviewer-approved plain-language version of explanation_vi; null when there is none.
+    # explanation_vi stays the verbatim, source-faithful text.
+    plain_vi: str | None
 
 
 class GoalItemOut(FromAttributes):
@@ -209,13 +217,27 @@ class RoutineCheckRequest(BaseModel):
         return self
 
 
+class GroupIngredient(FromAttributes):
+    group: str
+    name: str  # as written on the label
+    position: int  # 1-based order in the list as read
+
+
 class RoutineProductResult(BaseModel):
     key: str
     groups: list[str]
     # Pasted lists only: actives that unrecognised (likely misspelled) names may be. They
     # are not checked, so the routine may be missing warnings for them.
     possible_actives: list[str]
+    # Pasted lists only: some unrecognised lines were not looked up for suggestions because
+    # the request's budget ran out, so `possible_actives` may be incomplete.
+    suggestions_truncated: bool = False
     application: Literal["rinse_off", "leave_on"] | None  # seeded products only
+    # Shown only: which label entries put the product in each group, where they stand, and
+    # whether the list is in order of weight (key-ingredient lists and Drug Facts are not).
+    group_ingredients: list[GroupIngredient]
+    ingredient_count: int
+    ordered: bool
 
 
 class OccurrenceOut(FromAttributes):

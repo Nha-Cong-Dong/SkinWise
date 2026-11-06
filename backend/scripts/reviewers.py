@@ -8,6 +8,7 @@ uv run python -m scripts.reviewers list
 import getpass
 import sys
 
+from app.console import use_utf8_output
 from app.db import get_engine, init_schema
 from app.reviewers import list_reviewers, remove_reviewer, set_reviewer
 
@@ -15,7 +16,6 @@ MIN_PASSWORD_LENGTH = 12
 
 
 def main(args: list[str]) -> int:
-    sys.stdout.reconfigure(encoding="utf-8")  # Vietnamese names; Windows consoles use cp1252
     engine = get_engine()
     init_schema(engine)
     match args:
@@ -46,4 +46,5 @@ def main(args: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    use_utf8_output()
     sys.exit(main(sys.argv[1:]))

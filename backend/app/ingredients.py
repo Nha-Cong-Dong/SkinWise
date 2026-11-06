@@ -1,5 +1,7 @@
 """Resolve parsed INCI entries to canonical ingredients and functional groups."""
 
+import threading
+from collections import OrderedDict
 from dataclasses import dataclass, replace
 
 from sqlalchemy import bindparam, text
@@ -163,6 +165,24 @@ def product_groups(resolved: list[ResolvedEntry]) -> set[str]:
 
 
 @dataclass(frozen=True)
+class GroupIngredient:
+    """An entry on the label that puts the product in a group. Shown only: the engine works on
+    groups, never on which entry or where it stands."""
+
+    group: str
+    name: str  # as written on the label
+    position: int  # 1-based order on the label
+
+
+def group_ingredients(resolved: list[ResolvedEntry]) -> list[GroupIngredient]:
+    """One item per (group, entry), by position then group; its groups are product_groups()."""
+    return sorted(
+        (GroupIngredient(g, r.entry.raw, r.entry.position) for r in resolved for g in r.groups),
+        key=lambda gi: (gi.position, gi.group),
+    )
+
+
+@dataclass(frozen=True)
 class GroupRow:
     code: str
     name_vi: str
@@ -237,8 +257,37 @@ _SUGGEST = text(
 )
 
 
+# Threshold for the pg_trgm % operator, set per transaction so the trigram indexes return only
+# rows that can pass SUGGESTION_THRESHOLD (the default 0.3 made each lookup ~100 ms on random
+# names). Slightly below SUGGESTION_THRESHOLD so rounding at the boundary cannot drop a row:
+# rows are still ordered by score and filtered below, so the suggestions are unchanged.
+_TRGM_LIMIT = text("SELECT set_config('pg_trgm.similarity_threshold', '0.44', true)")
+
+# Suggestions per normalized name, kept per process. The names compared only change when the
+# seed runs (dictionary, EU lists), which calls clear_suggestion_cache(); a server started
+# before a seed in another process keeps old suggestions until it restarts, which is
+# acceptable for hints that never change a warning.
+# Sync routes run in a thread pool, so every read and write of the cache holds the lock
+# (never while querying the database).
+SUGGESTION_CACHE_SIZE = 4096
+_cache: OrderedDict[str, tuple[Suggestion, ...]] = OrderedDict()
+_cache_lock = threading.Lock()
+
+
+def clear_suggestion_cache() -> None:
+    with _cache_lock:
+        _cache.clear()
+
+
 def suggest(db: Session | Connection, name: str) -> list[Suggestion]:
     """Known names close to `name` (already normalized), actives first among equals."""
+    with _cache_lock:
+        cached = _cache.get(name)
+        if cached is not None:
+            _cache.move_to_end(name)
+    if cached is not None:
+        return list(cached)
+    db.execute(_TRGM_LIMIT)
     rows = [r for r in db.execute(_SUGGEST, {"q": name}) if r.score >= SUGGESTION_THRESHOLD]
     best: dict[str, Suggestion] = {}
     for r in sorted(rows, key=lambda r: (-r.score, not r.groups)):
@@ -247,4 +296,10 @@ def suggest(db: Session | Connection, name: str) -> list[Suggestion]:
             best[key] = Suggestion(r.name, tuple(r.groups))
         elif r.groups and not best[key].groups:
             best[key] = Suggestion(r.name, tuple(r.groups))  # prefer the dictionary entry
-    return list(best.values())[:MAX_SUGGESTIONS]
+    found = tuple(best.values())[:MAX_SUGGESTIONS]
+    with _cache_lock:
+        _cache[name] = found
+        _cache.move_to_end(name)
+        while len(_cache) > SUGGESTION_CACHE_SIZE:
+            _cache.popitem(last=False)
+    return list(found)

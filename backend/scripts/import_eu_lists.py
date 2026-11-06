@@ -18,6 +18,7 @@ import sys
 import urllib.request
 from datetime import date
 
+from app.console import use_utf8_output
 from app.eu_lists import (
     ANNEX_III_CELEX,
     GLOSSARY_CELEX,
@@ -89,6 +90,7 @@ def write_fragrance_allergens(glossary: list[str]) -> dict[str, list[str]]:
 
 
 if __name__ == "__main__":
+    use_utf8_output()
     args = sys.argv[1:]
     if args == ["allergens"]:
         # Only the allergens, against the glossary already in data/.

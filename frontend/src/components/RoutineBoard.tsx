@@ -1,7 +1,7 @@
 import type { Session, Severity } from '../api'
 import { ALL_DAYS, DAY_LABELS, DAY_NAMES, SESSION_LABELS } from '../labels'
-import { sessionEntries, type Entry, type MyProduct, type RoutineActions } from '../routine'
-import { GroupChips } from './GroupChips'
+import { sessionEntries, type Entry, type LabelGroups, type MyProduct, type RoutineActions } from '../routine'
+import { GroupChips, LABEL_CHIP_NOTE } from './GroupChips'
 import { Glyph, MoonIcon, SeverityBadge, SunIcon } from './Icons'
 
 type Props = {
@@ -10,9 +10,16 @@ type Props = {
   onShare: () => void
   /** Most severe warning each product key is part of. */
   flagged: Map<string, Severity>
+  /** Label lines behind each product's groups (product key), from the last check. */
+  found: Map<string, LabelGroups>
 }
 
-export function RoutineBoard({ actions, flagged, onShare }: Props) {
+export function RoutineBoard({ actions, flagged, found, onShare }: Props) {
+  // A step's chip names an ingredient once the check has answered for it: explain such chips once.
+  const scheduled = new Set(actions.routine.entries.map((e) => e.productKey))
+  const named = actions.routine.products.some(
+    (p) => scheduled.has(p.key) && p.groups.length > 0 && (found.get(p.key)?.ingredients.length ?? 0) > 0,
+  )
   return (
     <section aria-labelledby="schedule-title">
       <div className="flex items-center justify-between gap-3">
@@ -30,9 +37,10 @@ export function RoutineBoard({ actions, flagged, onShare }: Props) {
       <p className="mt-1 text-sm text-ink-mute">
         Thứ tự từ trên xuống là thứ tự các bước. Bấm vào thứ trong tuần để bật/tắt ngày dùng.
       </p>
+      {named && <p className="mt-1 text-xs leading-relaxed text-ink-mute">{LABEL_CHIP_NOTE}</p>}
       <div className="mt-4 space-y-4">
         {(['AM', 'PM'] as const).map((session) => (
-          <SessionPanel key={session} session={session} actions={actions} flagged={flagged} />
+          <SessionPanel key={session} session={session} actions={actions} flagged={flagged} found={found} />
         ))}
       </div>
     </section>
@@ -63,7 +71,7 @@ const TONE = {
   },
 }
 
-function SessionPanel({ session, actions, flagged }: Omit<Props, 'onShare'> & { session: Session }) {
+function SessionPanel({ session, actions, flagged, found }: Omit<Props, 'onShare'> & { session: Session }) {
   const entries = sessionEntries(actions.routine, session)
   const products = new Map(actions.routine.products.map((p) => [p.key, p]))
   const tone = TONE[session]
@@ -92,6 +100,7 @@ function SessionPanel({ session, actions, flagged }: Omit<Props, 'onShare'> & { 
                 last={i === entries.length - 1}
                 product={product}
                 severity={flagged.get(product.key)}
+                found={found.get(product.key)}
                 actions={actions}
                 tone={tone}
                 night={session === 'PM'}
@@ -110,6 +119,7 @@ type EntryProps = {
   last: boolean
   product: MyProduct
   severity: Severity | undefined
+  found: LabelGroups | undefined
   actions: RoutineActions
   tone: (typeof TONE)['AM']
   night: boolean
@@ -119,7 +129,7 @@ type EntryProps = {
  * A step: the product, then its week as the compartments of a pill box. Every row's week starts
  * at the same place, so reading one column top to bottom gives what is used that day.
  */
-function EntryRow({ entry, step, last, product, severity, actions, tone, night }: EntryProps) {
+function EntryRow({ entry, step, last, product, severity, found, actions, tone, night }: EntryProps) {
   // Larger on phones; the labels name the product, since every step has the same buttons.
   const iconButton = `rounded-full p-2 md:p-1 disabled:opacity-25 disabled:hover:bg-transparent ${tone.button}`
   const session = `buổi ${SESSION_LABELS[entry.session].toLowerCase()}`
@@ -169,7 +179,7 @@ function EntryRow({ entry, step, last, product, severity, actions, tone, night }
         {(product.groups.length > 0 || severity) && (
           <div className="mt-1.5 flex flex-wrap items-center gap-1">
             {severity && <SeverityBadge severity={severity} />}
-            <GroupChips codes={product.groups} tone={night ? 'night' : 'day'} />
+            <GroupChips codes={product.groups} tone={night ? 'night' : 'day'} found={found} />
           </div>
         )}
       </div>

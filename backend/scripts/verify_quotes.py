@@ -11,6 +11,7 @@ so it can gate a PR.
 import sys
 import urllib.error
 
+from app.console import use_utf8_output
 from app.seed import load_toml
 from app.sources import BlockedError, fetch_text, has_challenge_marker, missing_on_page
 
@@ -73,4 +74,5 @@ def main(keys: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    use_utf8_output()
     sys.exit(main(sys.argv[1:]))

@@ -66,3 +66,29 @@ def test_reset_only_touches_skinwise_test_addresses(engine: Engine) -> None:
             assert left == set(kept)
         finally:
             outer.rollback()
+
+
+def test_reset_keeps_the_demo_account_and_drops_email_links(engine: Engine) -> None:
+    from app.demo_account import DEMO_EMAIL
+    from scripts.demo_blog import remove_demo_accounts
+
+    with engine.connect() as conn:
+        outer = conn.begin()
+        try:
+            for email in [DEMO_EMAIL, "demo7@skinwise.test"]:
+                conn.execute(text("INSERT INTO users (email) VALUES (:e)"), {"e": email})
+                conn.execute(
+                    text(
+                        "INSERT INTO email_tokens (token_hash, email, purpose, expires_at) "
+                        "VALUES (:h, :e, 'verify', now() + interval '1 day')"
+                    ),
+                    {"h": f"hash-{email}", "e": email},
+                )
+            removed, _ = remove_demo_accounts(conn)
+            assert removed >= 1
+            users = set(conn.execute(text("SELECT email FROM users")).scalars())
+            assert DEMO_EMAIL in users and "demo7@skinwise.test" not in users
+            tokens = set(conn.execute(text("SELECT email FROM email_tokens")).scalars())
+            assert DEMO_EMAIL in tokens and "demo7@skinwise.test" not in tokens
+        finally:
+            outer.rollback()

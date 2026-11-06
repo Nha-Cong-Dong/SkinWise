@@ -7,12 +7,14 @@ Most unresolved names are expected: the dictionary only covers actives.
 
 from collections import Counter
 
+from app.console import use_utf8_output
 from app.db import get_engine
 from app.inci import parse_inci
 from app.ingredients import resolve
 from app.seed import load_toml
 
 if __name__ == "__main__":
+    use_utf8_output()
     products = load_toml("products.toml").get("product", [])
     counts: Counter[str] = Counter()
     with get_engine().connect() as conn:

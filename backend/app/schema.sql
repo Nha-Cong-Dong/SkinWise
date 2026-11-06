@@ -60,6 +60,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS products_slug_key ON products (slug);
 -- Shown only; no rule uses it until a source says rinse-off products change the warning.
 ALTER TABLE products ADD COLUMN IF NOT EXISTS application text
   CHECK (application IN ('rinse_off', 'leave_on'));
+-- false: the stored list is not in order of weight (a Drug Facts label joined active first).
+-- Shown only: hides positions and the one-percent line, never changes a warning.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS ingredients_ordered boolean NOT NULL DEFAULT true;
 
 CREATE INDEX IF NOT EXISTS products_search_name_trgm
   ON products USING gin (search_name gin_trgm_ops);
@@ -71,6 +74,9 @@ CREATE TABLE IF NOT EXISTS product_ingredients (
   raw_name      text NOT NULL,          -- as written on the label, kept even if unresolved
   PRIMARY KEY (product_id, position)
 );
+-- Added for ingredient search: raw_name normalized by app.inci.normalize_name (filled by
+-- the seed; init_schema backfills rows left NULL by older databases). Shown/search only.
+ALTER TABLE product_ingredients ADD COLUMN IF NOT EXISTS search_name text;
 
 -- Deterministic warning rules, written against functional groups.
 CREATE TABLE IF NOT EXISTS rules (
@@ -101,6 +107,13 @@ ALTER TABLE rules ADD CONSTRAINT rules_kind_check
 ALTER TABLE rules DROP CONSTRAINT IF EXISTS rules_scope_check;
 ALTER TABLE rules ADD CONSTRAINT rules_scope_check
   CHECK (scope IN ('same_step', 'same_session', 'same_day', 'routine'));
+
+-- Added 6/11: a plain-language version of explanation_vi, drafted by AI outside the app
+-- (scripts.plain_drafts), corrected and approved by a reviewer in rules.toml. Display only;
+-- the seed refuses a plain_vi without a reviewer or written for an older explanation_vi.
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS plain_vi text;
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS plain_reviewed_by text;
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS plain_reviewed_at timestamptz;
 
 -- One row per quote: a rule may quote several passages from the same source page.
 CREATE TABLE IF NOT EXISTS rule_sources (

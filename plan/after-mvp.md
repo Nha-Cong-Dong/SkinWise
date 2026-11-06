@@ -101,7 +101,7 @@ Bảng `products` đã có `ingredients_source = 'open_beauty_facts'` và `verif
 Đã làm ở [e-review.md](e-review.md). Phần câu hỏi người dùng (gửi, duyệt, hiện công khai) đã bỏ ngày 27/10, lý do ở [decisions.md](decisions.md).
 
 - [ ] AI soạn bản nháp thẻ myth (quyết định 22/10): nháp phải kèm nguồn và đoạn trích; server chạy kiểm tra như `verify_quotes`; nháp gắn "chưa kiểm duyệt", lưu ở trạng thái chưa bật, không bao giờ hiện cho người dùng. Người duyệt đọc nguồn và tự bật như mọi luật
-- [ ] (Tuỳ chọn) AI diễn đạt lại `explanation_vi` cho dễ hiểu hơn, luôn hiện kèm bản gốc. Không đổi mức độ, không thêm ý mới
+- [x] (Tuỳ chọn) AI diễn đạt lại `explanation_vi` cho dễ hiểu hơn, luôn hiện kèm bản gốc. Không đổi mức độ, không thêm ý mới. Xong code 6/11: `scripts.plain_drafts` soạn nháp ngoài app, người duyệt dán `plain_vi` vào `rules.toml`; thẻ hiện bản dễ hiểu + "Xem nguyên văn" (`decisions.md`, 6/11). Chưa luật nào có bản đã duyệt
 
 ## F. Hồ sơ da (luật `profile`)
 

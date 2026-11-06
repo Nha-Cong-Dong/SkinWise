@@ -2,10 +2,10 @@
 // its own sign-in. Design: plan/h-accounts.md.
 
 import { useCallback, useEffect, useState } from 'react'
-import { ApiError, api, type Me } from './api'
+import { ApiError, SIGNED_OUT_EVENT, api, type Me } from './api'
 
 /** The privacy policy shown on the form that creates an account; must match POLICY_VERSION in backend/app/accounts.py. */
-export const POLICY_VERSION = '2026-10-26-draft'
+export const POLICY_VERSION = '2026-11-05-draft'
 
 export type AccountState =
   | { kind: 'checking' }
@@ -37,7 +37,12 @@ export function useAccount() {
     void refresh()
     // A verification or reset link opened from the email signs in another tab; this one catches up on focus.
     window.addEventListener('focus', refresh)
-    return () => window.removeEventListener('focus', refresh)
+    // Any request that got a 401 (session ended elsewhere, password reset): back to the sign-in form.
+    window.addEventListener(SIGNED_OUT_EVENT, refresh)
+    return () => {
+      window.removeEventListener('focus', refresh)
+      window.removeEventListener(SIGNED_OUT_EVENT, refresh)
+    }
   }, [refresh])
 
   return { state, refresh, signedIn: (me: Me) => setState({ kind: 'signed-in', me }) }

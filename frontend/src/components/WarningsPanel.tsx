@@ -1,18 +1,36 @@
-import type { Severity, Warning } from '../api'
+import { SESSION_EXPIRED, SUGGESTIONS_TRUNCATED_VI, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
 import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
-import { currentResult, isUsageNote, maybeIncomplete, type CheckState, type MyProduct } from '../routine'
+import {
+  currentResult,
+  formatLabelLine,
+  isUsageNote,
+  maybeIncomplete,
+  type CheckState,
+  type LabelGroups,
+  type MyProduct,
+} from '../routine'
 import { SeverityBadge } from './Icons'
 import { DataNote, Notice } from './Notice'
 import { RuleCard } from './RuleCard'
 
-type Props = { state: CheckState; products: MyProduct[] }
+type Props = {
+  state: CheckState
+  products: MyProduct[]
+  /**
+   * Label lines behind each product's groups (product key), from the last check; left out where
+   * the label lines are not shown (a blog post's routine).
+   */
+  found?: Map<string, LabelGroups>
+}
 
-export function WarningsPanel({ state, products }: Props) {
+const NONE = new Map<string, LabelGroups>()
+
+export function WarningsPanel({ state, products, found = NONE }: Props) {
   const names = new Map(products.map((p) => [p.key, p.name]))
   const result = currentResult(state)
   const checked = new Set(result?.products.map((p) => p.key))
   const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
-  const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0)
+  const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0 || p.suggestions_truncated)
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
@@ -35,7 +53,7 @@ export function WarningsPanel({ state, products }: Props) {
         )}
         {state.kind === 'error' && (
           <div className="rounded-xl bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
-            <p>Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.</p>
+            <p>{checkError(state.problem)}</p>
             <button
               onClick={state.retry}
               className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
@@ -57,10 +75,20 @@ export function WarningsPanel({ state, products }: Props) {
           </DataNote>
         )}
         {misspelled.map((p) => (
-          <DataNote key={p.key} title="Có thể có hoạt chất bị gõ sai">
-            “{names.get(p.key) ?? p.key}” có thành phần không nhận ra, có thể là hoạt chất bị gõ sai:{' '}
-            <strong className="text-ink">{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất này;
-            hãy sửa bảng thành phần nếu đúng là gõ sai.
+          <DataNote
+            key={p.key}
+            title={p.possible_actives.length > 0 ? 'Có thể có hoạt chất bị gõ sai' : 'Chưa kiểm hết bảng thành phần'}
+          >
+            {p.possible_actives.length > 0 ? (
+              <>
+                “{names.get(p.key) ?? p.key}” có thành phần không nhận ra, có thể là hoạt chất bị gõ sai:{' '}
+                <strong className="text-ink">{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất
+                này; hãy sửa bảng thành phần nếu đúng là gõ sai.
+                {p.suggestions_truncated && ` ${SUGGESTIONS_TRUNCATED_VI}`}
+              </>
+            ) : (
+              `“${names.get(p.key) ?? p.key}”: ${SUGGESTIONS_TRUNCATED_VI}`
+            )}
           </DataNote>
         ))}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
@@ -82,6 +110,7 @@ export function WarningsPanel({ state, products }: Props) {
                 <dt className="text-ink-mute">Khi nào</dt>
                 <dd>{formatOccurrences(w.occurrences)}</dd>
               </dl>
+              <RuleIngredients warning={w} names={names} found={found} />
               <p className="mt-2 text-xs leading-relaxed text-ink-mute">
                 {usage
                   ? 'Lưu ý cho mọi sản phẩm có nhóm hoạt chất này trong routine.'
@@ -104,6 +133,45 @@ export function WarningsPanel({ state, products }: Props) {
 }
 
 /**
+ * For each product of a warning, the label lines in the rule's groups, with their place on the
+ * label. Display only: nothing here changes the warning. Hidden when no line matches.
+ */
+function RuleIngredients({
+  warning,
+  names,
+  found,
+}: {
+  warning: Warning
+  names: Map<string, string>
+  found: Map<string, LabelGroups>
+}) {
+  const ruleGroups = [warning.rule.group_a, warning.rule.group_b].filter((g): g is string => g !== null)
+  const rows = warning.product_keys.flatMap((key) => {
+    const product = found.get(key)
+    if (!product) return []
+    // One line can be in both groups of the rule (or the same group twice): list it once.
+    const seen = new Set<number>()
+    const lines = product.ingredients.filter(
+      (i) => ruleGroups.includes(i.group) && !seen.has(i.position) && seen.add(i.position),
+    )
+    return lines.length > 0 ? [{ key, text: lines.map((l) => formatLabelLine(l, product)).join(', ') }] : []
+  })
+  if (rows.length === 0) return null
+  return (
+    <div className="mt-2 text-sm">
+      <p className="text-ink-mute">Chất liên quan trên nhãn:</p>
+      <ul className="mt-0.5 space-y-0.5">
+        {rows.map((r) => (
+          <li key={r.key} className="break-words">
+            <span className="font-medium">{names.get(r.key) ?? r.key}:</span> {r.text}
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
+/**
  * How many combination warnings at each severity, most severe first; "Lưu ý khi dùng" notes are
  * counted on their own, not as warnings.
  */
@@ -117,7 +185,7 @@ function tally(warnings: Warning[]) {
 
 /** The status line a screen reader announces once a check finishes. */
 function announcement(state: CheckState): string {
-  if (state.kind === 'error') return 'Không kiểm tra được routine.'
+  if (state.kind === 'error') return checkError(state.problem)
   if (state.kind !== 'done') return ''
   const { counts, notes } = tally(state.result.warnings)
   const parts = counts.map(([severity, n]) => `${n} ${SEVERITY[severity].label.toLowerCase()}`)
@@ -139,4 +207,10 @@ export function SeverityCounts({ warnings, className }: { warnings: Warning[]; c
       {notes > 0 && <span className="text-xs opacity-80">{notes} lưu ý khi dùng</span>}
     </p>
   )
+}
+
+function checkError(problem: RequestProblem): string {
+  if (problem === 'signed-out') return `Không kiểm tra được routine. ${SESSION_EXPIRED}`
+  if (problem === 'too-many') return `Không kiểm tra được routine. ${TOO_FAST}`
+  return 'Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.'
 }

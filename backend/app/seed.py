@@ -10,7 +10,7 @@ from sqlalchemy.engine import Connection
 
 from app.goals import SHARED_GOAL, goal_problems
 from app.inci import normalize_name, parse_inci
-from app.ingredients import resolve
+from app.ingredients import clear_suggestion_cache, resolve
 from app.rules import rule_problems
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -95,6 +95,7 @@ def seed(engine: Engine) -> dict[str, int]:
         for rule in rules:
             _seed_rule(conn, rule, source_ids)
         seed_goals(conn, goals_data, source_ids)
+    clear_suggestion_cache()
     items = goals_data.get("item", [])
     return {
         "groups": len(groups),
@@ -245,12 +246,14 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
             """
             INSERT INTO products (slug, brand, name, market, application, search_name,
                                   ingredients_source, source_url, source_retrieved_at,
-                                  verification_status, ingredients_raw)
+                                  verification_status, ingredients_raw, ingredients_ordered)
             VALUES (:slug, :brand, :name, :market, :application, :search_name, 'seed',
-                    :source_url, :retrieved_at, :verification_status, :ingredients_raw)
+                    :source_url, :retrieved_at, :verification_status, :ingredients_raw,
+                    :ingredients_ordered)
             ON CONFLICT (slug) DO UPDATE SET
               brand = excluded.brand, name = excluded.name, market = excluded.market,
               application = excluded.application,
+              ingredients_ordered = excluded.ingredients_ordered,
               search_name = excluded.search_name, source_url = excluded.source_url,
               source_retrieved_at = excluded.source_retrieved_at,
               verification_status = excluded.verification_status,
@@ -269,6 +272,7 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
             "retrieved_at": p["retrieved_at"],
             "verification_status": p.get("verification_status", "unverified"),
             "ingredients_raw": p["ingredients"],
+            "ingredients_ordered": p.get("ingredients_ordered", True),
         },
     ).scalar_one()
 
@@ -277,8 +281,9 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
         conn.execute(
             text(
                 """
-                INSERT INTO product_ingredients (product_id, position, ingredient_id, raw_name)
-                VALUES (:product_id, :position, :ingredient_id, :raw_name)
+                INSERT INTO product_ingredients
+                  (product_id, position, ingredient_id, raw_name, search_name)
+                VALUES (:product_id, :position, :ingredient_id, :raw_name, :search_name)
                 """
             ),
             {
@@ -286,6 +291,7 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
                 "position": r.entry.position,
                 "ingredient_id": r.ingredient_id,
                 "raw_name": r.entry.raw,
+                "search_name": normalize_name(r.entry.raw),
             },
         )
 
@@ -310,15 +316,19 @@ def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) 
         text(
             """
             INSERT INTO rules (key, kind, severity, scope, evidence_level, group_a, group_b,
-                               title_vi, explanation_vi, published, reviewed_by, reviewed_at)
+                               title_vi, explanation_vi, published, reviewed_by, reviewed_at,
+                               plain_vi, plain_reviewed_by, plain_reviewed_at)
             VALUES (:key, :kind, :severity, :scope, :evidence_level, :group_a, :group_b,
-                    :title_vi, :explanation_vi, :published, :reviewed_by, :reviewed_at)
+                    :title_vi, :explanation_vi, :published, :reviewed_by, :reviewed_at,
+                    :plain_vi, :plain_reviewed_by, :plain_reviewed_at)
             ON CONFLICT (key) DO UPDATE SET
               kind = excluded.kind, severity = excluded.severity, scope = excluded.scope,
               evidence_level = excluded.evidence_level, group_a = excluded.group_a,
               group_b = excluded.group_b, title_vi = excluded.title_vi,
               explanation_vi = excluded.explanation_vi, published = excluded.published,
-              reviewed_by = excluded.reviewed_by, reviewed_at = excluded.reviewed_at
+              reviewed_by = excluded.reviewed_by, reviewed_at = excluded.reviewed_at,
+              plain_vi = excluded.plain_vi, plain_reviewed_by = excluded.plain_reviewed_by,
+              plain_reviewed_at = excluded.plain_reviewed_at
             RETURNING id
             """
         ),
@@ -329,6 +339,10 @@ def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) 
             "published": bool(r.get("published")),
             "reviewed_by": r.get("reviewed_by"),
             "reviewed_at": r.get("reviewed_at"),
+            # Absent from rules.toml means NULL: removing plain_vi there removes it here.
+            "plain_vi": r.get("plain_vi"),
+            "plain_reviewed_by": r.get("plain_reviewed_by"),
+            "plain_reviewed_at": r.get("plain_reviewed_at"),
         },
     ).scalar_one()
 

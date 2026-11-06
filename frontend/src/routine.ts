@@ -4,7 +4,10 @@
 import { useEffect, useState } from 'react'
 import {
   api,
+  requestProblem,
+  type GroupIngredient,
   type InciAnalysis,
+  type RequestProblem,
   type ProductSummary,
   type RoutineCheckRequest,
   type RoutineCheckResponse,
@@ -238,11 +241,34 @@ export type CheckState =
   | { kind: 'empty' } // nothing scheduled yet
   | { kind: 'loading'; previous: RoutineCheckResponse | null }
   | { kind: 'done'; result: RoutineCheckResponse }
-  | { kind: 'error'; message: string; retry: () => void }
+  // message: technical detail; problem: what the user is told (signed out, too many requests, other)
+  | { kind: 'error'; message: string; problem: RequestProblem; retry: () => void }
 
 /** The result to show: the last finished check, kept while a newer one runs. */
 export function currentResult(state: CheckState): RoutineCheckResponse | null {
   return state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
+}
+
+/** The label lines behind a product's groups, from the last check. Display only. */
+export type LabelGroups = {
+  ingredients: GroupIngredient[] // sorted by position, then group
+  count: number // lines on the label as read
+  ordered: boolean // false: positions say nothing about amounts
+}
+
+/** Product key -> label lines behind its groups; the previous answer is kept while a new check runs. */
+export function labelGroups(state: CheckState): Map<string, LabelGroups> {
+  return new Map(
+    (currentResult(state)?.products ?? []).map((p) => [
+      p.key,
+      { ingredients: p.group_ingredients ?? [], count: p.ingredient_count, ordered: p.ordered },
+    ]),
+  )
+}
+
+/** "Lactobionic Acid (dòng 29/41)", or just the name when the list is not in order of weight. */
+export function formatLabelLine(line: GroupIngredient, found: LabelGroups): string {
+  return found.ordered ? `${line.name} (dòng ${line.position}/${found.count})` : line.name
 }
 
 /**
@@ -253,38 +279,54 @@ export function isUsageNote(w: Warning): boolean {
   return w.rule.kind === 'usage'
 }
 
-/** Re-check the routine whenever it changes (debounced; a newer check cancels an older one). */
-export function useRoutineCheck(routine: Routine): CheckState {
+/**
+ * Re-check the routine whenever it changes (debounced; a newer check cancels an older one).
+ * /routine/check needs a session: nothing is sent while `user` is null (signing in, #review), and
+ * a new sign-in checks again. A 401 takes the user to the sign-in form (SIGNED_OUT_EVENT in api.ts).
+ */
+export function useRoutineCheck(routine: Routine, user: string | null): CheckState {
   const request = toCheckRequest(routine)
   const body = JSON.stringify(request)
   const empty = request.items.length === 0
   // The last finished check and the request it answered; loading = it answered an older request.
-  const [last, setLast] = useState<{ body: string; result?: RoutineCheckResponse; error?: string } | null>(null)
+  const [last, setLast] = useState<{
+    body: string
+    result?: RoutineCheckResponse
+    error?: string
+    problem?: RequestProblem
+  } | null>(null)
   const [attempt, setAttempt] = useState(0) // bumped by "Thử lại" to send the same request again
+  // Another user (or signed out and in again): an answer given before must not stay on screen.
+  const [checkedFor, setCheckedFor] = useState(user)
+  if (checkedFor !== user) {
+    setCheckedFor(user)
+    setLast(null)
+  }
 
   useEffect(() => {
-    if (empty) return
+    if (empty || user === null) return
     const controller = new AbortController()
     const timer = setTimeout(() => {
       api
         .checkRoutine(JSON.parse(body), controller.signal)
         .then((result) => setLast({ body, result }))
         .catch((e) => {
-          if (e.name !== 'AbortError') setLast({ body, error: e.message })
+          if (e.name === 'AbortError') return
+          setLast({ body, error: e.message, problem: requestProblem(e) })
         })
     }, 300)
     return () => {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [body, empty, attempt])
+  }, [body, empty, attempt, user])
 
   if (empty) return { kind: 'empty' }
-  if (last?.body !== body) return { kind: 'loading', previous: last?.result ?? null }
+  if (user === null || last?.body !== body) return { kind: 'loading', previous: last?.result ?? null }
   if (last.result) return { kind: 'done', result: last.result }
   const retry = () => {
     setLast(null) // shows "loading" until the new answer
     setAttempt((n) => n + 1)
   }
-  return { kind: 'error', message: last.error ?? '', retry }
+  return { kind: 'error', message: last.error ?? '', problem: last.problem ?? 'failed', retry }
 }

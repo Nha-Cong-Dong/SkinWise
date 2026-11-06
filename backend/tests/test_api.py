@@ -1,13 +1,41 @@
+from collections.abc import Iterator
+
 import pytest
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
+from sqlalchemy.orm import Session, sessionmaker
 
-from app.api import NO_COMBINATION_WARNING_VI, NO_ROUTINE_WARNING_VI, NO_VERIFIED_INFO_VI
+from app.api import (
+    MAX_SUGGESTED_LINES,
+    NO_COMBINATION_WARNING_VI,
+    NO_ROUTINE_WARNING_VI,
+    NO_VERIFIED_INFO_VI,
+)
+from app.db import get_session
+from app.main import create_app
 
 RETINOL = "the-ordinary-retinol-05-in-squalane"
 BHA = "paulas-choice-skin-perfecting-2-bha-liquid-exfoliant"
 LOTION = "cerave-daily-moisturizing-lotion"
 EVERY_DAY = list(range(7))
+
+
+@pytest.fixture
+def anonymous(engine: Engine) -> Iterator[TestClient]:
+    def session_override() -> Iterator[Session]:
+        with sessionmaker(bind=engine)() as session:
+            yield session
+
+    app = create_app()
+    app.dependency_overrides[get_session] = session_override
+    with TestClient(app) as client:
+        yield client
+
+
+@pytest.fixture
+def client(make_user) -> TestClient:
+    """Signed in: /inci/analyze and /routine/check need an account; the rest are public."""
+    return make_user()
 
 
 @pytest.fixture(scope="module")
@@ -398,3 +426,66 @@ def test_routine_check_flags_possible_misspelled_actives(
     assert products["retinol"]["possible_actives"] == []
     # Suggestions never create warnings: nothing mentions the misspelled product.
     assert all("mine" not in w["product_keys"] for w in result["warnings"])
+
+
+def test_analysis_and_routine_check_need_an_account(anonymous: TestClient) -> None:
+    analyze = anonymous.post("/inci/analyze", json={"text": "Aqua, Retinol"})
+    assert analyze.status_code == 401
+    routine = {"products": [{"key": "a", "inci": "Aqua, Retinol"}], "items": []}
+    assert anonymous.post("/routine/check", json=routine).status_code == 401
+
+
+def test_public_routes_stay_open(anonymous: TestClient) -> None:
+    assert anonymous.get("/products", params={"q": "retinol"}).status_code == 200
+    assert anonymous.get("/groups").status_code == 200
+
+
+def test_suggestions_are_capped_per_request(client: TestClient) -> None:
+    unknown = [f"Qqzv Unknownium {n}" for n in range(MAX_SUGGESTED_LINES)]
+    text_ = ", ".join([*unknown, "Salicilic Acid"])
+    body = client.post("/inci/analyze", json={"text": text_}).json()
+    ingredients = body["ingredients"]
+    # Lines past the budget are still listed, just without suggestions, and the client is told.
+    assert len(ingredients) == MAX_SUGGESTED_LINES + 1
+    assert ingredients[-1]["raw_name"] == "Salicilic Acid"
+    assert ingredients[-1]["suggestions"] == []
+    assert body["suggestions_truncated"] is True
+    # With budget left, the same name does get a suggestion.
+    alone = client.post("/inci/analyze", json={"text": "Salicilic Acid"}).json()
+    assert alone["ingredients"][0]["suggestions"][0]["name"] == "Salicylic Acid"
+    assert alone["suggestions_truncated"] is False
+
+
+def test_suggestions_not_truncated_within_budget(client: TestClient) -> None:
+    text_ = ", ".join(f"Qqzv Unknownium {n}" for n in range(MAX_SUGGESTED_LINES))
+    assert (
+        client.post("/inci/analyze", json={"text": text_}).json()["suggestions_truncated"] is False
+    )
+
+
+def test_suggestion_budget_is_shared_across_pasted_products(client: TestClient) -> None:
+    filler = ", ".join(f"Qqzv Unknownium {n}" for n in range(MAX_SUGGESTED_LINES))
+    routine = {
+        "products": [
+            {"key": "a", "inci": filler},
+            {"key": "b", "inci": "Aqua, Salicilic Acid"},
+        ],
+        "items": [],
+    }
+    products = client.post("/routine/check", json=routine).json()["products"]
+    by_key = {p["key"]: p for p in products}
+    assert by_key["b"]["possible_actives"] == []
+    # b still has an unrecognised line nobody looked up; a used exactly the whole budget.
+    assert by_key["b"]["suggestions_truncated"] is True
+    assert by_key["a"]["suggestions_truncated"] is False
+    routine["products"] = routine["products"][1:]
+    products = client.post("/routine/check", json=routine).json()["products"]
+    assert "Salicylic Acid" in products[0]["possible_actives"]
+    assert products[0]["suggestions_truncated"] is False
+
+
+def test_seeded_products_are_never_suggestions_truncated(client: TestClient) -> None:
+    product_id = client.get("/products").json()[0]["id"]
+    routine = {"products": [{"key": "s", "product_id": product_id}], "items": []}
+    products = client.post("/routine/check", json=routine).json()["products"]
+    assert products[0]["suggestions_truncated"] is False

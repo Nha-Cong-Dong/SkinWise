@@ -1,0 +1,12 @@
+# Runs skinwise-purge.service once a day (and at boot if a run was missed).
+
+[Unit]
+Description=Daily removal of unverified SkinWise accounts
+
+[Timer]
+OnCalendar=daily
+Persistent=true
+RandomizedDelaySec=15min
+
+[Install]
+WantedBy=timers.target

@@ -2,7 +2,7 @@
 // reaches the rules or the check engine: the sourced part of a post page only calls the
 // existing product, ingredient and routine-check routes.
 
-import type { RoutineCheckRequest } from './api'
+import { SESSION_EXPIRED, type RoutineCheckRequest } from './api'
 import type { MyProduct } from './routine'
 import type { PortableRoutine } from './share'
 
@@ -83,7 +83,7 @@ export function portableProducts(
 export const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' })
 
-export const SESSION_EXPIRED = 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
+export { SESSION_EXPIRED }
 // 429 from the per-user hourly limits of backend/app/blog.py (LIMITS).
 export const TOO_MANY = 'Bạn đã gửi khá nhiều trong một giờ qua. Hãy thử lại sau ít phút.'
 export const isTooMany = (e: unknown) => (e as { status?: number } | null)?.status === 429

@@ -723,3 +723,45 @@ def test_tests_never_send_email() -> None:
     assert settings.login_email_mode == "dev" and mailer.dev_mode()
     assert settings.smtp_host is None and settings.smtp_from is None
     assert settings.app_url == "http://localhost:5173"
+
+
+def test_purge_removes_old_unverified_accounts_without_a_registration(engine) -> None:
+    from app.accounts import purge_unverified
+
+    with engine.connect() as conn:
+        outer = conn.begin()
+        try:
+            rows = [
+                ("old-unverified@example.com", "now() - interval '8 days'", None),
+                ("new-unverified@example.com", "now() - interval '1 day'", None),
+                ("old-verified@example.com", "now() - interval '30 days'", "now()"),
+            ]
+            for email, created, verified in rows:
+                conn.execute(
+                    text(
+                        f"INSERT INTO users (email, created_at, email_verified_at) "
+                        f"VALUES (:e, {created}, {verified or 'NULL'})"
+                    ),
+                    {"e": email},
+                )
+            conn.execute(
+                text(
+                    "INSERT INTO email_tokens (token_hash, email, purpose, expires_at) "
+                    "VALUES ('purge-test', 'old-unverified@example.com', 'verify', "
+                    "now() - interval '7 days')"
+                )
+            )
+            assert purge_unverified(conn) >= 1
+            left = set(
+                conn.execute(
+                    text("SELECT email FROM users WHERE email = ANY(:e)"),
+                    {"e": [r[0] for r in rows]},
+                ).scalars()
+            )
+            assert left == {"new-unverified@example.com", "old-verified@example.com"}
+            token = conn.execute(
+                text("SELECT 1 FROM email_tokens WHERE token_hash = 'purge-test'")
+            ).first()
+            assert token is None
+        finally:
+            outer.rollback()
