@@ -12,7 +12,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/360/600/051/2238
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "8e99cc9e9d53fcd881a95d6ff77ad7a2c722882d9823d42e1d8f74d676142988"
-checked = false
+checked = true
 
 [[image]]
 slug = "cerave-daily-moisturizing-lotion"
@@ -22,7 +22,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7743
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "25a84e8a1553eb3430642906a2fddb9398eeb68aaa74b8f362fe71463a85862f"
-checked = false
+checked = true
 
 [[image]]
 slug = "cerave-renewing-sa-cleanser"
@@ -32,7 +32,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7552
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "1fbce7c5da2573b777f6365c3887877c49c2e36a69fb906968d646dbcfa80beb"
-checked = false
+checked = true
 
 [[image]]
 slug = "cerave-sua-duong-am-ban-dem"
@@ -42,7 +42,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7453
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "c75049be7d0b37c18f79408776fa71acf7a3b8830b8ad4200535944b78359419"
-checked = false
+checked = true
 
 [[image]]
 slug = "cerave-sua-rua-mat-danh-cho-da-kho"
@@ -62,7 +62,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/333/787/591/7407
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "bd1cdaafa6a7e1ee43a1644ef4a6b0e7aaeab2aea0d815d50ab59be68b23a85f"
-checked = false
+checked = true
 
 [[image]]
 slug = "la-roche-posay-anthelios-uvmune-400-invisible-fluid-spf50"
@@ -72,7 +72,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/333/787/579/7597
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "e1140e9df820263e3eced85399cda6edcf2433734e2206ceff154889299298f3"
-checked = false
+checked = true
 
 [[image]]
 slug = "la-roche-posay-cicaplast-baume-b5-plus"
@@ -102,7 +102,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/333/787/572/2827
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "ce2f6c2df2ca37618562d9955d1084adcc7ccce1194d138db5d96721a5187ca0"
-checked = false
+checked = true
 
 [[image]]
 slug = "la-roche-posay-mela-b3-serum"
@@ -112,7 +112,7 @@ image_url = "https://images.openbeautyfacts.org/images/products/333/787/589/0021
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "e0fc2890fc08ab5f8378f353e50b26b5ed67430fac5c07adeb73a9310aa97c9e"
-checked = false
+checked = true
 
 [[image]]
 slug = "vichy-normaderm-probio-bha-serum"
@@ -122,4 +122,4 @@ image_url = "https://images.openbeautyfacts.org/images/products/333/787/579/1984
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "dfdfc2e9735426296eda7211e18b7caad318adfafda9190cf8c87ef85071c475"
-checked = false
+checked = true
