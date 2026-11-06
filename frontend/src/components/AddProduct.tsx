@@ -39,7 +39,7 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
         ))}
       </div>
       {tab === 'search' ? (
-        <SearchProducts actions={actions} />
+        <SearchProducts actions={actions} onPaste={() => setDraft((d) => ({ ...d, tab: 'paste' }))} />
       ) : (
         <PasteInci actions={actions} draft={draft} setDraft={setDraft} />
       )}
@@ -47,7 +47,7 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
   )
 }
 
-function SearchProducts({ actions }: Props) {
+function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ProductSummary[] | null>(null)
   const [error, setError] = useState(false)
@@ -78,15 +78,23 @@ function SearchProducts({ actions }: Props) {
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Tên hãng hoặc sản phẩm, gõ không dấu cũng được"
+        placeholder="Tên hãng hoặc sản phẩm"
         aria-label="Tìm sản phẩm"
+        aria-describedby="search-hint"
         data-autofocus
         className={field}
       />
+      <p id="search-hint" className="mt-1.5 text-xs text-ink-mute">
+        Gõ không dấu hay gõ sai một chút cũng được. Chỉ tìm theo tên hãng và tên sản phẩm, chưa tìm theo hoạt chất.
+      </p>
       {error && <p className="mt-3 text-sm text-avoid-ink">Không tải được danh sách sản phẩm.</p>}
       {results?.length === 0 && (
         <p className="mt-3 text-sm text-ink-mute">
-          Không tìm thấy. Bạn có thể dán bảng thành phần in trên bao bì ở thẻ bên cạnh.
+          Không tìm thấy sản phẩm nào có tên này. SkinWise mới có khoảng 30 sản phẩm mẫu và chưa tìm theo hoạt chất.{' '}
+          <button type="button" onClick={onPaste} className="font-medium text-link underline underline-offset-2">
+            Dán bảng thành phần in trên bao bì
+          </button>{' '}
+          để kiểm tra sản phẩm bất kỳ.
         </p>
       )}
       <ul className="mt-2 divide-y divide-line">
@@ -109,6 +117,7 @@ function SearchProducts({ actions }: Props) {
                 onClick={() =>
                   actions.addProduct({ name: p.name, brand: p.brand, productId: p.id, inci: null, groups: p.groups })
                 }
+                aria-label={`${isAdded ? 'Đã thêm' : 'Thêm'} ${p.brand ? `${p.brand} ` : ''}${p.name}`}
                 className="shrink-0 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-white hover:bg-link disabled:bg-paper disabled:text-ink-mute"
               >
                 {isAdded ? 'Đã thêm' : 'Thêm'}

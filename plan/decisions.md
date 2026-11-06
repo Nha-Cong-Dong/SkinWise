@@ -119,5 +119,15 @@ Người dùng chọn một hoặc vài mục tiêu cố định: da dễ nổi 
 - Nguồn: AAD, DermNet, Mayo Clinic, StatPearls, bài tổng quan PMC. Không dùng nguồn tiếng Việt, vì lần tìm 28/10 chỉ ra trang tổng hợp và quảng cáo.
 - Nhãn routine chỉ tính sản phẩm đã xếp lịch và nói rõ là khớp theo nhóm ("Routine có sản phẩm thuộc nhóm …"), vì nguồn có thể chỉ nói về một chất trong nhóm. Nhóm cha khớp sản phẩm thuộc nhóm con, giống `/rules`.
 
+## Review cộng đồng: bản demo dữ liệu mẫu, không mở công khai (28–29/10)
+Người dùng chọn làm blog review sau khi đã cân nhắc rủi ro (nội dung chưa kiểm chứng đứng cạnh cảnh báo có nguồn; cùng loại rủi ro khiến tính năng câu hỏi bị bỏ 27/10). Chi tiết: `_workspace/feature-blog/01_spec.md` (không commit).
+- **Chỉ là bản demo:** tài khoản `@skinwise.test`, bài mẫu tự viết (`data/demo_blog.toml`, `scripts.demo_blog`), không mở cho người dùng thật. Pháp lý xử lý khi mở thật: Nghị định 147/2024 (trang cho người dùng đăng nội dung công khai), quy định quảng cáo mỹ phẩm (review có tài trợ, không nói "chữa bệnh"), Luật 91/2025 (loại da "nhạy cảm" và ảnh da / khuôn mặt có thể là dữ liệu sức khoẻ; khác với mục tiêu da, loại da trong hồ sơ được lưu trên máy chủ).
+- **Tách nội dung người viết khỏi SkinWise:** trang bài có khối "Trải nghiệm cá nhân" và khối "Thông tin có nguồn (SkinWise)". Khối sau chỉ dùng `/products/{id}`, `/inci/analyze`, `/routine/check`; tên sản phẩm có trong danh mục luôn lấy từ danh mục, không dùng tên người viết đặt. Không kiểm tra kết hợp khi bài không kèm routine (không có lịch thì không biết các sản phẩm có dùng chung không). Nội dung bài, điểm, báo cáo không bao giờ vào engine hay luật.
+- **Kiểm duyệt:** bài sạch hiện ngay; bài / bình luận / chú thích ảnh / tên sản phẩm tự dán có chữ kiểu "trị/chữa" (cả không dấu), số điện thoại, email, link → chờ duyệt. 3 người khác nhau báo cáo → tạm ẩn. Sau khi người duyệt quyết định, chỉ báo cáo mới được tính (`reviewed_at`), nên người đã báo trước đó không được đếm lại. Ảnh hiện ngay, chỉ kiểm qua báo cáo (cách B); người duyệt xem được ảnh và ghi chú báo cáo. Không dùng AI xem ảnh. Khi mở thật: bài có ảnh luôn chờ duyệt.
+- **Biệt danh bắt buộc**, email không bao giờ hiện ra. Mọi route `/blog/*` cần đăng nhập.
+- **Ảnh:** tối đa 4 ảnh / bài, 5 MB, ≤ 100 MP; máy chủ mở lại bằng Pillow, lưu WebP ≤ 1600 px, không EXIF / GPS. Xoá bài, bỏ ảnh, xoá tài khoản thì xoá cả file. Không thêm `python-multipart`: đọc multipart bằng thư viện chuẩn.
+- **Quyền xoá:** tác giả xoá được bài / bình luận của mình kể cả khi người duyệt đã gỡ. `/me/export` có hồ sơ, bài, bình luận, ảnh, thích, lưu, báo cáo.
+- Nháp bài viết giữ trong `sessionStorage` theo tài khoản, xoá khi đăng xong / đăng xuất / xoá tài khoản; ảnh không được giữ.
+
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

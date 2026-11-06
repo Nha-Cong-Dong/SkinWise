@@ -14,6 +14,10 @@ router = APIRouter()
 
 # Photos per account and per IP in 10 minutes (in memory, per process, like the sign-in limits).
 _photos = RateLimit({"email": (10, 600.0), "ip": (30, 600.0)})
+# Photos per day for the whole server: in dev mode anyone can make accounts without a real
+# email, so per-account limits alone do not cap the bill.
+SERVER_DAY_LIMIT = (100, 86400.0)
+_server_day = RateLimit({"email": SERVER_DAY_LIMIT})
 # AI calls running at once in this process; one more is refused rather than queued.
 MAX_CONCURRENT_READS = 4
 _reading = threading.BoundedSemaphore(MAX_CONCURRENT_READS)
@@ -24,21 +28,24 @@ _admitting = threading.Lock()
 
 def reset_photo_limits() -> None:
     _photos.clear()
+    _server_day.clear()
 
 
 @router.post("/label/read")
 def read_label(user: CurrentUser, body: LabelImage, request: Request) -> LabelReadingOut:
     """Copy the ingredient list off a label photo with an AI model. The text is for the user
-    to check and correct; nothing is analysed here and the photo is not kept."""
+    to check and correct; nothing is analysed here and the photo is not kept. Limits: 10 photos
+    per account and 30 per IP in 10 minutes, 4 reads at once, 100 photos a day for the server."""
     ip = request.client.host if request.client else None
     # Sync routes run in a thread pool: checking the limit and counting the photo must be one
     # step, or photos sent at the same time all pass the check before any is counted.
     with _admitting:
-        if _photos.blocked(user.email, ip):
+        if _photos.blocked(user.email, ip) or _server_day.blocked("all", None):
             raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, TOO_MANY_PHOTOS)
         if not _reading.acquire(blocking=False):
             raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, label_reader.AI_BUSY)
         _photos.record(user.email, ip)
+        _server_day.record("all", None)
     try:
         reading = label_reader.read_label(body.media_type, body.data)
     except label_reader.LabelReadingError as e:

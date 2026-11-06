@@ -32,6 +32,8 @@ class Settings(BaseSettings):
     smtp_password: str | None = None
     smtp_from: str | None = None  # e.g. "SkinWise <noreply@example.com>"
     smtp_security: Literal["starttls", "ssl", "none"] = "starttls"
+    # Photos of community posts (app/images.py). None: backend/uploads/.
+    upload_dir: str | None = None
 
 
 @lru_cache

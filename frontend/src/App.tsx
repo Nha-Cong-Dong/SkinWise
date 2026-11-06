@@ -3,6 +3,8 @@ import { ApiError, api, type CosmeticFunction, type Group, type Severity } from 
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
+import { clearAllDrafts } from './components/blog/draft'
+import { ProfileDialog } from './components/blog/ProfileDialog'
 import { Dialog } from './components/Dialog'
 import { GoalsPage } from './components/GoalsPage'
 import { Mark } from './components/Icons'
@@ -15,6 +17,8 @@ import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
+import { ProfileContext, useProfileOwner } from './profile'
+import { ALL_POSTS, href, isBlogPage, useRoute, type Route } from './router'
 import { useIncomingRoutine } from './share'
 import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
 import {
@@ -26,18 +30,47 @@ import {
   type CheckState,
 } from './routine'
 
-type Page = 'routine' | 'goals' | 'myths' | 'review'
-
-// Only reviewers open the review page, so its code is loaded when it is first shown.
+// Pages most visits never open load on demand, so the routine page downloads less.
 const ReviewPage = lazy(() => import('./components/ReviewPage').then((m) => ({ default: m.ReviewPage })))
+const BlogListPage = lazy(() => import('./components/blog/BlogList').then((m) => ({ default: m.BlogListPage })))
+const SavedPage = lazy(() => import('./components/blog/BlogList').then((m) => ({ default: m.SavedPage })))
+const WritePage = lazy(() => import('./components/blog/PostForm').then((m) => ({ default: m.WritePage })))
+const EditPage = lazy(() => import('./components/blog/PostForm').then((m) => ({ default: m.EditPage })))
+const PostPage = lazy(() => import('./components/blog/PostPage').then((m) => ({ default: m.PostPage })))
+const ProductPage = lazy(() => import('./components/blog/ProductPage').then((m) => ({ default: m.ProductPage })))
+const AuthorPage = lazy(() => import('./components/blog/AuthorPage').then((m) => ({ default: m.AuthorPage })))
+
+// Feedback goes to GitHub, not a form on SkinWise: nothing to store or moderate here
+// (the in-app question form was dropped on 27/10, plan/decisions.md).
+const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
 
 // The review page has no nav entry for users; reviewers open #review.
-const pageFromHash = (): Page => (window.location.hash === '#review' ? 'review' : 'routine')
+const MENU: [Route, string, (route: Route) => boolean][] = [
+  [{ page: 'routine' }, 'Routine của tôi', (r) => r.page === 'routine'],
+  [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals'],
+  [{ page: 'myths' }, 'Sự thật hay myth', (r) => r.page === 'myths'],
+  [ALL_POSTS, 'Review cộng đồng', isBlogPage],
+]
+
+/** A key per page, to scroll to the top when the page changes (not on a filter change). */
+function pageKey(route: Route): string {
+  switch (route.page) {
+    case 'post':
+    case 'edit':
+    case 'product':
+      return `${route.page}:${route.id}`
+    case 'author':
+      return `author:${route.handle}`
+    default:
+      return route.page
+  }
+}
 
 const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
-  const [page, setPage] = useState<Page>(pageFromHash)
+  const route = useRoute()
+  const page = route.page
   const [adding, setAdding] = useState(false)
   const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
   const [sharing, setSharing] = useState(false)
@@ -51,6 +84,7 @@ function App() {
   const me = account.state.kind === 'signed-in' ? account.state.me : null
   const accountOffline = account.state.kind === 'signed-in' && account.state.offline === true
   const sync = useRoutineSync(actions, me?.email ?? null)
+  const profile = useProfileOwner(me?.email ?? null)
   const [accountOpen, setAccountOpen] = useState(false)
   const conflict = sync.state.kind === 'conflict' ? sync.state.server : null
   // The conflict the user closed without choosing; a new conflict opens the dialog again.
@@ -99,16 +133,23 @@ function App() {
     clearSelectedGoals() // the next person on this device must not get these goals
     setAddDraft(EMPTY_ADD_DRAFT) // the label photo and the list being typed
     setAdding(false)
+    clearAllDrafts() // nor unsent posts
   }
 
   useEffect(() => {
-    const onHash = () => {
-      setPage(pageFromHash())
-      setLink(emailLink(window.location.hash))
-    }
+    const onHash = () => setLink(emailLink(window.location.hash))
     window.addEventListener('hashchange', onHash)
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
+
+  // A new page starts at the top; "#results" (an anchor on the routine page) scrolls by itself.
+  const currentPage = pageKey(route)
+  const shownPage = useRef(currentPage)
+  useEffect(() => {
+    if (shownPage.current === currentPage) return
+    shownPage.current = currentPage
+    if (window.location.hash !== '#results') window.scrollTo(0, 0)
+  }, [currentPage])
 
   useEffect(() => {
     api.groups().then(
@@ -170,47 +211,37 @@ function App() {
   return (
     <GroupsContext value={groups}>
       <FunctionsContext value={functions}>
+      <ProfileContext value={profile.value}>
         <div className="min-h-screen">
           <header className="bg-surface ring-1 ring-line">
-            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-8 gap-y-3 px-4 py-3 sm:px-6">
-              <div className="flex items-center gap-2.5">
+            {/* Small screens: logo and account on one row, the menu below. Wide screens: one row. */}
+            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6 lg:flex-nowrap">
+              <div className="flex shrink-0 items-center gap-2.5">
                 <Mark className="size-8" />
-                <span className="text-xl leading-none font-bold tracking-tight">
-                  SkinWise
-                </span>
+                <span className="text-xl leading-none font-bold tracking-tight">SkinWise</span>
               </div>
-              <nav className="flex gap-1 text-[0.9375rem]" aria-label="Trang">
-                {(
-                  [
-                    ['routine', 'Routine của tôi'],
-                    ['goals', 'Mục tiêu'],
-                    ['myths', 'Sự thật hay myth'],
-                  ] as const
-                ).map(([value, label]) => (
-                  <button
-                    key={value}
-                    onClick={() => {
-                      // Leaving #review (or the #results anchor) for a page of the menu.
-                      if (window.location.hash) history.replaceState(null, '', window.location.pathname)
-                      setPage(value)
-                    }}
-                    aria-current={page === value ? 'page' : undefined}
-                    className={`rounded-full px-3.5 py-1.5 ${page === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
+              <nav
+                className="order-last flex w-full flex-wrap gap-1 text-sm sm:text-[0.9375rem] lg:order-none lg:w-auto"
+                aria-label="Trang"
+              >
+                {MENU.map(([target, label, isCurrent]) => (
+                  <a
+                    key={label}
+                    href={href(target)}
+                    aria-current={isCurrent(route) ? 'page' : undefined}
+                    className={`rounded-full px-3 py-1.5 whitespace-nowrap sm:px-3.5 ${isCurrent(route) ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
                   >
                     {label}
-                  </button>
+                  </a>
                 ))}
               </nav>
-              <p className="hidden text-sm text-ink-mute xl:ml-auto xl:block">
-                Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng.
-              </p>
               {me && (
                 <button
                   onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
-                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper xl:ml-0"
+                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper"
                   title="Tài khoản"
                 >
-                  <span className="max-w-[14rem] truncate text-sm font-medium">{me.email}</span>
+                  <span className="max-w-[11rem] truncate text-sm font-medium sm:max-w-[16rem]">{me.email}</span>
                   <span className={`text-xs ${conflict || sync.state.kind === 'offline' || accountOffline ? 'text-caution-ink' : 'text-ink-mute'}`}>
                     {accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? 'Tài khoản')}
                   </span>
@@ -238,7 +269,11 @@ function App() {
           )}
 
           <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
+            <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải…</p>}>
             {page === 'routine' ? (
+              <>
+              {/* The three columns have their own headings; the page needs one above them. */}
+              <h1 className="sr-only">Routine của tôi</h1>
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
                 {/* The three columns have visible h2 titles; the page title is for screen readers. */}
                 <h1 className="sr-only">Routine của tôi</h1>
@@ -252,6 +287,7 @@ function App() {
                   <WarningsPanel state={check} products={actions.routine.products} />
                 </ResultsAside>
               </div>
+              </>
             ) : page === 'goals' ? (
               <div className="mx-auto max-w-3xl">
                 <GoalsPage routine={actions.routine} />
@@ -260,18 +296,69 @@ function App() {
               <div className="mx-auto max-w-2xl">
                 <MythPage />
               </div>
-            ) : (
+            ) : page === 'review' ? (
               <div className="mx-auto max-w-4xl">
                 <h1 className="sr-only">Trang duyệt</h1>
                 <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải trang duyệt…</p>}>
                   <ReviewPage />
                 </Suspense>
               </div>
+            ) : route.page === 'blog' ? (
+              <div className="mx-auto max-w-6xl">
+                <BlogListPage filter={route.filter} />
+              </div>
+            ) : route.page === 'saved' ? (
+              <div className="mx-auto max-w-6xl">
+                <SavedPage />
+              </div>
+            ) : route.page === 'write' ? (
+              <div className="mx-auto max-w-3xl">
+                <WritePage key={route.product ?? 'new'} actions={actions} product={route.product} account={me?.email ?? ''} />
+              </div>
+            ) : route.page === 'edit' ? (
+              <div className="mx-auto max-w-3xl">
+                <EditPage key={route.id} id={route.id} actions={actions} account={me?.email ?? ''} />
+              </div>
+            ) : route.page === 'post' ? (
+              <div className="mx-auto max-w-3xl">
+                <PostPage key={route.id} id={route.id} actions={actions} />
+              </div>
+            ) : route.page === 'product' ? (
+              <div className="mx-auto max-w-6xl">
+                <ProductPage key={route.id} id={route.id} />
+              </div>
+            ) : route.page === 'author' ? (
+              <div className="mx-auto max-w-6xl">
+                <AuthorPage key={route.handle} handle={route.handle} />
+              </div>
+            ) : (
+              <div className="mx-auto max-w-2xl space-y-3 text-sm text-ink-soft">
+                <p>Không tìm thấy trang này.</p>
+                <a href={href({ page: 'routine' })} className="text-link underline underline-offset-2">
+                  Về routine của tôi
+                </a>
+              </div>
             )}
+            </Suspense>
           </main>
 
           <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
-            Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này và đồng bộ với tài khoản SkinWise của bạn.
+            <p>
+              Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này và
+              đồng bộ với tài khoản SkinWise của bạn.
+            </p>
+            <p className="mt-2">
+              Góp ý hoặc báo lỗi:{' '}
+              <a
+                href={FEEDBACK_URL}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-link underline underline-offset-2"
+              >
+                mở một issue trên GitHub
+              </a>{' '}
+              (cần tài khoản GitHub; nội dung hiện công khai, đừng ghi email, số điện thoại hay ảnh da của bạn).
+            </p>
           </footer>
         </div>
 
@@ -340,6 +427,8 @@ function App() {
             />
           )}
         </Dialog>
+        <ProfileDialog {...profile.dialog} />
+      </ProfileContext>
       </FunctionsContext>
     </GroupsContext>
   )

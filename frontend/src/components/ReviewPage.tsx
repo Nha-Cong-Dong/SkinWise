@@ -1,6 +1,7 @@
 import { useCallback, useContext, useEffect, useMemo, useState, type FormEvent } from 'react'
 import { api, ApiError, reviewApi, type Draft, type ReviewApi } from '../api'
 import { GroupsContext } from '../groups'
+import { CommunityQueue } from './CommunityQueue'
 import { DraftCard, DraftForm } from './DraftCard'
 
 type ReviewSession = { token: string; name: string }
@@ -27,7 +28,7 @@ function saveSession(session: ReviewSession | null) {
   }
 }
 
-/** Review page (#review): AI drafts of myth cards. Sign-in required. */
+/** Review page (#review): AI drafts of myth cards and the community review queue. Sign-in required. */
 export function ReviewPage() {
   const [session, setSession] = useState<ReviewSession | null>(loadSession)
 
@@ -102,6 +103,7 @@ function LoginForm({ onSignedIn }: { onSignedIn: (session: ReviewSession) => voi
 }
 
 function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut: () => void }) {
+  const [tab, setTab] = useState<'drafts' | 'community'>('drafts')
   // Every call goes through here: an expired session sends the reviewer back to sign in.
   const client = useMemo(() => reviewApi(session.token), [session.token])
   const guard = useCallback(
@@ -121,7 +123,9 @@ function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h2 className="text-lg font-semibold text-slate-900">Duyệt bản nháp thẻ myth</h2>
+          <h2 className="text-lg font-semibold text-slate-900">
+            {tab === 'drafts' ? 'Duyệt bản nháp thẻ myth' : 'Duyệt review cộng đồng'}
+          </h2>
           <p className="text-sm text-slate-500">
             Luật và thẻ myth chỉ được bật trong <code className="text-xs">backend/data/rules.toml</code> sau khi người
             duyệt đọc nguồn; trang này không bật được luật nào.
@@ -134,7 +138,25 @@ function ReviewBoard({ session, onSignOut }: { session: ReviewSession; onSignOut
           </button>
         </div>
       </div>
-      <DraftsTab client={client} guard={guard} />
+      <div className="flex gap-4 border-b border-slate-200 text-sm" role="tablist">
+        {(
+          [
+            ['drafts', 'Thẻ myth'],
+            ['community', 'Cộng đồng'],
+          ] as const
+        ).map(([value, label]) => (
+          <button
+            key={value}
+            role="tab"
+            aria-selected={tab === value}
+            onClick={() => setTab(value)}
+            className={`-mb-px border-b-2 px-1 pb-2 ${tab === value ? 'border-slate-800 font-medium text-slate-900' : 'border-transparent text-slate-500 hover:text-slate-800'}`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tab === 'drafts' ? <DraftsTab client={client} guard={guard} /> : <CommunityQueue client={client} guard={guard} />}
     </div>
   )
 }

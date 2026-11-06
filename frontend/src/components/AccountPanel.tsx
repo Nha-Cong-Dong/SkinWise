@@ -3,6 +3,7 @@ import { ApiError, EXPORT_URL, api, type Me } from '../api'
 import { SESSION_LABELS } from '../labels'
 import { sessionEntries, type Routine } from '../routine'
 import { syncLabel, type ServerCopy, type SyncState } from '../sync'
+import { ProfileSummary } from './blog/ProfileDialog'
 import { Dialog } from './Dialog'
 import { DataNote } from './Notice'
 import { PolicyText } from './PolicyText'
@@ -93,10 +94,12 @@ export function AccountPanel({
         {signOutError && <p className="w-full text-avoid-ink">{signOutError}</p>}
       </section>
 
+      <ProfileSummary />
+
       <section className="border-t border-line pt-4">
         <h3 className="font-semibold text-ink">Xoá tài khoản</h3>
         <p className="mt-1">
-          Xoá ngay email, routine đã lưu và mọi phiên đăng nhập. Routine trên thiết bị này cũng bị xoá; muốn giữ thì tải
+          Xoá ngay email, routine đã lưu, hồ sơ, bài review, bình luận và mọi phiên đăng nhập. Routine trên thiết bị này cũng bị xoá; muốn giữ thì tải
           dữ liệu về trước.
         </p>
         {deleting ? (

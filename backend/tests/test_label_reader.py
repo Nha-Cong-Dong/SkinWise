@@ -102,6 +102,20 @@ def test_read_label_refuses_bad_input_before_calling_the_model(
     assert signed_in.post("/label/read", json=photo(data="")).status_code == 422
 
 
+def test_read_label_limits_photos_per_server_and_day(
+    signed_in: TestClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    # Many throwaway accounts still share the server's daily budget.
+    monkeypatch.setattr(label_reader, "call_model", lambda m, d: ModelLabel(found=False, text=""))
+    for _ in range(label_api.SERVER_DAY_LIMIT[0]):
+        label_api._server_day.record("all", None)
+    response = signed_in.post("/label/read", json=photo())
+    assert response.status_code == 429
+    assert response.json()["detail"] == label_api.TOO_MANY_PHOTOS
+    label_api.reset_photo_limits()
+    assert signed_in.post("/label/read", json=photo()).status_code == 200
+
+
 def test_read_label_passes_on_model_errors(
     signed_in: TestClient, monkeypatch: pytest.MonkeyPatch
 ) -> None:

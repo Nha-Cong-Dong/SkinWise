@@ -5,8 +5,10 @@ reviewer's bearer token. Nothing here publishes a rule: rules are published in d
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, Depends, HTTPException, Query, Response, status
+from fastapi.responses import FileResponse
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 
+from app import blog, images
 from app.api import DbSession
 from app.drafts import (
     DraftingError,
@@ -31,6 +33,8 @@ from app.schemas import (
     DraftCreate,
     DraftOut,
     DraftStatusUpdate,
+    ModerationAction,
+    ModerationItem,
     ReviewerLoginRequest,
     ReviewerOut,
     SignInOut,
@@ -136,3 +140,51 @@ def update_draft(
     row = get_draft(db, draft_id)
     assert row is not None
     return draft_out(row, known_source_urls(db))
+
+
+# --- Community reviews (blog): posts and comments held for review ---
+
+
+@router.get("/blog")
+def blog_queue(
+    db: DbSession,
+    reviewer: Reviewer,
+    status_: Annotated[Literal["pending", "hidden"], Query(alias="status")] = "pending",
+) -> list[ModerationItem]:
+    """pending: auto flags (app/moderation.py); hidden: reported by 3 different people."""
+    return [ModerationItem.model_validate(i) for i in blog.review_queue(db, status_)]
+
+
+@router.post("/blog/{kind}/{item_id}")
+def moderate_blog(
+    db: DbSession,
+    reviewer: Reviewer,
+    kind: Literal["post", "comment"],
+    item_id: int,
+    body: ModerationAction,
+) -> ModerationItem:
+    """approve: visible to everyone again; remove: nobody sees it (it stays in the author's
+    data export until they delete it or their account)."""
+    if not blog.moderate(db, kind, item_id, body.action):
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "not found")
+    db.commit()
+    item = blog.moderation_item(db, kind, item_id)
+    assert item is not None
+    return ModerationItem.model_validate(item)
+
+
+@router.get(
+    "/blog/images/{image_id}",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/webp": {}}}},
+)
+def blog_image(db: DbSession, reviewer: Reviewer, image_id: int) -> FileResponse:
+    """Any image attached to a post, whatever its status, so the reviewer sees what was
+    reported. The page fetches it with the Bearer token (an <img> cannot send one)."""
+    file_name = blog.image_for_reviewer(db, image_id)
+    path = images.path_of(file_name) if file_name else None
+    if path is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "not found")
+    return FileResponse(
+        path, media_type="image/webp", headers={"Cache-Control": "private, no-store"}
+    )

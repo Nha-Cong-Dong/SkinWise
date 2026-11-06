@@ -18,8 +18,11 @@ USER_AGENT = (
 _TAG = re.compile(r"<[^>]+>")
 # Bot-challenge pages (e.g. PMC serves reCAPTCHA after several quick fetches). Treating them
 # as the real page would report a genuine quote as missing.
+# "One moment, please...": the page some hosts (hadalabo.com.vn) serve before a script reload.
 _CHALLENGE = re.compile(
-    r"grecaptcha|g-recaptcha|_f_combinedSignature|cf-challenge|challenge-platform", re.IGNORECASE
+    r"grecaptcha|g-recaptcha|_f_combinedSignature|cf-challenge|challenge-platform"
+    r"|<title>\s*One moment, please",
+    re.IGNORECASE,
 )
 # The markers also appear on real pages: a reCAPTCHA newsletter form (The Ordinary), the
 # script Cloudflare injects into every page it serves (CeraVe). A challenge page has almost

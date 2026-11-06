@@ -1,0 +1,186 @@
+"""Made-up community reviews for the blog demo, from data/demo_blog.toml:
+
+uv run python -m scripts.demo_blog           # create what is missing; safe to run again
+uv run python -m scripts.demo_blog --reset   # delete every @skinwise.test account, then create
+
+Five verified accounts demo1..demo5@skinwise.test share one password, asked when an account
+has to be created (or taken from DEMO_BLOG_PASSWORD). Only addresses at @skinwise.test are ever
+created or deleted. Posts already there (same author and title) are left as they are.
+"""
+
+import getpass
+import os
+import sys
+import tomllib
+from pathlib import Path
+from typing import Any
+
+from sqlalchemy import text
+from sqlalchemy.engine import Connection
+
+from app import blog, images
+from app.blog_api import _post_data
+from app.db import get_engine, init_schema
+from app.passwords import hash_password, password_problem
+from app.schemas import PostIn
+
+DOMAIN = "@skinwise.test"
+DATA = Path(__file__).resolve().parent.parent / "data" / "demo_blog.toml"
+
+
+def demo_email(n: int) -> str:
+    email = f"demo{n}{DOMAIN}"
+    if not email.endswith(DOMAIN):  # never touch a real address
+        raise ValueError(email)
+    return email
+
+
+def remove_demo_accounts(conn: Connection) -> tuple[int, list[str]]:
+    """Delete every @skinwise.test account and what cascades from it; returns the count and
+    the image files to remove after the commit."""
+    pattern = "%" + DOMAIN.replace("_", r"\_")
+    files = list(
+        conn.execute(
+            text(
+                "SELECT i.file_name FROM blog_images i JOIN users u ON u.id = i.owner_id "
+                "WHERE u.email LIKE :p"
+            ),
+            {"p": pattern},
+        ).scalars()
+    )
+    removed = conn.execute(text("DELETE FROM users WHERE email LIKE :p"), {"p": pattern}).rowcount
+    blog.drop_orphan_reports(conn)
+    return removed, files
+
+
+def ask_password() -> str:
+    password = os.environ.get("DEMO_BLOG_PASSWORD") or getpass.getpass(
+        "Password for the demo accounts: "
+    )
+    if problem := password_problem(password, ""):
+        raise SystemExit(f"Password refused: {problem}")
+    if "DEMO_BLOG_PASSWORD" not in os.environ and getpass.getpass("Again: ") != password:
+        raise SystemExit("Passwords do not match.")
+    return password
+
+
+def free_handle(conn: Connection, wanted: str, user_id: str) -> str:
+    """`wanted`, or `wanted` with a suffix when another (non-demo) user already has it."""
+    handle, n = wanted, 1
+    while blog.handle_taken(conn, handle, user_id):
+        handle = f"{wanted[: 30 - len(f'_demo{n}')]}_demo{n}"
+        n += 1
+    return handle
+
+
+def ensure_accounts(conn: Connection, accounts: list[dict[str, Any]]) -> dict[int, str]:
+    """Account number -> user id. Creates missing accounts (verified) and profiles."""
+    ids: dict[int, str] = {}
+    password_hash: str | None = None
+    for account in accounts:
+        email = demo_email(account["n"])
+        user_id = conn.execute(
+            text("SELECT id::text FROM users WHERE email = :e"), {"e": email}
+        ).scalar_one_or_none()
+        if user_id is None:
+            if password_hash is None:
+                password_hash = hash_password(ask_password())
+            user_id = conn.execute(
+                text(
+                    "INSERT INTO users (email, password_hash, email_verified_at) "
+                    "VALUES (:e, :h, now()) RETURNING id::text"
+                ),
+                {"e": email, "h": password_hash},
+            ).scalar_one()
+            print(f"Created {email}")
+        if blog.get_profile(conn, user_id) is None:
+            handle = free_handle(conn, account["handle"], user_id)
+            if handle != account["handle"]:
+                print(f"Handle {account['handle']} is taken; {email} uses {handle}")
+            blog.put_profile(conn, user_id, handle, account.get("skin_type"))
+        ids[account["n"]] = user_id
+    return ids
+
+
+def routine_file(steps: list[list[Any]], products: dict[str, Any]) -> dict[str, Any]:
+    """A routine in the shape of a frontend routine file (share.ts)."""
+    keys: dict[str, str] = {}
+    for slug, _, _ in steps:
+        keys.setdefault(slug, f"p{len(keys) + 1}")
+    return {
+        "format": "skinwise-routine",
+        "version": 1,
+        "products": [
+            {"key": key, "name": products[slug].name, "productId": products[slug].id}
+            for slug, key in keys.items()
+        ],
+        "entries": [
+            {"productKey": keys[slug], "session": session, "days": days}
+            for slug, session, days in steps
+        ],
+    }
+
+
+def create_posts(conn: Connection, posts: list[dict[str, Any]], users: dict[int, str]) -> int:
+    slugs = {s for p in posts for s in p["products"]} | {
+        step[0] for p in posts for step in p.get("routine", [])
+    }
+    products = {
+        r.slug: r
+        for r in conn.execute(
+            text("SELECT id, slug, name FROM products WHERE slug = ANY(:s)"), {"s": list(slugs)}
+        )
+    }
+    if missing := slugs - products.keys():
+        raise SystemExit(f"Unknown product slugs (run scripts.seed first?): {sorted(missing)}")
+    created = 0
+    for p in posts:
+        author = users[p["author"]]
+        exists = conn.execute(
+            text("SELECT 1 FROM blog_posts WHERE author_id = :a AND title = :t"),
+            {"a": author, "t": p["title"]},
+        ).first()
+        if exists:
+            continue
+        body = PostIn.model_validate(
+            {
+                "title": p["title"],
+                "body": p["body"],
+                "rating": p.get("rating"),
+                "skin_type": p.get("skin_type"),
+                "disclosure": p.get("disclosure", "none"),
+                "products": [{"product_id": products[s].id} for s in p["products"]],
+                "routine": routine_file(p["routine"], products) if p.get("routine") else None,
+            }
+        )
+        post_id = blog.create_post(conn, author, _post_data(body))
+        for n in p.get("likes", []):
+            blog.set_like(conn, post_id, users[n], True)
+        for n, comment in p.get("comments", []):
+            blog.add_comment(conn, post_id, users[n], comment)
+        created += 1
+    return created
+
+
+def main(args: list[str]) -> int:
+    sys.stdout.reconfigure(encoding="utf-8")  # Vietnamese text; Windows consoles use cp1252
+    if any(a not in ("--reset",) for a in args):
+        print(__doc__)
+        return 1
+    data = tomllib.loads(DATA.read_text(encoding="utf-8"))
+    engine = get_engine()
+    init_schema(engine)
+    if "--reset" in args:
+        with engine.begin() as conn:
+            removed, files = remove_demo_accounts(conn)
+        images.delete_files(files)
+        print(f"Removed {removed} {DOMAIN} accounts and everything they wrote.")
+    with engine.begin() as conn:
+        users = ensure_accounts(conn, data["account"])
+        created = create_posts(conn, data["post"], users)
+    print(f"{created} demo posts created ({len(data['post']) - created} already there).")
+    return 0
+
+
+if __name__ == "__main__":
+    sys.exit(main(sys.argv[1:]))

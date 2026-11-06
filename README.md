@@ -40,7 +40,7 @@ Mọi cảnh báo đều:
 | Phát hiện trùng hoạt chất | Cảnh báo khi nhiều sản phẩm trong cùng một buổi chứa cùng nhóm hoạt chất |
 | Cảnh báo kết hợp | Một bộ nhỏ các luật có bằng chứng rõ ràng, áp dụng theo phạm vi cùng bước / cùng buổi / cùng ngày |
 | Thẻ "Sự thật hay myth" | Giải đáp các lời đồn phổ biến, kèm nguồn |
-| Lưu & chia sẻ routine | Tải routine về máy thành file, mở lại trên máy khác, hoặc gửi link chia sẻ. Không cần tài khoản; SkinWise không lưu routine của bạn |
+| Lưu & chia sẻ routine | Tải routine về máy thành file, mở lại trên máy khác, hoặc gửi link chia sẻ. File và link không đi qua máy chủ; routine đang dùng được đồng bộ với tài khoản (xem bên dưới) |
 | Lưu ý khi dùng | Nhắc riêng cho từng hoạt chất, không cần kết hợp: AHA, retinoid, benzoyl peroxide có thể làm da nhạy nắng (nguồn FDA); BHA chỉ ghi thông tin vì bằng chứng chưa thống nhất |
 
 ### Đã làm sau MVP
@@ -49,14 +49,17 @@ Mọi cảnh báo đều:
 |---|---|
 | Trang duyệt (`#review`) | Người duyệt đăng nhập bằng tài khoản riêng để nhờ AI soạn nháp thẻ myth và xem các bản nháp |
 | AI soạn nháp thẻ myth | Từ các trang nguồn người duyệt chọn; mọi đoạn trích được máy chủ tìm lại trên trang. Bản nháp gắn nhãn "chưa kiểm duyệt", không bao giờ hiện cho người dùng |
+| Tài khoản + đồng bộ routine (chế độ thử) | Đăng nhập bắt buộc bằng email + mật khẩu; routine lưu trên máy và đồng bộ với tài khoản trên máy chủ, hỏi khi hai máy cùng sửa. Xuất dữ liệu, xoá tài khoản. Email chỉ ở chế độ thử (link hiện trên màn hình), chưa mở cho người dùng thật |
+| Đọc bảng thành phần từ ảnh nhãn | AI chỉ chép chữ in trên ảnh, ghi `[?]` chỗ không đọc chắc; người dùng so với bao bì và sửa trước khi phân tích. Ảnh không được lưu. Mỗi tài khoản tối đa 10 ảnh / 10 phút, cả máy chủ 100 ảnh / ngày |
+| Mục tiêu da | Chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn; lựa chọn chỉ lưu trên máy. Chỉ để hiển thị, không ảnh hưởng cảnh báo |
+| Review cộng đồng (bản demo) | Người dùng viết bài review kèm sản phẩm, ảnh và routine; lọc theo loại da, thích, lưu, bình luận, báo cáo, "Thử routine này". Cuối mỗi bài, phần "Thông tin có nguồn (SkinWise)" tách riêng khỏi trải nghiệm của người viết. Nội dung bài không bao giờ ảnh hưởng cảnh báo. Bài có chữ "trị/chữa", số điện thoại, email, link thì chờ duyệt; 3 báo cáo thì tạm ẩn. Chỉ dùng dữ liệu mẫu, chưa mở công khai |
 | Routine mẫu | Một nút ở trang trống để xem SkinWise kiểm tra thế nào, với 4 sản phẩm bán ở Việt Nam; không phải gợi ý cách dùng |
 
 ### Dự kiến sau hackathon
 
 - Tra cứu sản phẩm theo mã vạch qua [Open Beauty Facts](https://world.openbeautyfacts.org)
-- Chụp ảnh nhãn để đọc bảng thành phần (OCR)
 - Hồ sơ da: da nhạy cảm, đang mang thai…
-- Mở tài khoản cho người dùng thật: đăng nhập bằng email + mật khẩu (xác thực email, quên mật khẩu) và đồng bộ routine đã có ở chế độ thử (link xác thực / đặt lại hiện ngay trên màn hình, không gửi email), cần dịch vụ email và tư vấn pháp lý trước khi mở
+- Mở tài khoản cho người dùng thật (đã có ở chế độ thử, xem bảng trên): cần dịch vụ email tại Việt Nam và tư vấn pháp lý trước khi mở
 
 Chi tiết và thứ tự ưu tiên: [plan/after-mvp.md](plan/after-mvp.md).
 
@@ -113,7 +116,7 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    uv sync
    uv run python -m scripts.seed          # tạo bảng và nạp dữ liệu mẫu (chạy lại an toàn)
    uv run uvicorn app.main:app --reload   # API tại http://127.0.0.1:8000, tài liệu API tại /docs
-   uv run pytest                  # chạy test
+   LOGIN_EMAIL_MODE=dev SMTP_HOST= uv run pytest   # chạy test (ở chế độ thử, không gửi email thật)
    ```
 
 3. Frontend (mở terminal khác):
@@ -127,12 +130,22 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
 
 4. Trang duyệt (không bắt buộc): tạo tài khoản người duyệt rồi mở http://localhost:5173/#review. Muốn dùng AI soạn nháp thẻ myth thì thêm `ANTHROPIC_API_KEY` vào `backend/.env`.
 
-5. Đọc bảng thành phần từ ảnh nhãn (không bắt buộc): cùng `ANTHROPIC_API_KEY`, chọn model bằng `LABEL_MODEL`. Dùng khoá của cổng hackathon thì thêm `ANTHROPIC_BASE_URL=https://proptit.dekthe.dev` và đặt `DRAFT_MODEL`, `LABEL_MODEL` là `claude-haiku-5-5` (xem `backend/.env.example`). Chỉ người đã đăng nhập mới gửi được ảnh.
+5. Đọc bảng thành phần từ ảnh nhãn (không bắt buộc): cùng `ANTHROPIC_API_KEY`, chọn model bằng `LABEL_MODEL`. Dùng khoá của cổng hackathon thì thêm `ANTHROPIC_BASE_URL=https://proptit.dekthe.dev` và đặt `DRAFT_MODEL`, `LABEL_MODEL` là `claude-haiku-5-5` (xem `backend/.env.example`). Chỉ người đã đăng nhập mới gửi được ảnh; mỗi tài khoản tối đa 10 ảnh / 10 phút (30 ảnh / IP), tối đa 4 ảnh đọc cùng lúc, cả máy chủ tối đa 100 ảnh / ngày (giới hạn trong bộ nhớ, đặt lại khi khởi động lại).
 
    ```bash
    cd backend
    uv run python -m scripts.reviewers add "Tên người duyệt"   # hỏi mật khẩu
    ```
+
+6. Dữ liệu demo cho review cộng đồng (không bắt buộc): tạo 5 tài khoản `demo1…demo5@skinwise.test` và 8 bài review mẫu. Ảnh lưu ở `backend/uploads/` (đổi bằng `UPLOAD_DIR`).
+
+   ```bash
+   cd backend
+   uv run python -m scripts.demo_blog           # hỏi mật khẩu chung (hoặc đặt DEMO_BLOG_PASSWORD)
+   uv run python -m scripts.demo_blog --reset   # xoá rồi tạo lại, chỉ đụng tài khoản @skinwise.test
+   ```
+
+7. Triển khai lên máy chủ: xem [deploy/README.md](deploy/README.md) (nginx, HTTPS, systemd, sao lưu). Chưa triển khai ở đâu.
 
 ## Lộ trình
 
@@ -145,7 +158,9 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Giao diện web: thêm sản phẩm, xếp lịch, xem cảnh báo, thẻ myth
 - [ ] Hoàn thiện demo
 - [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
-- [ ] Mục tiêu da: chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn (xong code, nội dung chờ duyệt)
+- [x] Đọc bảng thành phần từ ảnh nhãn
+- [x] Mục tiêu da: chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn (7 mục tiêu, 36 mục đã duyệt 28/10)
+- [x] Review cộng đồng (bản demo, dữ liệu mẫu, chưa mở công khai)
 
 ## Nguồn dữ liệu và ghi công
 

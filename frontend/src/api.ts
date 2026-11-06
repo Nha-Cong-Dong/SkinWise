@@ -1,6 +1,8 @@
 // Types and calls for the FastAPI backend (see backend/app/schemas.py). The Vite dev proxy
 // strips the /api prefix.
 
+import type { PortableRoutine } from './share'
+
 export type Session = 'AM' | 'PM'
 export type Severity = 'avoid' | 'caution' | 'info' | 'safe'
 
@@ -222,10 +224,148 @@ export type StoredRoutine = {
   updated_at: string | null
 }
 
+// --- Community reviews (backend/app/blog_api.py). Every route needs the user's session. ---
+
+export type SkinType = 'oily' | 'dry' | 'combination' | 'normal' | 'sensitive'
+export type Disclosure = 'none' | 'gifted' | 'sponsored'
+/** Lists, author pages and counts include `visible` only; the author also sees their own other states. */
+export type ContentStatus = 'visible' | 'pending' | 'hidden' | 'removed'
+export type ReportReason = 'medical_claim' | 'personal_info' | 'advertising' | 'offensive' | 'other'
+
+/** GET/PUT /me/profile. `handle` null: not set yet, so the user cannot post or comment. */
+export type Profile = { handle: string | null; skin_type: SkinType | null }
+export type ProfileIn = { handle: string; skin_type: SkinType | null }
+
+/** Exactly one source: a catalogue product, or a name with a pasted ingredient list. */
+export type PostProductIn = { product_id?: number; name?: string; inci?: string }
+
+export type PostIn = {
+  title: string // 5–120
+  body: string // 20–10,000, plain text
+  rating: number | null // 1–5
+  skin_type: SkinType | null
+  disclosure: Disclosure
+  products: PostProductIn[] // 1–10
+  image_ids: number[] // 0–4, the user's own uploads; order = display order
+  routine: PortableRoutine | null // same shape as a routine file (share.ts)
+}
+
+export type PostProductOut = {
+  position: number
+  product_id: number | null
+  name: string // from the catalogue when product_id is set
+  brand: string | null // null for a pasted list
+  inci: string | null
+}
+
+export type AuthorRef = { handle: string; skin_type: SkinType | null }
+
+export type ImageOut = {
+  id: number
+  url: string // "/blog/images/{id}", without the /api prefix (see imageSrc)
+  width: number
+  height: number
+  caption: string | null
+}
+
+export type PostSummary = {
+  cover: ImageOut | null // the first image
+  id: number
+  title: string
+  excerpt: string // the first ≤ 200 characters of the body
+  rating: number | null
+  skin_type: SkinType | null
+  disclosure: Disclosure
+  author: AuthorRef
+  products: PostProductOut[]
+  like_count: number
+  comment_count: number
+  has_routine: boolean
+  status: ContentStatus
+  created_at: string
+}
+
+export type PostDetail = PostSummary & {
+  body: string
+  images: ImageOut[]
+  routine: PortableRoutine | null
+  flags: string[] // why it waits for review; only for the author, [] for everyone else
+  liked: boolean
+  saved: boolean
+  is_mine: boolean
+  updated_at: string
+}
+
+export type PostList = {
+  items: PostSummary[]
+  total: number
+  rating_avg: number | null // over every visible post matching the filters that has a rating; rounded to 2
+  rating_count: number
+}
+export type LikeOut = { liked: boolean; like_count: number }
+export type SaveOut = { saved: boolean }
+export type CommentIn = { body: string } // 1–2000
+
+export type CommentOut = {
+  id: number
+  post_id: number
+  author: AuthorRef
+  body: string
+  status: ContentStatus
+  flags: string[] // only on the user's own comments
+  is_mine: boolean
+  created_at: string
+}
+
+export type ReportIn = {
+  target_kind: 'post' | 'comment'
+  target_id: number
+  reason: ReportReason
+  note: string | null // ≤ 300
+}
+
+export type AuthorOut = {
+  handle: string
+  skin_type: SkinType | null
+  post_count: number
+  posts: PostSummary[] // visible only
+}
+
+export type PostQuery = {
+  skin_type?: SkinType
+  product_id?: number
+  author?: string // handle
+  saved?: boolean
+  sort?: 'new' | 'top'
+  offset?: number
+  limit?: number // ≤ 50
+}
+
+/** The review queue on #review (reviewer token). */
+export type ModerationItem = {
+  kind: 'post' | 'comment'
+  id: number
+  post_id: number
+  title: string | null // null for a comment
+  body: string
+  author: string // handle
+  status: ContentStatus
+  flags: string[]
+  report_count: number
+  report_reasons: string[]
+  report_notes: string[] // notes of the reports that count now
+  images: { id: number; caption: string | null }[] // a post's photos; [] for a comment
+  created_at: string
+}
+
+/** The address of an uploaded image for <img src>; the browser sends the session cookie. */
+export const imageSrc = (image: ImageOut) => `/api${image.url}`
+
 /** `token`: a reviewer's session, for the /review routes. */
 async function request<T>(path: string, init?: RequestInit, token?: string): Promise<T> {
   const headers: Record<string, string> = {}
-  if (init?.body) headers['Content-Type'] = 'application/json'
+  // JSON bodies are strings; a FormData body (image upload) sets its own multipart type.
+  if (typeof init?.body === 'string') headers['Content-Type'] = 'application/json'
   if (token) headers.Authorization = `Bearer ${token}`
   const res = await fetch(`/api${path}`, { ...init, headers })
   if (!res.ok) {
@@ -235,6 +375,9 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
   }
   return (res.status === 204 ? undefined : res.json()) as Promise<T>
 }
+
+const send = <T>(method: 'PUT' | 'DELETE', path: string, body?: unknown) =>
+  request<T>(path, { method, body: body === undefined ? undefined : JSON.stringify(body) })
 
 const post = <T>(path: string, body: unknown, signal?: AbortSignal) =>
   request<T>(path, { method: 'POST', body: JSON.stringify(body), signal })
@@ -275,6 +418,33 @@ export const api = {
     request<StoredRoutine>('/me/routine', { method: 'PUT', body: JSON.stringify({ data, base_version: baseVersion }) }),
   deleteAccount: (confirmEmail: string) =>
     request<void>('/me', { method: 'DELETE', body: JSON.stringify({ confirm_email: confirmEmail }) }),
+  // Community reviews.
+  profile: () => request<Profile>('/me/profile'),
+  saveProfile: (body: ProfileIn) => send<Profile>('PUT', '/me/profile', body),
+  posts: (query: PostQuery, signal?: AbortSignal) => {
+    const params = new URLSearchParams()
+    for (const [name, value] of Object.entries(query)) {
+      if (value !== undefined) params.set(name, String(value))
+    }
+    return request<PostList>(`/blog/posts?${params}`, { signal })
+  },
+  post: (id: number) => request<PostDetail>(`/blog/posts/${id}`),
+  createPost: (body: PostIn) => post<PostDetail>('/blog/posts', body),
+  updatePost: (id: number, body: PostIn) => send<PostDetail>('PUT', `/blog/posts/${id}`, body),
+  deletePost: (id: number) => send<void>('DELETE', `/blog/posts/${id}`),
+  like: (id: number, on: boolean) => send<LikeOut>(on ? 'PUT' : 'DELETE', `/blog/posts/${id}/like`),
+  save: (id: number, on: boolean) => send<SaveOut>(on ? 'PUT' : 'DELETE', `/blog/posts/${id}/save`),
+  comments: (postId: number) => request<CommentOut[]>(`/blog/posts/${postId}/comments`),
+  addComment: (postId: number, body: CommentIn) => post<CommentOut>(`/blog/posts/${postId}/comments`, body),
+  deleteComment: (id: number) => send<void>('DELETE', `/blog/comments/${id}`),
+  report: (body: ReportIn) => post<Record<string, never>>('/blog/reports', body),
+  uploadImage: (file: File, caption: string) => {
+    const form = new FormData()
+    form.append('file', file)
+    if (caption) form.append('caption', caption)
+    return request<ImageOut>('/blog/images', { method: 'POST', body: form })
+  },
+  author: (handle: string) => request<AuthorOut>(`/blog/authors/${encodeURIComponent(handle)}`),
 }
 
 /** Everything SkinWise keeps about the signed-in user, as a file (GET /me/export). */
@@ -290,6 +460,16 @@ export function reviewApi(token: string) {
     drafts: (status: Draft['status']) => send<Draft[]>('GET', `/review/drafts?${new URLSearchParams({ status })}`),
     createDraft: (body: DraftRequest) => send<Draft>('POST', '/review/drafts', body),
     setDraftStatus: (id: number, status: Draft['status']) => send<Draft>('PATCH', `/review/drafts/${id}`, { status }),
+    blogQueue: (status: 'pending' | 'hidden') =>
+      send<ModerationItem[]>('GET', `/review/blog?${new URLSearchParams({ status })}`),
+    moderate: (kind: ModerationItem['kind'], id: number, action: 'approve' | 'remove') =>
+      send<ModerationItem>('POST', `/review/blog/${kind}/${id}`, { action }),
+    /** A post photo as a Blob: <img> cannot send the Bearer token, so the caller makes an object URL. */
+    image: async (id: number, signal?: AbortSignal): Promise<Blob> => {
+      const res = await fetch(`/api/review/blog/images/${id}`, { headers: { Authorization: `Bearer ${token}` }, signal })
+      if (!res.ok) throw new ApiError(res.status, res.statusText)
+      return res.blob()
+    },
   }
 }
 

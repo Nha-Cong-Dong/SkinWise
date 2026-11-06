@@ -2,7 +2,7 @@ import { useState, type ReactNode } from 'react'
 import { POLICY_VERSION, type EmailLink } from '../account'
 import { ApiError, api, type EmailSent, type Me } from '../api'
 import { Dialog } from './Dialog'
-import { Mark } from './Icons'
+import { Mark, SeverityBadge } from './Icons'
 import { PolicyText } from './PolicyText'
 
 const field =
@@ -16,6 +16,13 @@ const LINK_USED = {
     'Link đã hết hạn hoặc đã được dùng. Nếu email đã được xác thực, hãy đăng nhập bằng mật khẩu; nếu chưa, hãy đăng nhập để gửi lại link xác thực.',
   'reset-password': 'Link đã hết hạn hoặc đã được dùng. Hãy yêu cầu link mới bằng Quên mật khẩu.',
 } as const
+
+/** Why the submit button is still disabled ("Còn thiếu: email, mật khẩu."), or null when nothing is missing. */
+function Missing({ items }: { items: [boolean, string][] }) {
+  const missing = items.filter(([ok]) => !ok).map(([, label]) => label)
+  if (missing.length === 0) return null
+  return <p className="text-xs text-ink-mute">Còn thiếu: {missing.join(', ')}.</p>
+}
 
 /** The sentence for a 422 the route itself returns (its `detail`), or null for any other 422. */
 function invalidInput(e: ApiError): string | null {
@@ -52,9 +59,9 @@ function emailRequestError(e: unknown): string {
   return 'Không gửi được email. Hãy thử lại sau.'
 }
 
-function Shell({ children }: { children: ReactNode }) {
+function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
-    <div className="flex min-h-screen items-start justify-center px-4 py-10 sm:items-center">
+    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 lg:flex-row lg:items-center lg:gap-10">
       <main className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-line sm:p-8">
         <div className="flex items-center gap-2.5">
           <Mark className="size-9" />
@@ -65,7 +72,41 @@ function Shell({ children }: { children: ReactNode }) {
         </p>
         {children}
       </main>
+      {aside}
     </div>
+  )
+}
+
+/**
+ * What the app does, for someone who has not signed in yet (sign-in is required, decisions.md
+ * 26/10). Static: the example quotes a published rule's title word for word.
+ */
+function Intro() {
+  return (
+    <section aria-labelledby="intro-title" className="w-full max-w-md text-sm leading-relaxed text-ink-soft">
+      <h2 id="intro-title" className="text-base font-semibold text-ink">
+        SkinWise làm gì?
+      </h2>
+      <ul className="mt-2 list-disc space-y-1.5 pl-5">
+        <li>Chọn sản phẩm bạn đang dùng (khoảng 30 sản phẩm có sẵn) hoặc dán bảng thành phần in trên bao bì.</li>
+        <li>Xếp lịch sáng / tối theo từng ngày trong tuần, theo thứ tự các bước.</li>
+        <li>
+          SkinWise nhận ra hoạt chất và báo khi sản phẩm trùng hoạt chất hoặc kết hợp cần thận trọng. Mỗi cảnh báo
+          kèm giải thích tiếng Việt và đoạn trích nguyên văn từ nguồn đáng tin cậy.
+        </li>
+      </ul>
+      <figure className="mt-4 rounded-xl bg-surface p-4 ring-1 ring-line">
+        <figcaption className="text-xs text-ink-mute">Ví dụ kết quả kiểm tra</figcaption>
+        <div className="mt-2">
+          <SeverityBadge severity="caution" />
+        </div>
+        <p className="mt-2 font-semibold text-ink">Retinoid và acid tẩy tế bào chết trong cùng một buổi</p>
+        <p className="mt-1 text-xs text-ink-mute">Serum retinol + toner BHA · Tối: mỗi ngày · Có nguồn và đoạn trích</p>
+      </figure>
+      <p className="mt-4 text-xs text-ink-mute">
+        Bản demo cho hackathon, chưa mở cho người dùng thật.
+      </p>
+    </section>
   )
 }
 
@@ -83,7 +124,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
   }
 
   return (
-    <Shell>
+    <Shell aside={<Intro />}>
       {sent ? (
         <Sent sent={sent} onBack={() => go('sign-in')} />
       ) : mode === 'sign-in' ? (
@@ -236,6 +277,7 @@ function SignInForm({ email, setEmail, onSignedIn, onSent, go }: FormProps & { o
           Quên mật khẩu?
         </button>
       </div>
+      <Missing items={[[!!email.trim(), 'email'], [!!password, 'mật khẩu']]} />
       <p className="border-t border-line pt-4 text-sm text-ink-soft">
         Chưa có tài khoản?{' '}
         <button type="button" onClick={() => go('register')} className={`font-medium ${textLink}`}>
@@ -298,6 +340,13 @@ function RegisterForm({ email, setEmail, onSent, go }: FormProps) {
       >
         {state.kind === 'busy' ? 'Đang gửi…' : 'Tạo tài khoản'}
       </button>
+      <Missing
+        items={[
+          [!!email.trim(), 'email'],
+          [!!password, 'mật khẩu'],
+          [consent, 'tích ô đồng ý'],
+        ]}
+      />
       <p className="border-t border-line pt-4 text-sm text-ink-soft">
         Đã có tài khoản?{' '}
         <button type="button" onClick={() => go('sign-in')} className={`font-medium ${textLink}`}>
@@ -342,6 +391,7 @@ function ForgotForm({ email, setEmail, onSent, go }: FormProps) {
       <button type="submit" disabled={!email.trim() || state.kind === 'busy'} className={primary}>
         {state.kind === 'busy' ? 'Đang gửi…' : 'Gửi link đặt lại mật khẩu'}
       </button>
+      <Missing items={[[!!email.trim(), 'email']]} />
       <button type="button" onClick={() => go('sign-in')} className={`block text-sm ${textLink}`}>
         Quay lại đăng nhập
       </button>
@@ -447,6 +497,7 @@ export function EmailLinkPage({
                 {signedInAs ? 'Huỷ' : 'Quay lại đăng nhập'}
               </button>
             </div>
+            <Missing items={[[!!password, 'mật khẩu']]} />
           </form>
         )}
       </div>

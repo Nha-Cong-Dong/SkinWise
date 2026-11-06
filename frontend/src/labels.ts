@@ -1,4 +1,4 @@
-import type { Application, Rule, Session, Severity, Warning } from './api'
+import type { Application, Disclosure, ReportReason, Rule, Session, Severity, SkinType, Warning } from './api'
 
 export const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] // 0 = Monday
 /** Spoken names: a screen reader reads "T2" letter by letter. */
@@ -61,4 +61,38 @@ export function formatOccurrences(occurrences: Warning['occurrences']): string {
   return [...bySession]
     .map(([session, days]) => `${session ? SESSION_LABELS[session] : 'Trong ngày'}: ${formatDays(days)}`)
     .join(' · ')
+}
+
+// --- Community reviews ---
+
+export const SKIN_TYPE_LABELS: Record<SkinType, string> = {
+  oily: 'Da dầu',
+  dry: 'Da khô',
+  combination: 'Da hỗn hợp',
+  normal: 'Da thường',
+  sensitive: 'Da nhạy cảm',
+}
+
+export const DISCLOSURE_LABELS: Record<Disclosure, string> = {
+  none: 'Tự mua',
+  gifted: 'Được tặng',
+  sponsored: 'Có tài trợ',
+}
+
+/** Why a post or comment waits for review (flags from backend/app/moderation.py). */
+export const FLAG_LABELS: Record<string, string> = {
+  medical_claim: 'từ ngữ kiểu "trị", "chữa" (mỹ phẩm không được nói là chữa bệnh)',
+  phone: 'số điện thoại',
+  email: 'địa chỉ email',
+  link: 'đường link',
+}
+
+export const flagReasons = (flags: string[]) => flags.map((f) => FLAG_LABELS[f] ?? f).join(', ')
+
+export const REPORT_REASON_LABELS: Record<ReportReason, string> = {
+  medical_claim: 'Nói sản phẩm trị hay chữa bệnh',
+  personal_info: 'Có thông tin cá nhân (số điện thoại, địa chỉ, ảnh người khác…)',
+  advertising: 'Quảng cáo, bán hàng',
+  offensive: 'Xúc phạm, thô tục',
+  other: 'Lý do khác',
 }
