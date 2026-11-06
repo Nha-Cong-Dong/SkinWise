@@ -1,4 +1,5 @@
-"""Community reviews (blog): profiles, posts, comments, likes, saves, reports and photos.
+"""Community reviews (blog): profiles, posts, comments (one level of replies), likes of posts
+and comments, saves, reports, photos, search, "trending" and in-app notifications.
 
 A demo with made-up data only, not open to the public (plan/decisions.md, 28/10). Nothing
 here reads or writes the rules, calls the warning engine or resolve(): the sourced part of a
@@ -7,7 +8,10 @@ The email of an author never leaves this module: authors are shown by their hand
 
 Visibility: a post or comment is seen by everyone when `visible`; its author also sees it when
 `pending` (auto flags, app/moderation.py) or `hidden` (reported); nobody sees `removed`.
-Lists, author pages and counts include `visible` only.
+Lists, author pages and counts include `visible` only. Notifications are shown only while
+what they point to is visible (status notices to a post's author excepted), never by email.
+The `group` filter and "trending" read the groups the seed stored for catalogue products; a
+pasted ingredient list is never resolved here.
 """
 
 import json
@@ -19,12 +23,23 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 
 from app.accounts import RateLimit
+from app.inci import normalize_name
 from app.moderation import auto_flags, status_after_edit, status_after_reports
 
 Db = Session | Connection
 Kind = Literal["post", "comment"]
 
 EXCERPT_LENGTH = 200
+# Notifications quote at most this much of a comment, and only of a visible one.
+NOTICE_EXCERPT_LENGTH = 80
+# Read notifications are removed after this many days (scripts.purge).
+READ_NOTICE_DAYS = 90
+# Search (GET /blog/posts?q=): pg_trgm word_similarity of the query with the post's own text
+# (title, body, pasted product names) and with catalogue product names, both normalized by
+# normalize_name. A whole post body is long, so its threshold is stricter than the one for
+# product names (the same 0.3 as app/products.py product search).
+POST_TEXT_SIMILARITY = 0.6
+PRODUCT_NAME_SIMILARITY = 0.3
 UNATTACHED_IMAGE_HOURS = 24
 # Writes per user and hour, against spam. In memory, per process, like the account limits;
 # the key is the sha256 of the user id.
@@ -33,6 +48,7 @@ LIMITS: dict[str, tuple[int, float]] = {
     "post": (10, 3600.0),
     "comment": (30, 3600.0),
     "report": (20, 3600.0),
+    "comment_like": (120, 3600.0),
 }
 _limits = {kind: RateLimit({"email": limit}) for kind, limit in LIMITS.items()}
 
@@ -100,7 +116,7 @@ _SUMMARY_COLUMNS = f"""
     p.updated_at, p.author_id = :viewer AS is_mine, pr.handle, pr.skin_type AS author_skin_type,
     (SELECT count(*) FROM blog_likes l WHERE l.post_id = p.id) AS like_count,
     (SELECT count(*) FROM blog_comments c
-      WHERE c.post_id = p.id AND c.status = 'visible') AS comment_count
+      WHERE c.post_id = p.id AND c.status = 'visible' AND c.deleted_at IS NULL) AS comment_count
 """
 _FROM_POSTS = "FROM blog_posts p JOIN user_profiles pr ON pr.user_id = p.author_id"
 
@@ -190,9 +206,68 @@ class PostQuery:
     product_id: int | None = None
     author: str | None = None  # handle
     saved: bool = False
+    liked: bool = False
+    # Search text (already trimmed, 2-100 characters); when set, the best matches come first
+    # and `sort` is ignored.
+    search: str | None = None
+    # An active group code: posts with at least one catalogue product in that group (the
+    # groups seeded for the product). Pasted lists are not resolved for this filter.
+    group: str | None = None
     sort: Literal["new", "top"] = "new"
     offset: int = 0
     limit: int = 20
+
+
+def _like_pattern(q: str) -> str:
+    return q.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
+# Catalogue products of post p whose normalized name matches the query.
+_PRODUCT_NAME_MATCHES = """
+    SELECT 1 FROM blog_post_products bp JOIN products pd ON pd.id = bp.product_id
+    WHERE bp.post_id = p.id
+      AND (word_similarity(:q, pd.search_name) >= :product_threshold
+           OR pd.search_name LIKE '%' || :pattern || '%' ESCAPE '\\')
+"""
+_SEARCH_MATCHES = f"""
+    (word_similarity(:q, p.search_text) >= :text_threshold
+     OR p.search_text LIKE '%' || :pattern || '%' ESCAPE '\\'
+     OR EXISTS ({_PRODUCT_NAME_MATCHES}))
+"""
+# How well the post matches: the best of its own text and its catalogue product names.
+_SEARCH_SCORE = """
+    greatest(
+      coalesce(word_similarity(:q, p.search_text), 0),
+      coalesce((SELECT max(word_similarity(:q, pd.search_name))
+                FROM blog_post_products bp JOIN products pd ON pd.id = bp.product_id
+                WHERE bp.post_id = p.id), 0))
+"""
+
+
+def search_text_of(title: str, body: str, pasted_names: list[str]) -> str:
+    """What GET /blog/posts?q= searches in the post itself, normalized like product names.
+    Catalogue product names are matched through products.search_name instead."""
+    return normalize_name("\n".join([title, body, *pasted_names]))
+
+
+def backfill_search_text(db: Db) -> None:
+    """Fill blog_posts.search_text on databases from before the column existed (in Python, so
+    the value is exactly normalize_name's)."""
+    rows = db.execute(
+        text("SELECT id, title, body FROM blog_posts WHERE search_text IS NULL")
+    ).all()
+    for row in rows:
+        names = db.execute(
+            text(
+                "SELECT name FROM blog_post_products WHERE post_id = :p AND product_id IS NULL "
+                "ORDER BY position"
+            ),
+            {"p": row.id},
+        ).scalars()
+        db.execute(
+            text("UPDATE blog_posts SET search_text = :s WHERE id = :id"),
+            {"s": search_text_of(row.title, row.body, list(names)), "id": row.id},
+        )
 
 
 def list_posts(db: Db, viewer: str, q: PostQuery) -> dict[str, Any]:
@@ -216,12 +291,36 @@ def list_posts(db: Db, viewer: str, q: PostQuery) -> dict[str, Any]:
         where.append(
             "EXISTS (SELECT 1 FROM blog_saves s WHERE s.post_id = p.id AND s.user_id = :viewer)"
         )
-    condition = " AND ".join(where)
+    if q.liked:
+        where.append(
+            "EXISTS (SELECT 1 FROM blog_likes l WHERE l.post_id = p.id AND l.user_id = :viewer)"
+        )
+    if q.group:
+        # Read only: the groups the seed stored for catalogue products (same join as
+        # rules.load_product_groups); nothing from the post reaches resolve() or the engine.
+        where.append(
+            """EXISTS (SELECT 1 FROM blog_post_products bp
+                 JOIN product_ingredients pi ON pi.product_id = bp.product_id
+                 JOIN ingredient_groups ig ON ig.ingredient_id = pi.ingredient_id
+                 WHERE bp.post_id = p.id AND ig.group_code = :group)"""
+        )
+        params["group"] = q.group
     order = (
         "like_count DESC, p.created_at DESC, p.id DESC"
         if q.sort == "top"
         else "p.created_at DESC, p.id DESC"
     )
+    if q.search is not None:
+        needle = normalize_name(q.search)
+        where.append(_SEARCH_MATCHES)
+        params.update(
+            q=needle,
+            pattern=_like_pattern(needle),
+            text_threshold=POST_TEXT_SIMILARITY,
+            product_threshold=PRODUCT_NAME_SIMILARITY,
+        )
+        order = f"{_SEARCH_SCORE} DESC, p.created_at DESC, p.id DESC"
+    condition = " AND ".join(where)
     totals = db.execute(
         text(
             f"SELECT count(*) AS total, count(p.rating) AS rating_count, "
@@ -301,6 +400,57 @@ def author_page(db: Db, handle: str, viewer: str) -> dict[str, Any] | None:
         "post_count": found["total"],
         "posts": found["items"],
     }
+
+
+# Products and groups talked about in recent posts: catalogue products only (the groups are
+# those the seed stored for them); a pasted list is never resolved here.
+TRENDING_MAX = 6
+TRENDING_MIN_POSTS = 2
+_TRENDING = """
+WITH recent AS (
+  SELECT id FROM blog_posts
+  WHERE status = 'visible' AND created_at >= now() - make_interval(days => :days)
+), per_product AS (
+  SELECT bp.product_id, count(DISTINCT bp.post_id) AS n
+  FROM blog_post_products bp JOIN recent r ON r.id = bp.post_id
+  WHERE bp.product_id IS NOT NULL
+  GROUP BY bp.product_id
+), per_group AS (
+  SELECT ig.group_code, count(DISTINCT bp.post_id) AS n
+  FROM blog_post_products bp JOIN recent r ON r.id = bp.post_id
+  JOIN product_ingredients pi ON pi.product_id = bp.product_id
+  JOIN ingredient_groups ig ON ig.ingredient_id = pi.ingredient_id
+  GROUP BY ig.group_code
+)
+SELECT * FROM (
+  SELECT 'product' AS kind, pd.id AS product_id, NULL AS group_code, pd.name AS label_vi, x.n
+  FROM per_product x JOIN products pd ON pd.id = x.product_id
+  UNION ALL
+  SELECT 'group', NULL, g.code, g.name_vi, x.n
+  FROM per_group x JOIN functional_groups g ON g.code = x.group_code
+) t
+WHERE t.n >= :min_posts
+ORDER BY t.n DESC, t.kind DESC, t.label_vi
+LIMIT :max
+"""
+
+
+def trending(db: Db, days: int) -> list[dict[str, Any]]:
+    """Catalogue products and active groups in at least TRENDING_MIN_POSTS visible posts of
+    the last `days` days, most posts first (products before groups on a tie). Display only."""
+    rows = db.execute(
+        text(_TRENDING), {"days": days, "min_posts": TRENDING_MIN_POSTS, "max": TRENDING_MAX}
+    )
+    return [
+        {
+            "kind": r.kind,
+            "product_id": r.product_id,
+            "group": r.group_code,
+            "label_vi": r.label_vi,
+            "post_count": r.n,
+        }
+        for r in rows
+    ]
 
 
 # --- Writing posts ---
@@ -389,6 +539,12 @@ def _attach_images(db: Db, post_id: int, image_ids: list[int]) -> list[str]:
     return removed
 
 
+def _search_text(data: "PostData") -> str:
+    return search_text_of(
+        data.title, data.body, [p["name"] for p in data.products if p.get("name")]
+    )
+
+
 @dataclass(frozen=True)
 class PostData:
     title: str
@@ -408,14 +564,15 @@ def create_post(db: Db, author: str, data: PostData) -> int:
     post_id = db.execute(
         text(
             """
-            INSERT INTO blog_posts
-              (author_id, title, body, rating, skin_type, disclosure, routine, status, flags)
+            INSERT INTO blog_posts (author_id, title, body, rating, skin_type, disclosure,
+                                    routine, status, flags, search_text)
             VALUES (:author, :title, :body, :rating, :skin, :disclosure,
-                    CAST(:routine AS jsonb), :status, :flags)
+                    CAST(:routine AS jsonb), :status, :flags, :search)
             RETURNING id
             """
         ),
         {
+            "search": _search_text(data),
             "author": author,
             "title": data.title,
             "body": data.body,
@@ -429,6 +586,8 @@ def create_post(db: Db, author: str, data: PostData) -> int:
     ).scalar_one()
     _write_products(db, post_id, data.products)
     _attach_images(db, post_id, data.image_ids)
+    if flags:
+        notify(db, "post_pending", author, None, post_id)
     return post_id
 
 
@@ -439,16 +598,18 @@ def update_post(
     check_products(db, [p["product_id"] for p in data.products if "product_id" in p])
     images = _usable_images(db, author, data.image_ids, post_id)
     flags = _flags(data, [i.caption for i in images])
+    new_status = status_after_edit(current_status, flags)
     db.execute(
         text(
             """
             UPDATE blog_posts SET title = :title, body = :body, rating = :rating,
               skin_type = :skin, disclosure = :disclosure, routine = CAST(:routine AS jsonb),
-              status = :status, flags = :flags, updated_at = now()
+              status = :status, flags = :flags, search_text = :search, updated_at = now()
             WHERE id = :id
             """
         ),
         {
+            "search": _search_text(data),
             "id": post_id,
             "title": data.title,
             "body": data.body,
@@ -456,10 +617,12 @@ def update_post(
             "skin": data.skin_type,
             "disclosure": data.disclosure,
             "routine": json.dumps(data.routine) if data.routine is not None else None,
-            "status": status_after_edit(current_status, flags),
+            "status": new_status,
             "flags": flags,
         },
     )
+    if new_status == "pending" and current_status != "pending":
+        notify(db, "post_pending", author, None, post_id)
     _write_products(db, post_id, data.products)
     return _attach_images(db, post_id, data.image_ids)
 
@@ -492,6 +655,138 @@ def delete_post(db: Db, post_id: int) -> list[str]:
     return files
 
 
+# --- Notifications (in the app only, never by email) ---
+
+NoticeKind = Literal[
+    "post_liked",
+    "post_commented",
+    "comment_replied",
+    "comment_liked",
+    "post_pending",
+    "post_visible",
+    "post_hidden",
+    "post_removed",
+]
+STATUS_NOTICES = ("post_pending", "post_visible", "post_hidden", "post_removed")
+
+
+def notify(
+    db: Db,
+    kind: NoticeKind,
+    recipient: str | None,
+    actor: str | None,
+    post_id: int,
+    comment_id: int | None = None,
+) -> None:
+    """Record one notification. Nobody is notified of their own action; a like is notified
+    once per person and post / comment, even after unliking and liking again (unique index)."""
+    if recipient is None or (actor is not None and str(actor) == str(recipient)):
+        return
+    db.execute(
+        text(
+            "INSERT INTO blog_notifications (recipient_id, actor_id, kind, post_id, comment_id) "
+            "VALUES (:r, :a, :k, :p, :c) ON CONFLICT DO NOTHING"
+        ),
+        {"r": recipient, "a": actor, "k": kind, "p": post_id, "c": comment_id},
+    )
+
+
+def _post_author(db: Db, post_id: int) -> str | None:
+    return db.execute(
+        text("SELECT author_id::text FROM blog_posts WHERE id = :p"), {"p": post_id}
+    ).scalar_one_or_none()
+
+
+# A notification is shown while what it points to is visible: the post, and the comment when
+# there is one. Status notices go to the post's author and are always shown.
+_STATUS_LIST = ", ".join(f"'{k}'" for k in STATUS_NOTICES)
+_NOTICE_SHOWN = f"""
+    (n.kind IN ({_STATUS_LIST})
+     OR (p.status = 'visible'
+         AND (n.comment_id IS NULL OR (c.status = 'visible' AND c.deleted_at IS NULL))))
+"""
+_FROM_NOTICES = """
+    FROM blog_notifications n
+    JOIN blog_posts p ON p.id = n.post_id
+    LEFT JOIN blog_comments c ON c.id = n.comment_id
+"""
+
+
+def unread_count(db: Db, viewer: str) -> int:
+    return db.execute(
+        text(
+            f"SELECT count(*) {_FROM_NOTICES} "
+            f"WHERE n.recipient_id = :viewer AND n.read_at IS NULL AND {_NOTICE_SHOWN}"
+        ),
+        {"viewer": viewer},
+    ).scalar_one()
+
+
+def activity(db: Db, viewer: str, limit: int) -> dict[str, Any]:
+    """The viewer's latest notifications that may be shown, newest first."""
+    rows = db.execute(
+        text(
+            f"""
+            SELECT n.id, n.kind, n.created_at, n.read_at IS NOT NULL AS read, pr.handle,
+                   n.post_id, p.title, n.comment_id,
+                   CASE WHEN c.status = 'visible' AND c.deleted_at IS NULL
+                        THEN left(c.body, {NOTICE_EXCERPT_LENGTH}) END AS excerpt
+            {_FROM_NOTICES}
+            LEFT JOIN user_profiles pr ON pr.user_id = n.actor_id
+            WHERE n.recipient_id = :viewer AND {_NOTICE_SHOWN}
+            ORDER BY n.created_at DESC, n.id DESC
+            LIMIT :limit
+            """
+        ),
+        {"viewer": viewer, "limit": limit},
+    ).all()
+    return {
+        "unread_count": unread_count(db, viewer),
+        "items": [
+            {
+                "id": r.id,
+                "kind": r.kind,
+                "created_at": r.created_at,
+                "read": r.read,
+                "actor_handle": r.handle,
+                "post_id": r.post_id,
+                "post_title": r.title,
+                "comment_id": r.comment_id,
+                "excerpt_vi": r.excerpt,
+            }
+            for r in rows
+        ],
+    }
+
+
+def mark_read(db: Db, viewer: str, ids: list[int] | None) -> None:
+    """Mark the viewer's notifications read: those listed, or all when ids is None."""
+    if ids is None:
+        db.execute(
+            text(
+                "UPDATE blog_notifications SET read_at = now() "
+                "WHERE recipient_id = :viewer AND read_at IS NULL"
+            ),
+            {"viewer": viewer},
+        )
+    elif ids:
+        db.execute(
+            text(
+                "UPDATE blog_notifications SET read_at = now() "
+                "WHERE recipient_id = :viewer AND read_at IS NULL AND id = ANY(:ids)"
+            ),
+            {"viewer": viewer, "ids": ids},
+        )
+
+
+def purge_read_notifications(db: Db) -> int:
+    """Remove notifications read more than READ_NOTICE_DAYS ago; returns how many."""
+    return db.execute(
+        text("DELETE FROM blog_notifications WHERE read_at < now() - make_interval(days => :d)"),
+        {"d": READ_NOTICE_DAYS},
+    ).rowcount
+
+
 # --- Likes and saves ---
 
 
@@ -503,6 +798,7 @@ def set_like(db: Db, post_id: int, user_id: str, on: bool) -> int:
             ),
             {"p": post_id, "u": user_id},
         )
+        notify(db, "post_liked", _post_author(db, post_id), user_id, post_id)
     else:
         db.execute(
             text("DELETE FROM blog_likes WHERE post_id = :p AND user_id = :u"),
@@ -529,39 +825,82 @@ def set_save(db: Db, post_id: int, user_id: str, on: bool) -> None:
 
 
 # --- Comments ---
+#
+# One level of replies: a top-level comment has parent_id NULL; a reply has the id of the
+# top-level comment, even when it answers another reply (reply_to_id then names that reply,
+# for "@handle"). A top-level comment deleted while it has replies stays as an empty frame
+# (deleted_at set, body emptied, author_id NULL).
 
 _COMMENT_COLUMNS = """
-    c.id, c.post_id, c.body, c.status, c.flags, c.created_at, c.author_id = :viewer AS is_mine,
-    pr.handle, pr.skin_type AS author_skin_type
+    c.id, c.post_id, c.parent_id, c.body, c.status, c.flags, c.created_at,
+    c.deleted_at IS NOT NULL AS deleted,
+    coalesce(c.author_id = :viewer, false) AS is_mine,
+    pr.handle, pr.skin_type AS author_skin_type,
+    rp.handle AS reply_to_handle,
+    (SELECT count(*) FROM blog_comment_likes cl WHERE cl.comment_id = c.id) AS like_count,
+    EXISTS (SELECT 1 FROM blog_comment_likes cl
+            WHERE cl.comment_id = c.id AND cl.user_id = :viewer) AS liked_by_me
 """
-_FROM_COMMENTS = "FROM blog_comments c JOIN user_profiles pr ON pr.user_id = c.author_id"
+# The handle of the answered reply, only while the viewer may see that reply.
+_FROM_COMMENTS = """
+    FROM blog_comments c
+    LEFT JOIN user_profiles pr ON pr.user_id = c.author_id
+    LEFT JOIN blog_comments rc ON rc.id = c.reply_to_id AND rc.deleted_at IS NULL
+      AND (rc.status = 'visible' OR (rc.author_id = :viewer AND rc.status <> 'removed'))
+    LEFT JOIN user_profiles rp ON rp.user_id = rc.author_id
+"""
 
 
-def _comment(row: Any) -> dict[str, Any]:
+def _comment(row: Any, frame: bool = False) -> dict[str, Any]:
+    """A comment as the API returns it. frame: shown only to hold its replies (deleted, or
+    one the viewer may not see): no author, no text, no likes."""
+    frame = frame or row.deleted
     return {
         "id": row.id,
         "post_id": row.post_id,
-        "author": {"handle": row.handle, "skin_type": row.author_skin_type},
-        "body": row.body,
-        "status": row.status,
-        "flags": list(row.flags) if row.is_mine else [],
-        "is_mine": row.is_mine,
+        "parent_id": row.parent_id,
+        "reply_to_handle": row.reply_to_handle,
+        "author": None if frame else {"handle": row.handle, "skin_type": row.author_skin_type},
+        "body": "" if frame else row.body,
+        "status": "visible" if frame else row.status,
+        "flags": list(row.flags) if row.is_mine and not frame else [],
+        "is_mine": row.is_mine and not frame,
+        "deleted": frame,
+        "like_count": 0 if frame else row.like_count,
+        "liked_by_me": row.liked_by_me and not frame,
         "created_at": row.created_at,
+        "replies": [],
     }
 
 
 def list_comments(db: Db, post_id: int, viewer: str) -> list[dict[str, Any]]:
+    """Top-level comments, oldest first, each with its replies (oldest first). The viewer
+    sees visible comments and their own waiting ones. A top-level comment that is deleted, or
+    that the viewer may not see, is shown as an empty frame while it has replies they see."""
     rows = db.execute(
         text(
-            f"SELECT {_COMMENT_COLUMNS} {_FROM_COMMENTS} "
-            f"WHERE c.post_id = :post AND {_COMMENT_SEEN} ORDER BY c.created_at, c.id"
+            f"SELECT {_COMMENT_COLUMNS}, ({_COMMENT_SEEN} AND c.deleted_at IS NULL) AS seen "
+            f"{_FROM_COMMENTS} WHERE c.post_id = :post ORDER BY c.created_at, c.id"
         ),
         {"post": post_id, "viewer": viewer},
-    )
-    return [_comment(r) for r in rows]
+    ).all()
+    replies: dict[int, list[dict[str, Any]]] = {}
+    for r in rows:
+        if r.parent_id is not None and r.seen:
+            replies.setdefault(r.parent_id, []).append(_comment(r))
+    out = []
+    for r in rows:
+        if r.parent_id is not None:
+            continue
+        if r.seen:
+            out.append({**_comment(r), "replies": replies.get(r.id, [])})
+        elif r.id in replies:
+            out.append({**_comment(r, frame=True), "replies": replies[r.id]})
+    return out
 
 
 def get_comment(db: Db, comment_id: int, viewer: str) -> dict[str, Any] | None:
+    """One comment, without its replies."""
     row = db.execute(
         text(f"SELECT {_COMMENT_COLUMNS} {_FROM_COMMENTS} WHERE c.id = :id"),
         {"id": comment_id, "viewer": viewer},
@@ -570,27 +909,50 @@ def get_comment(db: Db, comment_id: int, viewer: str) -> dict[str, Any] | None:
 
 
 def comment_state(db: Db, comment_id: int) -> Any:
-    """(author_id, status, post_id) of a comment, or None."""
+    """(author_id, status, post_id, parent_id, deleted) of a comment, or None."""
     return db.execute(
         text(
-            "SELECT author_id::text AS author_id, status, post_id FROM blog_comments WHERE id = :id"
+            "SELECT author_id::text AS author_id, status, post_id, parent_id, "
+            "deleted_at IS NOT NULL AS deleted FROM blog_comments WHERE id = :id"
         ),
         {"id": comment_id},
     ).first()
 
 
 def can_see_comment(db: Db, state: Any, viewer: str) -> bool:
-    if state is None or not can_see_post(post_state(db, state.post_id), viewer):
+    """Whether the viewer sees the comment itself (not an empty frame) on a post they see."""
+    if state is None or state.deleted:
+        return False
+    if not can_see_post(post_state(db, state.post_id), viewer):
         return False
     return state.status == "visible" or (state.author_id == viewer and state.status != "removed")
 
 
-def add_comment(db: Db, post_id: int, author: str, body: str) -> int:
+def can_answer(db: Db, post_id: int, answered_id: int, viewer: str) -> bool:
+    """Whether the viewer may reply to comment `answered_id` on this post: it is on this post
+    and they see it."""
+    state = comment_state(db, answered_id)
+    return state is not None and state.post_id == post_id and can_see_comment(db, state, viewer)
+
+
+def add_comment(
+    db: Db, post_id: int, author: str, body: str, answered_id: int | None = None
+) -> int:
+    """A comment, or a reply to comment `answered_id` (checked with can_answer first); a
+    reply to a reply goes under the same top-level comment. Notifies the author of the
+    answered comment, and the post's author."""
+    parent_id = reply_to_id = answered_author = None
+    if answered_id is not None:
+        state = comment_state(db, answered_id)
+        parent_id = state.parent_id or answered_id
+        reply_to_id = answered_id if state.parent_id is not None else None
+        answered_author = state.author_id
     flags = auto_flags(body)
-    return db.execute(
+    comment_id = db.execute(
         text(
-            "INSERT INTO blog_comments (post_id, author_id, body, status, flags) "
-            "VALUES (:post, :author, :body, :status, :flags) RETURNING id"
+            "INSERT INTO blog_comments (post_id, author_id, body, status, flags, parent_id, "
+            "reply_to_id) VALUES (:post, :author, :body, :status, :flags, :parent, :reply_to) "
+            "RETURNING id"
         ),
         {
             "post": post_id,
@@ -598,13 +960,104 @@ def add_comment(db: Db, post_id: int, author: str, body: str) -> int:
             "body": body,
             "status": "pending" if flags else "visible",
             "flags": flags,
+            "parent": parent_id,
+            "reply_to": reply_to_id,
         },
     ).scalar_one()
+    if answered_author is not None:
+        notify(db, "comment_replied", answered_author, author, post_id, comment_id)
+    post_author = _post_author(db, post_id)
+    if post_author != answered_author:
+        notify(db, "post_commented", post_author, author, post_id, comment_id)
+    return comment_id
+
+
+def _drop_empty_frames(db: Db) -> None:
+    """Remove deleted top-level comments that no longer have any reply."""
+    db.execute(
+        text(
+            "DELETE FROM blog_comments c WHERE c.deleted_at IS NOT NULL "
+            "AND NOT EXISTS (SELECT 1 FROM blog_comments r WHERE r.parent_id = c.id)"
+        )
+    )
+
+
+def _empty_frame(db: Db, comment_ids: list[int]) -> None:
+    """Keep these top-level comments only as frames for their replies: nothing of the text
+    or the author stays, nor its likes, reports or the notifications pointing to it."""
+    if not comment_ids:
+        return
+    params = {"ids": comment_ids}
+    db.execute(
+        text(
+            "UPDATE blog_comments SET body = '', author_id = NULL, flags = '{}', "
+            "status = 'visible', deleted_at = now() WHERE id = ANY(:ids)"
+        ),
+        params,
+    )
+    db.execute(text("DELETE FROM blog_comment_likes WHERE comment_id = ANY(:ids)"), params)
+    db.execute(text("DELETE FROM blog_notifications WHERE comment_id = ANY(:ids)"), params)
+    db.execute(
+        text("DELETE FROM blog_reports WHERE target_kind = 'comment' AND target_id = ANY(:ids)"),
+        params,
+    )
 
 
 def delete_comment(db: Db, comment_id: int) -> None:
-    db.execute(text("DELETE FROM blog_comments WHERE id = :id"), {"id": comment_id})
+    """Delete the comment. A top-level comment with replies becomes an empty frame; a frame
+    whose last reply goes is removed."""
+    has_replies = db.execute(
+        text("SELECT EXISTS (SELECT 1 FROM blog_comments WHERE parent_id = :id)"),
+        {"id": comment_id},
+    ).scalar_one()
+    if has_replies:
+        _empty_frame(db, [comment_id])
+    else:
+        db.execute(text("DELETE FROM blog_comments WHERE id = :id"), {"id": comment_id})
+        _drop_empty_frames(db)
     drop_orphan_reports(db)
+
+
+def keep_threads_of(db: Db, user_id: str) -> None:
+    """Before the user's account is deleted: their top-level comments that others replied to
+    become empty frames, so the deletion does not take others' replies with it."""
+    ids = db.execute(
+        text(
+            "SELECT c.id FROM blog_comments c WHERE c.author_id = :u AND c.parent_id IS NULL "
+            "AND EXISTS (SELECT 1 FROM blog_comments r "
+            "            WHERE r.parent_id = c.id AND r.author_id <> :u)"
+        ),
+        {"u": user_id},
+    ).scalars()
+    _empty_frame(db, list(ids))
+
+
+def after_account_deletion(db: Db) -> None:
+    """After an account is deleted: others' reports about its writing, and frames left
+    without replies, go."""
+    drop_orphan_reports(db)
+    _drop_empty_frames(db)
+
+
+def set_comment_like(db: Db, comment_id: int, user_id: str, on: bool) -> int:
+    if on:
+        db.execute(
+            text(
+                "INSERT INTO blog_comment_likes (comment_id, user_id) VALUES (:c, :u) "
+                "ON CONFLICT DO NOTHING"
+            ),
+            {"c": comment_id, "u": user_id},
+        )
+        state = comment_state(db, comment_id)
+        notify(db, "comment_liked", state.author_id, user_id, state.post_id, comment_id)
+    else:
+        db.execute(
+            text("DELETE FROM blog_comment_likes WHERE comment_id = :c AND user_id = :u"),
+            {"c": comment_id, "u": user_id},
+        )
+    return db.execute(
+        text("SELECT count(*) FROM blog_comment_likes WHERE comment_id = :c"), {"c": comment_id}
+    ).scalar_one()
 
 
 # --- Reports and the review queue ---
@@ -652,6 +1105,8 @@ def add_report(
             text(f"UPDATE {_TABLES[kind]} SET status = :s WHERE id = :id"),
             {"s": new, "id": target_id},
         )
+        if kind == "post" and new == "hidden":
+            notify(db, "post_hidden", _post_author(db, target_id), None, target_id)
 
 
 _QUEUE_SQL = """
@@ -728,15 +1183,24 @@ def moderation_item(db: Db, kind: Kind, item_id: int) -> dict[str, Any] | None:
 
 def moderate(db: Db, kind: Kind, item_id: int, action: Literal["approve", "remove"]) -> bool:
     """approve: visible again; remove: nobody sees it. Reports before this decision no longer
-    count toward hiding it. False if there is no such item."""
-    row = db.execute(
-        text(
-            f"UPDATE {_TABLES[kind]} SET status = :s, reviewed_at = clock_timestamp() "
-            "WHERE id = :id RETURNING id"
-        ),
-        {"s": "visible" if action == "approve" else "removed", "id": item_id},
-    ).first()
-    return row is not None
+    count toward hiding it. False if there is no such item (a deleted comment kept as a frame
+    for its replies is not one). The author of a post is notified when its status changes."""
+    table = _TABLES[kind]
+    live = " AND deleted_at IS NULL" if kind == "comment" else ""
+    before = db.execute(
+        text(f"SELECT status FROM {table} WHERE id = :id{live} FOR UPDATE"), {"id": item_id}
+    ).scalar_one_or_none()
+    if before is None:
+        return False
+    new = "visible" if action == "approve" else "removed"
+    db.execute(
+        text(f"UPDATE {table} SET status = :s, reviewed_at = clock_timestamp() WHERE id = :id"),
+        {"s": new, "id": item_id},
+    )
+    if kind == "post" and new != before:
+        notice = "post_visible" if new == "visible" else "post_removed"
+        notify(db, notice, _post_author(db, item_id), None, item_id)
+    return True
 
 
 # --- Photos ---
@@ -850,7 +1314,7 @@ def export_blog(db: Db, user_id: str) -> dict[str, Any]:
             "WHERE owner_id = :u ORDER BY id"
         ),
         "comments": rows(
-            "SELECT id, post_id, body, status, created_at FROM blog_comments "
+            "SELECT id, post_id, parent_id, body, status, created_at FROM blog_comments "
             "WHERE author_id = :u ORDER BY created_at"
         ),
         "likes": rows(
@@ -862,6 +1326,15 @@ def export_blog(db: Db, user_id: str) -> dict[str, Any]:
         "reports": rows(
             "SELECT target_kind, target_id, reason, note, created_at FROM blog_reports "
             "WHERE reporter_id = :u ORDER BY created_at"
+        ),
+        "comment_likes": rows(
+            "SELECT comment_id, created_at FROM blog_comment_likes WHERE user_id = :u "
+            "ORDER BY created_at"
+        ),
+        # Received ones; who caused each is left out (that is someone else's data).
+        "notifications": rows(
+            "SELECT kind, post_id, comment_id, created_at, read_at FROM blog_notifications "
+            "WHERE recipient_id = :u ORDER BY created_at"
         ),
     }
 

@@ -12,6 +12,8 @@ from app.goal_articles import article_problems
 from app.goals import SHARED_GOAL, goal_problems
 from app.inci import normalize_name, parse_inci
 from app.ingredients import clear_suggestion_cache, resolve
+from app.product_images import image_problems, seed_product_images
+from app.product_images import load_entries as load_image_entries
 from app.rules import rule_problems
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -79,6 +81,10 @@ def seed(engine: Engine) -> dict[str, int]:
     if problems := article_problems(articles_data, goal_codes, article_urls):
         raise ValueError("goal_articles.toml:\n  " + "\n  ".join(problems))
 
+    product_images = load_image_entries()
+    if problems := image_problems(product_images, {p["slug"] for p in products}):
+        raise ValueError("product_images.toml:\n  " + "\n  ".join(problems))
+
     eu_names, functions = load_eu_names(), load_functions()
     used = {code for _, _, codes in eu_names.values() for code in codes}
     if untranslated := used - {f["code"] for f in functions}:
@@ -98,6 +104,7 @@ def seed(engine: Engine) -> dict[str, int]:
         _seed_ingredients(conn, ingredients)
         for product in products:
             _seed_product(conn, product)
+        checked_images = seed_product_images(conn, product_images)
         source_ids = {s["url"]: _seed_source(conn, s) for s in sources}
         for rule in rules:
             _seed_rule(conn, rule, source_ids)
@@ -111,6 +118,7 @@ def seed(engine: Engine) -> dict[str, int]:
         "ingredients": len(ingredients),
         "eu_names": len(eu_names),
         "products": len(products),
+        "checked_product_images": checked_images,
         "rules": len(rules),
         "published_rules": sum(1 for r in rules if r.get("published")),
         "goals": len(goals_data.get("goal", [])),

@@ -3,7 +3,9 @@
 from dataclasses import asdict
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi.responses import FileResponse
+from pydantic import StringConstraints
 from sqlalchemy.orm import Session
 
 from app.accounts_api import CurrentUser
@@ -33,6 +35,8 @@ from app.ingredients import (
     suggest,
     with_ancestors,
 )
+from app.product_images import file_for as product_image_file
+from app.product_images import images_for
 from app.products import (
     get_product,
     product_applications,
@@ -118,6 +122,12 @@ GOALS_NOTICE_VI = (
 
 router = APIRouter()
 
+# Text from the query string or the path never holds a NUL character: PostgreSQL refuses it
+# in text, so it would end as a 500 instead of a 422 (app/main.py also turns any NUL that gets
+# through into a 422).
+NO_NUL = r"^[^\x00]*$"
+QueryText = Annotated[str, StringConstraints(max_length=200, pattern=NO_NUL)]
+
 
 @router.get("/groups")
 def groups(db: DbSession) -> list[GroupOut]:
@@ -145,7 +155,9 @@ GOAL_ARTICLE_NOT_FOUND_VI = "Chưa có bài viết cho mục tiêu này."
 
 
 @router.get("/goals/{code}/article")
-def goal_article(code: str, db: DbSession) -> GoalArticleOut:
+def goal_article(
+    code: Annotated[str, Path(max_length=40, pattern=r"^[a-z0-9_-]+$")], db: DbSession
+) -> GoalArticleOut:
     """The published long article of a goal. Display only, like /goals. 404 for an unknown
     goal, the shared goal and an article not published yet."""
     article = load_article(db, code)
@@ -205,13 +217,16 @@ def ingredient_fields(
 @router.get("/products")
 def products(
     db: DbSession,
-    q: Annotated[str, Query(max_length=200)] = "",
+    q: Annotated[str, Query(max_length=200, pattern=NO_NUL)] = "",
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> list[ProductSummary]:
     rows = search_products(db, q, limit)
     groups_by_id = load_product_groups(db, [r.id for r in rows])
+    pictures = images_for(db, [r.id for r in rows])
     return [
-        ProductSummary.model_validate({**r.__dict__, "groups": sorted(groups_by_id[r.id])})
+        ProductSummary.model_validate(
+            {**r.__dict__, "groups": sorted(groups_by_id[r.id]), "image": pictures.get(r.id)}
+        )
         for r in rows
     ]
 
@@ -233,7 +248,28 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
                 IngredientOut(**ingredient_fields(r, line, suggestions)) for r in resolved
             ],
             "one_percent_marker": line.marker if line else None,
+            "image": images_for(db, [product_id]).get(product_id),
         }
+    )
+
+
+@router.get(
+    "/product-images/{slug}.webp",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/webp": {}}}},
+)
+def product_image(
+    db: DbSession, slug: Annotated[str, Path(max_length=200, pattern=r"^[a-z0-9-]+$")]
+) -> FileResponse:
+    """A checked catalogue product image. Its URL carries a hash of the file, so it is
+    cached for long."""
+    path = product_image_file(db, slug)
+    if path is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "no image")
+    return FileResponse(
+        path,
+        media_type="image/webp",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )
 
 
@@ -339,7 +375,7 @@ def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> Routin
 def rules(
     db: DbSession,
     kind: Literal["conflict", "duplicate", "myth", "usage"] | None = None,
-    groups: Annotated[list[str], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
+    groups: Annotated[list[QueryText], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
 ) -> RulesResponse:
     """Published rules, optionally of one kind. With one group: rules involving it. With two:
     the pair rules that would fire for one product of each group, whatever their kind, matched

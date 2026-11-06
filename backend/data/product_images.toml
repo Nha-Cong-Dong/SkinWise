@@ -1,0 +1,125 @@
+# Front images of sample products from Open Beauty Facts (CC BY-SA 3.0), written by
+# scripts.fetch_product_images (do not edit by hand, apart from `checked`). The file is
+# data/product_images/<slug>.webp. Set checked = true only after looking at the image: it must
+# show this very product (brand, name, size), and nothing else (no person, no personal data).
+# Seed serves checked images only; it refuses a checked image whose file changed (sha256).
+
+[[image]]
+slug = "cerave-acne-foaming-cream-cleanser"
+barcode = "3606000512238"
+source_url = "https://world.openbeautyfacts.org/product/3606000512238"
+image_url = "https://images.openbeautyfacts.org/images/products/360/600/051/2238/front_en.4.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "8e99cc9e9d53fcd881a95d6ff77ad7a2c722882d9823d42e1d8f74d676142988"
+checked = false
+
+[[image]]
+slug = "cerave-daily-moisturizing-lotion"
+barcode = "3606000537743"
+source_url = "https://world.openbeautyfacts.org/product/3606000537743"
+image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7743/front_en.55.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "25a84e8a1553eb3430642906a2fddb9398eeb68aaa74b8f362fe71463a85862f"
+checked = false
+
+[[image]]
+slug = "cerave-renewing-sa-cleanser"
+barcode = "3606000537552"
+source_url = "https://world.openbeautyfacts.org/product/3606000537552"
+image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7552/front_en.3.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "1fbce7c5da2573b777f6365c3887877c49c2e36a69fb906968d646dbcfa80beb"
+checked = false
+
+[[image]]
+slug = "cerave-sua-duong-am-ban-dem"
+barcode = "3606000537453"
+source_url = "https://world.openbeautyfacts.org/product/3606000537453"
+image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7453/front_en.3.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "c75049be7d0b37c18f79408776fa71acf7a3b8830b8ad4200535944b78359419"
+checked = false
+
+[[image]]
+slug = "cerave-sua-rua-mat-danh-cho-da-kho"
+barcode = "3606000537699"
+source_url = "https://world.openbeautyfacts.org/product/3606000537699"
+image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7699/front_en.9.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "fa4f379d867e06a71c7bd5e9d1e707e59c95fbe121ccc290ea062b61201cd4f1"
+checked = false
+
+[[image]]
+slug = "la-roche-posay-anthelios-uvmune-400-anti-dark-spots-fluid-spf50"
+barcode = "3337875917407"
+source_url = "https://world.openbeautyfacts.org/product/3337875917407"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/591/7407/front_es.9.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "bd1cdaafa6a7e1ee43a1644ef4a6b0e7aaeab2aea0d815d50ab59be68b23a85f"
+checked = false
+
+[[image]]
+slug = "la-roche-posay-anthelios-uvmune-400-invisible-fluid-spf50"
+barcode = "3337875797597"
+source_url = "https://world.openbeautyfacts.org/product/3337875797597"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/579/7597/front_fr.10.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "e1140e9df820263e3eced85399cda6edcf2433734e2206ceff154889299298f3"
+checked = false
+
+[[image]]
+slug = "la-roche-posay-cicaplast-baume-b5-plus"
+barcode = "3337872412998"
+source_url = "https://world.openbeautyfacts.org/product/3337872412998"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/241/2998/front_fr.11.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "11cf089db5dd4ab3c8926922d751a34f20c76b76f47f81552f15c881b4c5678d"
+checked = false
+
+[[image]]
+slug = "la-roche-posay-effaclar-micro-peeling-purifying-gel"
+barcode = "3337875708289"
+source_url = "https://world.openbeautyfacts.org/product/3337875708289"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/570/8289/front_fr.5.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "1da817b6e18b82ac4ec83819f1bd076d2c3d9e69217a1aa09ee5cb727d05902f"
+checked = false
+
+[[image]]
+slug = "la-roche-posay-effaclar-ultra-concentrated-serum"
+barcode = "3337875722827"
+source_url = "https://world.openbeautyfacts.org/product/3337875722827"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/572/2827/front_en.22.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "ce2f6c2df2ca37618562d9955d1084adcc7ccce1194d138db5d96721a5187ca0"
+checked = false
+
+[[image]]
+slug = "la-roche-posay-mela-b3-serum"
+barcode = "3337875890021"
+source_url = "https://world.openbeautyfacts.org/product/3337875890021"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/589/0021/front_en.8.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "e0fc2890fc08ab5f8378f353e50b26b5ed67430fac5c07adeb73a9310aa97c9e"
+checked = false
+
+[[image]]
+slug = "vichy-normaderm-probio-bha-serum"
+barcode = "3337875791984"
+source_url = "https://world.openbeautyfacts.org/product/3337875791984"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/579/1984/front_en.3.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-06T18:54:11Z
+sha256 = "dfdfc2e9735426296eda7211e18b7caad318adfafda9190cf8c87ef85071c475"
+checked = false
