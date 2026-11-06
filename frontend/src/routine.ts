@@ -266,9 +266,9 @@ export function labelGroups(state: CheckState): Map<string, LabelGroups> {
   )
 }
 
-/** "Lactobionic Acid (thứ 29/41)", or just the name when the list is not in order of weight. */
+/** "Lactobionic Acid (dòng 29/41)", or just the name when the list is not in order of weight. */
 export function formatLabelLine(line: GroupIngredient, found: LabelGroups): string {
-  return found.ordered ? `${line.name} (thứ ${line.position}/${found.count})` : line.name
+  return found.ordered ? `${line.name} (dòng ${line.position}/${found.count})` : line.name
 }
 
 /**
@@ -282,9 +282,9 @@ export function isUsageNote(w: Warning): boolean {
 /**
  * Re-check the routine whenever it changes (debounced; a newer check cancels an older one).
  * /routine/check needs a session: nothing is sent while `user` is null (signing in, #review), and
- * a new sign-in checks again. A 401 calls `onSignedOut`, which takes the user to the sign-in form.
+ * a new sign-in checks again. A 401 takes the user to the sign-in form (SIGNED_OUT_EVENT in api.ts).
  */
-export function useRoutineCheck(routine: Routine, user: string | null, onSignedOut: () => void): CheckState {
+export function useRoutineCheck(routine: Routine, user: string | null): CheckState {
   const request = toCheckRequest(routine)
   const body = JSON.stringify(request)
   const empty = request.items.length === 0
@@ -312,16 +312,14 @@ export function useRoutineCheck(routine: Routine, user: string | null, onSignedO
         .then((result) => setLast({ body, result }))
         .catch((e) => {
           if (e.name === 'AbortError') return
-          const problem = requestProblem(e)
-          setLast({ body, error: e.message, problem })
-          if (problem === 'signed-out') onSignedOut()
+          setLast({ body, error: e.message, problem: requestProblem(e) })
         })
     }, 300)
     return () => {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [body, empty, attempt, user, onSignedOut])
+  }, [body, empty, attempt, user])
 
   if (empty) return { kind: 'empty' }
   if (user === null || last?.body !== body) return { kind: 'loading', previous: last?.result ?? null }

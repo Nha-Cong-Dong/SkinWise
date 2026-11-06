@@ -107,6 +107,8 @@ class InciAnalysis(BaseModel):
     # Signs the text is not a full INCI list; a routine check on it may miss warnings.
     notices: list[TextNotice]
     one_percent_marker: str | None  # the capped ingredient that marks the 1% line
+    # Some unrecognised lines got no suggestion lookup because the budget ran out.
+    suggestions_truncated: bool = False
 
 
 class LabelImage(BaseModel):
@@ -227,6 +229,9 @@ class RoutineProductResult(BaseModel):
     # Pasted lists only: actives that unrecognised (likely misspelled) names may be. They
     # are not checked, so the routine may be missing warnings for them.
     possible_actives: list[str]
+    # Pasted lists only: some unrecognised lines were not looked up for suggestions because
+    # the request's budget ran out, so `possible_actives` may be incomplete.
+    suggestions_truncated: bool = False
     application: Literal["rinse_off", "leave_on"] | None  # seeded products only
     # Shown only: which label entries put the product in each group, where they stand, and
     # whether the list is in order of weight (key-ingredient lists and Drug Facts are not).

@@ -1,5 +1,6 @@
 """Resolve parsed INCI entries to canonical ingredients and functional groups."""
 
+import threading
 from collections import OrderedDict
 from dataclasses import dataclass, replace
 
@@ -266,19 +267,26 @@ _TRGM_LIMIT = text("SELECT set_config('pg_trgm.similarity_threshold', '0.44', tr
 # seed runs (dictionary, EU lists), which calls clear_suggestion_cache(); a server started
 # before a seed in another process keeps old suggestions until it restarts, which is
 # acceptable for hints that never change a warning.
+# Sync routes run in a thread pool, so every read and write of the cache holds the lock
+# (never while querying the database).
 SUGGESTION_CACHE_SIZE = 4096
 _cache: OrderedDict[str, tuple[Suggestion, ...]] = OrderedDict()
+_cache_lock = threading.Lock()
 
 
 def clear_suggestion_cache() -> None:
-    _cache.clear()
+    with _cache_lock:
+        _cache.clear()
 
 
 def suggest(db: Session | Connection, name: str) -> list[Suggestion]:
     """Known names close to `name` (already normalized), actives first among equals."""
-    if name in _cache:
-        _cache.move_to_end(name)
-        return list(_cache[name])
+    with _cache_lock:
+        cached = _cache.get(name)
+        if cached is not None:
+            _cache.move_to_end(name)
+    if cached is not None:
+        return list(cached)
     db.execute(_TRGM_LIMIT)
     rows = [r for r in db.execute(_SUGGEST, {"q": name}) if r.score >= SUGGESTION_THRESHOLD]
     best: dict[str, Suggestion] = {}
@@ -289,7 +297,9 @@ def suggest(db: Session | Connection, name: str) -> list[Suggestion]:
         elif r.groups and not best[key].groups:
             best[key] = Suggestion(r.name, tuple(r.groups))  # prefer the dictionary entry
     found = tuple(best.values())[:MAX_SUGGESTIONS]
-    _cache[name] = found
-    if len(_cache) > SUGGESTION_CACHE_SIZE:
-        _cache.popitem(last=False)
+    with _cache_lock:
+        _cache[name] = found
+        _cache.move_to_end(name)
+        while len(_cache) > SUGGESTION_CACHE_SIZE:
+            _cache.popitem(last=False)
     return list(found)

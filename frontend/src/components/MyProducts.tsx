@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
-import { api, requestError, type InciAnalysis, type ProductDetail } from '../api'
+import { api, requestError, SUGGESTIONS_TRUNCATED_VI, type InciAnalysis, type ProductDetail } from '../api'
 import { APPLICATION_LABELS, SESSION_LABELS, VERIFICATION_LABELS } from '../labels'
 import { maybeIncomplete, sampleRoutine, type LabelGroups, type MyProduct, type RemovedProduct, type RoutineActions } from '../routine'
 import { Dialog } from './Dialog'
 import { GroupChips, LABEL_CHIP_NOTE, UNORDERED_NOTE } from './GroupChips'
 import { Glyph } from './Icons'
 import { IngredientList } from './IngredientList'
+import { DataNote } from './Notice'
 
 type Props = {
   actions: RoutineActions
@@ -270,5 +271,14 @@ function PastedIngredients({ inci }: { inci: string }) {
 
   if (error) return <p className="text-sm text-avoid-ink">{error}</p>
   if (!analysis) return <p className="text-sm text-ink-mute">Đang tải…</p>
-  return <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
+  return (
+    <>
+      {analysis.suggestions_truncated && (
+        <div className="mb-3">
+          <DataNote title="Chưa kiểm hết bảng thành phần">{SUGGESTIONS_TRUNCATED_VI}</DataNote>
+        </div>
+      )}
+      <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
+    </>
+  )
 }

@@ -82,7 +82,7 @@ function App() {
   const account = useAccount()
   const me = account.state.kind === 'signed-in' ? account.state.me : null
   // Both need a session: nothing is sent from the sign-in form or #review.
-  const check = useRoutineCheck(actions.routine, page === 'review' ? null : (me?.email ?? null), account.refresh)
+  const check = useRoutineCheck(actions.routine, page === 'review' ? null : (me?.email ?? null))
   const { incoming, retry: retryIncoming, dismiss } = useIncomingRoutine(me !== null) // a shared routine link was opened
   const accountOffline = account.state.kind === 'signed-in' && account.state.offline === true
   const sync = useRoutineSync(actions, me?.email ?? null)

@@ -441,13 +441,26 @@ def test_public_routes_stay_open(anonymous: TestClient) -> None:
 
 
 def test_suggestions_are_capped_per_request(client: TestClient) -> None:
-    unknown = [f"Qqzv Unknownium {n}" for n in range(MAX_SUGGESTED_LINES + 5)]
-    text_ = ", ".join(["Salicilic Acid", *unknown])
-    ingredients = client.post("/inci/analyze", json={"text": text_}).json()["ingredients"]
-    assert ingredients[0]["suggestions"][0]["name"] == "Salicylic Acid"
-    # Lines past the budget are still listed, just without suggestions.
-    assert len(ingredients) == MAX_SUGGESTED_LINES + 6
-    assert all(i["suggestions"] == [] for i in ingredients[MAX_SUGGESTED_LINES:])
+    unknown = [f"Qqzv Unknownium {n}" for n in range(MAX_SUGGESTED_LINES)]
+    text_ = ", ".join([*unknown, "Salicilic Acid"])
+    body = client.post("/inci/analyze", json={"text": text_}).json()
+    ingredients = body["ingredients"]
+    # Lines past the budget are still listed, just without suggestions, and the client is told.
+    assert len(ingredients) == MAX_SUGGESTED_LINES + 1
+    assert ingredients[-1]["raw_name"] == "Salicilic Acid"
+    assert ingredients[-1]["suggestions"] == []
+    assert body["suggestions_truncated"] is True
+    # With budget left, the same name does get a suggestion.
+    alone = client.post("/inci/analyze", json={"text": "Salicilic Acid"}).json()
+    assert alone["ingredients"][0]["suggestions"][0]["name"] == "Salicylic Acid"
+    assert alone["suggestions_truncated"] is False
+
+
+def test_suggestions_not_truncated_within_budget(client: TestClient) -> None:
+    text_ = ", ".join(f"Qqzv Unknownium {n}" for n in range(MAX_SUGGESTED_LINES))
+    assert (
+        client.post("/inci/analyze", json={"text": text_}).json()["suggestions_truncated"] is False
+    )
 
 
 def test_suggestion_budget_is_shared_across_pasted_products(client: TestClient) -> None:
@@ -460,7 +473,19 @@ def test_suggestion_budget_is_shared_across_pasted_products(client: TestClient) 
         "items": [],
     }
     products = client.post("/routine/check", json=routine).json()["products"]
-    assert {p["key"]: p["possible_actives"] for p in products}["b"] == []
+    by_key = {p["key"]: p for p in products}
+    assert by_key["b"]["possible_actives"] == []
+    # b still has an unrecognised line nobody looked up; a used exactly the whole budget.
+    assert by_key["b"]["suggestions_truncated"] is True
+    assert by_key["a"]["suggestions_truncated"] is False
     routine["products"] = routine["products"][1:]
     products = client.post("/routine/check", json=routine).json()["products"]
     assert "Salicylic Acid" in products[0]["possible_actives"]
+    assert products[0]["suggestions_truncated"] is False
+
+
+def test_seeded_products_are_never_suggestions_truncated(client: TestClient) -> None:
+    product_id = client.get("/products").json()[0]["id"]
+    routine = {"products": [{"key": "s", "product_id": product_id}], "items": []}
+    products = client.post("/routine/check", json=routine).json()["products"]
+    assert products[0]["suggestions_truncated"] is False

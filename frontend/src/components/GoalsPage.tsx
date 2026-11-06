@@ -198,12 +198,12 @@ function InRoutine({ group, products, found }: { group: string; products: MyProd
   )
 }
 
-/** " (Lactobionic Acid, thứ 29/41)"; empty before a check or when no line is in the group. */
+/** " (Lactobionic Acid, dòng 29/41)"; empty before a check or when no line is in the group. */
 function labelLines(group: string, product: LabelGroups | undefined): string {
   if (!product) return ''
   const lines = product.ingredients.filter((i) => i.group === group)
   if (lines.length === 0) return ''
-  const parts = lines.map((l) => (product.ordered ? `${l.name}, thứ ${l.position}/${product.count}` : l.name))
+  const parts = lines.map((l) => (product.ordered ? `${l.name}, dòng ${l.position}/${product.count}` : l.name))
   return ` (${parts.join('; ')})`
 }
 

@@ -1,4 +1,4 @@
-import { SESSION_EXPIRED, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
+import { SESSION_EXPIRED, SUGGESTIONS_TRUNCATED_VI, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
 import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
 import {
   currentResult,
@@ -30,7 +30,7 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
   const result = currentResult(state)
   const checked = new Set(result?.products.map((p) => p.key))
   const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
-  const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0)
+  const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0 || p.suggestions_truncated)
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
@@ -75,10 +75,20 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
           </DataNote>
         )}
         {misspelled.map((p) => (
-          <DataNote key={p.key} title="Có thể có hoạt chất bị gõ sai">
-            “{names.get(p.key) ?? p.key}” có thành phần không nhận ra, có thể là hoạt chất bị gõ sai:{' '}
-            <strong className="text-ink">{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất này;
-            hãy sửa bảng thành phần nếu đúng là gõ sai.
+          <DataNote
+            key={p.key}
+            title={p.possible_actives.length > 0 ? 'Có thể có hoạt chất bị gõ sai' : 'Chưa kiểm hết bảng thành phần'}
+          >
+            {p.possible_actives.length > 0 ? (
+              <>
+                “{names.get(p.key) ?? p.key}” có thành phần không nhận ra, có thể là hoạt chất bị gõ sai:{' '}
+                <strong className="text-ink">{p.possible_actives.join(', ')}</strong>. SkinWise chưa kiểm tra các chất
+                này; hãy sửa bảng thành phần nếu đúng là gõ sai.
+                {p.suggestions_truncated && ` ${SUGGESTIONS_TRUNCATED_VI}`}
+              </>
+            ) : (
+              `“${names.get(p.key) ?? p.key}”: ${SUGGESTIONS_TRUNCATED_VI}`
+            )}
           </DataNote>
         ))}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}

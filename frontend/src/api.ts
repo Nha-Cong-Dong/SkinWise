@@ -72,6 +72,7 @@ export type InciAnalysis = {
   unresolved_count: number
   notices: TextNotice[] // signs the text is not a full INCI list
   one_percent_marker: string | null
+  suggestions_truncated: boolean // some unrecognised lines were not checked for close names
 }
 
 /** The ingredient list an AI model copied off a label photo, for the user to check. */
@@ -141,6 +142,7 @@ export type RoutineCheckResponse = {
     key: string
     groups: string[]
     possible_actives: string[]
+    suggestions_truncated: boolean // some unrecognised lines were not checked for close names
     application: Application | null
     group_ingredients: GroupIngredient[] // display only: which label line put the product in which group
     ingredient_count: number // lines in the list `position` counts in
@@ -198,6 +200,16 @@ export class ApiError extends Error {
 }
 
 export const SESSION_EXPIRED = 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
+
+/**
+ * Sent on `window` when a request with the user's session cookie gets a 401: the session has
+ * ended, so `useAccount` checks again and the app goes back to the sign-in form.
+ */
+export const SIGNED_OUT_EVENT = 'skinwise:signed-out'
+
+/** The sentence shown when a pasted list had more unrecognised names than were checked for typos. */
+export const SUGGESTIONS_TRUNCATED_VI =
+  'Bảng này có nhiều tên SkinWise chưa nhận ra, nên chưa kiểm hết được các tên có thể bị gõ sai. Có thể đang thiếu cảnh báo.'
 // 429: too many requests from this address (nginx limit_req on /routine/check and /inci/analyze).
 export const TOO_FAST = 'Bạn thao tác quá nhanh, thử lại sau ít phút.'
 
@@ -407,6 +419,13 @@ async function request<T>(path: string, init?: RequestInit, token?: string): Pro
   const res = await fetch(`/api${path}`, { ...init, headers })
   if (!res.ok) {
     const body = await res.json().catch(() => null)
+    // Not for a reviewer token or reviewer routes (#review), the sign-in routes (a wrong password is
+    // a 401), or GET /me, which is how `useAccount` checks the session (it would ask itself forever).
+    const method = init?.method ?? 'GET'
+    const exempt = path.startsWith('/auth/') || path.startsWith('/review/') || (path === '/me' && method === 'GET')
+    if (res.status === 401 && !token && !exempt) {
+      window.dispatchEvent(new Event(SIGNED_OUT_EVENT))
+    }
     const detail = typeof body?.detail === 'string' ? body.detail : res.statusText
     throw new ApiError(res.status, detail, body)
   }

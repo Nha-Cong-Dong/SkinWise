@@ -22,9 +22,9 @@ export const GROUP_CHIP_NOTE =
 
 /** Shown once in the page where chips name an ingredient and its place (tooltips are not read on phones). */
 export const LABEL_CHIP_NOTE =
-  'Nhãn nhóm như "PHA · Lactobionic Acid (thứ 29/41)" nghĩa là sản phẩm có chứa chất đó, ở vị trí đó trên bảng thành phần. Bảng thành phần không ghi nồng độ, nên có chất này không có nghĩa là đủ lượng để có tác dụng.'
+  'Nhãn nhóm như "PHA · Lactobionic Acid (dòng 29/41)" nghĩa là sản phẩm có chứa chất đó, ở dòng thứ 29 trong 41 dòng của bảng thành phần. Bảng thành phần không ghi nồng độ, nên có chất này không có nghĩa là đủ lượng để có tác dụng.'
 
-export const UNORDERED_NOTE = 'Danh sách này không xếp theo hàm lượng, nên vị trí không cho biết nhiều hay ít.'
+export const UNORDERED_NOTE = 'Danh sách này không xếp theo hàm lượng, nên số dòng không cho biết nhiều hay ít.'
 
 export function GroupChips({ codes, empty, tone = 'day', found, note = true }: Props) {
   const groups = useContext(GroupsContext)
@@ -67,7 +67,7 @@ export function GroupChips({ codes, empty, tone = 'day', found, note = true }: P
                 <span className="max-w-[28ch] min-w-0 truncate font-normal">{first.name}</span>
                 {(found.ordered || lines.length > 1) && (
                   <span className="shrink-0 font-normal whitespace-pre">
-                    {found.ordered && ` (thứ ${first.position}/${found.count})`}
+                    {found.ordered && ` (dòng ${first.position}/${found.count})`}
                     {lines.length > 1 && ` +${lines.length - 1}`}
                   </span>
                 )}

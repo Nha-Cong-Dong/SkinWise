@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { api, requestError, type InciAnalysis, type ProductSummary } from '../api'
+import { api, requestError, SUGGESTIONS_TRUNCATED_VI, type InciAnalysis, type ProductSummary } from '../api'
 import { APPLICATION_LABELS } from '../labels'
 import { pastedImage, usePhotoReader } from '../photoReader'
 import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
@@ -340,11 +340,16 @@ function AnalysisPreview({
             ' Thành phần không nhận ra có thể do gõ sai, tên không theo chuẩn INCI, hoặc là chất SkinWise chưa biết.'}
         </p>
       </div>
-      {misspelledActives.length > 0 && (
-        <DataNote title="Có thể có hoạt chất bị gõ sai">
-          {misspelledActives.map((i) => `“${i.raw_name}”`).join(', ')} không có trong danh sách, nhưng gần giống tên
-          hoạt chất. Nếu gõ sai, hãy bấm vào tên gợi ý bên dưới để sửa; SkinWise không tự sửa và chưa tính chất này khi
-          kiểm tra.
+      {(misspelledActives.length > 0 || analysis.suggestions_truncated) && (
+        <DataNote title={misspelledActives.length > 0 ? 'Có thể có hoạt chất bị gõ sai' : 'Chưa kiểm hết bảng thành phần'}>
+          {misspelledActives.length > 0 && (
+            <p>
+              {misspelledActives.map((i) => `“${i.raw_name}”`).join(', ')} không có trong danh sách, nhưng gần giống tên
+              hoạt chất. Nếu gõ sai, hãy bấm vào tên gợi ý bên dưới để sửa; SkinWise không tự sửa và chưa tính chất này
+              khi kiểm tra.
+            </p>
+          )}
+          {analysis.suggestions_truncated && <p className={misspelledActives.length > 0 ? 'mt-1' : ''}>{SUGGESTIONS_TRUNCATED_VI}</p>}
         </DataNote>
       )}
       <IngredientList
