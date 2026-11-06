@@ -16,7 +16,9 @@
 [[article]]
 goal = "acne"
 title_vi = "Da dễ nổi mụn: những điều nên biết"
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-11-07
 
 [[article.section]]
 heading_vi = "Mụn hình thành thế nào"

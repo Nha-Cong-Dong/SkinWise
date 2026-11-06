@@ -168,7 +168,7 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
 - [x] Đọc bảng thành phần từ ảnh nhãn
 - [x] Mục tiêu da: chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn (7 mục tiêu, 36 mục đã duyệt 28/10)
-- [ ] Bài viết dài cho từng mục tiêu da (mục lục, mỗi đoạn có nguồn và đoạn trích): xong code, bài mẫu "Da dễ nổi mụn" chờ duyệt
+- [ ] Bài viết dài cho từng mục tiêu da (mục lục, mỗi đoạn có nguồn và đoạn trích): xong code, bài mẫu "Da dễ nổi mụn" đã duyệt 7/11
 - [x] Review cộng đồng (bản demo, dữ liệu mẫu, chưa mở công khai)
 
 ## Nguồn dữ liệu và ghi công
