@@ -1,13 +1,15 @@
 """API routes. The frontend calls them under /api; the Vite dev proxy strips that prefix."""
 
+import threading
 from dataclasses import asdict
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Path, Query, status
+from fastapi import APIRouter, HTTPException, Path, Query, Request, status
 from fastapi.responses import FileResponse
 from pydantic import StringConstraints
 from sqlalchemy.orm import Session
 
+from app.accounts import RateLimit
 from app.accounts_api import CurrentUser
 from app.concentration import OnePercentLine, one_percent_line
 from app.db import DbSession
@@ -47,6 +49,7 @@ from app.products import (
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
+    DemoCheckRequest,
     FunctionOut,
     GoalArticleOut,
     GoalItemOut,
@@ -297,6 +300,37 @@ def analyze_inci(db: DbSession, user: CurrentUser, body: InciAnalyzeRequest) -> 
 
 @router.post("/routine/check")
 def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> RoutineCheckResponse:
+    return run_check(db, body)
+
+
+# Public demo of the landing page: checks per IP in 10 minutes, in memory, per process (like
+# the sign-in limits; the IP is kept only as a sha256, and only while its window lasts).
+DEMO_CHECKS = (60, 600.0)
+_demo_checks = RateLimit({"email": DEMO_CHECKS})
+_demo_admitting = threading.Lock()
+
+
+def reset_demo_limit() -> None:
+    _demo_checks.clear()
+
+
+@router.post("/demo/check")
+def demo_check(db: DbSession, body: DemoCheckRequest, request: Request) -> RoutineCheckResponse:
+    """The routine check of the landing page, without signing in: sample products only (by
+    id, no pasted list, so no unknown names to look up), at most 10 products and 40 steps,
+    60 checks per IP in 10 minutes (429). Same engine, rules and result as /routine/check.
+    Nothing of the request is logged or kept."""
+    routine = body.as_routine()
+    ip = request.client.host if request.client else "unknown"
+    with _demo_admitting:
+        if _demo_checks.blocked(f"ip:{ip}", None):
+            raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "too many checks; wait")
+        _demo_checks.record(f"ip:{ip}", None)
+    return run_check(db, routine)
+
+
+def run_check(db: Session, body: RoutineCheckRequest) -> RoutineCheckResponse:
+    """The routine check shared by /routine/check and /demo/check."""
     seeded_ids = [p.product_id for p in body.products if p.product_id is not None]
     applications = product_applications(db, seeded_ids)
     missing = set(seeded_ids) - applications.keys()

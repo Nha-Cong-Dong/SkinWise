@@ -249,13 +249,47 @@ class RoutineCheckRequest(BaseModel):
 
     @model_validator(mode="after")
     def _keys_match(self) -> "RoutineCheckRequest":
-        keys = [p.key for p in self.products]
-        if len(keys) != len(set(keys)):
-            raise ValueError("product keys must be unique")
-        unknown = sorted({i.product_key for i in self.items} - set(keys))
-        if unknown:
-            raise ValueError(f"items refer to unknown product keys: {unknown}")
+        _check_keys([p.key for p in self.products], self.items)
         return self
+
+
+def _check_keys(keys: list[str], items: list[RoutineEntry]) -> None:
+    if len(keys) != len(set(keys)):
+        raise ValueError("product keys must be unique")
+    unknown = sorted({i.product_key for i in items} - set(keys))
+    if unknown:
+        raise ValueError(f"items refer to unknown product keys: {unknown}")
+
+
+DEMO_MAX_PRODUCTS = 10
+DEMO_MAX_ITEMS = 40
+
+
+class DemoProduct(BaseModel):
+    """A sample product of the public demo: by id only (a pasted list is refused, 422)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    key: Annotated[str, StringConstraints(min_length=1, max_length=100)]
+    product_id: int
+
+
+class DemoCheckRequest(BaseModel):
+    """The body of POST /demo/check: like RoutineCheckRequest, sample products only, smaller."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    products: Annotated[list[DemoProduct], Field(max_length=DEMO_MAX_PRODUCTS)]
+    items: Annotated[list[RoutineEntry], Field(max_length=DEMO_MAX_ITEMS)]
+
+    @model_validator(mode="after")
+    def _keys_match(self) -> "DemoCheckRequest":
+        _check_keys([p.key for p in self.products], self.items)
+        return self
+
+    def as_routine(self) -> RoutineCheckRequest:
+        """The same request for the routine check."""
+        return RoutineCheckRequest.model_validate(self.model_dump())
 
 
 class GroupIngredient(FromAttributes):
