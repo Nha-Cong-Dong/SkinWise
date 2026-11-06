@@ -77,7 +77,7 @@ function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) 
 /** Sign in or create an account: the two tabs above the form. */
 function DoorTabs({ mode, go }: { mode: Mode; go: (mode: Mode) => void }) {
   return (
-    <div className={`${segBox} mt-6 border-0 bg-neutral`}>
+    <div className={`${segBox} mt-6 rounded-full! border-0 bg-neutral`}>
       {(
         [
           ['sign-in', 'Đăng nhập'],
@@ -89,7 +89,7 @@ function DoorTabs({ mode, go }: { mode: Mode; go: (mode: Mode) => void }) {
           type="button"
           aria-pressed={mode === value}
           onClick={() => go(value)}
-          className={segOption(mode === value)}
+          className={`${segOption(mode === value)} rounded-full!`}
         >
           {label}
         </button>
