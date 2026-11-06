@@ -1,0 +1,330 @@
+# Bài viết dài cho mục tiêu da (app/goal_articles.py, GET /goals/{code}/article). Chỉ để hiển thị:
+# không bao giờ ảnh hưởng tới cảnh báo, luật hay resolve().
+# Mỗi [[article]] gắn một goal trong goals.toml (không phải "all"), gồm [[article.section]]
+# (heading_vi) và [[article.section.paragraph]] (text_vi + sources). Mọi đoạn văn phải có ít nhất
+# một đoạn trích nguyên văn (scripts.verify_quotes article:<goal>).
+# published = false cho tới khi người duyệt đọc nguồn; published = true cần reviewed_by / reviewed_at.
+# [[source]]: chỉ khai báo URL chưa có trong rules.toml hoặc goals.toml.
+
+# ======================================================================================
+# Bài mẫu "acne" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
+# phản biện 2 vòng (24/25 đoạn đạt; s2p5: người điều phối bỏ cụm "(một BHA)" không có trích dẫn đỡ,
+# theo cách (a) của người phản biện). Lời văn là bản nháp do Claude soạn. CHƯA BẬT: người duyệt
+# đọc nguồn rồi mới đặt published = true kèm reviewed_by / reviewed_at.
+# Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles/01_results.json (final.dropped_claims).
+# ======================================================================================
+[[article]]
+goal = "acne"
+title_vi = "Da dễ nổi mụn: những điều nên biết"
+published = false
+
+[[article.section]]
+heading_vi = "Mụn hình thành thế nào"
+
+[[article.section.paragraph]]
+text_vi = "Theo NHS (Anh), mụn có thể xuất hiện khi nang lông bị bít bởi dầu thừa và tế bào da chết; vi khuẩn có thể phát triển trong nang lông bị bít, gây viêm và mủ. DermNet (New Zealand) lưu ý cơ chế chính xác của mụn chưa được hiểu hết. Mụn thường gặp ở mặt, ngực và lưng."
+sources = [
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Acne can happen when hair follicles (where hair grows on the skin) become blocked with excess oil and dead skin cells. Bacteria can grow in blocked hair follicles and cause inflammation and pus." },
+  { url = "https://dermnetnz.org/topics/acne", quote = "Acne is due to a combination of factors. The exact mechanisms are not fully understood." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "It usually affects your face, chest and back." },
+]
+
+# Lưu ý người duyệt (s1p2):
+#   - Trên trang NHS, các câu này là chú thích của ảnh minh hoạ từng dạng mụn, không phải văn bản liền mạch.
+#   - r2: bỏ câu mở đầu 'Một người có thể có nhiều dạng mụn cùng lúc' (và đoạn trích 'There are different types of spots…') để bài không vượt 1500 chữ, theo gợi ý cắt bù của phản biện.
+#   - Các câu NHS là chú thích ảnh, không phải văn bản liền mạch (người soạn đã ghi).
+[[article.section.paragraph]]
+text_vi = "Theo NHS: mụn đầu trắng là nốt nhỏ cùng màu da; mụn đầu đen là chấm đen hoặc nâu, thường phẳng; sẩn là nốt nổi lên trên da; mụn mủ là nốt nổi có chứa mủ; cục và nang là khối lớn hơn nằm dưới da, có thể liền nhau và gây đau."
+sources = [
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Whiteheads are small bumps that are the same colour as your skin." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Blackheads are black and brown spots that are usually flat but may be raised." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Papules are raised bumps." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Pustules are raised bumps filled with pus." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Nodules and cysts are larger lumps under your skin. They may join together and can be painful." },
+]
+
+# Lưu ý người duyệt (s1p3):
+#   - Đoạn trích là một danh sách gạch đầu dòng trên trang; sau khi tải về, các mục nối liền nhau không có dấu câu nên câu trích đọc như một câu dài. 'Một số bệnh lý' = NHS nêu PMOS và rosacea. Ý 'ma sát' trong dàn ý được đưa sang s4p5 (khăn, mũ) vì nguồn nói ở đó.
+[[article.section.paragraph]]
+text_vi = "NHS nêu một số yếu tố có thể gây mụn: thay đổi nội tiết (tuổi dậy thì, kỳ kinh, mãn kinh, mang thai), một số bệnh lý, một số loại thuốc, và sản phẩm bôi lên da hoặc tóc làm da nhờn hơn."
+sources = [
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Acne can be caused by: changes in hormone levels, such as during puberty, periods, menopause and pregnancy conditions such as polyendocrine metabolic ovarian syndrome (PMOS) and rosacea taking certain medicines products you use on your skin or hair that can make your skin greasy" },
+]
+
+[[article.section]]
+heading_vi = "Các nhóm hoạt chất bôi da thường được nhắc tới"
+
+# Lưu ý người duyệt (s2p1):
+#   - Trang AAD này nói về mụn ở người lớn (25 tuổi trở lên). Câu trích đầu tiên là lời của BS Ramone F. Williams đặt trong ngoặc kép; đoạn trích bỏ dấu ngoặc và dấu phẩy cuối.
+#   - r2: đổi 'Viện Da liễu Hoa Kỳ' thành 'Viện Hàn lâm Da liễu Hoa Kỳ' theo article_issues (khớp rules.toml dòng 429, sát nghĩa 'Academy'). goals.toml vẫn còn hai cách gọi khác (dòng 391, 887, 1110); người điều phối nên thống nhất ở đó.
+[[article.section.paragraph]]
+text_vi = "Theo các bác sĩ da liễu viết cho AAD (Viện Hàn lâm Da liễu Hoa Kỳ), nhiều người lớn bị mụn nhẹ có thể cải thiện bằng sản phẩm không cần kê đơn, và điều quyết định là hoạt chất trong sản phẩm. NHS (Anh) gợi ý thử sản phẩm bôi có salicylic acid hoặc benzoyl peroxide, có thể hỏi dược sĩ."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Many adults who have mild acne can effectively treat it with over-the-counter (available without a prescription), acne-fighting products available today" },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "It’s all about the active ingredient in the product, according to Julie Harper, MD, FAAD." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "try acne treatments you put on your skin such as salicylic acid or benzoyl peroxide – you can speak to a pharmacist for advice" },
+]
+
+# Lưu ý người duyệt (s2p2):
+#   - Câu 'This medication works…' nằm ngay sau tiêu đề 'Retinoid you apply to your skin' trên trang chẩn đoán/điều trị của AAD, nơi liệt kê thuốc bôi bác sĩ dùng (được FDA phê duyệt). Câu này nói về retinoid nói chung, không riêng retinol mỹ phẩm.
+#   - Câu về retinol lấy từ trang AAD '10 tips cho mụn ở da màu' (skin of color); trang này không nói nồng độ retinol. Bài không nêu nồng độ adapalene. Trang skin-color có nói adapalene gel 0.1% được FDA cho bán không cần đơn, nhưng câu đó kèm tên thương hiệu nên không dùng.
+#   - Phản biện lưu ý: nếu sau này tách đoạn này khỏi s2p3 thì phải thêm câu nói rõ phần lớn retinoid là thuốc.
+#   - Câu 'Ở Mỹ, adapalene được bán không cần kê đơn' đã nói rõ phạm vi Mỹ, và s2p3 ngay sau nói NHS (Anh) xếp adapalene vào thuốc cần kê đơn. Hai đoạn này phải đi liền nhau.
+[[article.section.paragraph]]
+text_vi = "Theo AAD, retinoid bôi làm thông lỗ chân lông, có thể làm sạch mụn đầu đen, đầu trắng và một số nốt mụn, và giúp làm mờ vết thâm sau mụn. Ở Mỹ, adapalene được bán không cần kê đơn. Retinol, loại retinoid hay được thêm vào mỹ phẩm, theo AAD có thể làm thông lỗ chân lông và làm mờ vết thâm."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "This medication works to clear your pores, and can treat blackheads, whiteheads, and some pimples. If you develop dark spots after acne clears, a retinoid can help lighten these spots." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Non-prescription retinoid Adapalene (You’ll find acne treatment that contains this retinoid online and in stores.)" },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Topical retinoids such as retinol and retinaldehyde are commonly added to cosmetics." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Retinol: This can unclog pores and fade dark spots." },
+]
+
+# Lưu ý người duyệt (s2p3):
+#   - Ở Mỹ adapalene không cần đơn (AAD, s2p2); ở Anh NHS xếp nó vào thuốc kê đơn (câu 'They're used to…' nằm dưới mục 'Treatments from a GP or specialist'). Hai nguồn khác nhau theo nước nên bài nêu cả hai. Tình trạng ở Việt Nam thì không nguồn nào nói.
+#   - Câu 'Nhiều retinoid khác là thuốc' là cầu nối; DermNet gọi mọi retinoid bôi là 'medications'.
+#   - Nhận xét về kích ứng của DermNet nói về retinoid dạng thuốc, không so sánh với retinol mỹ phẩm.
+#   - Đã đọc ngữ cảnh nhs-acne.txt dòng 111: câu 'They're used to: … tretinoin and adapalene' nằm dưới mục 'Treatments from a GP or specialist … with a prescription'. Đúng như bài viết.
+[[article.section.paragraph]]
+text_vi = "Nhiều retinoid khác là thuốc. DermNet (New Zealand) xếp adapalene, tazarotene, tretinoin và trifarotene vào nhóm retinoid bôi do bác sĩ kê đơn; NHS (Anh) cũng xếp tretinoin và adapalene vào thuốc bôi cần kê đơn. Retinoid có thể gây kích ứng ở một số người; theo DermNet, adapalene ít kích ứng nhất, tretinoin kích ứng nhiều nhất, và dễ kích ứng khi bôi gần mắt hoặc môi."
+sources = [
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Prescribed topical retinoids include adapalene, alitretinoin , tazarotene, tretinoin, and trifarotene." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "There are many acne treatments available from a GP or skin specialist (dermatologist) with a prescription." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "They're used to: reduce inflammation and oiliness, and prevent spots, such as the retinoid medicines tretinoin and adapalene" },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "If you’ve used a retinoid in the past and found that it irritated your skin, let your dermatologist know. This happens to some people." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Can be irritating if applied close to the eyes or lips. Adapalene is the least irritating topical retinoid, and tretinoin the most." },
+]
+
+# Lưu ý người duyệt (s2p4):
+#   - r2, sửa theo phản biện: vế 'phối hợp với cách xử lý khác' giờ đi liền với câu kế tiếp trên trang AAD (aad-acne-treat.txt dòng 660): bác sĩ có thể KÊ một thuốc phối hợp. Đoạn trích thêm dừng ở 'antibiotic.', không có tên thương hiệu. Bài không còn gợi ý tự dùng BPO chồng với sản phẩm khác; khớp với s3p1 và với các luật caution đã bật (retinoid + BPO, BHA + BPO, azelaic acid + BPO cùng buổi).
+#   - Câu 'dùng cách ngày' và câu làm bạc vải lấy từ trang AAD cho da màu (skin of color). Việc làm bạc vải không phụ thuộc màu da, nhưng trang chỉ nói điều này trong ngữ cảnh đó.
+#   - Khả năng BPO bị phân huỷ thành benzene (trang AAD BPO FAQs) không đưa vào vì dàn ý không có và cần giải thích dài.
+#   - Đã đọc aad-acne-treat.txt dòng 660: câu 'For this reason, your dermatologist may prescribe…' đi ngay sau câu 'most effective when used along with…'. Bài giờ gắn ý phối hợp với việc bác sĩ kê đơn, không còn gợi ý tự dùng chồng sản phẩm.
+[[article.section.paragraph]]
+text_vi = "Benzoyl peroxide làm giảm vi khuẩn gây mụn trên da. Theo AAD, chất này hiệu quả nhất khi phối hợp với cách xử lý khác, vì vậy bác sĩ da liễu có thể kê một thuốc chứa sẵn benzoyl peroxide cùng một thuốc khác như retinoid hoặc kháng sinh. AAD khuyên bắt đầu với loại 2,5% để tránh khô, kích ứng, rát; nếu vẫn kích ứng thì thử dùng cách ngày. Chất này làm bạc màu quần áo, ga giường, vỏ gối và khăn."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Benzoyl peroxide: This active ingredient reduces acne-causing bacteria on your skin. It’s most effective when used along with another acne treatment that works on the other causes of acne." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "For this reason, your dermatologist may prescribe a medication that contains benzoyl peroxide and another acne medication like a retinoid or an antibiotic." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "While you’ll find products that contain up to 10% benzoyl peroxide, it’s best to start with a product that contains 2.5%. That will help you avoid side effects like dry, irritated skin or a burning sensation." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "If the 2.5% product irritates your skin, try using it every other day." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "However, it will bleach clothing, sheets, pillow cases, and towels." },
+]
+
+# Lưu ý người duyệt (s2p5):
+#   - Chữ 'BHA' do tôi thêm để khớp với nhóm BHA của app; nguồn không dùng chữ BHA và không có đoạn trích đỡ. Trang AAD treat còn có câu 'It’s effective for treating whiteheads and pimples', hơi khác trang adult ('whiteheads and blackheads'). Bài theo trang adult.
+[[article.section.paragraph]]
+text_vi = "Salicylic acid đã được dùng cho mụn từ lâu. Theo AAD, chất này làm thông lỗ chân lông bị bít và tẩy tế bào chết, nên hợp nhất với mụn đầu trắng và đầu đen. Salicylic acid có nhiều nồng độ và nhiều dạng, kể cả sữa rửa mặt và kem dưỡng ẩm."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Salicylic acid: Used for years to treat acne, salicylic acid opens clogged pores and exfoliates the skin." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Salicylic acid: Because it unclogs pores and exfoliates the skin, salicylic acid works best on whiteheads and blackheads." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "You’ll find salicylic acid available in different strengths and in different forms, including cleansers and moisturizers." },
+]
+
+# Lưu ý người duyệt (s2p6):
+#   - Trên trang AAD treat, azelaic acid nằm trong danh sách thuốc bôi được FDA phê duyệt mà bác sĩ có thể dùng, kèm tên thương hiệu thuốc. Trang adult lại xếp nó vào các hoạt chất bác sĩ gợi ý cho người tự chăm mụn nhẹ đến vừa. Không nguồn nào nói nồng độ trong mỹ phẩm, nên bài không nói azelaic acid mua tự do hay cần đơn.
+#   - 'nên dùng được cho nhiều dạng mụn' có nghĩa là 'vì vậy dùng được', không phải lời khuyên dùng. Bài không nói azelaic acid mua tự do hay phải kê đơn, đúng với nguồn.
+[[article.section.paragraph]]
+text_vi = "Azelaic acid, theo AAD, làm thông lỗ chân lông bị bít và giữ cho chúng thông, tác động lên vi khuẩn gây mụn và giảm viêm do mụn, nên dùng được cho nhiều dạng mụn. Chất này cũng có thể làm mờ vết thâm xuất hiện khi nốt mụn lành."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Azelaic acid: This acne treatment opens clogged pores and helps keep them open, works on the bacteria that cause acne, and reduces inflammation due to acne. This makes it an effective treatment for different types of acne." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Azelaic acid: It fights acne and can also fade the dark spots that appear when an acne spot clears." },
+]
+
+[[article.section]]
+heading_vi = "Bắt đầu và dùng đều"
+
+# Lưu ý người duyệt (s3p1):
+#   - 'Không thêm sản phẩm khác' trong ngữ cảnh trang là không thêm sản phẩm cho mụn khác; trang không cấm kem dưỡng ẩm hay kem chống nắng (s3p4). Hai trang AAD cho mốc sạch mụn hơi khác nhau: '3 to 4 months' (habits) và '16 weeks' (adult, s3p3).
+[[article.section.paragraph]]
+text_vi = "AAD khuyên chọn một sản phẩm có hoạt chất hợp với kiểu mụn của mình và dùng đúng hướng dẫn trong 6–8 tuần, không thêm sản phẩm khác, cũng không ngừng giữa chừng. Nếu sau đó vẫn không thấy cải thiện thì có thể thử sản phẩm khác. Sạch mụn hoàn toàn thường mất 3–4 tháng."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "When shopping for acne-fighting products, you want to find one product that contains an active ingredient which can effectively treat the type of acne you have. Use that product for 6 to 8 weeks, taking care to use the product as directed on the instructions." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "During this time, don’t add another product. Don’t stop using the product you started with." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "You want to use a product for 6 to 8 weeks. It takes that long to see some improvement. If you don’t see any improvement by then, you can try another product." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Complete clearing generally takes 3 to 4 months." },
+]
+
+[[article.section.paragraph]]
+text_vi = "AAD khuyên bôi một lớp mỏng lên cả vùng da hay nổi mụn, ví dụ cả trán, mũi và cằm, thay vì chỉ chấm lên từng nốt: chấm lên nốt chỉ xử lý mụn đang thấy, còn bôi cả vùng giúp xử lý mụn hiện có và ngăn đợt mụn tiếp theo."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "You want to apply a thin layer of acne medication to the whole area rather than just your acne spots. When you put medication only on the acne you see, you treat what’s there." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "By applying medication to all your acne-prone skin, you treat the existing acne and prevent the next breakout." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "For example, if you tend to breakout on your forehead, nose, and chin, you would want to apply the acne treatment evenly on all of these areas of your face." },
+]
+
+# Lưu ý người duyệt (s3p3):
+#   - Đoạn trích 4–8 tuần / 16 tuần là danh sách (Fewer breakouts / Clearing) bị nối thành một dòng khi tải trang.
+#   - r2, sửa theo phản biện: câu 'mỗi ngày một lần trước khi ngủ' giờ ghi rõ chủ ngữ là retinoid bôi dạng thuốc theo DermNet (trang nêu adapalene, isotretinoin, tretinoin, trifarotene), không nói về retinol mỹ phẩm. Thêm câu AAD về làm theo hướng dẫn của bác sĩ (aad-acne-treat.txt dòng 658, mục 'Dermatologists' tips for using a retinoid').
+#   - Đã đọc dermnet-topical-retinoids.txt dòng 134: câu '12 weeks or longer' và câu 'once daily at bedtime' nằm cùng đoạn về retinoid bôi dạng thuốc cho mụn. Bài đã ghi rõ đây là thuốc.
+[[article.section.paragraph]]
+text_vi = "Theo một bác sĩ da liễu trên trang AAD, nếu sản phẩm hợp với mình, thường sẽ thấy ít mụn hơn sau 4–8 tuần và sạch mụn khoảng 16 tuần. Theo DermNet (New Zealand), các retinoid bôi dạng thuốc như adapalene hay tretinoin được bôi lên mặt mỗi ngày một lần trước khi ngủ, và có thể mất 12 tuần hoặc lâu hơn mới thấy cải thiện. AAD lưu ý làm theo hướng dẫn của bác sĩ da liễu để retinoid phát huy tác dụng tốt nhất."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If the medication works for you, Dr. Harper says you can expect to see: Fewer breakouts: 4 to 8 weeks Clearing: 16 weeks after starting the medication" },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "It may take 12 weeks or longer before improvement is seen." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Applied to the face once daily at bedtime, topical retinoids such as adapalene, isotretinoin, tretinoin ( retinoic acid ), and trifarotene can help mild to moderately severe acne ." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Following your dermatologist’s instructions will help you get the most benefit from a retinoid." },
+]
+
+# Lưu ý người duyệt (s3p4):
+#   - Lời khuyên chống nắng của AAD nằm trong mục 'Dermatologists' tips for using a retinoid', tức gắn với retinoid. Nguồn không nói mọi người bị mụn đều phải chống nắng, nên bài cũng không nói vậy.
+[[article.section.paragraph]]
+text_vi = "Nếu da khô, AAD khuyên dùng kem dưỡng ẩm dành cho da dễ nổi mụn, hai lần mỗi ngày sau khi rửa mặt. Khi dùng retinoid cần bảo vệ da khỏi nắng: AAD khuyên dùng kem chống nắng không gây bít tắc lỗ chân lông, phổ rộng, SPF 30 trở lên và chống nước."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "If your skin feels dry, apply a moisturizer made for acne-prone skin. You’ll want to apply the moisturizer twice a day, after washing your face." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "These instructions include protecting your skin from the sun while using a retinoid and applying this medication as directed." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Apply non-comedogenic (won't clog pores) sunscreen to all skin not covered by clothing. Use sunscreen that offers broad-spectrum protection, SPF 30 or higher, and water resistance." },
+]
+
+[[article.section]]
+heading_vi = "Những thói quen có thể làm mụn nặng hơn"
+
+[[article.section.paragraph]]
+text_vi = "Nặn hay bóp mụn dễ đẩy mủ, tế bào chết hoặc vi khuẩn vào sâu hơn trong da và làm tăng viêm; mụn có thể rõ hơn, gây đau và đôi khi để lại sẹo. NHS cũng khuyên không nặn mụn. AAD khuyên dùng sản phẩm cho mụn thay vì nặn; mụn sâu hoặc đau thì cần gặp bác sĩ da liễu."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "When you pop or squeeze acne, you’re likely to push some of what’s inside (e.g., pus, dead skin cells, or bacteria) deeper into your skin. When this happens, you increase inflammation. This can lead to more-noticeable acne and sometimes scarring and pain." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "do not pick or squeeze spots because this can cause scars" },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Resist the temptation to pop or squeeze acne. You want to treat your acne with acne medication. If you have deep or painful acne, seeing a dermatologist is necessary to help clear your acne." },
+]
+
+# Lưu ý người duyệt (s4p2):
+#   - r2: gộp hai câu đầu (chà xát / rửa nhiều lần) thành một để bù độ dài, theo gợi ý cắt bù của phản biện. Đoạn trích giữ nguyên, vẫn đỡ đủ hai ý.
+[[article.section.paragraph]]
+text_vi = "Chà xát mạnh hay rửa mặt nhiều lần trong ngày có thể kích ứng da và khiến mụn nhiều hơn. AAD khuyên rửa mặt hai lần mỗi ngày (khi thức dậy và trước khi ngủ) và sau khi ra mồ hôi, bằng sữa rửa mặt dịu nhẹ, không gây bít tắc, thoa nhẹ bằng đầu ngón tay."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Scrubbing can irritate your skin, causing acne to flare." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "do not scrub your skin as this can irritate it and make acne worse" },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Washing your face several times a day can further irritate your skin, leading to more breakouts." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Wash your face twice a day — when you wake up and before you go to bed. You’ll also want to wash your face when you finish an activity that makes you sweat." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "You want to use a mild, non-comedogenic cleanser. Apply the cleanser lightly with your fingertips, using a circular motion. Gently rinse it off with warm water, using only your fingers." },
+]
+
+# Lưu ý người duyệt (s4p3):
+#   - 'Try a new acne treatment every week or so.' là tiêu đề thói quen số 1 trong danh sách '10 habits to stop'; phản biện đã xác nhận câu 'This approach…' thuộc mục 1 (aad-acne-habits.txt dòng 640–641).
+[[article.section.paragraph]]
+text_vi = "Da mụn thường nhờn nên dễ muốn bôi chất làm se hay sản phẩm cho mụn tới khi da khô căng. AAD khuyên đừng làm vậy: da khô là da bị kích ứng, và da bị kích ứng thì dễ nổi thêm mụn. Đổi sang một sản phẩm cho mụn mới mỗi tuần cũng có thể kích ứng da và gây nổi mụn."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Skin with acne is oily, so it can be tempting to apply astringent and acne treatments until your face feels dry. Don’t. Dry skin is irritated skin." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Anytime you irritate your skin, you risk getting more acne." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Try a new acne treatment every week or so." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "This approach can irritate your skin, which can cause breakouts." },
+]
+
+# Lưu ý người duyệt (s4p4):
+#   - Câu về dầu dưỡng tóc lấy từ trang AAD cho da màu (tip 4, 'pomade acne'). Trang không nói điều này chỉ đúng với da màu, nhưng đó là ngữ cảnh của trang.
+#   - Nhãn 'non-comedogenic' không có định nghĩa pháp lý chung; nguồn chỉ nói 'don’t cause breakouts in most people', và bài giữ đúng mức đó.
+[[article.section.paragraph]]
+text_vi = "Một số đồ trang điểm và nhiều sản phẩm chăm sóc da, tóc chứa dầu hoặc thành phần có thể gây mụn. AAD khuyên chọn sản phẩm ghi “non-comedogenic” (không gây bít tắc lỗ chân lông) và tẩy trang trước khi ngủ, vì để lớp trang điểm qua đêm vẫn có thể gây mụn. Nếu mụn chỉ mọc ở trán và thái dương, dầu dưỡng tóc có thể là nguyên nhân."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Some makeup, along with many skin and hair care products, contain oil or other ingredients that can cause acne breakouts. If you continue to use them, you may continue to see blemishes." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Use only makeup, sunscreen, skin, and hair-care products that are labeled “non-comedogenic” or “won’t clog pores.” These products don’t cause breakouts in most people." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Even non-comedogenic makeup can cause acne if you sleep in it." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Remove your makeup before you go to bed." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Make some changes if acne only appears on your forehead and temples." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "If acne only appears in these areas, your hair oil may be the cause." },
+]
+
+# Lưu ý người duyệt (s4p5):
+#   - Câu về mũ lấy từ trang AAD cho da màu (tip 8).
+[[article.section.paragraph]]
+text_vi = "Dùng khăn chà mạnh để lau mồ hôi có thể kích ứng da và gây mụn; khi tập luyện, AAD khuyên thấm nhẹ bằng khăn sạch. Mũ, nón đội mà không giặt sẽ tích mồ hôi, bụi và dầu, có thể làm mụn bùng lên."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "Using a towel to roughly rub away sweat can irritate your skin, which can cause breakouts." },
+  { url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop", quote = "When working out, use a clean towel to gently pat sweat from your skin." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Wearing a baseball cap or anything else on your head without washing (or dry cleaning) it allows sweat, dirt, and oil to accumulate. This can cause acne to flare." },
+]
+
+[[article.section]]
+heading_vi = "Vết thâm và sẹo sau mụn"
+
+# Lưu ý người duyệt (s5p1):
+#   - Câu 'last much longer than the acne' nằm trên trang AAD cho da màu (skin of color: người gốc Phi, Á, Latinh…). Người dùng Việt Nam thuộc nhóm 'Asian' mà trang này nêu.
+[[article.section.paragraph]]
+text_vi = "Sau khi mụn lành, da có thể để lại vết thâm, gọi là tăng sắc tố sau viêm. Theo AAD, vết thâm này hay gặp hơn ở người da sẫm màu và có thể kéo dài lâu hơn nhiều so với nốt mụn. AAD nhấn mạnh cần xử lý cả mụn, vì hết mụn thì nguyên nhân gây thâm cũng không còn."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Those dark spots, which more commonly develop in people with darker skin tones, are called post-inflammatory hyperpigmentation (PIH)." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Many people seek a dermatologist's help for the dark spots, which can last much longer than the acne. It's important to treat the acne, too. When you get rid of the acne, you eliminate what's causing the dark spots." },
+]
+
+# Lưu ý người duyệt (s5p2):
+#   - r2, sửa theo phản biện: vế kem chống nắng giờ chỉ nói cho da sẫm màu, đúng ngữ cảnh trang AAD 'How to fade dark spots in darker skin tones' (aad-fade-dark-spots.txt dòng 602). Câu kế tiếp trên trang nói tới kem chống nắng có màu chứa iron oxide; bài không đưa vào vì cần giải thích thêm. Trang này nói về tăng sắc tố nói chung ở da sẫm màu, không riêng thâm sau mụn.
+#   - Câu 'See a dermatologist before…' là tiêu đề tip 9 trên trang AAD cho da màu.
+#   - Đã đọc aad-fade-dark-spots.txt dòng 602: 'begins with sunscreen' nằm trên trang về da sẫm màu. Bài mở câu bằng 'Với da sẫm màu', nên phạm vi đúng với nguồn.
+[[article.section.paragraph]]
+text_vi = "Theo AAD, retinoid và azelaic acid có thể giúp làm mờ vết thâm sau mụn. Với da sẫm màu, AAD cho biết việc làm mờ đốm thâm bắt đầu từ kem chống nắng; lột da hoá học, mài da vi điểm hay laser, kể cả loại dùng tại nhà, có thể để lại vết thâm hoặc đốm sáng màu vĩnh viễn, nên AAD khuyên gặp bác sĩ da liễu trước."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "If you develop dark spots after acne clears, a retinoid can help lighten these spots." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Azelaic acid can also treat the dark spots that appear when acne clears." },
+  { url = "https://www.aad.org/public/everyday-care/skin-care-secrets/routine/fade-dark-spots", quote = "Effective treatment for dark spots and patches begins with sunscreen." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "See a dermatologist before using any type of chemical peel, microdermabrasion, or laser therapy to treat your acne." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "If you have darkly pigmented skin, even the at-home versions of these acne treatments can cause side effects like permanent dark marks and light spots." },
+]
+
+# Lưu ý người duyệt (s5p3):
+#   - Câu NHS về sẹo là chú thích ảnh. Câu 'If you pick, pop…' là một khung chú thích bên lề của trang AAD skin-color. Đoạn trích cuối có danh sách hai mục bị nối liền khi tải trang.
+[[article.section.paragraph]]
+text_vi = "Mụn có thể để lại sẹo, chẳng hạn những lỗ lõm nông trên da, và cạy, nặn mụn làm tăng nguy cơ sẹo. Theo AAD, xử lý mụn từ khi mới bắt đầu có thể ngăn mụn nặng thêm; nếu để mụn thành mức vừa đến nặng rồi mới xử lý, người da màu có nguy cơ cao hơn bị mảng thâm và sẹo lồi."
+sources = [
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "Acne can leave scars, such as shallow holes in your skin (ice-pick or boxcar scars)." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "If you pick, pop, or squeeze acne, you increase your risk of getting a scar." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/skin-color", quote = "Studies show that treating acne when it's just beginning can prevent acne from getting worse. If acne worsens, becoming moderate to severe before treatment begins, people with skin of color have a higher risk of developing: Spots and patches of darker skin Keloids, a type of raised scar" },
+]
+
+[[article.section]]
+heading_vi = "Khi nào nên gặp bác sĩ da liễu"
+
+# Lưu ý người duyệt (s6p1):
+#   - NHS khuyên gặp GP (bác sĩ đa khoa ở Anh), GP có thể chuyển tới bác sĩ da liễu. Bài viết 'đi khám' để không gán sai chuyên khoa. Đoạn trích NHS là danh sách bị nối thành một dòng khi tải trang.
+[[article.section.paragraph]]
+text_vi = "Theo AAD, mụn to, đau, nằm sâu trong da hoặc để lại sẹo khi lành thì cần gặp bác sĩ da liễu, vì sản phẩm mua ngoài khó xử lý hiệu quả. NHS (Anh) khuyên đi khám khi tự chăm mà không đỡ; khi mụn nhiều, sâu, đau hay để lại sẹo; khi có dấu hiệu nhiễm trùng da như nóng, sưng, đỏ; hoặc khi mụn ảnh hưởng tới tinh thần."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you have large, painful pimples that sit deep in your skin or acne that leaves a scar when it clears, you’ll need to see a dermatologist for treatment. Products that you can buy online or in a store are unlikely to treat these types of acne effectively." },
+  { url = "https://www.nhs.uk/conditions/acne/", quote = "You have acne and: you've tried treating it yourself but it's not getting better you have lots of spots, or the spots are deep, painful or causing scars you have signs of a skin infection, such as hot, swollen and red skin (redness can be harder to see on brown and black skin) it's affecting your mental health" },
+]
+
+# Lưu ý người duyệt (s6p2):
+#   - r2: bỏ câu cuối ('không có mụn nào quá nhẹ…', hai đoạn trích 'Of course…' và 'For example, there is no acne…') để bài không vượt 1500 chữ sau khi sửa s2p4, s3p3. Ghi ở dropped_claims.
+#   - Đây là lời của các bác sĩ da liễu trên trang AAD (một hội chuyên ngành bác sĩ da liễu), nên có thể nghiêng về khuyến khích đi khám da liễu.
+#   - Đã đọc aad-adult-acne.txt dòng 658: 'They indicate…' chỉ vết thâm (PIH) ở câu ngay trước. Bài hiểu đúng.
+[[article.section.paragraph]]
+text_vi = "AAD cũng khuyên đi khám khi đã dùng sản phẩm nhiều tuần mà không đạt kết quả mong muốn, hoặc khi thấy vết thâm sau mụn, vì thâm cho thấy viêm đáng kể mà sản phẩm không cần kê đơn thường không đủ."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you are not achieving the desired results after weeks of using your acne treatment, it is time to see your dermatologist." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you are seeing dark spots on your skin after acne clears, it’s also time to see a dermatologist." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "They indicate that acne is causing significant inflammation. When you have lots of inflammation, treatment that you can buy without a prescription usually cannot effectively treat acne." },
+]
+
+# Lưu ý người duyệt (s6p3):
+#   - Tác động tâm lý (lo âu, trầm cảm, tự ti; NHS) bị bỏ khỏi đoạn này để giữ độ dài; ý 'mụn ảnh hưởng tinh thần thì đi khám' vẫn có ở s6p1.
+[[article.section.paragraph]]
+text_vi = "Thứ trông giống mụn có thể là bệnh khác, chẳng hạn viêm da quanh miệng hay viêm nang lông. Theo AAD, bác sĩ da liễu có thể chẩn đoán chính xác và lập kế hoạch phù hợp với từng người."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "What looks like acne may be another condition." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Another condition that can be mistaken for acne is perioral dermatitis." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "A skin infection called folliculitis can also be mistaken for acne." },
+  { url = "https://www.aad.org/public/diseases/acne/derm-treat/treat", quote = "Whether you have acne or another condition, your dermatologist can give you an accurate diagnosis and create a treatment plan tailored to your needs." },
+]
+
+# Lưu ý người duyệt (s6p4):
+#   - AAD không nói những sản phẩm không cần đơn NÀO không an toàn khi mang thai, nên bài không nêu tên. DermNet nói về retinoid dạng thuốc, không nói về retinol mỹ phẩm. Câu 'women of childbearing age must use effective contraception…' trên DermNet không đưa vào vì dễ bị hiểu là áp dụng cho mọi sản phẩm có retinoid.
+[[article.section.paragraph]]
+text_vi = "Nếu đang mang thai hoặc muốn có thai, AAD khuyên hỏi bác sĩ da liễu trước khi tự xử lý mụn, vì một số sản phẩm cho mụn mua không cần đơn không an toàn khi mang thai. DermNet cho biết một số retinoid bôi chống chỉ định khi mang thai, đặc biệt tazarotene khi dùng trên diện rộng."
+sources = [
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "If you’re pregnant or trying to get pregnant, consult a dermatologist before treating acne on your own." },
+  { url = "https://www.aad.org/public/diseases/acne/diy/adult-acne-treatment", quote = "Some acne treatments you can buy without a prescription aren’t safe to use during pregnancy." },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Some topical retinoids are contraindicated for use in pregnancy" },
+  { url = "https://dermnetnz.org/topics/topical-retinoids", quote = "Teratogenic — potential risk in pregnancy particularly with widespread tazarotene use (pregnancy category X in US)" },
+]
+
+[[source]]
+url = "https://www.nhs.uk/conditions/acne/"
+title = "Acne"
+publisher = "NHS"
+
+[[source]]
+url = "https://dermnetnz.org/topics/acne"
+title = "Acne"
+publisher = "DermNet"
+
+[[source]]
+url = "https://www.aad.org/public/diseases/acne/skin-care/habits-stop"
+title = "10 skin care habits that can worsen acne"
+publisher = "American Academy of Dermatology"

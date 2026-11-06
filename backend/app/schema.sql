@@ -319,6 +319,35 @@ CREATE TABLE IF NOT EXISTS goal_item_sources (
   PRIMARY KEY (item_id, position)
 );
 
+-- Long articles for a skin goal (data/goal_articles.toml, app/goal_articles.py). Display only,
+-- like the goal items. Reseeded wholesale on every seed (nothing refers to them by id). A goal
+-- removed from goals.toml takes its article with it.
+CREATE TABLE IF NOT EXISTS goal_articles (
+  goal_code   text PRIMARY KEY REFERENCES goals(code) ON DELETE CASCADE,
+  title_vi    text NOT NULL,
+  published   boolean NOT NULL DEFAULT false, -- only after a human checked the cited sources
+  reviewed_by text,
+  reviewed_at timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS goal_article_paragraphs (
+  id               serial PRIMARY KEY,
+  goal_code        text NOT NULL REFERENCES goal_articles(goal_code) ON DELETE CASCADE,
+  section_position integer NOT NULL, -- order of the section in the article
+  heading_vi       text NOT NULL,    -- heading of that section, repeated on each paragraph
+  position         integer NOT NULL, -- order of the paragraph in its section
+  text_vi          text NOT NULL,
+  UNIQUE (goal_code, section_position, position)
+);
+
+CREATE TABLE IF NOT EXISTS goal_article_paragraph_sources (
+  paragraph_id integer NOT NULL REFERENCES goal_article_paragraphs(id) ON DELETE CASCADE,
+  position     integer NOT NULL,
+  source_id    integer NOT NULL REFERENCES sources(id),
+  quote        text NOT NULL, -- verbatim passage; checked by scripts.verify_quotes article:<goal>
+  PRIMARY KEY (paragraph_id, position)
+);
+
 -- Community reviews (blog, demo with made-up data only; not open to the public). Posts,
 -- comments and reports never reach the warning engine, the rules or resolve(): the sourced
 -- part of a post page is built from /products, /inci/analyze and /routine/check alone.

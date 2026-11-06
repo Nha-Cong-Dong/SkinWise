@@ -165,12 +165,43 @@ class GoalOut(FromAttributes):
     description_vi: str
     actives: list[GoalItemOut]
     infos: list[GoalItemOut]
+    has_article: bool  # true only when the goal has a published article (/goals/{code}/article)
 
 
 class GoalsResponse(BaseModel):
     goals: list[GoalOut]  # without the shared goal "all"
     shared_infos: list[GoalItemOut]  # items of "all", shown with every goal
     notice_vi: str  # always set: general sourced information, not a doctor's advice
+
+
+class ArticleParagraphOut(FromAttributes):
+    text_vi: str
+    refs: list[int]  # 1-based numbers into GoalArticleOut.sources, unique, ascending
+
+
+class ArticleSectionOut(FromAttributes):
+    anchor: str  # "phan-1", "phan-2"... in section order
+    heading_vi: str
+    paragraphs: list[ArticleParagraphOut]
+
+
+class ArticleSourceOut(FromAttributes):
+    n: int  # 1-based, numbered by first appearance in the article
+    title: str
+    publisher: str
+    url: str
+    quotes: list[str]  # every quote of this source in the article, in order, without repeats
+
+
+class GoalArticleOut(FromAttributes):
+    goal: str
+    goal_name_vi: str
+    title_vi: str
+    reviewed_by: str
+    reviewed_at: date
+    sections: list[ArticleSectionOut]
+    sources: list[ArticleSourceOut]
+    notice_vi: str  # same notice as /goals: general sourced information, not a doctor's advice
 
 
 class RulesResponse(BaseModel):

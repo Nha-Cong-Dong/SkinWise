@@ -11,6 +11,7 @@ export type BlogFilter = { skin: SkinType | null; product: number | null; sort: 
 export type Route =
   | { page: 'routine' }
   | { page: 'goals' }
+  | { page: 'goal-article'; code: string }
   | { page: 'myths' }
   | { page: 'review' }
   | { page: 'blog'; filter: BlogFilter }
@@ -45,7 +46,8 @@ export function parseHash(hash: string): Route {
     case 'routine':
       return parts.length <= 1 ? { page: 'routine' } : { page: 'not-found' }
     case 'muc-tieu':
-      return parts.length === 1 ? { page: 'goals' } : { page: 'not-found' }
+      if (parts.length === 1) return { page: 'goals' }
+      return parts.length === 2 && /^[a-z0-9-]{1,64}$/.test(second) ? { page: 'goal-article', code: second } : { page: 'not-found' }
     case 'myth':
       return parts.length === 1 ? { page: 'myths' } : { page: 'not-found' }
     case 'blog': {
@@ -92,6 +94,8 @@ export function href(route: Route): string {
       return '#/routine'
     case 'goals':
       return '#/muc-tieu'
+    case 'goal-article':
+      return `#/muc-tieu/${route.code}`
     case 'myths':
       return '#/myth'
     case 'review':

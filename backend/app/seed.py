@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
+from app.goal_articles import article_problems
 from app.goals import SHARED_GOAL, goal_problems
 from app.inci import normalize_name, parse_inci
 from app.ingredients import clear_suggestion_cache, resolve
@@ -72,6 +73,12 @@ def seed(engine: Engine) -> dict[str, int]:
     if problems := goal_problems(goals_data, {g["code"] for g in groups}, goal_urls):
         raise ValueError("goals.toml:\n  " + "\n  ".join(problems))
 
+    articles_data = load_toml("goal_articles.toml")
+    article_urls = goal_urls | {s["url"] for s in articles_data.get("source", [])}
+    goal_codes = {g["code"] for g in goals_data.get("goal", [])}
+    if problems := article_problems(articles_data, goal_codes, article_urls):
+        raise ValueError("goal_articles.toml:\n  " + "\n  ".join(problems))
+
     eu_names, functions = load_eu_names(), load_functions()
     used = {code for _, _, codes in eu_names.values() for code in codes}
     if untranslated := used - {f["code"] for f in functions}:
@@ -94,9 +101,11 @@ def seed(engine: Engine) -> dict[str, int]:
         source_ids = {s["url"]: _seed_source(conn, s) for s in sources}
         for rule in rules:
             _seed_rule(conn, rule, source_ids)
-        seed_goals(conn, goals_data, source_ids)
+        source_ids = seed_goals(conn, goals_data, source_ids)
+        seed_goal_articles(conn, articles_data, source_ids)
     clear_suggestion_cache()
     items = goals_data.get("item", [])
+    articles = articles_data.get("article", [])
     return {
         "groups": len(groups),
         "ingredients": len(ingredients),
@@ -107,6 +116,8 @@ def seed(engine: Engine) -> dict[str, int]:
         "goals": len(goals_data.get("goal", [])),
         "goal_items": len(items),
         "published_goal_items": sum(1 for i in items if i.get("published")),
+        "goal_articles": len(articles),
+        "published_goal_articles": sum(1 for a in articles if a.get("published")),
     }
 
 
@@ -359,9 +370,12 @@ def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) 
         )
 
 
-def seed_goals(conn: Connection, data: dict[str, Any], source_ids: dict[str, int]) -> None:
+def seed_goals(
+    conn: Connection, data: dict[str, Any], source_ids: dict[str, int]
+) -> dict[str, int]:
     """Upsert goals.toml (checked by goal_problems first). `source_ids` holds the rules.toml
-    sources; the goals.toml ones are added. Items and goals gone from the file are deleted."""
+    sources; the goals.toml ones are added and the merged ids returned. Items and goals gone
+    from the file are deleted (a deleted goal takes its article with it)."""
     source_ids = {**source_ids, **{s["url"]: _seed_source(conn, s) for s in data.get("source", [])}}
     goals, items = data.get("goal", []), data.get("item", [])
     for g in goals:
@@ -426,3 +440,60 @@ def seed_goals(conn: Connection, data: dict[str, Any], source_ids: dict[str, int
         text("DELETE FROM goals WHERE NOT (code = ANY(:codes))"),
         {"codes": [g["code"] for g in goals]},
     )
+    return source_ids
+
+
+def seed_goal_articles(conn: Connection, data: dict[str, Any], source_ids: dict[str, int]) -> None:
+    """Replace every article with goal_articles.toml (checked by article_problems first; run
+    after seed_goals). `source_ids` holds the rules.toml and goals.toml sources; the
+    goal_articles.toml ones are added. Nothing refers to articles by id, so they are deleted
+    and inserted again, which also drops articles gone from the file."""
+    source_ids = {**source_ids, **{s["url"]: _seed_source(conn, s) for s in data.get("source", [])}}
+    conn.execute(text("DELETE FROM goal_articles"))
+    for article in data.get("article", []):
+        conn.execute(
+            text(
+                """
+                INSERT INTO goal_articles (goal_code, title_vi, published, reviewed_by,
+                                           reviewed_at)
+                VALUES (:goal, :title_vi, :published, :reviewed_by, :reviewed_at)
+                """
+            ),
+            {
+                "goal": article["goal"],
+                "title_vi": article["title_vi"],
+                "published": bool(article.get("published")),
+                "reviewed_by": article.get("reviewed_by"),
+                "reviewed_at": article.get("reviewed_at"),
+            },
+        )
+        for section_position, section in enumerate(article.get("section", []), start=1):
+            for position, paragraph in enumerate(section.get("paragraph", []), start=1):
+                paragraph_id = conn.execute(
+                    text(
+                        """
+                        INSERT INTO goal_article_paragraphs
+                          (goal_code, section_position, heading_vi, position, text_vi)
+                        VALUES (:goal, :section, :heading_vi, :position, :text_vi)
+                        RETURNING id
+                        """
+                    ),
+                    {
+                        "goal": article["goal"],
+                        "section": section_position,
+                        "heading_vi": section["heading_vi"],
+                        "position": position,
+                        "text_vi": paragraph["text_vi"],
+                    },
+                ).scalar_one()
+                for pos, s in enumerate(paragraph.get("sources", []), start=1):
+                    conn.execute(
+                        text(
+                            """
+                            INSERT INTO goal_article_paragraph_sources
+                              (paragraph_id, position, source_id, quote)
+                            VALUES (:p, :pos, :s, :q)
+                            """
+                        ),
+                        {"p": paragraph_id, "pos": pos, "s": source_ids[s["url"]], "q": s["quote"]},
+                    )

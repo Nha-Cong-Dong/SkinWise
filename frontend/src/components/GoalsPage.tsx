@@ -2,6 +2,7 @@ import { useContext, useEffect, useState } from 'react'
 import { api, type Goal, type GoalItem, type GoalsResponse, type Source } from '../api'
 import { productsWithGroup, useSelectedGoals } from '../goals'
 import { GroupsContext, useGroupName } from '../groups'
+import { href } from '../router'
 import type { LabelGroups, MyProduct, Routine } from '../routine'
 import { Dialog } from './Dialog'
 import { Notice } from './Notice'
@@ -122,6 +123,14 @@ function GoalSection({ goal, routine, found, onOpen }: ItemProps & { goal: Goal;
         {goal.name_vi}
       </h2>
       <p className="mt-2 max-w-[38rem] text-[0.9375rem] leading-relaxed text-ink-soft">{goal.description_vi}</p>
+      {goal.has_article && (
+        <a
+          href={href({ page: 'goal-article', code: goal.code })}
+          className="mt-3 inline-flex items-center gap-1.5 rounded-full bg-surface px-4 py-2 text-sm font-medium text-link ring-1 ring-line hover:ring-ink/30"
+        >
+          Đọc bài đầy đủ<span aria-hidden="true">→</span>
+        </a>
+      )}
       {goal.actives.length === 0 && goal.infos.length === 0 ? (
         <p className="mt-4 text-sm text-ink-mute">Chưa có thông tin đã duyệt cho mục tiêu này.</p>
       ) : (

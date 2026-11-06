@@ -1,5 +1,6 @@
 """API routes. The frontend calls them under /api; the Vite dev proxy strips that prefix."""
 
+from dataclasses import asdict
 from typing import Annotated, Literal
 
 from fastapi import APIRouter, HTTPException, Query, status
@@ -16,6 +17,7 @@ from app.engine import (
     check_routine,
     rule_matches,
 )
+from app.goal_articles import load_article, published_article_goals
 from app.goals import load_goals
 from app.inci import read_label_text
 from app.ingredients import (
@@ -42,6 +44,7 @@ from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
     FunctionOut,
+    GoalArticleOut,
     GoalItemOut,
     GoalOut,
     GoalsResponse,
@@ -126,6 +129,9 @@ def goals(db: DbSession) -> GoalsResponse:
     """Skin goals with their published, sourced items. Display only: the goals a user picks
     stay in the browser and never reach the warning engine."""
     all_goals = load_goals(db)
+    with_article = published_article_goals(db)
+    for g in all_goals:
+        g.has_article = g.code in with_article
     return GoalsResponse(
         goals=[GoalOut.model_validate(g) for g in all_goals if not g.shared],
         shared_infos=[
@@ -133,6 +139,19 @@ def goals(db: DbSession) -> GoalsResponse:
         ],
         notice_vi=GOALS_NOTICE_VI,
     )
+
+
+GOAL_ARTICLE_NOT_FOUND_VI = "Chưa có bài viết cho mục tiêu này."
+
+
+@router.get("/goals/{code}/article")
+def goal_article(code: str, db: DbSession) -> GoalArticleOut:
+    """The published long article of a goal. Display only, like /goals. 404 for an unknown
+    goal, the shared goal and an article not published yet."""
+    article = load_article(db, code)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, GOAL_ARTICLE_NOT_FOUND_VI)
+    return GoalArticleOut.model_validate({**asdict(article), "notice_vi": GOALS_NOTICE_VI})
 
 
 @router.get("/functions")

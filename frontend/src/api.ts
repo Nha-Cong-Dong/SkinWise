@@ -117,12 +117,44 @@ export type Goal = {
   description_vi: string
   actives: GoalItem[]
   infos: GoalItem[]
+  has_article: boolean // true only when the goal has a published long article (GET /goals/{code}/article)
 }
 
 export type GoalsResponse = {
   goals: Goal[] // without the shared "all" goal
   shared_infos: GoalItem[] // items of "all", shown with every goal
   notice_vi: string // always set: not a substitute for a dermatologist
+}
+
+/** A long article for a goal (GET /goals/{code}/article). Shown verbatim; never changes a warning. */
+export type ArticleParagraph = {
+  text_vi: string
+  refs: number[] // 1-based numbers into GoalArticle.sources; unique, ascending
+}
+
+export type ArticleSection = {
+  anchor: string // "phan-1", "phan-2"…, stable by order
+  heading_vi: string
+  paragraphs: ArticleParagraph[]
+}
+
+export type ArticleSource = {
+  n: number // 1-based, numbered by first appearance in the article
+  title: string
+  publisher: string
+  url: string
+  quotes: string[] // every quote of this source in the article, in order, without duplicates
+}
+
+export type GoalArticle = {
+  goal: string
+  goal_name_vi: string
+  title_vi: string
+  reviewed_by: string
+  reviewed_at: string // YYYY-MM-DD
+  sections: ArticleSection[]
+  sources: ArticleSource[]
+  notice_vi: string
 }
 
 export type RoutineCheckRequest = {
@@ -457,6 +489,8 @@ export const api = {
   },
   /** The same for everyone: the user's chosen goals stay in this browser and are never sent. */
   goals: () => request<GoalsResponse>('/goals'),
+  /** 404 when the goal is unknown, is "all", or its article is not published. */
+  goalArticle: (code: string) => request<GoalArticle>(`/goals/${encodeURIComponent(code)}/article`),
   login: (name: string, password: string) =>
     post<{ token: string; name: string; expires_at: string }>('/review/login', { name, password }),
   // User accounts; the session is an HttpOnly cookie the browser sends by itself.

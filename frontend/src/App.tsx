@@ -39,6 +39,9 @@ const WritePage = lazy(() => import('./components/blog/PostForm').then((m) => ({
 const EditPage = lazy(() => import('./components/blog/PostForm').then((m) => ({ default: m.EditPage })))
 const PostPage = lazy(() => import('./components/blog/PostPage').then((m) => ({ default: m.PostPage })))
 const ProductPage = lazy(() => import('./components/blog/ProductPage').then((m) => ({ default: m.ProductPage })))
+const GoalArticlePage = lazy(() =>
+  import('./components/GoalArticlePage').then((m) => ({ default: m.GoalArticlePage })),
+)
 const AuthorPage = lazy(() => import('./components/blog/AuthorPage').then((m) => ({ default: m.AuthorPage })))
 
 // Feedback goes to GitHub, not a form on SkinWise: nothing to store or moderate here
@@ -48,7 +51,7 @@ const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
 // The review page has no nav entry for users; reviewers open #review.
 const MENU: [Route, string, (route: Route) => boolean][] = [
   [{ page: 'routine' }, 'Routine của tôi', (r) => r.page === 'routine'],
-  [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals'],
+  [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals' || r.page === 'goal-article'],
   [{ page: 'myths' }, 'Sự thật hay myth', (r) => r.page === 'myths'],
   [ALL_POSTS, 'Review cộng đồng', isBlogPage],
 ]
@@ -62,6 +65,8 @@ function pageKey(route: Route): string {
       return `${route.page}:${route.id}`
     case 'author':
       return `author:${route.handle}`
+    case 'goal-article':
+      return `goal-article:${route.code}`
     default:
       return route.page
   }
@@ -295,6 +300,10 @@ function App() {
             ) : page === 'goals' ? (
               <div className="mx-auto max-w-3xl">
                 <GoalsPage routine={actions.routine} found={found} />
+              </div>
+            ) : route.page === 'goal-article' ? (
+              <div className="mx-auto max-w-3xl">
+                <GoalArticlePage key={route.code} code={route.code} />
               </div>
             ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">

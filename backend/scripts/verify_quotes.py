@@ -1,7 +1,8 @@
 """Check every quote against its live source page:
-uv run python -m scripts.verify_quotes [rule-or-goal-item-key ...]
+uv run python -m scripts.verify_quotes [rule-or-goal-item-key | article:<goal> ...]
 
-Covers rule quotes in data/rules.toml and goal item quotes in data/goals.toml; when no keys
+Covers rule quotes in data/rules.toml, goal item quotes in data/goals.toml and the paragraph
+quotes of goal articles in data/goal_articles.toml (key article:<goal>); when no keys
 are given, also the legal basis in data/concentration_limits.toml and data/legal_basis.toml and
 the label evidence of everyday names in data/common_names.toml. A quote must appear verbatim on
 the page (case, whitespace, dash and quote variants ignored). Exit code 1 if any quote fails,
@@ -17,7 +18,8 @@ from app.sources import BlockedError, fetch_text, has_challenge_marker, missing_
 
 
 def quotes_to_check(keys: list[str]) -> list[tuple[str, str | None, str | None]]:
-    """(label, url, quote); url None means the rule or goal item has no source yet."""
+    """(label, url, quote); url None means the rule, goal item or article paragraph has no
+    source yet. Article labels are article:<goal> §<section>.<paragraph>."""
     entries = [
         *load_toml("rules.toml").get("rule", []),
         *load_toml("goals.toml").get("item", []),
@@ -29,6 +31,16 @@ def quotes_to_check(keys: list[str]) -> list[tuple[str, str | None, str | None]]
         items += [(entry["key"], s["url"], s["quote"]) for s in entry.get("sources", [])]
         if not entry.get("sources"):
             items.append((entry["key"], None, None))
+    for article in load_toml("goal_articles.toml").get("article", []):
+        key = f"article:{article['goal']}"
+        if keys and key not in keys:
+            continue
+        for i, section in enumerate(article.get("section", []), start=1):
+            for j, paragraph in enumerate(section.get("paragraph", []), start=1):
+                label = f"{key} §{i}.{j}"
+                items += [(label, s["url"], s["quote"]) for s in paragraph.get("sources", [])]
+                if not paragraph.get("sources"):
+                    items.append((label, None, None))
     if not keys:
         limits = load_toml("concentration_limits.toml")
         order = limits["ordering_rule"]
