@@ -149,13 +149,14 @@ ingredients = """AQUA/WATER, NIACINAMIDE, ACETYL GLUCOSAMINE, ETHOXYDIGLYCOL, BU
 
 # --- Benzoyl peroxide ---
 # US OTC drug: the page prints "Active Ingredient : Benzoyl Peroxide 4%" then "Inactive Ingredients : ...".
-# Both are joined here, active first.
+# Both are joined here, active first, so the list is not in order of weight.
 [[product]]
 slug = "cerave-acne-foaming-cream-cleanser"
 brand = "CeraVe"
 name = "Acne Foaming Cream Cleanser"
 market = "US"
 application = "rinse_off"
+ingredients_ordered = false
 source_url = "https://www.cerave.com/skincare/cleansers/acne-benzoyl-peroxide-cleanser"
 retrieved_at = 2026-10-22
 verification_status = "verified"

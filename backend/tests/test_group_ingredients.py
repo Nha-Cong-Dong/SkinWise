@@ -53,7 +53,11 @@ def test_pasted_list_names_the_entry_and_its_place(make_user) -> None:
 def test_seeded_positions_match_the_product_detail(make_user, engine: Engine) -> None:
     client = make_user()
     with engine.connect() as conn:
-        ids = [row.id for row in conn.execute(text("SELECT id FROM products ORDER BY id"))]
+        rows = conn.execute(text("SELECT id, slug FROM products ORDER BY id")).all()
+    ids = [row.id for row in rows]
+    # Only the Drug Facts label joined active first is not in order of weight.
+    unordered = {row.id for row in rows if row.slug == "cerave-acne-foaming-cream-cleanser"}
+    assert len(unordered) == 1
     results = check(client, [{"key": str(i), "product_id": i} for i in ids])
     assert any(r["group_ingredients"] for r in results.values())
     for pid in ids:
@@ -61,7 +65,9 @@ def test_seeded_positions_match_the_product_detail(make_user, engine: Engine) ->
         detail = client.get(f"/products/{pid}").json()
         entries = {i["position"]: i for i in detail["ingredients"]}
         assert result["ingredient_count"] == len(detail["ingredients"])
-        assert result["ordered"] is True
+        assert result["ordered"] is (pid not in unordered)
+        if pid in unordered:
+            assert detail["one_percent_marker"] is None
         # Every group of the product, and only those, has its entries listed.
         assert {g["group"] for g in result["group_ingredients"]} == set(result["groups"])
         for g in result["group_ingredients"]:

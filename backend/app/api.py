@@ -35,6 +35,7 @@ from app.products import (
     get_product,
     product_applications,
     product_group_ingredients,
+    products_ordered,
     search_products,
 )
 from app.rules import load_product_groups, load_published_rules
@@ -195,7 +196,8 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
     if row is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "product not found")
     resolved = mark_allergens(db, list(row.ingredients))
-    line = one_percent_line(resolved)
+    # A list not in order of weight (Drug Facts joined active first) has no 1% line.
+    line = one_percent_line(resolved) if products_ordered(db, [product_id])[product_id] else None
     suggestions = suggestions_for(db, resolved)
     return ProductDetail.model_validate(
         {
@@ -240,6 +242,7 @@ def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> Routin
                             f"unknown product ids: {sorted(missing)}")  # fmt: skip
     seeded_groups = load_product_groups(db, seeded_ids)
     seeded_listed = product_group_ingredients(db, seeded_ids)
+    seeded_ordered = products_ordered(db, seeded_ids)
 
     # The engine works on integer ids; client keys map to 1..n and back.
     ids = {p.key: n for n, p in enumerate(body.products, start=1)}
@@ -252,7 +255,7 @@ def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> Routin
     for p in body.products:
         if p.product_id is not None:
             groups_by_id[ids[p.key]] = seeded_groups[p.product_id]
-            listed[p.key] = (*seeded_listed[p.product_id], True)
+            listed[p.key] = (*seeded_listed[p.product_id], seeded_ordered[p.product_id])
             continue
         label = read_label_text(p.inci or "")
         resolved = resolve(db, label.entries)

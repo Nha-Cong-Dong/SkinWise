@@ -246,12 +246,14 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
             """
             INSERT INTO products (slug, brand, name, market, application, search_name,
                                   ingredients_source, source_url, source_retrieved_at,
-                                  verification_status, ingredients_raw)
+                                  verification_status, ingredients_raw, ingredients_ordered)
             VALUES (:slug, :brand, :name, :market, :application, :search_name, 'seed',
-                    :source_url, :retrieved_at, :verification_status, :ingredients_raw)
+                    :source_url, :retrieved_at, :verification_status, :ingredients_raw,
+                    :ingredients_ordered)
             ON CONFLICT (slug) DO UPDATE SET
               brand = excluded.brand, name = excluded.name, market = excluded.market,
               application = excluded.application,
+              ingredients_ordered = excluded.ingredients_ordered,
               search_name = excluded.search_name, source_url = excluded.source_url,
               source_retrieved_at = excluded.source_retrieved_at,
               verification_status = excluded.verification_status,
@@ -270,6 +272,7 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
             "retrieved_at": p["retrieved_at"],
             "verification_status": p.get("verification_status", "unverified"),
             "ingredients_raw": p["ingredients"],
+            "ingredients_ordered": p.get("ingredients_ordered", True),
         },
     ).scalar_one()
 

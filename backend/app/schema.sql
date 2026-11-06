@@ -60,6 +60,9 @@ CREATE UNIQUE INDEX IF NOT EXISTS products_slug_key ON products (slug);
 -- Shown only; no rule uses it until a source says rinse-off products change the warning.
 ALTER TABLE products ADD COLUMN IF NOT EXISTS application text
   CHECK (application IN ('rinse_off', 'leave_on'));
+-- false: the stored list is not in order of weight (a Drug Facts label joined active first).
+-- Shown only: hides positions and the one-percent line, never changes a warning.
+ALTER TABLE products ADD COLUMN IF NOT EXISTS ingredients_ordered boolean NOT NULL DEFAULT true;
 
 CREATE INDEX IF NOT EXISTS products_search_name_trgm
   ON products USING gin (search_name gin_trgm_ops);

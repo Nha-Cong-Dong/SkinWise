@@ -191,6 +191,19 @@ def product_applications(db: Session | Connection, product_ids: list[int]) -> di
     return {row.id: row.application for row in db.execute(_APPLICATIONS, {"ids": product_ids})}
 
 
+_ORDERED = text("SELECT id, ingredients_ordered FROM products WHERE id IN :ids").bindparams(
+    bindparam("ids", expanding=True)
+)
+
+
+def products_ordered(db: Session | Connection, product_ids: list[int]) -> dict[int, bool]:
+    """Whether each product's stored list is in order of weight (`ingredients_ordered` in
+    products.toml; false for a Drug Facts label joined active first). Shown only."""
+    if not product_ids:
+        return {}
+    return {row.id: row.ingredients_ordered for row in db.execute(_ORDERED, {"ids": product_ids})}
+
+
 # Same rows and join as load_product_groups(), so the groups listed here are the product's.
 _GROUP_INGREDIENTS = text(
     """

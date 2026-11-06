@@ -134,7 +134,7 @@ Ví dụ gây hiểu lầm: Bifida Biome Serum Toner được gắn PHA (đúng:
 - `/routine/check` trả thêm `group_ingredients` (nhóm, tên trên nhãn, vị trí), `ingredient_count`, `ordered` cho mỗi sản phẩm. **Chỉ để hiển thị**: không đổi engine, cảnh báo, `resolve()`.
 - Chip trên lịch và "Sản phẩm của tôi" ghi `PHA · Lactobionic Acid (thứ 29/41)`, kèm câu "Bảng thành phần không ghi nồng độ, nên có chất này không có nghĩa là đủ lượng để có tác dụng" (tooltip + một dòng hiện trên trang). Cảnh báo có khối "Chất liên quan trên nhãn". Trang Mục tiêu đổi chữ + câu lưu ý.
 - **Không** dùng vị trí để ẩn / giảm cảnh báo hay bỏ nhãn nhóm: ngưỡng nồng độ phải có nguồn. Danh sách "thành phần nổi bật" và nhãn Drug Facts (`ordered = false`) không hiện vị trí.
-- Còn treo: sản phẩm mẫu ghép từ nhãn Drug Facts (CeraVe Acne Foaming Cream Cleanser, hoạt chất đặt đầu) vẫn trả `ordered = true`. Sửa cần một cờ trong `products.toml` + cột trong `schema.sql` + seed.
+- Sản phẩm mẫu ghép từ nhãn Drug Facts (CeraVe Acne Foaming Cream Cleanser, hoạt chất đặt đầu) ghi `ingredients_ordered = false` trong `products.toml` (cột `products.ingredients_ordered`): `/routine/check` trả `ordered = false`, trang chi tiết không vẽ đường 1%.
 
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.
