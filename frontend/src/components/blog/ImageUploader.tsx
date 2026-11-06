@@ -50,14 +50,14 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
           setOver(false)
           if (!disabled) onFiles(Array.from(e.dataTransfer.files))
         }}
-        className={`rounded-xl border border-dashed p-3.5 ${over ? 'border-link bg-surface' : 'border-ink-mute/40'}`}
+        className={`rounded-md border border-dashed p-3.5 ${over ? 'border-link bg-surface' : 'border-ink-mute/40'}`}
       >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <button
             type="button"
             onClick={() => input.current?.click()}
             disabled={disabled || items.length >= MAX_IMAGES}
-            className="rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40"
+            className="rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40"
           >
             Chọn ảnh
           </button>
@@ -89,12 +89,12 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
       {items.length > 0 && (
         <ol className="mt-3 grid gap-3 sm:grid-cols-2">
           {items.map((item, n) => (
-            <li key={item.key} className="rounded-xl bg-surface p-2.5 ring-1 ring-line">
+            <li key={item.key} className="rounded-md bg-surface p-2.5 ring-1 ring-line">
               <div className="relative">
                 <img
                   src={item.preview}
                   alt={item.caption.trim() || `Ảnh ${n + 1} của bài viết`}
-                  className="aspect-[4/3] w-full rounded-lg bg-paper object-cover"
+                  className="aspect-[4/3] w-full rounded-md bg-paper object-cover"
                 />
                 {item.status === 'uploading' && (
                   <span className="absolute inset-x-2 bottom-2 rounded-full bg-surface/90 px-2 py-0.5 text-center text-xs text-ink">

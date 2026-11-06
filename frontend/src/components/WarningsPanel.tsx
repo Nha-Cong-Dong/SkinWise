@@ -52,11 +52,11 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
           <Notice>Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.</Notice>
         )}
         {state.kind === 'error' && (
-          <div className="rounded-xl bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
+          <div className="rounded-md bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
             <p>{checkError(state.problem)}</p>
             <button
               onClick={state.retry}
-              className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
+              className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
             >
               Thử lại
             </button>

@@ -97,12 +97,12 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
       </p>
 
       {post.is_mine && post.status === 'pending' && (
-        <p className="rounded-xl bg-surface p-4 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
+        <p className="rounded-md bg-surface p-4 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
           Bài viết đang chờ duyệt vì có nội dung cần kiểm tra: {flagReasons(post.flags)}. Người khác chưa thấy bài này.
         </p>
       )}
       {post.is_mine && post.status === 'hidden' && (
-        <p className="rounded-xl bg-surface p-4 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
+        <p className="rounded-md bg-surface p-4 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
           Bài viết đang tạm ẩn vì có nhiều báo cáo, chờ người duyệt xem lại.
         </p>
       )}
@@ -115,7 +115,7 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
         </p>
       </header>
 
-      <section aria-labelledby="personal-title" className="rounded-2xl bg-paper p-5 ring-1 ring-line sm:p-6">
+      <section aria-labelledby="personal-title" className="rounded-md bg-paper p-5 ring-1 ring-line sm:p-6">
         <h2 id="personal-title" className="text-lg font-bold">
           Trải nghiệm cá nhân của{' '}
           <a href={href({ page: 'author', handle: post.author.handle })} className={textLink}>
@@ -208,7 +208,7 @@ function ImageGrid({ images }: { images: ImageOut[] }) {
               <button
                 onClick={() => setViewing(n)}
                 aria-label={`Xem lớn: ${alt(image, n)}`}
-                className="block w-full overflow-hidden rounded-xl bg-surface ring-1 ring-line hover:ring-ink-mute"
+                className="block w-full overflow-hidden rounded-md bg-surface ring-1 ring-line hover:ring-ink-mute"
               >
                 <img
                   src={imageSrc(image)}
@@ -236,7 +236,7 @@ function ImageGrid({ images }: { images: ImageOut[] }) {
               alt={alt(shown, viewing)}
               width={shown.width}
               height={shown.height}
-              className="mx-auto max-h-[70dvh] w-auto max-w-full rounded-lg"
+              className="mx-auto max-h-[70dvh] w-auto max-w-full rounded-md"
             />
             {images.length > 1 && (
               <div className="mt-3 flex justify-between text-sm">

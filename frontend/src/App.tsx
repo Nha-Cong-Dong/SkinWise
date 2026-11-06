@@ -7,7 +7,7 @@ import { clearAllDrafts } from './components/blog/draft'
 import { ProfileDialog } from './components/blog/ProfileDialog'
 import { Dialog } from './components/Dialog'
 import { GoalsPage } from './components/GoalsPage'
-import { Mark } from './components/Icons'
+import { Logo } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
 import { MythPage } from './components/MythPage'
 import { RoutineBoard } from './components/RoutineBoard'
@@ -50,10 +50,10 @@ const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
 
 // The review page has no nav entry for users; reviewers open #review.
 const MENU: [Route, string, (route: Route) => boolean][] = [
-  [{ page: 'routine' }, 'Routine của tôi', (r) => r.page === 'routine'],
+  [{ page: 'routine' }, 'Lịch dùng', (r) => r.page === 'routine'],
   [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals' || r.page === 'goal-article'],
-  [{ page: 'myths' }, 'Sự thật hay myth', (r) => r.page === 'myths'],
-  [ALL_POSTS, 'Review cộng đồng', isBlogPage],
+  [{ page: 'myths' }, 'Đúng hay sai', (r) => r.page === 'myths'],
+  [ALL_POSTS, 'Đánh giá', isBlogPage],
 ]
 
 /** A key per page, to scroll to the top when the page changes (not on a filter change). */
@@ -222,42 +222,51 @@ function App() {
       <FunctionsContext value={functions}>
       <ProfileContext value={profile.value}>
         <div className="min-h-screen">
-          <header className="bg-surface ring-1 ring-line">
-            {/* Small screens: logo and account on one row, the menu below. Wide screens: one row. */}
-            <div className="mx-auto flex max-w-[90rem] flex-wrap items-center gap-x-6 gap-y-2 px-4 py-2.5 sm:px-6 lg:flex-nowrap">
-              <div className="flex shrink-0 items-center gap-2.5">
-                <Mark className="size-8" />
-                <span className="text-xl leading-none font-bold tracking-tight">SkinWise</span>
-              </div>
-              <nav
-                className="order-last flex w-full flex-wrap gap-1 text-sm sm:text-[0.9375rem] lg:order-none lg:w-auto"
-                aria-label="Trang"
-              >
+          {/* Phones: logo and account on top, the four pages in a tab bar at the bottom of the screen.
+              From 1024px: one bar on top with the logo, the pages and the account. */}
+          <header className="border-b border-line bg-surface">
+            <div className="mx-auto flex min-h-16 max-w-[90rem] items-center gap-6 px-4 sm:px-6 lg:min-h-20 lg:gap-8 xl:gap-14">
+              <a href={href({ page: 'routine' })} className="inline-flex shrink-0 rounded-md">
+                <Logo className="h-10 w-auto lg:h-13" />
+              </a>
+              <nav className="hidden flex-1 gap-2 lg:flex" aria-label="Điều hướng chính">
                 {MENU.map(([target, label, isCurrent]) => (
                   <a
                     key={label}
                     href={href(target)}
                     aria-current={isCurrent(route) ? 'page' : undefined}
-                    className={`rounded-full px-3 py-1.5 whitespace-nowrap sm:px-3.5 ${isCurrent(route) ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:bg-paper hover:text-ink'}`}
+                    className={`inline-flex min-h-11.5 items-center rounded-full px-5.5 text-[1.0625rem] whitespace-nowrap ${isCurrent(route) ? 'bg-primary font-semibold text-surface' : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'}`}
                   >
                     {label}
                   </a>
                 ))}
               </nav>
               {me && (
-                <button
+                <AccountButton
+                  email={me.email}
+                  status={accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? null)}
+                  warn={conflict !== null || sync.state.kind === 'offline' || accountOffline}
                   onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
-                  className="ml-auto flex min-w-0 flex-col items-end rounded-xl px-2 py-1 text-right hover:bg-paper"
-                  title="Tài khoản"
-                >
-                  <span className="max-w-[11rem] truncate text-sm font-medium sm:max-w-[16rem]">{me.email}</span>
-                  <span className={`text-xs ${conflict || sync.state.kind === 'offline' || accountOffline ? 'text-caution-ink' : 'text-ink-mute'}`}>
-                    {accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? 'Tài khoản')}
-                  </span>
-                </button>
+                />
               )}
             </div>
           </header>
+
+          <nav
+            className="fixed inset-x-0 bottom-0 z-20 grid grid-cols-4 border-t border-line bg-surface pb-[env(safe-area-inset-bottom)] lg:hidden"
+            aria-label="Điều hướng chính"
+          >
+            {MENU.map(([target, label, isCurrent]) => (
+              <a
+                key={label}
+                href={href(target)}
+                aria-current={isCurrent(route) ? 'page' : undefined}
+                className={`flex min-h-14 items-center justify-center px-1 text-center text-xs leading-tight ${isCurrent(route) ? 'font-semibold text-primary' : 'text-ink-soft hover:text-ink'}`}
+              >
+                {label}
+              </a>
+            ))}
+          </nav>
 
           <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
             <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
@@ -268,7 +277,7 @@ function App() {
 
           {passwordReset && (
             <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
-              <p className="flex max-w-2xl items-start gap-3 rounded-xl bg-surface p-3 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
+              <p className="flex max-w-2xl items-start gap-3 rounded-md bg-surface p-3 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
                 <span className="flex-1">Đã đặt mật khẩu mới. Các thiết bị khác đã được đăng xuất.</span>
                 <button onClick={() => setPasswordReset(false)} className="shrink-0 text-link underline underline-offset-2">
                   Đóng
@@ -282,10 +291,8 @@ function App() {
             {page === 'routine' ? (
               <>
               {/* The three columns have their own headings; the page needs one above them. */}
-              <h1 className="sr-only">Routine của tôi</h1>
+              <h1 className="sr-only">Lịch dùng</h1>
               <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
-                {/* The three columns have visible h2 titles; the page title is for screen readers. */}
-                <h1 className="sr-only">Routine của tôi</h1>
                 <div className="lg:col-start-1 lg:row-start-1">
                   <MyProducts actions={actions} found={found} onAdd={() => setAdding(true)} />
                 </div>
@@ -348,14 +355,14 @@ function App() {
               <div className="mx-auto max-w-2xl space-y-3 text-sm text-ink-soft">
                 <p>Không tìm thấy trang này.</p>
                 <a href={href({ page: 'routine' })} className="text-link underline underline-offset-2">
-                  Về routine của tôi
+                  Về lịch dùng
                 </a>
               </div>
             )}
             </Suspense>
           </main>
 
-          <footer className="mx-auto max-w-[90rem] border-t border-line px-4 py-6 text-xs leading-relaxed text-ink-mute sm:px-6">
+          <footer className="mx-auto max-w-[90rem] border-t border-line px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] text-xs leading-relaxed text-ink-mute sm:px-6 lg:pb-8">
             <p>
               Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này và
               đồng bộ với tài khoản SkinWise của bạn.
@@ -432,7 +439,7 @@ function App() {
               <p>{incoming.message}</p>
               <button
                 onClick={retryIncoming}
-                className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
+                className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
               >
                 Thử lại
               </button>
@@ -455,6 +462,51 @@ function App() {
       </FunctionsContext>
     </GroupsContext>
   )
+}
+
+/**
+ * The round account button. The sync state stays visible: as text from 1280px, as a dot on the
+ * button and in its name on phones, so a conflict or a failed save is never hidden.
+ */
+function AccountButton({
+  email,
+  status,
+  warn,
+  onClick,
+}: {
+  email: string
+  status: string | null
+  warn: boolean
+  onClick: () => void
+}) {
+  const name = status ? `Tài khoản ${email}, ${status.toLowerCase()}` : `Tài khoản ${email}`
+  return (
+    <button
+      onClick={onClick}
+      aria-label={name}
+      title={name}
+      className="ml-auto flex min-h-11 min-w-0 items-center gap-3 rounded-full xl:pl-1"
+    >
+      <span className="hidden min-w-0 flex-col items-end text-right xl:flex" aria-hidden="true">
+        <span className="max-w-[16rem] truncate text-sm font-medium">{email}</span>
+        <span className={`text-xs ${warn ? 'text-caution-ink' : 'text-ink-mute'}`}>{status ?? 'Tài khoản'}</span>
+      </span>
+      <span
+        aria-hidden="true"
+        className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-thistle text-sm font-semibold text-thistle-ink lg:size-12 lg:text-base"
+      >
+        {initial(email)}
+        {warn && (
+          <span className="absolute -top-0.5 -right-0.5 size-3.5 rounded-full bg-caution ring-2 ring-surface" />
+        )}
+      </span>
+    </button>
+  )
+}
+
+/** First letter of the address, for the round account button. */
+function initial(email: string): string {
+  return (Array.from(email.trim())[0] ?? '?').toLocaleUpperCase('vi')
 }
 
 /**
@@ -489,7 +541,7 @@ function ResultsAside({ check, children }: { check: CheckState; children: ReactN
       {check.kind !== 'empty' && !inView && (
         <a
           href="#results"
-          className="fixed inset-x-3 bottom-3 z-20 flex items-center gap-3 rounded-2xl bg-night py-2.5 pr-4 pl-3 text-sm text-night-text shadow-xl shadow-ink/30 lg:hidden"
+          className="dusk-panel fixed inset-x-3 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-20 flex items-center gap-3 rounded-md bg-dusk py-2.5 pr-4 pl-3 text-sm text-on-dusk shadow-float lg:hidden"
         >
           <span className="min-w-0 flex-1">
             {warnings.some((w) => !isUsageNote(w)) ? (
@@ -506,7 +558,7 @@ function ResultsAside({ check, children }: { check: CheckState; children: ReactN
               'Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn'
             )}
           </span>
-          <span className="shrink-0 font-semibold text-moon">Xem kết quả</span>
+          <span className="shrink-0 font-semibold text-thistle">Xem kết quả</span>
         </a>
       )}
     </>

@@ -40,10 +40,10 @@ export function IngredientList({ ingredients, onePercentMarker, onSuggest }: Pro
               <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] border-b border-line/70 py-1.5">
                 <span className="pt-px text-xs text-ink-mute tabular-nums">{i.position}</span>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className={i.groups.length ? 'font-bold text-active-ink' : 'text-ink'}>{i.raw_name}</span>
+                  <span className={i.groups.length ? 'font-bold text-thistle-ink' : 'text-ink'}>{i.raw_name}</span>
                   {i.declared_concentration && (
                     <span
-                      className="rounded bg-info-soft px-1 text-xs font-semibold text-info-ink"
+                      className="rounded bg-icy px-1 text-xs font-semibold text-info-ink"
                       title="Nồng độ ghi trên nhãn"
                     >
                       {i.declared_concentration}

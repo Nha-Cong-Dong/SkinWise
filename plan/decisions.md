@@ -144,3 +144,6 @@ Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính t
 
 ## Bài viết dài cho mục tiêu da (7/11)
 Thẻ ngắn (80–120 chữ) quá sơ sài. Mỗi mục tiêu thêm **một** bài tổng quan 800–1500 chữ (`backend/data/goal_articles.toml`), giữ nguyên thẻ ngắn. Người dùng chọn: bài ở trang riêng `#/muc-tieu/<code>` (link chia sẻ được, trang Mục tiêu có nút "Đọc bài đầy đủ" khi bài đã bật); trích dẫn bằng số `[n]` cuối mỗi đoạn, nguồn cuối bài mở được đoạn trích nguyên văn; **mọi đoạn văn phải có ít nhất một đoạn trích** (seed chặn, kể cả bản nháp). Bài chưa `published` thì API trả 404. Làm mẫu `acne` trước, xem chất lượng rồi mới làm 5 mục tiêu còn lại. Chỉ để hiển thị, không vào engine.
+
+## Giao diện mới theo bản thiết kế Claude Design (7/11)
+Người dùng dựng lại giao diện trên Claude Design (canvas "SkinWise Wireframe", design system trùng `DESIGN.md`). Không có đồng bộ tự động: bản thiết kế được tải một lần về `_workspace/design-import/` và chuyển tay sang React; code là gốc. Người dùng chọn: **chỉ đổi giao diện, giữ chức năng** (không làm ô "Đã bôi", không làm giao diện tối), làm theo đợt có QA. "Lịch dùng" có 4 tab con Hôm nay · Lịch tuần · Tủ đồ · Kiểm tra; "Hôm nay" chỉ lọc routine có sẵn theo ngày. Lời nhắc y khoa giữ ở đầu trang, giữ nguyên chữ. Tài khoản vẫn là hộp thoại. Font tiêu đề "Newsreader Display" và logo lấy từ bản thiết kế, tự lưu trong repo.

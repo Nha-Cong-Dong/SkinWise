@@ -106,7 +106,7 @@ export function GoalArticlePage({ code }: { code: string }) {
       </header>
 
       {article.sections.length > 0 && (
-        <nav aria-labelledby="bai-viet-muc-luc" className="rounded-xl bg-surface p-4 ring-1 ring-line sm:p-5">
+        <nav aria-labelledby="bai-viet-muc-luc" className="rounded-md bg-surface p-4 ring-1 ring-line sm:p-5">
           <h2 id="bai-viet-muc-luc" className="text-base font-semibold">
             Mục lục
           </h2>
@@ -185,7 +185,7 @@ function SourceItem({ source }: { source: ArticleSource }) {
     <li
       id={sourceId(source.n)}
       tabIndex={-1}
-      className="flex scroll-mt-4 gap-3 rounded-lg focus:ring-2 focus:ring-link/40 focus:outline-none"
+      className="flex scroll-mt-4 gap-3 rounded-md focus:ring-2 focus:ring-link/40 focus:outline-none"
     >
       <span className="w-7 shrink-0 text-right text-sm font-semibold text-ink-mute">{source.n}.</span>
       <div className="min-w-0 flex-1 text-sm leading-snug">

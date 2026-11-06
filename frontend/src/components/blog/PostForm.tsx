@@ -241,7 +241,7 @@ function PostForm({
   return (
     <form onSubmit={(e) => void submit(e)} onPaste={onPaste} className="max-w-3xl space-y-6 text-sm">
       {restored && (
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-xl bg-surface p-3 text-ink-soft ring-1 ring-line">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-surface p-3 text-ink-soft ring-1 ring-line">
           <span className="flex-1">Đã mở lại bản nháp chưa đăng trên tab này (ảnh không được giữ).</span>
           <button type="button" onClick={discardDraft} className="text-link underline underline-offset-2">
             Bỏ bản nháp
@@ -348,7 +348,7 @@ function PostForm({
         <div className="mt-2 space-y-2 text-ink-soft">
           {post?.routine && (
             <label className="flex items-start gap-2.5">
-              <input type="radio" name="routine" checked={choice === 'kept'} onChange={() => setChoice('kept')} className="mt-1 size-4 accent-ink" />
+              <input type="radio" name="routine" checked={choice === 'kept'} onChange={() => setChoice('kept')} className="mt-1 size-4 accent-primary" />
               <span>
                 Giữ routine đang đính kèm
                 <span className="block text-xs text-ink-mute">{routineSummary(post.routine)}</span>
@@ -363,7 +363,7 @@ function PostForm({
                 checked={choice === 'current'}
                 disabled={!current}
                 onChange={() => setChoice('current')}
-                className="mt-1 size-4 accent-ink"
+                className="mt-1 size-4 accent-primary"
               />
               <span>
                 Thay bằng routine hiện tại của tôi
@@ -377,7 +377,7 @@ function PostForm({
                 checked={choice === 'current'}
                 disabled={!current}
                 onChange={(e) => setChoice(e.target.checked ? 'current' : 'none')}
-                className="mt-1 size-4 accent-ink"
+                className="mt-1 size-4 accent-primary"
               />
               <span>
                 Đính kèm routine hiện tại
@@ -387,7 +387,7 @@ function PostForm({
           )}
           {post?.routine && (
             <label className="flex items-start gap-2.5">
-              <input type="radio" name="routine" checked={choice === 'none'} onChange={() => setChoice('none')} className="mt-1 size-4 accent-ink" />
+              <input type="radio" name="routine" checked={choice === 'none'} onChange={() => setChoice('none')} className="mt-1 size-4 accent-primary" />
               Bỏ routine khỏi bài
             </label>
           )}

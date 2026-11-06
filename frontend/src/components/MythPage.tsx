@@ -58,7 +58,7 @@ function PairLookup() {
           onChange(e.target.value)
           setResult(null)
         }}
-        className={`w-full rounded-xl border-0 bg-surface px-3.5 py-3 text-[0.9375rem] font-medium ring-1 ring-line focus:ring-2 focus:ring-link focus:outline-none focus-visible:outline-none ${value ? 'text-ink' : 'text-ink-mute'}`}
+        className={`w-full rounded-md border-0 bg-surface px-3.5 py-3 text-[0.9375rem] font-medium ring-1 ring-line focus:ring-2 focus:ring-link focus:outline-none focus-visible:outline-none ${value ? 'text-ink' : 'text-ink-mute'}`}
       >
         <option value="">{label}</option>
         {[...groups.values()].map((g) => (
@@ -75,16 +75,16 @@ function PairLookup() {
       <h2 id="pair-title" className="text-2xl leading-tight font-bold text-balance">
         Hai hoạt chất này dùng chung được không?
       </h2>
-      <div className="mt-4 flex flex-col items-stretch gap-2 rounded-2xl bg-night p-3 sm:flex-row sm:items-center">
+      <div className="dusk-panel mt-4 flex flex-col items-stretch gap-2 rounded-md bg-dusk p-3 sm:flex-row sm:items-center">
         {select(a, setA, 'Chọn hoạt chất thứ nhất')}
-        <span className="text-center text-2xl leading-none font-light text-moon" aria-hidden="true">
+        <span className="text-center text-2xl leading-none font-light text-thistle" aria-hidden="true">
           +
         </span>
         {select(b, setB, 'Chọn hoạt chất thứ hai')}
         <button
           onClick={lookup}
           disabled={!a || !b}
-          className="rounded-xl bg-moon px-5 py-3 text-[0.9375rem] font-semibold text-night hover:bg-white disabled:bg-night-raised disabled:text-night-mute"
+          className="rounded-md bg-thistle px-5 py-3 text-[0.9375rem] font-semibold text-dusk hover:bg-thistle-hover disabled:bg-dusk-raised disabled:text-dusk-mute"
         >
           Tra cứu
         </button>

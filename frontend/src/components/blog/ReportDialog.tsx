@@ -60,7 +60,7 @@ function ReportForm({ target, onClose }: { target: ReportTarget; onClose: () => 
                 name="reason"
                 checked={reason === r}
                 onChange={() => setReason(r)}
-                className="mt-1 size-4 shrink-0 accent-ink"
+                className="mt-1 size-4 shrink-0 accent-primary"
               />
               {REPORT_REASON_LABELS[r]}
             </label>

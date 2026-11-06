@@ -65,7 +65,7 @@ function LoginForm({ onSignedIn }: { onSignedIn: (session: ReviewSession) => voi
   }
 
   return (
-    <form onSubmit={submit} className="mx-auto max-w-sm space-y-3 rounded-lg bg-white p-6 shadow-sm ring-1 ring-slate-200">
+    <form onSubmit={submit} className="mx-auto max-w-sm space-y-3 rounded-md bg-white p-6 shadow-sm ring-1 ring-slate-200">
       <h2 className="text-lg font-semibold text-slate-900">Đăng nhập người duyệt</h2>
       <p className="text-sm text-slate-500">
         Tài khoản người duyệt do quản trị tạo bằng <code className="text-xs">scripts.reviewers</code>.

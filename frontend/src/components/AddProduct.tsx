@@ -13,7 +13,7 @@ type Props = { actions: RoutineActions }
 type DraftProps = Props & { draft: AddDraft; setDraft: Dispatch<SetStateAction<AddDraft>> }
 
 const field =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
+  'w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
 
 /** Content of the "add product" dialog: search the catalogue or paste an ingredient list. */
 export function AddProduct({ actions, draft, setDraft }: DraftProps) {
@@ -32,7 +32,7 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
             role="tab"
             aria-selected={tab === value}
             onClick={() => setDraft((d) => ({ ...d, tab: value }))}
-            className={`flex-1 rounded-full px-3 py-1.5 ${tab === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
+            className={`flex-1 rounded-full px-3 py-1.5 ${tab === value ? 'bg-primary font-medium text-surface' : 'text-ink-soft hover:text-ink'}`}
           >
             {label}
           </button>
@@ -89,7 +89,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
         Gõ tên hãng, tên sản phẩm hoặc tên thành phần (vd. retinol, niacinamide, BHA). Gõ không dấu cũng được.
       </p>
       {error && (
-        <div className="mt-3 rounded-xl bg-avoid-soft p-3.5 text-sm leading-relaxed text-avoid-ink">
+        <div className="mt-3 rounded-md bg-avoid-soft p-3.5 text-sm leading-relaxed text-avoid-ink">
           <p>Không tải được danh sách sản phẩm.</p>
           <button
             type="button"
@@ -97,7 +97,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
               setError(false)
               setAttempt((n) => n + 1)
             }}
-            className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
+            className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
           >
             Thử lại
           </button>
@@ -138,7 +138,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
                   actions.addProduct({ name: p.name, brand: p.brand, productId: p.id, inci: null, groups: p.groups })
                 }
                 aria-label={`${isAdded ? 'Đã thêm' : 'Thêm'} ${p.brand ? `${p.brand} ` : ''}${p.name}`}
-                className="shrink-0 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-white hover:bg-link disabled:bg-paper disabled:text-ink-mute"
+                className="shrink-0 rounded-full bg-primary px-3.5 py-1.5 text-sm font-medium text-surface hover:bg-primary-hover disabled:bg-paper disabled:text-ink-mute"
               >
                 {isAdded ? 'Đã thêm' : 'Thêm'}
               </button>
@@ -217,7 +217,7 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
       }}
     >
       {origin ? (
-        <div className="rounded-xl bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
+        <div className="rounded-md bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
           <p className="font-semibold text-ink">Chữ đọc từ ảnh bằng AI, có thể sai</p>
           <p className="mt-1">
             Chữ nhỏ trên chai cong dễ bị đọc nhầm, và một chữ sai trong tên hoạt chất có thể làm mất cảnh báo. Hãy so
@@ -227,7 +227,7 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
             <button
               onClick={() => setBigPhoto((big) => !big)}
               aria-label={bigPhoto ? 'Thu nhỏ ảnh' : 'Phóng to ảnh'}
-              className="mt-2 block w-full overflow-hidden rounded-lg bg-surface ring-1 ring-line"
+              className="mt-2 block w-full overflow-hidden rounded-md bg-surface ring-1 ring-line"
             >
               <img src={photo} alt="Ảnh nhãn bạn đã chọn" className={`w-full object-contain ${bigPhoto ? '' : 'max-h-56'}`} />
             </button>
@@ -279,7 +279,7 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
             type="checkbox"
             checked={origin.confirmed}
             onChange={(e) => update({ origin: { ...origin, confirmed: e.target.checked } })}
-            className="mt-0.5 size-4 shrink-0 accent-ink"
+            className="mt-0.5 size-4 shrink-0 accent-primary"
           />
           Tôi đã so từng dòng với bao bì và sửa chỗ sai
         </label>
@@ -288,12 +288,12 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
         <button
           onClick={() => analyze()}
           disabled={!text.trim() || state === 'loading' || unreadable > 0 || unchecked}
-          className="rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40"
+          className="rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40"
         >
           {state === 'loading' ? 'Đang phân tích…' : 'Phân tích'}
         </button>
         {analysis && !unchecked && (
-          <button onClick={add} className="rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link">
+          <button onClick={add} className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover">
             Thêm vào sản phẩm của tôi
           </button>
         )}

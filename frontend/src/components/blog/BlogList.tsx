@@ -45,7 +45,7 @@ function Tabs({ saved }: { saved: boolean }) {
           key={label}
           href={link}
           aria-current={saved === value ? 'page' : undefined}
-          className={`rounded-full px-3.5 py-1.5 ${saved === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
+          className={`rounded-full px-3.5 py-1.5 ${saved === value ? 'bg-primary font-medium text-surface' : 'text-ink-soft hover:text-ink'}`}
         >
           {label}
         </a>
@@ -95,7 +95,7 @@ export function BlogListPage({ filter }: { filter: BlogFilter }) {
               href={to({ skin })}
               aria-current={filter.skin === skin ? 'true' : undefined}
               className={`rounded-full px-3 py-1 text-sm ring-1 ${
-                filter.skin === skin ? 'bg-ink text-white ring-ink' : 'bg-surface text-ink-soft ring-line hover:text-ink'
+                filter.skin === skin ? 'bg-primary text-surface ring-primary' : 'bg-surface text-ink-soft ring-line hover:text-ink'
               }`}
             >
               {skin ? SKIN_TYPE_LABELS[skin] : 'Mọi loại da'}

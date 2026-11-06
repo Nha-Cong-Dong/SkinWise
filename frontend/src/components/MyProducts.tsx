@@ -52,7 +52,7 @@ export function MyProducts({ actions, onAdd, found }: Props) {
         {products.length > 0 && (
           <button
             onClick={onAdd}
-            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-ink py-1.5 pr-3.5 pl-2.5 text-sm font-medium text-white hover:bg-link"
+            className="inline-flex shrink-0 items-center gap-1 rounded-full bg-primary py-1.5 pr-3.5 pl-2.5 text-sm font-medium text-surface hover:bg-primary-hover"
           >
             <Glyph name="plus" className="size-4" />
             Thêm
@@ -60,14 +60,14 @@ export function MyProducts({ actions, onAdd, found }: Props) {
         )}
       </div>
       {products.length === 0 ? (
-        <div className="mt-4 rounded-2xl border border-dashed border-ink-mute/40 p-5">
+        <div className="mt-4 rounded-md border border-dashed border-ink-mute/40 p-5">
           <p className="text-sm leading-relaxed text-ink-soft">
             Thêm những sản phẩm bạn đang dùng: tìm trong danh sách có sẵn, hoặc dán bảng thành phần in trên bao bì.
           </p>
           <div className="mt-3 flex flex-wrap items-center gap-2">
             <button
               onClick={onAdd}
-              className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-ink pr-4 pl-3 text-sm font-medium text-white hover:bg-link"
+              className="inline-flex min-h-10 items-center gap-1.5 rounded-full bg-primary pr-4 pl-3 text-sm font-medium text-surface hover:bg-primary-hover"
             >
               <Glyph name="plus" className="size-4" />
               Thêm sản phẩm
@@ -127,10 +127,10 @@ export function MyProducts({ actions, onAdd, found }: Props) {
           ))}
       </Dialog>
       {/* Always in the page, so a screen reader announces the message when it appears. Above the
-          results bar that phones show at the bottom of the screen. */}
-      <div role="status" className="fixed inset-x-3 bottom-20 z-30 mx-auto max-w-md lg:bottom-6">
+          results bar and the tab bar that phones show at the bottom of the screen. */}
+      <div role="status" className="fixed inset-x-3 bottom-[calc(8.5rem+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md lg:bottom-6">
         {removed && (
-          <div className="flex items-center gap-3 rounded-2xl bg-ink py-2.5 pr-2.5 pl-4 text-sm text-white shadow-xl shadow-ink/30">
+          <div className="dusk-panel flex items-center gap-3 rounded-md bg-primary py-2.5 pr-2.5 pl-4 text-sm text-surface shadow-float">
             <span className="min-w-0 flex-1">
               Đã xoá “{removed.product.name}”
               {removed.entries.length > 0 && ` và ${removed.entries.length} bước trong lịch`}.
@@ -140,7 +140,7 @@ export function MyProducts({ actions, onAdd, found }: Props) {
                 actions.restoreProduct(removed)
                 setRemoved(null)
               }}
-              className="min-h-10 shrink-0 rounded-full px-3 font-semibold text-moon hover:bg-white/10"
+              className="min-h-10 shrink-0 rounded-full px-3 font-semibold text-thistle hover:bg-on-dusk/10"
             >
               Hoàn tác
             </button>
@@ -165,7 +165,7 @@ const ROW_BUTTON = 'inline-flex min-h-10 items-center rounded-full md:min-h-8'
 
 function ProductRow({ product, found, actions, onView, onRemove }: RowProps) {
   return (
-    <li className="flex w-72 shrink-0 snap-start flex-col rounded-xl bg-surface p-3 ring-1 ring-line md:w-auto">
+    <li className="flex w-72 shrink-0 snap-start flex-col rounded-md bg-surface p-3 ring-1 ring-line md:w-auto">
       <p className="leading-snug text-pretty">
         {product.brand ? (
           <span className="block text-xs text-ink-mute">{product.brand}</span>
@@ -191,8 +191,8 @@ function ProductRow({ product, found, actions, onView, onRemove }: RowProps) {
             aria-label={`${SESSION_LABELS[session]}: thêm “${product.name}” vào buổi ${SESSION_LABELS[session].toLowerCase()}`}
             className={`${ROW_BUTTON} px-2.5 font-medium ${
               session === 'AM'
-                ? 'bg-paper text-ink ring-1 ring-line hover:ring-ink'
-                : 'bg-night text-night-text hover:bg-night-raised'
+                ? 'bg-paper text-ink ring-1 ring-line hover:ring-primary'
+                : 'bg-dusk text-on-dusk hover:bg-dusk-raised'
             }`}
           >
             + {SESSION_LABELS[session]}

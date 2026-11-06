@@ -17,7 +17,7 @@ import { LoadError, Loading, textLink } from './parts'
  */
 export function SourcedInfo({ post }: { post: PostDetail }) {
   return (
-    <section aria-labelledby="sourced-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+    <section aria-labelledby="sourced-title" className="rounded-md border border-line bg-surface p-5 sm:p-6">
       <h2 id="sourced-title" className="text-lg font-bold">
         Thông tin có nguồn (SkinWise)
       </h2>

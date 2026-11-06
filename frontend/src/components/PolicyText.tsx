@@ -10,7 +10,7 @@ import { POLICY_VERSION } from '../account'
 export function PolicyText() {
   return (
     <div className="space-y-4 text-sm leading-relaxed text-ink-soft">
-      <p className="rounded-xl bg-caution-soft p-3 text-caution-ink">
+      <p className="rounded-md bg-caution-soft p-3 text-caution-ink">
         Bản nháp (phiên bản {POLICY_VERSION}), chưa được người có chuyên môn pháp lý duyệt. SkinWise chưa mở tài khoản
         cho người dùng thật.
       </p>

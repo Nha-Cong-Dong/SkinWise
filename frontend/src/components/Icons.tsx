@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import type { Severity } from '../api'
 import { SEVERITY } from '../labels'
+import logoUrl from '../assets/brand/skinwise-logo.svg'
 
 type IconProps = { className?: string }
 
@@ -12,25 +13,19 @@ const stroke = {
   strokeLinejoin: 'round',
 } as const
 
-/** Half sun, half night: the two sessions of a routine. */
-export function Mark({ className }: IconProps) {
-  return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <circle cx="16" cy="16" r="15" fill="var(--color-night)" />
-      <path d="M16 1a15 15 0 0 0 0 30z" fill="var(--color-sun)" />
-      <path d="M22.5 10.5a5.5 5.5 0 1 0 2.6 9.9 6.5 6.5 0 0 1-2.6-9.9z" fill="var(--color-moon)" />
-    </svg>
-  )
+/** The logo with the word "SkinWise". */
+export function Logo({ className }: IconProps) {
+  return <img src={logoUrl} alt="SkinWise" className={className} width={293} height={80} />
 }
 
 export function SunIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="4.5" fill="var(--color-sun)" />
+      <circle cx="12" cy="12" r="4.5" fill="var(--color-dawn-ink)" />
       <path
         d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"
         {...stroke}
-        stroke="var(--color-sun)"
+        stroke="var(--color-dawn-ink)"
       />
     </svg>
   )
@@ -39,7 +34,7 @@ export function SunIcon({ className }: IconProps) {
 export function MoonIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d="M15.5 3.5a8.5 8.5 0 1 0 5 15.4A9.5 9.5 0 0 1 15.5 3.5z" fill="var(--color-moon)" />
+      <path d="M15.5 3.5a8.5 8.5 0 1 0 5 15.4A9.5 9.5 0 0 1 15.5 3.5z" fill="var(--color-thistle)" />
     </svg>
   )
 }

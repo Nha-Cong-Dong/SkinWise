@@ -18,7 +18,7 @@ type Props = {
 export function RuleCard({ rule, children, collapsible = false }: Props) {
   return (
     <article
-      className={`rounded-xl bg-surface p-4 ring-1 ${rule.severity === 'avoid' ? 'ring-2 ring-avoid/60' : 'ring-line'}`}
+      className={`rounded-md bg-surface p-4 ring-1 ${rule.severity === 'avoid' ? 'ring-2 ring-avoid/60' : 'ring-line'}`}
     >
       <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
         <SeverityBadge severity={rule.severity} />

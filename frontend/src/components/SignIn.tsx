@@ -2,12 +2,12 @@ import { useState, type ReactNode } from 'react'
 import { POLICY_VERSION, type EmailLink } from '../account'
 import { ApiError, api, type EmailSent, type Me } from '../api'
 import { Dialog } from './Dialog'
-import { Mark, SeverityBadge } from './Icons'
+import { Logo, SeverityBadge } from './Icons'
 import { PolicyText } from './PolicyText'
 
 const field =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus:ring-2 focus:ring-link/20'
-const primary = 'rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white hover:bg-link disabled:opacity-40'
+  'w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus:ring-2 focus:ring-link/20'
+const primary = 'rounded-full bg-primary px-5 py-2.5 text-sm font-medium text-surface hover:bg-primary-hover disabled:opacity-40'
 const textLink = 'text-link underline underline-offset-2'
 
 const PASSWORD_HINT = 'Ít nhất 8 ký tự. Nên dùng một cụm từ dễ nhớ, khó đoán.'
@@ -62,11 +62,8 @@ function emailRequestError(e: unknown): string {
 function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 lg:flex-row lg:items-center lg:gap-10">
-      <main className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-line sm:p-8">
-        <div className="flex items-center gap-2.5">
-          <Mark className="size-9" />
-          <span className="text-2xl leading-none font-bold tracking-tight">SkinWise</span>
-        </div>
+      <main className="w-full max-w-md rounded-md bg-surface p-6 ring-1 ring-line sm:p-8">
+        <Logo className="h-12 w-auto" />
         <p className="mt-3 text-sm leading-relaxed text-ink-soft">
           Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng, kèm nguồn tham khảo.
         </p>
@@ -95,7 +92,7 @@ function Intro() {
           kèm giải thích tiếng Việt và đoạn trích nguyên văn từ nguồn đáng tin cậy.
         </li>
       </ul>
-      <figure className="mt-4 rounded-xl bg-surface p-4 ring-1 ring-line">
+      <figure className="mt-4 rounded-md bg-surface p-4 ring-1 ring-line">
         <figcaption className="text-xs text-ink-mute">Ví dụ kết quả kiểm tra</figcaption>
         <div className="mt-2">
           <SeverityBadge severity="caution" />
@@ -208,7 +205,7 @@ function PasswordField({
       </label>
       {hint && <p className="text-xs leading-relaxed text-ink-mute">{PASSWORD_HINT}</p>}
       <label className="flex items-center gap-2 text-sm text-ink-soft">
-        <input type="checkbox" checked={shown} onChange={(e) => setShown(e.target.checked)} className="size-4 accent-ink" />
+        <input type="checkbox" checked={shown} onChange={(e) => setShown(e.target.checked)} className="size-4 accent-primary" />
         Hiện mật khẩu
       </label>
     </div>
@@ -322,7 +319,7 @@ function RegisterForm({ email, setEmail, onSent, go }: FormProps) {
           type="checkbox"
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
-          className="mt-1 size-4 shrink-0 accent-ink"
+          className="mt-1 size-4 shrink-0 accent-primary"
         />
         <span>
           Tôi đồng ý để SkinWise lưu email và routine của tôi, để đăng nhập và dùng routine trên nhiều thiết bị, theo{' '}

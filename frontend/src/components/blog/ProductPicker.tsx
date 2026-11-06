@@ -25,7 +25,7 @@ export function ProductPicker({ picked, setPicked, myProducts }: Props) {
       {picked.length > 0 ? (
         <ol className="space-y-2">
           {picked.map((p, n) => (
-            <li key={p.key} className="flex items-start gap-3 rounded-xl bg-surface p-3 ring-1 ring-line">
+            <li key={p.key} className="flex items-start gap-3 rounded-md bg-surface p-3 ring-1 ring-line">
               <span className="pt-0.5 text-xs text-ink-mute tabular-nums">{n + 1}</span>
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-ink-mute">{p.productId !== null ? p.brand : 'Bảng thành phần tự dán'}</p>
@@ -54,7 +54,7 @@ export function ProductPicker({ picked, setPicked, myProducts }: Props) {
       {full ? (
         <p className="text-sm text-ink-mute">Đã đủ {MAX_PRODUCTS} sản phẩm, số tối đa cho một bài.</p>
       ) : (
-        <div className="rounded-xl border border-dashed border-ink-mute/40 p-3.5">
+        <div className="rounded-md border border-dashed border-ink-mute/40 p-3.5">
           <div className="flex gap-1 rounded-full bg-paper p-1 text-sm" role="tablist">
             {(
               [
@@ -69,7 +69,7 @@ export function ProductPicker({ picked, setPicked, myProducts }: Props) {
                 role="tab"
                 aria-selected={tab === value}
                 onClick={() => setTab(value)}
-                className={`flex-1 rounded-full px-2 py-1.5 ${tab === value ? 'bg-ink font-medium text-white' : 'text-ink-soft hover:text-ink'}`}
+                className={`flex-1 rounded-full px-2 py-1.5 ${tab === value ? 'bg-primary font-medium text-surface' : 'text-ink-soft hover:text-ink'}`}
               >
                 {label}
               </button>

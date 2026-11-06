@@ -35,7 +35,7 @@ export function GroupChips({ codes, empty, tone = 'day', found, note = true }: P
 
   if (shown.length === 0) {
     return empty ? (
-      <span className={`text-xs ${tone === 'night' ? 'text-night-mute' : 'text-ink-mute'}`}>{empty}</span>
+      <span className={`text-xs ${tone === 'night' ? 'text-dusk-mute' : 'text-ink-mute'}`}>{empty}</span>
     ) : null
   }
   return (
@@ -56,7 +56,7 @@ export function GroupChips({ codes, empty, tone = 'day', found, note = true }: P
             key={code}
             title={title || undefined}
             className={`inline-flex max-w-full min-w-0 rounded-full px-2 py-px text-xs font-medium ${
-              tone === 'night' ? 'bg-night-raised text-night-text' : 'bg-active text-active-ink'
+              tone === 'night' ? 'bg-dusk-raised text-on-dusk' : 'bg-thistle text-thistle-ink'
             }`}
           >
             <span className="shrink-0">{name(code)}</span>

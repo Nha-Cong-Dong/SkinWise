@@ -46,7 +46,7 @@ export function ProductPage({ id }: { id: number }) {
       </section>
 
       {state.kind === 'ready' && (
-        <section aria-labelledby="ingredients-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+        <section aria-labelledby="ingredients-title" className="rounded-md border border-line bg-surface p-5 sm:p-6">
           <h2 id="ingredients-title" className="text-lg font-bold">
             Bảng thành phần
           </h2>

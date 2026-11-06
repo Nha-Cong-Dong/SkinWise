@@ -71,7 +71,7 @@ export function GoalsPage({ routine, found }: { routine: Routine; found: Map<str
                     onClick={() => toggle(g.code)}
                     aria-pressed={on}
                     className={`rounded-full px-4 py-2 text-[0.9375rem] font-medium ring-1 ${
-                      on ? 'bg-ink text-white ring-ink' : 'bg-surface text-ink-soft ring-line hover:text-ink hover:ring-ink/30'
+                      on ? 'bg-primary text-surface ring-primary' : 'bg-surface text-ink-soft ring-line hover:text-ink hover:ring-ink/30'
                     }`}
                   >
                     {g.name_vi}
@@ -177,10 +177,10 @@ function ItemButton({ item, routine, found, onOpen }: ItemProps & { item: GoalIt
     <button
       onClick={onOpen}
       aria-haspopup="dialog"
-      className="flex h-full w-full flex-col items-start gap-2 rounded-xl bg-surface p-4 text-left ring-1 ring-line hover:ring-ink/30"
+      className="flex h-full w-full flex-col items-start gap-2 rounded-md bg-surface p-4 text-left ring-1 ring-line hover:ring-ink/30"
     >
       {item.group && (
-        <span className="rounded-full bg-active px-2 py-px text-xs font-medium text-active-ink">{name(item.group)}</span>
+        <span className="rounded-full bg-thistle px-2 py-px text-xs font-medium text-thistle-ink">{name(item.group)}</span>
       )}
       <span className="text-[0.9375rem] leading-snug font-semibold text-pretty">{item.title_vi}</span>
       {item.group && inRoutine.length > 0 && <InRoutine group={item.group} products={inRoutine} found={found} />}
@@ -224,7 +224,7 @@ function ItemDetail({ item, routine, found }: ItemProps & { item: GoalItem }) {
     <article>
       {item.group && (
         <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-          <span className="rounded-full bg-active px-2 py-px text-xs font-medium text-active-ink">{name(item.group)}</span>
+          <span className="rounded-full bg-thistle px-2 py-px text-xs font-medium text-thistle-ink">{name(item.group)}</span>
           {inRoutine.length > 0 && <InRoutine group={item.group} products={inRoutine} found={found} />}
         </div>
       )}

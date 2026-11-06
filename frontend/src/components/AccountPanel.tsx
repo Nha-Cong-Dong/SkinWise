@@ -8,9 +8,9 @@ import { Dialog } from './Dialog'
 import { DataNote } from './Notice'
 import { PolicyText } from './PolicyText'
 
-const primary = 'rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link disabled:opacity-40'
-const secondary = 'rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40'
-const danger = 'rounded-full bg-avoid px-4 py-2 text-sm font-medium text-white hover:bg-avoid-ink disabled:opacity-40'
+const primary = 'rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover disabled:opacity-40'
+const secondary = 'rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40'
+const danger = 'rounded-full bg-avoid px-4 py-2 text-sm font-medium text-surface hover:bg-avoid-ink disabled:opacity-40'
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString('vi-VN') : null)
 
@@ -57,7 +57,7 @@ export function AccountPanel({
   return (
     <div className="space-y-6 text-sm leading-relaxed text-ink-soft">
       {me.dev_mode && (
-        <p className="rounded-xl bg-caution-soft p-3 text-caution-ink">
+        <p className="rounded-md bg-caution-soft p-3 text-caution-ink">
           Chế độ thử: tài khoản chưa mở cho người dùng thật, SkinWise không gửi email thật (link xác thực và link đặt lại mật khẩu chỉ hiện trên màn hình).
         </p>
       )}
@@ -109,7 +109,7 @@ export function AccountPanel({
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Nhập lại email của bạn"
               aria-label="Nhập lại email để xác nhận"
-              className="w-full rounded-xl border border-line bg-surface px-3.5 py-2 text-sm"
+              className="w-full rounded-md border border-line bg-surface px-3.5 py-2 text-sm"
             />
             <div className="flex flex-wrap gap-2">
               <button onClick={remove} disabled={busy || !confirm.trim()} className={danger}>
@@ -163,14 +163,14 @@ export function SyncConflict({
         bị này cũng có thay đổi chưa lưu. Chọn bản muốn giữ:
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-xl p-3 ring-1 ring-line">
+        <div className="rounded-md p-3 ring-1 ring-line">
           <p className="font-semibold text-ink">Trên thiết bị này</p>
           <p className="mt-1">{summary(local)}</p>
           <button onClick={onKeepThisDevice} className={`mt-3 ${primary}`}>
             Dùng bản này
           </button>
         </div>
-        <div className="rounded-xl p-3 ring-1 ring-line">
+        <div className="rounded-md p-3 ring-1 ring-line">
           <p className="font-semibold text-ink">Bản đã đồng bộ</p>
           <p className="mt-1">{summary(server.routine)}</p>
           <button onClick={onUseSynced} className={`mt-3 ${primary}`}>

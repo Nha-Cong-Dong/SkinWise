@@ -85,7 +85,7 @@ function QueueCard({
   }
 
   return (
-    <article className="rounded-lg bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <article className="rounded-md bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <p className="flex flex-wrap gap-x-3 text-xs text-slate-500">
         <span className="font-medium text-slate-700">{item.kind === 'post' ? 'Bài viết' : 'Bình luận'}</span>
         <span>@{item.author}</span>

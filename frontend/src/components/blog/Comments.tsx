@@ -39,7 +39,7 @@ export function Comments({ postId, onReport }: { postId: number; onReport: (targ
         {state.kind === 'ready' && state.comments.length > 0 && (
           <ul className="space-y-3">
             {state.comments.map((c) => (
-              <li key={c.id} className="rounded-xl bg-surface p-3.5 ring-1 ring-line">
+              <li key={c.id} className="rounded-md bg-surface p-3.5 ring-1 ring-line">
                 <p className="flex flex-wrap items-baseline gap-x-2 text-xs text-ink-mute">
                   <a href={href({ page: 'author', handle: c.author.handle })} className={`font-medium text-ink ${textLink}`}>
                     @{c.author.handle}
@@ -57,13 +57,13 @@ export function Comments({ postId, onReport }: { postId: number; onReport: (targ
                   )}
                 </p>
                 {c.is_mine && c.status === 'pending' && (
-                  <p className="mt-2 rounded-lg bg-paper p-2 text-xs leading-relaxed text-ink-soft">
+                  <p className="mt-2 rounded-md bg-paper p-2 text-xs leading-relaxed text-ink-soft">
                     Bình luận đang chờ duyệt vì có nội dung cần kiểm tra: {flagReasons(c.flags)}. Người khác chưa thấy
                     bình luận này.
                   </p>
                 )}
                 {c.is_mine && c.status === 'hidden' && (
-                  <p className="mt-2 rounded-lg bg-paper p-2 text-xs leading-relaxed text-ink-soft">
+                  <p className="mt-2 rounded-md bg-paper p-2 text-xs leading-relaxed text-ink-soft">
                     Bình luận đang tạm ẩn vì có nhiều báo cáo, chờ người duyệt xem lại.
                   </p>
                 )}

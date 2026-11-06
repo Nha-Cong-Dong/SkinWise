@@ -47,27 +47,27 @@ export function RoutineBoard({ actions, flagged, found, onShare }: Props) {
   )
 }
 
-// Each session has its own palette: the morning panel is daylight, the evening panel is night.
+// Each session has its own palette: the morning panel is a pink dawn, the evening panel dusk.
 const TONE = {
   AM: {
-    panel: 'bg-surface text-ink ring-1 ring-line',
+    panel: 'bg-[linear-gradient(to_bottom,var(--color-petal),var(--color-dawn)_120px)] text-ink',
     mute: 'text-ink-mute',
-    line: 'border-line',
-    step: 'bg-paper text-ink-soft',
-    button: 'text-ink-mute hover:bg-paper hover:text-ink',
-    dayOn: 'bg-ink text-white',
-    dayOff: 'bg-paper text-ink-mute hover:bg-line',
+    line: 'border-petal',
+    step: 'bg-surface text-dawn-ink',
+    button: 'text-ink-mute hover:bg-surface hover:text-ink',
+    dayOn: 'bg-primary text-surface',
+    dayOff: 'bg-surface text-ink-mute ring-1 ring-line ring-inset hover:ring-primary',
     warn: 'text-caution-ink',
   },
   PM: {
-    panel: 'bg-night text-night-text',
-    mute: 'text-night-mute',
-    line: 'border-night-line',
-    step: 'bg-night-raised text-night-text',
-    button: 'text-night-mute hover:bg-night-raised hover:text-white',
-    dayOn: 'bg-moon text-night',
-    dayOff: 'bg-night-raised text-night-mute hover:bg-night-line',
-    warn: 'text-moon',
+    panel: 'dusk-panel bg-[linear-gradient(to_bottom,var(--color-dusk-raised),var(--color-dusk)_120px)] text-on-dusk',
+    mute: 'text-dusk-mute',
+    line: 'border-dusk-line',
+    step: 'bg-dusk-raised text-on-dusk',
+    button: 'text-dusk-mute hover:bg-dusk-raised hover:text-on-dusk',
+    dayOn: 'bg-thistle text-dusk',
+    dayOff: 'bg-dusk-raised text-dusk-mute hover:bg-dusk-line hover:text-on-dusk',
+    warn: 'text-thistle',
   },
 }
 
@@ -76,7 +76,7 @@ function SessionPanel({ session, actions, flagged, found }: Omit<Props, 'onShare
   const products = new Map(actions.routine.products.map((p) => [p.key, p]))
   const tone = TONE[session]
   return (
-    <div className={`rounded-2xl px-4 pt-4 pb-2 ${tone.panel}`}>
+    <div className={`rounded-lg px-4 pt-4 pb-2 ${tone.panel}`}>
       <h3 className="flex items-center gap-2">
         {session === 'AM' ? <SunIcon className="size-6" /> : <MoonIcon className="size-6" />}
         <span className="text-lg font-semibold">
@@ -166,7 +166,7 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
               <Glyph name="down" className="size-4" />
             </button>
             <button
-              className={`rounded-full p-2 md:p-1 ${night ? 'text-night-mute hover:bg-avoid hover:text-white' : 'text-ink-mute hover:bg-avoid-soft hover:text-avoid-ink'}`}
+              className={`rounded-full p-2 md:p-1 ${night ? 'text-dusk-mute hover:bg-avoid hover:text-surface' : 'text-ink-mute hover:bg-avoid-soft hover:text-avoid-ink'}`}
               onClick={() => actions.removeEntry(entry.id)}
               aria-label={`Bỏ bước ${step} (“${product.name}”) khỏi ${session}`}
               title="Bỏ bước này"
@@ -197,7 +197,7 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
                 onClick={() => actions.toggleDay(entry.id, day)}
                 aria-pressed={on}
                 aria-label={`${DAY_LABELS[day]}, ${DAY_NAMES[day]}`}
-                className={`h-8 rounded-lg text-xs font-semibold transition-colors ${on ? tone.dayOn : tone.dayOff}`}
+                className={`h-8 rounded-md text-xs font-semibold transition-colors ${on ? tone.dayOn : tone.dayOff}`}
               >
                 {DAY_LABELS[day]}
               </button>

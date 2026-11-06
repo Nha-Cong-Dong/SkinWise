@@ -72,7 +72,7 @@ export function DraftForm({
   )
 
   return (
-    <form onSubmit={submit} className="space-y-3 rounded-lg bg-slate-50 p-4 ring-1 ring-slate-200">
+    <form onSubmit={submit} className="space-y-3 rounded-md bg-slate-50 p-4 ring-1 ring-slate-200">
       <h3 className="font-semibold text-slate-900">
         AI soạn nháp thẻ myth
       </h3>
@@ -153,7 +153,7 @@ export function DraftCard({
   }
 
   return (
-    <article className="space-y-3 rounded-lg border-l-4 border-amber-400 bg-white p-4 shadow-sm ring-1 ring-slate-200">
+    <article className="space-y-3 rounded-md border-l-4 border-amber-400 bg-white p-4 shadow-sm ring-1 ring-slate-200">
       <div className="flex flex-wrap items-center gap-2 text-xs">
         <span className="rounded bg-amber-100 px-2 py-0.5 font-semibold text-amber-900">Bản nháp AI · chưa kiểm duyệt</span>
         <span className={`rounded px-2 py-0.5 font-semibold ${severity.badge}`}>{severity.label}</span>

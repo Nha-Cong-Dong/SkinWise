@@ -2,8 +2,9 @@
 
 /* Fonts are served with the app, not from Google Fonts: no request to a third party (the
    viewer's IP stays here) and no stylesheet blocking the first paint. Files and subsets as
-   Google Fonts serves them (Archivo variable 400–800, Newsreader italic 400); licence: SIL
-   Open Font License 1.1, see fonts/OFL-*.txt. The browser downloads only the subsets a page uses. */
+   Google Fonts serves them (Archivo variable 400–800, Newsreader italic 400). "Newsreader Display"
+   500 for page titles: the original files from the "SkinWise Wireframe" design (Newsreader, OFL).
+   Licence: SIL Open Font License 1.1, see fonts/OFL-*.txt. The browser downloads only the subsets a page uses. */
 @font-face {
   font-family: "Archivo";
   font-style: normal;
@@ -59,67 +60,147 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Day / night: the routine has two sessions, so the brand is a white morning panel and an
-   indigo evening panel. Saturated colour is kept for warning severity only. */
+@font-face {
+  font-family: "Newsreader Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/newsreader-vietnamese-500-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301,
+    U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Newsreader Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/newsreader-latin-ext-500-normal.woff2") format("woff2");
+  unicode-range: U+0100-02AF, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1E00-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Newsreader Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/newsreader-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-0301, U+0303-0304,
+    U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Design system "SkinWise" (_workspace/design-import/project/ds/skinwise/tokens.css, light theme
+   only). Morning is a pink dawn panel, evening an indigo dusk panel; saturated colour is kept for
+   warning severity only. There is no #FFFFFF anywhere: "white" is the warm paper surface. */
 @theme {
   --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   /* Words quoted from a source, never the app's own text. */
   --font-serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+  /* Page titles (h1, h2). */
+  --font-display: "Newsreader Display", ui-serif, Georgia, "Times New Roman", serif;
 
-  --text-xl: 1.3125rem;
+  /* Type scale (tokens.css --text-*). 13px is the smallest size. */
+  --text-xs: 0.8125rem; /* caption / label, 13px */
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.9375rem; /* body-sm, 15px */
+  --text-sm--line-height: 1.55;
+  --text-base: 1rem; /* body-md */
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem; /* body-lg */
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.3125rem; /* headline-sm, 21px */
   --text-xl--line-height: 1.3;
+  --text-2xl: 1.625rem; /* headline-lg, 26px */
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 1.875rem; /* page title on a phone, 30px */
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 2.5rem; /* page title on a computer, 40px */
+  --text-4xl--line-height: 1.15;
 
-  --color-paper: #eef1ef;
-  --color-surface: #ffffff;
-  --color-line: #d8dce2;
-  --color-ink: #1b2140;
-  --color-ink-soft: #444b6a;
-  --color-ink-mute: #646a88;
-  --color-link: #3346a8;
+  /* Radius: sm for what is read or typed exactly, md for buttons / cards / dialogs, lg only for
+     the two session panels, full for days, step discs, chips, avatars. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
 
-  --color-night: #1e2448;
-  --color-night-raised: #2b3263;
-  --color-night-line: #3a4277;
-  --color-night-text: #e8eaf6;
-  --color-night-mute: #aeb3d4;
-  --color-moon: #f1e6bd;
-  --color-sun: #f2b234;
+  /* Only for what floats above the page: dialogs, dropdowns, the bottom bars. */
+  --shadow-float: 0 1px 2px rgb(47 42 85 / 0.1), 0 8px 24px rgb(47 42 85 / 0.12);
 
-  /* Active-ingredient groups. */
-  --color-active: #e7e9f7;
-  --color-active-ink: #2e3a8c;
+  /* Base roles. */
+  --color-primary: #383466; /* every action: main button, link, selected item, focus ring */
+  --color-primary-hover: #272451;
+  --color-neutral: #f5f2f8; /* page background */
+  --color-surface: #fcfbf8; /* cards, inputs, text on primary */
+  --color-on-surface: #1c1c2c; /* main text */
+  --color-secondary: #5a586b; /* secondary information */
+  --color-border: #d9d8e0; /* 1px lines */
+  --color-white: #fcfbf8; /* no pure white: Tailwind's white is the surface */
 
-  --color-avoid: #c4362b;
-  --color-avoid-ink: #93211a;
-  --color-avoid-soft: #fbe5e2;
-  --color-caution: #d08a10;
-  --color-caution-ink: #7c4d08;
-  --color-caution-soft: #fcefd4;
-  --color-info: #23809f;
-  --color-info-ink: #135a72;
-  --color-info-soft: #def0f5;
-  --color-safe: #2e8c59;
-  --color-safe-ink: #1b6340;
-  --color-safe-soft: #def2e6;
+  /* Sessions. */
+  --color-petal: #ffc8dd;
+  --color-dawn: #ffeef4;
+  --color-dawn-ink: #8b2f55;
+  --color-dusk: #2f2a55;
+  --color-dusk-raised: #3f3969;
+  --color-dusk-line: #534f7a;
+  --color-on-dusk: #f0eff8;
+  --color-dusk-mute: #beb9d9;
+
+  /* Accents. Blush marks only what just matched or changed (selection). */
+  --color-blush: #ffafcc;
+  --color-thistle: #cdb4db; /* active-ingredient chips; selected item and focus ring on dusk */
+  --color-thistle-hover: #deccea;
+  --color-thistle-ink: #442a59;
+
+  /* Old names used across the components, now pointing at the roles above. */
+  --color-paper: var(--color-neutral);
+  --color-line: var(--color-border);
+  --color-ink: var(--color-on-surface);
+  --color-ink-soft: var(--color-secondary);
+  --color-ink-mute: var(--color-secondary);
+  --color-link: var(--color-primary);
+
+  /* Warning severity: the only saturated colours. mark = icon and 4px bar, ink = badge text on soft. */
+  --color-avoid: #bd3a2b;
+  --color-avoid-ink: #8d251f;
+  --color-avoid-soft: #ffe6e1;
+  --color-caution: #bf7101;
+  --color-caution-ink: #824c11;
+  --color-caution-soft: #ffeecf;
+  --color-info: #3275b4;
+  --color-info-ink: #1d4f82;
+  --color-icy: #bde0fe;
+  --color-safe: #348757;
+  --color-safe-ink: #1c5e3d;
+  --color-safe-soft: #e0f5e6;
 }
 
 @layer base {
   body {
-    @apply bg-paper font-sans text-ink antialiased;
+    @apply bg-neutral font-sans text-on-surface antialiased;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--color-primary);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-link);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 
+  /* On the dusk panel the indigo ring would not show (1.2:1); thistle does (7:1). */
+  .dusk-panel :focus-visible {
+    outline-color: var(--color-thistle);
+  }
+
   ::selection {
-    background: var(--color-moon);
-    color: var(--color-ink);
+    background: var(--color-blush);
+    color: var(--color-on-surface);
   }
 
   dialog::backdrop {
-    background: rgb(27 33 64 / 0.5);
+    background: rgb(47 42 85 / 0.5); /* dusk 50% */
   }
 
   html:has(dialog[open]) {
@@ -135,4 +216,13 @@
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* Page titles use the display serif at 500 (the only weight shipped). Unlayered on purpose: it wins
+   over font-bold / tracking utilities still on headings, so no heading gets a synthesised bold. */
+h1,
+h2 {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }

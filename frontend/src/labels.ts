@@ -11,7 +11,7 @@ export const SESSION_LABELS: Record<Session, string> = { AM: 'Sáng', PM: 'Tối
 export const SEVERITY: Record<Severity, { label: string; badge: string; mark: string }> = {
   avoid: { label: 'Nên tránh', badge: 'bg-avoid-soft text-avoid-ink', mark: 'text-avoid' },
   caution: { label: 'Thận trọng', badge: 'bg-caution-soft text-caution-ink', mark: 'text-caution' },
-  info: { label: 'Thông tin', badge: 'bg-info-soft text-info-ink', mark: 'text-info' },
+  info: { label: 'Thông tin', badge: 'bg-icy text-info-ink', mark: 'text-info' },
   safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe' },
 }
 

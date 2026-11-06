@@ -5,10 +5,10 @@ import { DISCLOSURE_LABELS, SKIN_TYPE_LABELS } from '../../labels'
 import { href } from '../../router'
 
 export const field =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
-export const primary = 'rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link disabled:opacity-40'
+  'w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
+export const primary = 'rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover disabled:opacity-40'
 export const secondary =
-  'rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40'
+  'rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40'
 export const quiet = 'rounded-full px-3 py-1.5 text-sm text-ink-soft ring-1 ring-line hover:bg-paper hover:text-ink disabled:opacity-40'
 export const textLink = 'text-link underline-offset-2 hover:underline'
 
@@ -44,7 +44,7 @@ export function PostCard({ post }: { post: PostSummary }) {
     <li>
       <a
         href={href({ page: 'post', id: post.id })}
-        className="flex h-full flex-col overflow-hidden rounded-2xl bg-surface ring-1 ring-line hover:ring-ink-mute"
+        className="flex h-full flex-col overflow-hidden rounded-md bg-surface ring-1 ring-line hover:ring-ink-mute"
       >
         {post.cover && (
           <img
@@ -73,7 +73,7 @@ export function PostCard({ post }: { post: PostSummary }) {
             <span>@{post.author.handle}</span>
             <span>{formatDate(post.created_at)}</span>
             <span className="flex-1" />
-            {post.has_routine && <span className="rounded-full bg-active px-2 py-px font-medium text-active-ink">Có routine</span>}
+            {post.has_routine && <span className="rounded-full bg-thistle px-2 py-px font-medium text-thistle-ink">Có routine</span>}
             <span aria-label={`${post.like_count} lượt thích`}>♥ {post.like_count}</span>
             <span aria-label={`${post.comment_count} bình luận`}>💬 {post.comment_count}</span>
           </div>

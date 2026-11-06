@@ -51,7 +51,7 @@ export function Dialog({ open, onClose, title, children }: Props) {
         if (pressedOnBackdrop.current && onBackdrop(e)) onClose()
         pressedOnBackdrop.current = false
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(44rem,calc(100%-2rem))] overflow-y-auto overscroll-contain rounded-2xl bg-surface p-0 text-ink shadow-2xl shadow-ink/30"
+      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(44rem,calc(100%-2rem))] overflow-y-auto overscroll-contain rounded-md bg-surface p-0 text-ink shadow-float"
     >
       {open && (
         <>
