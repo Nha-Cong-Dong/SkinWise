@@ -1,11 +1,11 @@
-import { lazy, Suspense, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
 import { ApiError, api, type CosmeticFunction, type Group, type Severity } from './api'
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
 import { AddProduct } from './components/AddProduct'
 import { clearAllDrafts } from './components/blog/draft'
 import { ProfileDialog } from './components/blog/ProfileDialog'
-import { Dialog } from './components/Dialog'
+import { Dialog, DialogTitle } from './components/Dialog'
 import { GoalsPage } from './components/GoalsPage'
 import { Logo } from './components/Icons'
 import { MyProducts } from './components/MyProducts'
@@ -13,11 +13,13 @@ import { MythPage } from './components/MythPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { EmailLinkPage, SignIn } from './components/SignIn'
+import { ProductDetailPage } from './components/ProductDetailPage'
 import { TodayPage } from './components/TodayPage'
+import { UndoRemove } from './components/UndoRemove'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
-import { SEVERITY } from './labels'
+import { FEEDBACK_URL, SEVERITY } from './labels'
 import { ProfileContext, useProfileOwner } from './profile'
 import { ALL_POSTS, href, isBlogPage, useRoute, type Route, type RoutineTab } from './router'
 import { useIncomingRoutine } from './share'
@@ -30,6 +32,7 @@ import {
   useRoutine,
   useRoutineCheck,
   type CheckState,
+  type RemovedProduct,
 } from './routine'
 
 // Pages most visits never open load on demand, so the routine page downloads less.
@@ -45,13 +48,10 @@ const GoalArticlePage = lazy(() =>
 )
 const AuthorPage = lazy(() => import('./components/blog/AuthorPage').then((m) => ({ default: m.AuthorPage })))
 
-// Feedback goes to GitHub, not a form on SkinWise: nothing to store or moderate here
-// (the in-app question form was dropped on 27/10, plan/decisions.md).
-const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
 
 // The review page has no nav entry for users; reviewers open #review.
 const MENU: [Route, string, (route: Route) => boolean][] = [
-  [{ page: 'routine', tab: 'today' }, 'Lịch dùng', (r) => r.page === 'routine'],
+  [{ page: 'routine', tab: 'today' }, 'Lịch dùng', (r) => r.page === 'routine' || r.page === 'shelf-product'],
   [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals' || r.page === 'goal-article'],
   [{ page: 'myths' }, 'Đúng hay sai', (r) => r.page === 'myths'],
   [ALL_POSTS, 'Đánh giá', isBlogPage],
@@ -68,6 +68,8 @@ function pageKey(route: Route): string {
       return `author:${route.handle}`
     case 'goal-article':
       return `goal-article:${route.code}`
+    case 'shelf-product':
+      return `shelf-product:${route.key}`
     case 'routine':
       return `routine:${route.tab}`
     default:
@@ -81,6 +83,9 @@ function App() {
   const route = useRoute()
   const page = route.page
   const [adding, setAdding] = useState(false)
+  // The last removed product, offered for "Hoàn tác" for a few seconds (shelf and product page).
+  const [removed, setRemoved] = useState<RemovedProduct | null>(null)
+  const expireRemoved = useCallback(() => setRemoved(null), [])
   const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
   const [sharing, setSharing] = useState(false)
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
@@ -93,6 +98,12 @@ function App() {
   const check = useRoutineCheck(actions.routine, page === 'review' ? null : (me?.email ?? null))
   const { incoming, retry: retryIncoming, dismiss } = useIncomingRoutine(me !== null) // a shared routine link was opened
   const accountOffline = account.state.kind === 'signed-in' && account.state.offline === true
+  // A removal belongs to the account that made it: signed out or another account, no "Hoàn tác".
+  const [removedFor, setRemovedFor] = useState(me?.email ?? null)
+  if (removedFor !== (me?.email ?? null)) {
+    setRemovedFor(me?.email ?? null)
+    setRemoved(null)
+  }
   const sync = useRoutineSync(actions, me?.email ?? null)
   const profile = useProfileOwner(me?.email ?? null)
   const [accountOpen, setAccountOpen] = useState(false)
@@ -143,6 +154,7 @@ function App() {
     clearSelectedGoals() // the next person on this device must not get these goals
     setAddDraft(EMPTY_ADD_DRAFT) // the label photo and the list being typed
     setAdding(false)
+    setRemoved(null) // nor undo a removal of the previous account
     clearAllDrafts() // nor unsent posts
   }
 
@@ -291,7 +303,21 @@ function App() {
 
           <main className="mx-auto max-w-[75rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
             <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải…</p>}>
-            {route.page === 'routine' ? (
+            {route.page === 'shelf-product' ? (
+              <>
+                <RoutineTabs tab="shelf" check={check} />
+                <div className="mt-6 lg:mt-8">
+                  <ProductDetailPage
+                    key={route.key}
+                    productKey={route.key}
+                    actions={actions}
+                    found={found}
+                    check={check}
+                    onRemove={(key) => setRemoved(actions.removeProduct(key))}
+                  />
+                </div>
+              </>
+            ) : route.page === 'routine' ? (
               <>
                 <RoutineTabs tab={route.tab} check={check} />
                 <div className="mt-6 lg:mt-8">
@@ -312,6 +338,7 @@ function App() {
                       flagged={flagged}
                       check={check}
                       onAdd={() => setAdding(true)}
+                      onRemove={(key) => setRemoved(actions.removeProduct(key))}
                     />
                   ) : (
                     <WarningsPanel state={check} products={actions.routine.products} found={found} page />
@@ -320,15 +347,11 @@ function App() {
                 {(route.tab === 'week' || route.tab === 'shelf') && <ResultsBar check={check} />}
               </>
             ) : page === 'goals' ? (
-              <div className="mx-auto max-w-3xl">
-                <GoalsPage routine={actions.routine} found={found} />
-              </div>
+              <GoalsPage routine={actions.routine} found={found} />
             ) : route.page === 'goal-article' ? (
-              <div className="mx-auto max-w-3xl">
-                <GoalArticlePage key={route.code} code={route.code} />
-              </div>
+              <GoalArticlePage key={route.code} code={route.code} />
             ) : page === 'myths' ? (
-              <div className="mx-auto max-w-2xl">
+              <div className="mx-auto max-w-[47.5rem]">
                 <MythPage />
               </div>
             ) : page === 'review' ? (
@@ -400,13 +423,13 @@ function App() {
         <Dialog
           open={adding}
           onClose={() => setAdding(false)}
-          title={<h2 className="text-xl font-bold">Thêm sản phẩm</h2>}
+          title={<DialogTitle>Thêm sản phẩm</DialogTitle>}
         >
           <AddProduct actions={actions} draft={addDraft} setDraft={setAddDraft} />
         </Dialog>
 
         {me && (
-          <Dialog open={accountOpen} onClose={() => setAccountOpen(false)} title={<h2 className="text-xl font-bold">Tài khoản</h2>}>
+          <Dialog open={accountOpen} onClose={() => setAccountOpen(false)} title={<DialogTitle>Tài khoản</DialogTitle>}>
             <AccountPanel
               me={me}
               sync={sync.state}
@@ -423,7 +446,7 @@ function App() {
         <Dialog
           open={conflict !== null && conflict !== hiddenConflict}
           onClose={() => setHiddenConflict(conflict)}
-          title={<h2 className="text-xl font-bold">Routine đã đổi trên thiết bị khác</h2>}
+          title={<DialogTitle>Routine đã đổi trên thiết bị khác</DialogTitle>}
         >
           {conflict && (
             <SyncConflict
@@ -438,7 +461,7 @@ function App() {
         <Dialog
           open={sharing}
           onClose={() => setSharing(false)}
-          title={<h2 className="text-xl font-bold">Lưu & chia sẻ routine</h2>}
+          title={<DialogTitle>Lưu & chia sẻ routine</DialogTitle>}
         >
           <ShareRoutine actions={actions} onDone={() => setSharing(false)} />
         </Dialog>
@@ -446,7 +469,7 @@ function App() {
         <Dialog
           open={incoming !== null}
           onClose={dismiss}
-          title={<h2 className="text-xl font-bold">Routine được chia sẻ với bạn</h2>}
+          title={<DialogTitle>Routine được chia sẻ với bạn</DialogTitle>}
         >
           {incoming?.kind === 'loading' && <p className="text-sm text-ink-mute">Đang mở routine…</p>}
           {incoming?.kind === 'error' && (
@@ -473,6 +496,14 @@ function App() {
           )}
         </Dialog>
         <ProfileDialog {...profile.dialog} />
+        <UndoRemove
+          removed={removed}
+          onUndo={(r) => {
+            actions.restoreProduct(r)
+            setRemoved(null)
+          }}
+          onExpire={expireRemoved}
+        />
       </ProfileContext>
       </FunctionsContext>
     </GroupsContext>

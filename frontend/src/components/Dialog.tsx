@@ -8,6 +8,15 @@ type Props = {
   children: ReactNode
 }
 
+/** A dialog's title in the design's Nunito, primary colour. */
+export function DialogTitle({ children }: { children: ReactNode }) {
+  return (
+    <h2 className="font-brand text-2xl leading-tight font-semibold tracking-[-0.01em] text-pretty text-primary sm:text-[1.875rem]">
+      {children}
+    </h2>
+  )
+}
+
 /**
  * Native modal dialog: focus trap and Esc come from the browser. Content mounts only while open,
  * so state that must survive closing (a pasted list) lives with the caller; the element marked

@@ -1,7 +1,7 @@
-import { useEffect, useState } from 'react'
-import { api, requestError, SUGGESTIONS_TRUNCATED_VI, type InciAnalysis, type ProductDetail } from '../api'
-import type { Severity } from '../api'
-import { APPLICATION_LABELS, SESSION_LABELS, VERIFICATION_LABELS, formatDays } from '../labels'
+import { useState } from 'react'
+import { api, type Severity } from '../api'
+import { SESSION_LABELS } from '../labels'
+import { href } from '../router'
 import {
   currentResult,
   maybeIncomplete,
@@ -9,15 +9,13 @@ import {
   type CheckState,
   type LabelGroups,
   type MyProduct,
-  type RemovedProduct,
   type RoutineActions,
 } from '../routine'
-import { Dialog } from './Dialog'
-import { GroupChips, LABEL_CHIP_NOTE, UNORDERED_NOTE } from './GroupChips'
+import { GroupChips } from './GroupChips'
 import { Glyph, SeverityBadge } from './Icons'
-import { IngredientList } from './IngredientList'
-import { DataNote } from './Notice'
-import { btn, btnGhost, btnPrimary, field, sm } from './ui'
+import { ProductImage } from './ProductImage'
+import { scheduleOf } from './shelf'
+import { btn, btnGhost, btnGhostDanger, btnPrimary, field, sm } from './ui'
 
 type Props = {
   actions: RoutineActions
@@ -28,6 +26,8 @@ type Props = {
   flagged: Map<string, Severity>
   /** The routine check, for the "Có lưu ý" filter. */
   check: CheckState
+  /** Remove a product and its steps (the page offers "Hoàn tác"). */
+  onRemove: (key: string) => void
 }
 
 type ShelfFilter = 'all' | 'used' | 'unscheduled' | 'noted'
@@ -44,21 +44,8 @@ function fold(text: string): string {
   return text.normalize('NFD').replace(/\p{M}/gu, '').replace(/đ/g, 'd').replace(/Đ/g, 'D').toLowerCase()
 }
 
-const UNDO_MS = 8000
-
-/** "Sáng: mỗi ngày · Tối: T2, T4", or "Chưa xếp lịch": where a product is in the schedule. */
-function scheduleOf(product: MyProduct, actions: RoutineActions): string {
-  const parts = (['AM', 'PM'] as const).flatMap((session) => {
-    const entries = actions.routine.entries.filter((e) => e.productKey === product.key && e.session === session)
-    if (entries.length === 0) return []
-    const days = [...new Set(entries.flatMap((e) => e.days))].sort((a, b) => a - b)
-    return [`${SESSION_LABELS[session]}: ${days.length ? formatDays(days) : 'chưa chọn ngày'}`]
-  })
-  return parts.length ? parts.join(' · ') : 'Chưa xếp lịch'
-}
-
 /** "Tủ đồ": every product the user added, ready to place in a session. */
-export function MyProducts({ actions, onAdd, found, flagged, check }: Props) {
+export function MyProducts({ actions, onAdd, found, flagged, check, onRemove }: Props) {
   const { products } = actions.routine
   // Search and filter live only while the page is open.
   const [query, setQuery] = useState('')
@@ -82,9 +69,6 @@ export function MyProducts({ actions, onAdd, found, flagged, check }: Props) {
   const shown = searched.filter(keep[filter])
   // "Có lưu ý" before a check has answered: say why the list is empty instead of "no match".
   const notedPending = filter === 'noted' && noted === null
-  const [viewing, setViewing] = useState<MyProduct | null>(null)
-  // The last removal, offered for "Hoàn tác" for a few seconds (instead of asking first).
-  const [removed, setRemoved] = useState<RemovedProduct | null>(null)
   const [sample, setSample] = useState<'idle' | 'loading' | 'error'>('idle')
 
   const trySample = () => {
@@ -98,12 +82,6 @@ export function MyProducts({ actions, onAdd, found, flagged, check }: Props) {
       () => setSample('error'),
     )
   }
-
-  useEffect(() => {
-    if (!removed) return
-    const timer = setTimeout(() => setRemoved(null), UNDO_MS)
-    return () => clearTimeout(timer)
-  }, [removed])
 
   return (
     <section aria-labelledby="products-title">
@@ -200,59 +178,13 @@ export function MyProducts({ actions, onAdd, found, flagged, check }: Props) {
               found={found.get(p.key)}
               severity={flagged.get(p.key)}
               actions={actions}
-              onView={() => setViewing(p)}
-              onRemove={() => setRemoved(actions.removeProduct(p.key))}
+              onRemove={() => onRemove(p.key)}
             />
           ))}
         </ul>
         )}
         </>
       )}
-      <Dialog
-        open={viewing !== null}
-        onClose={() => setViewing(null)}
-        title={
-          viewing && (
-            <>
-              {viewing.brand && <p className="text-xs text-ink-mute">{viewing.brand}</p>}
-              <h2 className="text-2xl leading-tight">{viewing.name}</h2>
-              <p className="mt-1 text-xs text-ink-mute">Trong lịch dùng: {scheduleOf(viewing, actions)}</p>
-              <div className="mt-2">
-                <GroupChips codes={viewing.groups} found={found.get(viewing.key)} />
-              </div>
-              <ChipNote found={found.get(viewing.key)} />
-            </>
-          )
-        }
-      >
-        {viewing &&
-          (viewing.productId !== null ? (
-            <SeededIngredients productId={viewing.productId} />
-          ) : (
-            <PastedIngredients inci={viewing.inci ?? ''} />
-          ))}
-      </Dialog>
-      {/* Always in the page, so a screen reader announces the message when it appears. Above the
-          results bar and the tab bar that phones show at the bottom of the screen. */}
-      <div role="status" className="fixed inset-x-3 bottom-[calc(8.5rem+env(safe-area-inset-bottom))] z-30 mx-auto max-w-md lg:bottom-6">
-        {removed && (
-          <div className="dusk-panel flex items-center gap-3 rounded-md bg-primary py-2.5 pr-2.5 pl-4 text-sm text-surface shadow-float">
-            <span className="min-w-0 flex-1">
-              Đã xoá “{removed.product.name}”
-              {removed.entries.length > 0 && ` và ${removed.entries.length} bước trong lịch`}.
-            </span>
-            <button
-              onClick={() => {
-                actions.restoreProduct(removed)
-                setRemoved(null)
-              }}
-              className="min-h-10 shrink-0 rounded-full px-3 font-semibold text-thistle hover:bg-on-dusk/10"
-            >
-              Hoàn tác
-            </button>
-          </div>
-        )}
-      </div>
     </section>
   )
 }
@@ -262,19 +194,22 @@ type RowProps = {
   found: LabelGroups | undefined
   severity: Severity | undefined
   actions: RoutineActions
-  onView: () => void
   onRemove: () => void
 }
 
 // Buttons repeat on every card, so their accessible names include the product (aria-label, which
 // starts with the visible word).
-function ProductRow({ product, found, severity, actions, onView, onRemove }: RowProps) {
+function ProductRow({ product, found, severity, actions, onRemove }: RowProps) {
+  const detail = href({ page: 'shelf-product', key: product.key })
   return (
     <li className="flex min-w-0 flex-col gap-3 rounded-md bg-surface p-4 lg:p-5">
-      <button onClick={onView} className="-m-1 rounded-sm p-1 text-left leading-snug text-pretty hover:text-primary">
-        <span className="block text-xs text-ink-mute">{product.brand ?? 'Tự nhập bảng thành phần'}</span>
-        <span className="font-semibold">{product.name}</span>
-      </button>
+      <div className="flex min-w-0 gap-3">
+        <ProductImage image={null} name={product.name} size="sm" />
+        <a href={detail} className="min-w-0 leading-snug text-pretty text-ink hover:text-primary">
+          <span className="block text-xs text-ink-mute">{product.brand ?? 'Tự nhập bảng thành phần'}</span>
+          <span className="font-semibold break-words">{product.name}</span>
+        </a>
+      </div>
       {product.origin?.kind === 'photo' && (
         <p className="-mt-2 text-xs text-ink-mute">Đọc từ ảnh nhãn bằng AI, bạn đã so với bao bì</p>
       )}
@@ -298,82 +233,17 @@ function ProductRow({ product, found, severity, actions, onView, onRemove }: Row
           </button>
         ))}
         <span className="flex-1" />
-        <button onClick={onView} aria-label={`Thành phần của “${product.name}”`} className={btnGhost}>
+        <a href={detail} aria-label={`Thành phần của “${product.name}”`} className={btnGhost}>
           Thành phần
-        </button>
+        </a>
         <button
           onClick={onRemove}
           aria-label={`Xoá “${product.name}”`}
-          className={`${btnGhost} text-avoid-ink hover:bg-avoid-soft`}
+          className={btnGhostDanger}
         >
           Xoá
         </button>
       </div>
     </li>
-  )
-}
-
-/** Under the chips of the details dialog, once they name an ingredient (tooltips are not read on phones). */
-function ChipNote({ found }: { found: LabelGroups | undefined }) {
-  if (!found || found.ingredients.length === 0) return null
-  return (
-    <p className="mt-1.5 text-xs leading-relaxed font-normal text-ink-mute">
-      {LABEL_CHIP_NOTE}
-      {!found.ordered && ` ${UNORDERED_NOTE}`}
-    </p>
-  )
-}
-
-function SeededIngredients({ productId }: { productId: number }) {
-  const [detail, setDetail] = useState<ProductDetail | null>(null)
-  const [error, setError] = useState(false)
-
-  useEffect(() => {
-    api.product(productId).then(setDetail, () => setError(true))
-  }, [productId])
-
-  if (error) return <p className="text-sm text-avoid-ink">Không tải được bảng thành phần.</p>
-  if (!detail) return <p className="text-sm text-ink-mute">Đang tải…</p>
-  return (
-    <>
-      <p className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-mute">
-        {detail.application && <span>Sản phẩm {APPLICATION_LABELS[detail.application].toLowerCase()}</span>}
-        <span>{VERIFICATION_LABELS[detail.verification_status] ?? detail.verification_status}</span>
-        {detail.source_url && (
-          <a
-            href={detail.source_url}
-            target="_blank"
-            rel="noreferrer"
-            className="text-link underline-offset-2 hover:underline"
-          >
-            Lấy từ trang của hãng
-            {detail.source_retrieved_at && ` (${new Date(detail.source_retrieved_at).toLocaleDateString('vi-VN')})`}
-          </a>
-        )}
-      </p>
-      <IngredientList ingredients={detail.ingredients} onePercentMarker={detail.one_percent_marker} />
-    </>
-  )
-}
-
-function PastedIngredients({ inci }: { inci: string }) {
-  const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
-  const [error, setError] = useState<string | null>(null)
-
-  useEffect(() => {
-    api.analyzeInci(inci).then(setAnalysis, (e) => setError(requestError(e, 'Không phân tích được bảng thành phần.')))
-  }, [inci])
-
-  if (error) return <p className="text-sm text-avoid-ink">{error}</p>
-  if (!analysis) return <p className="text-sm text-ink-mute">Đang tải…</p>
-  return (
-    <>
-      {analysis.suggestions_truncated && (
-        <div className="mb-3">
-          <DataNote title="Chưa kiểm hết bảng thành phần">{SUGGESTIONS_TRUNCATED_VI}</DataNote>
-        </div>
-      )}
-      <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
-    </>
   )
 }

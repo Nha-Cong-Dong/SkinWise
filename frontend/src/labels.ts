@@ -1,5 +1,9 @@
 import type { Application, Disclosure, ReportReason, Rule, Session, Severity, SkinType, Warning } from './api'
 
+// Feedback goes to GitHub, not a form on SkinWise: nothing to store or moderate here
+// (the in-app question form was dropped on 27/10, plan/decisions.md).
+export const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
+
 export const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] // 0 = Monday
 /** Spoken names: a screen reader reads "T2" letter by letter. */
 export const DAY_NAMES = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật']
@@ -19,7 +23,7 @@ export const SEVERITY: Record<Severity, { label: string; badge: string; mark: st
 export const KIND_LABELS: Record<Rule['kind'], string> = {
   conflict: 'Kết hợp cần lưu ý',
   duplicate: 'Trùng hoạt chất',
-  myth: 'Sự thật hay myth',
+  myth: 'Đúng hay sai',
   profile: 'Theo loại da',
   usage: 'Lưu ý khi dùng',
 }

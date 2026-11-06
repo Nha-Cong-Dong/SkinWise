@@ -4,13 +4,15 @@ import { SESSION_LABELS } from '../labels'
 import { sessionEntries, type Routine } from '../routine'
 import { syncLabel, type ServerCopy, type SyncState } from '../sync'
 import { ProfileSummary } from './blog/ProfileDialog'
-import { Dialog } from './Dialog'
+import { Dialog, DialogTitle } from './Dialog'
 import { DataNote } from './Notice'
 import { PolicyText } from './PolicyText'
+import { btn, btnDanger, btnPrimary, field } from './ui'
 
-const primary = 'rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover disabled:opacity-40'
-const secondary = 'rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40'
-const danger = 'rounded-full bg-avoid px-4 py-2 text-sm font-medium text-surface hover:bg-avoid-ink disabled:opacity-40'
+const primary = btnPrimary
+const secondary = btn
+const danger =
+  'inline-flex min-h-11 items-center justify-center rounded-full border border-avoid bg-avoid px-5 text-sm font-semibold text-surface hover:bg-avoid-ink disabled:opacity-40'
 
 const when = (iso: string | null) => (iso ? new Date(iso).toLocaleString('vi-VN') : null)
 
@@ -55,24 +57,25 @@ export function AccountPanel({
   }
 
   return (
-    <div className="space-y-6 text-sm leading-relaxed text-ink-soft">
+    <div className="divide-y divide-line text-sm leading-relaxed text-ink-soft [&>*]:py-5 [&>*:first-child]:pt-0 [&>*:last-child]:pb-0">
       {me.dev_mode && (
         <p className="rounded-md bg-caution-soft p-3 text-caution-ink">
           Chế độ thử: tài khoản chưa mở cho người dùng thật, SkinWise không gửi email thật (link xác thực và link đặt lại mật khẩu chỉ hiện trên màn hình).
         </p>
       )}
-      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-4 gap-y-1">
+      <section className="space-y-4">
+      <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2 text-[0.9375rem]">
         <dt className="text-ink-mute">Email</dt>
         <dd className="font-medium break-all text-ink">{me.email}</dd>
         <dt className="text-ink-mute">Tạo lúc</dt>
         <dd>{when(me.created_at)}</dd>
-        <dt className="text-ink-mute">Routine</dt>
+        <dt className="text-ink-mute">Lịch dùng</dt>
         <dd>{sync.kind === 'synced' || sync.kind === 'off' ? (synced ? `Đã lưu lúc ${synced}` : 'Chưa lưu lần nào') : syncLabel(sync)}</dd>
         {consent && (
           <>
             <dt className="text-ink-mute">Đã đồng ý</dt>
             <dd>
-              <button onClick={() => setPolicyOpen(true)} className="text-link underline underline-offset-2">
+              <button onClick={() => setPolicyOpen(true)} className="font-semibold text-link underline-offset-2 hover:underline">
                 Chính sách quyền riêng tư
               </button>{' '}
               ({consent.policy_version}), lúc {when(consent.granted_at)}
@@ -81,7 +84,7 @@ export function AccountPanel({
         )}
       </dl>
 
-      <section className="flex flex-wrap gap-2">
+      <div className="flex flex-wrap gap-2">
         <a href={EXPORT_URL} download className={secondary}>
           Tải toàn bộ dữ liệu
         </a>
@@ -92,12 +95,13 @@ export function AccountPanel({
           Đăng xuất mọi thiết bị
         </button>
         {signOutError && <p className="w-full text-avoid-ink">{signOutError}</p>}
+      </div>
       </section>
 
       <ProfileSummary />
 
-      <section className="border-t border-line pt-4">
-        <h3 className="font-semibold text-ink">Xoá tài khoản</h3>
+      <section>
+        <h3 className="text-base font-semibold text-ink">Xoá tài khoản</h3>
         <p className="mt-1">
           Xoá ngay email, routine đã lưu, hồ sơ, bài review, bình luận và mọi phiên đăng nhập. Routine trên thiết bị này cũng bị xoá; muốn giữ thì tải
           dữ liệu về trước.
@@ -109,7 +113,7 @@ export function AccountPanel({
               onChange={(e) => setConfirm(e.target.value)}
               placeholder="Nhập lại email của bạn"
               aria-label="Nhập lại email để xác nhận"
-              className="w-full rounded-md border border-line bg-surface px-3.5 py-2 text-sm"
+              className={field}
             />
             <div className="flex flex-wrap gap-2">
               <button onClick={remove} disabled={busy || !confirm.trim()} className={danger}>
@@ -122,7 +126,7 @@ export function AccountPanel({
             {error && <p className="text-avoid-ink">{error}</p>}
           </div>
         ) : (
-          <button onClick={() => setDeleting(true)} className={`mt-2 ${secondary}`}>
+          <button onClick={() => setDeleting(true)} className={`mt-3 ${btnDanger}`}>
             Xoá tài khoản…
           </button>
         )}
@@ -131,7 +135,7 @@ export function AccountPanel({
       <Dialog
         open={policyOpen}
         onClose={() => setPolicyOpen(false)}
-        title={<h2 className="text-xl font-bold">Chính sách quyền riêng tư</h2>}
+        title={<DialogTitle>Chính sách quyền riêng tư</DialogTitle>}
       >
         <PolicyText />
       </Dialog>
@@ -163,14 +167,14 @@ export function SyncConflict({
         bị này cũng có thay đổi chưa lưu. Chọn bản muốn giữ:
       </p>
       <div className="grid gap-3 sm:grid-cols-2">
-        <div className="rounded-md p-3 ring-1 ring-line">
+        <div className="rounded-md border border-line p-4">
           <p className="font-semibold text-ink">Trên thiết bị này</p>
           <p className="mt-1">{summary(local)}</p>
           <button onClick={onKeepThisDevice} className={`mt-3 ${primary}`}>
             Dùng bản này
           </button>
         </div>
-        <div className="rounded-md p-3 ring-1 ring-line">
+        <div className="rounded-md border border-line p-4">
           <p className="font-semibold text-ink">Bản đã đồng bộ</p>
           <p className="mt-1">{summary(server.routine)}</p>
           <button onClick={onUseSynced} className={`mt-3 ${primary}`}>

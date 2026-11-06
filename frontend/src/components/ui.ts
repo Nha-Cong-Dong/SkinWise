@@ -16,6 +16,14 @@ export const sm = 'min-h-11 px-3 md:min-h-9'
 export const btnGhost =
   'inline-flex min-h-11 md:min-h-9 items-center justify-center rounded-full px-3 text-sm font-semibold whitespace-nowrap text-primary hover:bg-thistle/25 disabled:opacity-40'
 
+/** Secondary button that removes something: same shape, red text. */
+export const btnDanger =
+  'inline-flex min-h-11 items-center justify-center gap-2 rounded-full border border-line bg-surface px-5 text-sm font-semibold whitespace-nowrap text-avoid-ink hover:bg-avoid-soft disabled:opacity-40'
+
+/** Text-only button that removes something. */
+export const btnGhostDanger =
+  'inline-flex min-h-11 md:min-h-9 items-center justify-center rounded-full px-3 text-sm font-semibold whitespace-nowrap text-avoid-ink hover:bg-avoid-soft disabled:opacity-40'
+
 /** Inputs and text areas: 4px corners (what is typed exactly), a thistle halo on focus. */
 export const field =
   'block w-full rounded-sm border border-line bg-surface px-3 py-2.5 text-base text-ink placeholder:text-ink-mute/80 focus:border-primary/60 focus:ring-4 focus:ring-thistle/35 focus:outline-none focus-visible:outline-none'

@@ -21,6 +21,7 @@ export const ROUTINE_TABS: Record<RoutineTab, string> = {
 
 export type Route =
   | { page: 'routine'; tab: RoutineTab }
+  | { page: 'shelf-product'; key: string } // one product of the shelf, by its routine key
   | { page: 'goals' }
   | { page: 'goal-article'; code: string }
   | { page: 'myths' }
@@ -36,6 +37,9 @@ export type Route =
 
 const SKIN_TYPES: SkinType[] = ['oily', 'dry', 'combination', 'normal', 'sensitive']
 const LEGACY_ROUTINE = ['#routine=', '#verify-email?', '#reset-password?']
+
+// Keys made by routine.ts: "p12" (catalogue product), "c" + a random id (pasted list).
+const PRODUCT_KEY = /^[A-Za-z0-9_-]{1,64}$/
 
 const toId = (text: string | null | undefined): number | null =>
   text && /^[1-9]\d{0,15}$/.test(text) ? Number(text) : null
@@ -60,6 +64,7 @@ export function parseHash(hash: string): Route {
     case 'lich-dung': {
       if (second === undefined) return { page: 'routine', tab: 'today' }
       const tab = (Object.keys(ROUTINE_TABS) as RoutineTab[]).find((t) => ROUTINE_TABS[t] === second)
+      if (tab === 'shelf' && parts.length === 3 && PRODUCT_KEY.test(third)) return { page: 'shelf-product', key: third }
       return tab && parts.length === 2 ? { page: 'routine', tab } : { page: 'not-found' }
     }
     case 'muc-tieu':
@@ -109,6 +114,8 @@ export function href(route: Route): string {
   switch (route.page) {
     case 'routine':
       return `#/lich-dung/${ROUTINE_TABS[route.tab]}`
+    case 'shelf-product':
+      return `#/lich-dung/${ROUTINE_TABS.shelf}/${route.key}`
     case 'goals':
       return '#/muc-tieu'
     case 'goal-article':
