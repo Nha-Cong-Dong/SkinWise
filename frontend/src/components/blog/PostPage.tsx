@@ -185,7 +185,7 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
             onAccept={() => {
               actions.replace(trying.routine)
               setTrying(null)
-              navigate({ page: 'routine' })
+              navigate({ page: 'routine', tab: 'week' })
             }}
             onCancel={() => setTrying(null)}
           />

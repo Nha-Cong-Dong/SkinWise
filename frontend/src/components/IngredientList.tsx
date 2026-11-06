@@ -25,7 +25,7 @@ export function IngredientList({ ingredients, onePercentMarker, onSuggest }: Pro
   const firstAtMostOne = ingredients.find((i) => i.at_most_one_percent)?.position
   return (
     <div>
-      <ol className="text-sm">
+      <ol className="border-t border-line text-sm">
         {ingredients.map((i) => {
           const name = i.raw_name.replace(CONCENTRATION, '').trim().toLowerCase()
           const showEuName = i.eu_name && (i.common_name_of.length > 0 || i.eu_name.toLowerCase() !== name)
@@ -37,13 +37,19 @@ export function IngredientList({ ingredients, onePercentMarker, onSuggest }: Pro
                   luật EU giới hạn tối đa 1%. Lượng nhỏ không có nghĩa là không có tác dụng.
                 </p>
               )}
-              <div className="grid grid-cols-[1.75rem_minmax(0,1fr)] border-b border-line/70 py-1.5">
-                <span className="pt-px text-xs text-ink-mute tabular-nums">{i.position}</span>
+              <div
+                className={`grid grid-cols-[2rem_minmax(0,1fr)] gap-x-3 border-b border-line px-1 py-2 ${i.groups.length ? 'bg-blush/10' : ''}`}
+              >
+                <span
+                  className={`pt-px text-right text-xs font-semibold tabular-nums ${i.groups.length ? 'text-dawn-ink' : 'text-ink-mute'}`}
+                >
+                  {i.position}
+                </span>
                 <div className="flex flex-wrap items-baseline gap-x-2 gap-y-1">
-                  <span className={i.groups.length ? 'font-bold text-thistle-ink' : 'text-ink'}>{i.raw_name}</span>
+                  <span className={i.groups.length ? 'font-semibold text-ink' : 'font-medium text-ink'}>{i.raw_name}</span>
                   {i.declared_concentration && (
                     <span
-                      className="rounded bg-icy px-1 text-xs font-semibold text-info-ink"
+                      className="rounded-sm bg-icy px-1 text-xs font-semibold text-info-ink"
                       title="Nồng độ ghi trên nhãn"
                     >
                       {i.declared_concentration}

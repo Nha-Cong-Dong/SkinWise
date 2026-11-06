@@ -1,4 +1,4 @@
-import { lazy, Suspense, useEffect, useRef, useState, type ReactNode } from 'react'
+import { lazy, Suspense, useEffect, useRef, useState } from 'react'
 import { ApiError, api, type CosmeticFunction, type Group, type Severity } from './api'
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
@@ -13,12 +13,13 @@ import { MythPage } from './components/MythPage'
 import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { EmailLinkPage, SignIn } from './components/SignIn'
+import { TodayPage } from './components/TodayPage'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
 import { SEVERITY } from './labels'
 import { ProfileContext, useProfileOwner } from './profile'
-import { ALL_POSTS, href, isBlogPage, useRoute, type Route } from './router'
+import { ALL_POSTS, href, isBlogPage, useRoute, type Route, type RoutineTab } from './router'
 import { useIncomingRoutine } from './share'
 import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
 import {
@@ -50,7 +51,7 @@ const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
 
 // The review page has no nav entry for users; reviewers open #review.
 const MENU: [Route, string, (route: Route) => boolean][] = [
-  [{ page: 'routine' }, 'Lịch dùng', (r) => r.page === 'routine'],
+  [{ page: 'routine', tab: 'today' }, 'Lịch dùng', (r) => r.page === 'routine'],
   [{ page: 'goals' }, 'Mục tiêu', (r) => r.page === 'goals' || r.page === 'goal-article'],
   [{ page: 'myths' }, 'Đúng hay sai', (r) => r.page === 'myths'],
   [ALL_POSTS, 'Đánh giá', isBlogPage],
@@ -67,6 +68,8 @@ function pageKey(route: Route): string {
       return `author:${route.handle}`
     case 'goal-article':
       return `goal-article:${route.code}`
+    case 'routine':
+      return `routine:${route.tab}`
     default:
       return route.page
   }
@@ -149,13 +152,13 @@ function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // A new page starts at the top; "#results" (an anchor on the routine page) scrolls by itself.
+  // A new page (or tab of "Lịch dùng") starts at the top.
   const currentPage = pageKey(route)
   const shownPage = useRef(currentPage)
   useEffect(() => {
     if (shownPage.current === currentPage) return
     shownPage.current = currentPage
-    if (window.location.hash !== '#results') window.scrollTo(0, 0)
+    window.scrollTo(0, 0)
   }, [currentPage])
 
   useEffect(() => {
@@ -225,8 +228,8 @@ function App() {
           {/* Phones: logo and account on top, the four pages in a tab bar at the bottom of the screen.
               From 1024px: one bar on top with the logo, the pages and the account. */}
           <header className="border-b border-line bg-surface">
-            <div className="mx-auto flex min-h-16 max-w-[90rem] items-center gap-6 px-4 sm:px-6 lg:min-h-20 lg:gap-8 xl:gap-14">
-              <a href={href({ page: 'routine' })} className="inline-flex shrink-0 rounded-md">
+            <div className="mx-auto flex min-h-16 max-w-[75rem] items-center gap-6 px-4 sm:px-6 lg:min-h-20 lg:px-10 lg:gap-8 xl:gap-14">
+              <a href={href({ page: 'routine', tab: 'today' })} className="inline-flex shrink-0 rounded-md">
                 <Logo className="h-10 w-auto lg:h-13" />
               </a>
               <nav className="hidden flex-1 gap-2 lg:flex" aria-label="Điều hướng chính">
@@ -268,7 +271,7 @@ function App() {
             ))}
           </nav>
 
-          <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+          <div className="mx-auto max-w-[75rem] px-4 pt-3 sm:px-6">
             <p className="max-w-2xl text-xs leading-relaxed text-ink-soft">
               SkinWise là công cụ nhắc nhở và giáo dục, không thay thế tư vấn của bác sĩ da liễu hay dược sĩ. Nếu bạn
               đang mang thai, đang điều trị bệnh da hoặc dùng thuốc kê đơn, hãy hỏi ý kiến chuyên gia.
@@ -276,7 +279,7 @@ function App() {
           </div>
 
           {passwordReset && (
-            <div className="mx-auto max-w-[90rem] px-4 pt-3 sm:px-6">
+            <div className="mx-auto max-w-[75rem] px-4 pt-3 sm:px-6">
               <p className="flex max-w-2xl items-start gap-3 rounded-md bg-surface p-3 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
                 <span className="flex-1">Đã đặt mật khẩu mới. Các thiết bị khác đã được đăng xuất.</span>
                 <button onClick={() => setPasswordReset(false)} className="shrink-0 text-link underline underline-offset-2">
@@ -286,23 +289,35 @@ function App() {
             </div>
           )}
 
-          <main className="mx-auto max-w-[90rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
+          <main className="mx-auto max-w-[75rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
             <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải…</p>}>
-            {page === 'routine' ? (
+            {route.page === 'routine' ? (
               <>
-              {/* The three columns have their own headings; the page needs one above them. */}
-              <h1 className="sr-only">Lịch dùng</h1>
-              <div className="grid gap-x-6 gap-y-10 lg:grid-cols-[minmax(0,1fr)_22rem] xl:grid-cols-[18.5rem_minmax(0,1fr)_23rem]">
-                <div className="lg:col-start-1 lg:row-start-1">
-                  <MyProducts actions={actions} found={found} onAdd={() => setAdding(true)} />
+                <RoutineTabs tab={route.tab} check={check} />
+                <div className="mt-6 lg:mt-8">
+                  {route.tab === 'today' ? (
+                    <TodayPage actions={actions} check={check} />
+                  ) : route.tab === 'week' ? (
+                    <RoutineBoard
+                      actions={actions}
+                      flagged={flagged}
+                      found={found}
+                      check={check}
+                      onShare={() => setSharing(true)}
+                    />
+                  ) : route.tab === 'shelf' ? (
+                    <MyProducts
+                      actions={actions}
+                      found={found}
+                      flagged={flagged}
+                      check={check}
+                      onAdd={() => setAdding(true)}
+                    />
+                  ) : (
+                    <WarningsPanel state={check} products={actions.routine.products} found={found} page />
+                  )}
                 </div>
-                <div className="lg:col-start-1 lg:row-start-2 xl:col-start-2 xl:row-start-1">
-                  <RoutineBoard actions={actions} flagged={flagged} found={found} onShare={() => setSharing(true)} />
-                </div>
-                <ResultsAside check={check}>
-                  <WarningsPanel state={check} products={actions.routine.products} found={found} />
-                </ResultsAside>
-              </div>
+                {(route.tab === 'week' || route.tab === 'shelf') && <ResultsBar check={check} />}
               </>
             ) : page === 'goals' ? (
               <div className="mx-auto max-w-3xl">
@@ -354,7 +369,7 @@ function App() {
             ) : (
               <div className="mx-auto max-w-2xl space-y-3 text-sm text-ink-soft">
                 <p>Không tìm thấy trang này.</p>
-                <a href={href({ page: 'routine' })} className="text-link underline underline-offset-2">
+                <a href={href({ page: 'routine', tab: 'today' })} className="text-link underline underline-offset-2">
                   Về lịch dùng
                 </a>
               </div>
@@ -362,7 +377,7 @@ function App() {
             </Suspense>
           </main>
 
-          <footer className="mx-auto max-w-[90rem] border-t border-line px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] text-xs leading-relaxed text-ink-mute sm:px-6 lg:pb-8">
+          <footer className="mx-auto max-w-[75rem] border-t border-line px-4 pt-6 pb-[calc(5rem+env(safe-area-inset-bottom))] text-xs leading-relaxed text-ink-mute sm:px-6 lg:pb-8">
             <p>
               Cảnh báo chỉ đến từ các luật đã được người duyệt đối chiếu với nguồn. Routine được lưu trên trình duyệt này và
               đồng bộ với tài khoản SkinWise của bạn.
@@ -509,59 +524,75 @@ function initial(email: string): string {
   return (Array.from(email.trim())[0] ?? '?').toLocaleUpperCase('vi')
 }
 
+const TABS: [RoutineTab, string][] = [
+  ['today', 'Hôm nay'],
+  ['week', 'Lịch tuần'],
+  ['shelf', 'Tủ đồ'],
+  ['check', 'Kiểm tra'],
+]
+
 /**
- * The check results: a sticky column on wide screens. On narrow screens they come after the
- * schedule, so a bar at the bottom of the screen says how many warnings there are until the
- * results scroll into view.
+ * The four tabs of "Lịch dùng". "Kiểm tra" carries the number of combination warnings from the
+ * last check (usage notes are not warnings).
  */
-function ResultsAside({ check, children }: { check: CheckState; children: ReactNode }) {
-  const ref = useRef<HTMLElement>(null)
-  const [inView, setInView] = useState(false)
+function RoutineTabs({ tab, check }: { tab: RoutineTab; check: CheckState }) {
+  const result = currentResult(check)
+  const warnings = result ? result.warnings.filter((w) => !isUsageNote(w)).length : 0
+  return (
+    <nav aria-label="Lịch dùng">
+      <div className="grid grid-cols-4 gap-1 rounded-md border border-line bg-surface p-1 lg:inline-flex lg:rounded-full">
+        {TABS.map(([value, label]) => {
+          const on = tab === value
+          return (
+            <a
+              key={value}
+              href={href({ page: 'routine', tab: value })}
+              aria-current={on ? 'page' : undefined}
+              className={`flex min-h-11 items-center justify-center rounded-sm px-1 text-center text-xs font-semibold whitespace-nowrap lg:min-h-10 lg:rounded-full lg:px-5 lg:text-sm ${
+                on
+                  ? 'bg-primary text-surface lg:bg-thistle/40 lg:text-primary'
+                  : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'
+              }`}
+            >
+              {label}
+              {value === 'check' && warnings > 0 && <span className="ml-1 tabular-nums"> · {warnings}</span>}
+            </a>
+          )
+        })}
+      </div>
+    </nav>
+  )
+}
 
-  useEffect(() => {
-    const el = ref.current
-    if (!el || typeof IntersectionObserver === 'undefined') return
-    const observer = new IntersectionObserver(([entry]) => setInView(entry.isIntersecting))
-    observer.observe(el)
-    return () => observer.disconnect()
-  }, [])
-
+/**
+ * Phones, on the week and shelf tabs: how many warnings the schedule has, above the tab bar, with
+ * the way to the check tab. Silence reads as "safe", so even the empty line says what it does not mean.
+ */
+function ResultsBar({ check }: { check: CheckState }) {
   const result = currentResult(check)
   const warnings = result?.warnings ?? []
-
+  if (check.kind === 'empty') return null
   return (
-    <>
-      <aside
-        ref={ref}
-        id="results"
-        className="scroll-mt-4 lg:sticky lg:top-4 lg:col-start-2 lg:row-span-2 lg:row-start-1 lg:max-h-[calc(100vh-2rem)] lg:self-start lg:overflow-y-auto lg:overscroll-contain xl:col-start-3 xl:row-span-1"
-      >
-        {children}
-      </aside>
-      {check.kind !== 'empty' && !inView && (
-        <a
-          href="#results"
-          className="dusk-panel fixed inset-x-3 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-20 flex items-center gap-3 rounded-md bg-dusk py-2.5 pr-4 pl-3 text-sm text-on-dusk shadow-float lg:hidden"
-        >
-          <span className="min-w-0 flex-1">
-            {warnings.some((w) => !isUsageNote(w)) ? (
-              <SeverityCounts warnings={warnings} />
-            ) : check.kind === 'error' ? (
-              'Không kiểm tra được routine'
-            ) : check.kind === 'loading' && !result ? (
-              'Đang kiểm tra…'
-            ) : warnings.length > 0 ? (
-              // Only usage notes: about the combinations, the result is still empty.
-              `Chưa có cảnh báo kết hợp, không có nghĩa là chắc chắn an toàn · ${warnings.length} lưu ý khi dùng`
-            ) : (
-              // Silence reads as "safe", so even this short line says what it does not mean.
-              'Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn'
-            )}
-          </span>
-          <span className="shrink-0 font-semibold text-thistle">Xem kết quả</span>
-        </a>
-      )}
-    </>
+    <a
+      href={href({ page: 'routine', tab: 'check' })}
+      className="dusk-panel fixed inset-x-3 bottom-[calc(4.25rem+env(safe-area-inset-bottom))] z-20 flex items-center gap-3 rounded-md bg-dusk py-2.5 pr-4 pl-3 text-sm text-on-dusk shadow-float lg:hidden"
+    >
+      <span className="min-w-0 flex-1">
+        {warnings.some((w) => !isUsageNote(w)) ? (
+          <SeverityCounts warnings={warnings} />
+        ) : check.kind === 'error' ? (
+          'Không kiểm tra được routine'
+        ) : check.kind === 'loading' && !result ? (
+          'Đang kiểm tra…'
+        ) : warnings.length > 0 ? (
+          // Only usage notes: about the combinations, the result is still empty.
+          `Chưa có cảnh báo kết hợp, không có nghĩa là chắc chắn an toàn · ${warnings.length} lưu ý khi dùng`
+        ) : (
+          'Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn'
+        )}
+      </span>
+      <span className="shrink-0 font-semibold text-thistle">Xem kết quả</span>
+    </a>
   )
 }
 

@@ -1,15 +1,26 @@
 // Pages by address hash, without a library: every page, post, product and author has its own
 // link, and the browser's back button works. Older hashes keep their meaning: "#review" (the
-// reviewers' page), and "#routine=…", "#verify-email?…", "#reset-password?…", "#results", which
-// all belong to the routine page (share.ts, account.ts and App.tsx read them).
+// reviewers' page), "#/routine" (now "Lịch dùng", today's tab), and "#routine=…", "#verify-email?…",
+// "#reset-password?…", which belong to the routine page (share.ts, account.ts and App.tsx read
+// them); "#results" opens the check tab.
 
 import { useMemo, useSyncExternalStore } from 'react'
 import type { SkinType } from './api'
 
 export type BlogFilter = { skin: SkinType | null; product: number | null; sort: 'new' | 'top' }
 
+/** The four tabs of "Lịch dùng": today, the week, the shelf, the check results. */
+export type RoutineTab = 'today' | 'week' | 'shelf' | 'check'
+
+export const ROUTINE_TABS: Record<RoutineTab, string> = {
+  today: 'hom-nay',
+  week: 'lich-tuan',
+  shelf: 'tu-do',
+  check: 'kiem-tra',
+}
+
 export type Route =
-  | { page: 'routine' }
+  | { page: 'routine'; tab: RoutineTab }
   | { page: 'goals' }
   | { page: 'goal-article'; code: string }
   | { page: 'myths' }
@@ -31,10 +42,11 @@ const toId = (text: string | null | undefined): number | null =>
 
 export function parseHash(hash: string): Route {
   if (hash === '#review') return { page: 'review' }
-  if (hash === '' || hash === '#' || hash === '#results' || LEGACY_ROUTINE.some((p) => hash.startsWith(p))) {
-    return { page: 'routine' }
+  if (hash === '#results') return { page: 'routine', tab: 'check' }
+  if (hash === '' || hash === '#' || LEGACY_ROUTINE.some((p) => hash.startsWith(p))) {
+    return { page: 'routine', tab: 'today' }
   }
-  if (!hash.startsWith('#/')) return { page: 'routine' } // an in-page anchor of the routine page
+  if (!hash.startsWith('#/')) return { page: 'routine', tab: 'today' } // an in-page anchor of the routine page
 
   const [path, search = ''] = hash.slice(2).split('?', 2)
   const query = new URLSearchParams(search)
@@ -43,8 +55,13 @@ export function parseHash(hash: string): Route {
 
   switch (first) {
     case undefined:
-    case 'routine':
-      return parts.length <= 1 ? { page: 'routine' } : { page: 'not-found' }
+    case 'routine': // the address before "Lịch dùng" had tabs
+      return parts.length <= 1 ? { page: 'routine', tab: 'today' } : { page: 'not-found' }
+    case 'lich-dung': {
+      if (second === undefined) return { page: 'routine', tab: 'today' }
+      const tab = (Object.keys(ROUTINE_TABS) as RoutineTab[]).find((t) => ROUTINE_TABS[t] === second)
+      return tab && parts.length === 2 ? { page: 'routine', tab } : { page: 'not-found' }
+    }
     case 'muc-tieu':
       if (parts.length === 1) return { page: 'goals' }
       return parts.length === 2 && /^[a-z0-9-]{1,64}$/.test(second) ? { page: 'goal-article', code: second } : { page: 'not-found' }
@@ -91,7 +108,7 @@ export function parseHash(hash: string): Route {
 export function href(route: Route): string {
   switch (route.page) {
     case 'routine':
-      return '#/routine'
+      return `#/lich-dung/${ROUTINE_TABS[route.tab]}`
     case 'goals':
       return '#/muc-tieu'
     case 'goal-article':

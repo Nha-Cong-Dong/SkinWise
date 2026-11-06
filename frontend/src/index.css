@@ -220,8 +220,8 @@
 
 /* Page titles use the display serif at 500 (the only weight shipped). Unlayered on purpose: it wins
    over font-bold / tracking utilities still on headings, so no heading gets a synthesised bold. */
-h1,
-h2 {
+h1:not(.font-sans),
+h2:not(.font-sans) {
   font-family: var(--font-display);
   font-weight: 500;
   letter-spacing: -0.01em;

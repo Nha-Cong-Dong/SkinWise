@@ -1,0 +1,208 @@
+import { useState } from 'react'
+import type { Session, Severity, Warning } from '../api'
+import { DAY_NAMES, KIND_LABELS, SESSION_LABELS, SEVERITY, todayIndex } from '../labels'
+import { href } from '../router'
+import { currentResult, isUsageNote, sessionEntries, type CheckState, type RoutineActions } from '../routine'
+import { SeverityBadge } from './Icons'
+import { Notice } from './Notice'
+import { SessionShell, SessionSwitch } from './RoutineBoard'
+import { TONE } from './sessionTone'
+import { btn, btnPrimary } from './ui'
+
+type Props = { actions: RoutineActions; check: CheckState }
+
+const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
+
+/**
+ * "Hôm nay": today's steps from the weekly schedule, and the warnings whose days, as the check
+ * returned them, include today. Nothing here is inferred beyond those days and sessions.
+ */
+export function TodayPage({ actions, check }: Props) {
+  // The day is read once per visit to the tab; a tab left open past midnight shows the day it opened.
+  const [now] = useState(() => new Date())
+  const today = todayIndex(now)
+  // Morning panel first until early afternoon, then the evening one (phones show one at a time).
+  const [session, setSession] = useState<Session>(now.getHours() < 14 ? 'AM' : 'PM')
+  const date = now.toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric' })
+
+  const result = currentResult(check)
+  const todays = (result?.warnings ?? []).filter((w) => w.occurrences.some((o) => o.day === today))
+  /**
+   * Most severe combination warning of each product in one session today, to flag its step: only
+   * occurrences today in that session, or with no session (a same-day rule).
+   */
+  const flaggedIn = (s: Session) => {
+    const flagged = new Map<string, Severity>()
+    for (const w of todays.filter((w) => !isUsageNote(w))) {
+      if (!w.occurrences.some((o) => o.day === today && (o.session === s || o.session === null))) continue
+      for (const key of w.product_keys) {
+        const current = flagged.get(key)
+        if (!current || SEVERITY_RANK.indexOf(w.rule.severity) < SEVERITY_RANK.indexOf(current)) {
+          flagged.set(key, w.rule.severity)
+        }
+      }
+    }
+    return flagged
+  }
+  const stepsToday = (s: Session) => sessionEntries(actions.routine, s).filter((e) => e.days.includes(today))
+  const empty = actions.routine.entries.length === 0
+  const noStepsToday = stepsToday('AM').length === 0 && stepsToday('PM').length === 0
+
+  return (
+    <section aria-labelledby="today-title">
+      <header className="flex flex-wrap items-end justify-between gap-4">
+        <div>
+          <p className="text-xs text-ink-mute">
+            {DAY_NAMES[today]}, {date}
+          </p>
+          <h1 id="today-title" className="text-3xl lg:text-4xl">
+            Hôm nay
+          </h1>
+        </div>
+        {!empty && (
+          <a href={href({ page: 'routine', tab: 'week' })} className={btn}>
+            Sửa lịch tuần
+          </a>
+        )}
+      </header>
+
+      {empty ? (
+        <div className="mt-6 max-w-xl rounded-md bg-surface p-5">
+          <p className="text-ink-soft">Lịch dùng chưa có bước nào. Thêm sản phẩm vào tủ đồ rồi xếp vào buổi sáng hoặc tối.</p>
+          <a href={href({ page: 'routine', tab: 'shelf' })} className={`${btnPrimary} mt-4`}>
+            Mở tủ đồ
+          </a>
+        </div>
+      ) : (
+        <>
+          <div className="mt-5 lg:hidden">
+            <SessionSwitch session={session} onChange={setSession} count={(s) => stepsToday(s).length} />
+          </div>
+          <div className="mt-4 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:mt-6 lg:grid-cols-2">
+            {(['AM', 'PM'] as const).map((s) => (
+              <TodaySession
+                key={s}
+                session={s}
+                actions={actions}
+                steps={stepsToday(s)}
+                flagged={flaggedIn(s)}
+                className={s === session ? '' : 'hidden lg:block'}
+              />
+            ))}
+          </div>
+        </>
+      )}
+
+      <section aria-labelledby="today-warnings" className="mt-8 max-w-3xl">
+        <h2 id="today-warnings" className="text-xl">
+          Cần lưu ý hôm nay
+        </h2>
+        <div className="mt-3 flex flex-col gap-2">
+          {/* Nothing to check today: say so, so that the empty list does not read as "safe". */}
+          {(empty || noStepsToday) && (
+            <p className="text-sm text-ink-soft">
+              Hôm nay chưa có bước nào trong lịch, nên chưa kiểm tra được kết hợp.
+            </p>
+          )}
+          {check.kind === 'loading' && !result && !noStepsToday && <p className="text-sm text-ink-mute">Đang kiểm tra…</p>}
+          {check.kind === 'error' && (
+            <p className="text-sm text-avoid-ink">
+              Không kiểm tra được routine.{' '}
+              <a href={href({ page: 'routine', tab: 'check' })} className="font-semibold underline underline-offset-2">
+                Xem chi tiết
+              </a>
+            </p>
+          )}
+          {todays.map((w) => (
+            <TodayWarning key={`${w.rule.key}:${w.product_keys.join('+')}`} warning={w} today={today} actions={actions} />
+          ))}
+          {result && result.warnings.length === 0 && result.notice_vi && <Notice>{result.notice_vi}</Notice>}
+          {result && result.warnings.length > 0 && todays.length === 0 && !noStepsToday && (
+            <p className="text-sm text-ink-soft">Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn.</p>
+          )}
+        </div>
+      </section>
+    </section>
+  )
+}
+
+function TodaySession({
+  session,
+  actions,
+  steps,
+  flagged,
+  className,
+}: {
+  session: Session
+  actions: RoutineActions
+  steps: ReturnType<typeof sessionEntries>
+  flagged: Map<string, Severity>
+  className: string
+}) {
+  const tone = TONE[session]
+  const products = new Map(actions.routine.products.map((p) => [p.key, p]))
+  return (
+    <SessionShell
+      session={session}
+      caption={steps.length > 0 ? `${steps.length} bước hôm nay` : undefined}
+      className={className}
+    >
+      {steps.length === 0 ? (
+        <p className={`px-1 pt-3 pb-1 text-sm ${tone.mute}`}>
+          Hôm nay không có bước nào buổi {SESSION_LABELS[session].toLowerCase()}.
+        </p>
+      ) : (
+        <ol className={`mt-3 ${tone.list}`}>
+          {steps.map((entry, i) => {
+            const product = products.get(entry.productKey)
+            if (!product) return null
+            const severity = flagged.get(product.key)
+            return (
+              <li key={entry.id} className={`flex items-center gap-3 py-3 ${tone.row}`}>
+                <span
+                  className={`flex size-6 shrink-0 items-center justify-center rounded-full text-xs font-semibold tabular-nums ${tone.step}`}
+                >
+                  {i + 1}
+                </span>
+                <span className="min-w-0 flex-1">
+                  <span className={`block text-xs ${tone.mute}`}>{product.brand ?? 'Tự nhập bảng thành phần'}</span>
+                  <span className="block leading-snug font-semibold text-pretty">{product.name}</span>
+                </span>
+                {severity && <SeverityBadge severity={severity} />}
+              </li>
+            )
+          })}
+        </ol>
+      )}
+    </SessionShell>
+  )
+}
+
+/** One warning that applies today: the rule's own title, the products, today's sessions. */
+function TodayWarning({ warning, today, actions }: { warning: Warning; today: number; actions: RoutineActions }) {
+  const names = new Map(actions.routine.products.map((p) => [p.key, p.name]))
+  const sessions = [...new Set(warning.occurrences.filter((o) => o.day === today).map((o) => o.session))]
+  const when = sessions.includes(null)
+    ? 'Trong ngày hôm nay'
+    : sessions.map((s) => `Buổi ${SESSION_LABELS[s!].toLowerCase()}`).join(' và ') + ', hôm nay'
+  const usage = isUsageNote(warning)
+  return (
+    <article className="relative overflow-hidden rounded-md bg-surface py-4 pr-4 pl-6">
+      <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${SEVERITY[warning.rule.severity].bar}`} />
+      <div className="flex flex-wrap items-center gap-2">
+        <SeverityBadge severity={warning.rule.severity} />
+        <span className="text-xs text-ink-mute">{KIND_LABELS[warning.rule.kind]}</span>
+      </div>
+      <h3 className="mt-2 font-sans text-base leading-snug font-semibold text-pretty">{warning.rule.title_vi}</h3>
+      <p className="mt-1 text-xs text-ink-mute">
+        {warning.product_keys.map((k) => names.get(k) ?? k).join(usage ? ', ' : ' + ')} · {when}
+      </p>
+      <a
+        href={href({ page: 'routine', tab: 'check' })}
+        className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary"
+      >
+        Xem giải thích và nguồn ›
+      </a>
+    </article>
+  )
+}

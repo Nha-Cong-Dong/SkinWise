@@ -1,5 +1,7 @@
+import { useId } from 'react'
 import { SESSION_EXPIRED, SUGGESTIONS_TRUNCATED_VI, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
-import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
+import { KIND_LABELS, SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
+import { href } from '../router'
 import {
   currentResult,
   formatLabelLine,
@@ -21,11 +23,17 @@ type Props = {
    * the label lines are not shown (a blog post's routine).
    */
   found?: Map<string, LabelGroups>
+  /**
+   * The "Kiểm tra" tab: a page title, counts as tiles and, on wide screens, a list of the warnings
+   * beside the cards. Without it, a section of another page (a blog post's routine).
+   */
+  page?: boolean
 }
 
 const NONE = new Map<string, LabelGroups>()
 
-export function WarningsPanel({ state, products, found = NONE }: Props) {
+export function WarningsPanel({ state, products, found = NONE, page = false }: Props) {
+  const idPrefix = useId()
   const names = new Map(products.map((p) => [p.key, p.name]))
   const result = currentResult(state)
   const checked = new Set(result?.products.map((p) => p.key))
@@ -34,20 +42,69 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
-    <section aria-labelledby="results-title">
+    <section aria-labelledby="results-title" id={page ? 'results' : undefined}>
       {/* Read out after each check. The panel itself is not a live region: a screen reader
           would read every card again on each change. */}
       <p role="status" className="sr-only">
         {announcement(state)}
       </p>
-      <div className="flex items-baseline justify-between gap-3">
-        <h2 id="results-title" className="text-xl font-bold">
-          Kết quả kiểm tra
-        </h2>
-        {state.kind === 'loading' && <span className="text-xs text-ink-mute">Đang kiểm tra…</span>}
-      </div>
-      {result && result.warnings.length > 0 && <SeverityCounts warnings={result.warnings} className="mt-2" />}
-      <div className="mt-4 space-y-3">
+      {page ? (
+        <header className="flex flex-wrap items-end justify-between gap-4">
+          <div>
+            <p className="text-xs text-ink-mute">Cả tuần · cập nhật ngay khi bạn sửa lịch dùng</p>
+            <h1 id="results-title" className="text-3xl lg:text-4xl">
+              Kết quả kiểm tra
+            </h1>
+          </div>
+          {state.kind === 'loading' && <span className="text-xs text-ink-mute">Đang kiểm tra…</span>}
+        </header>
+      ) : (
+        <div className="flex items-baseline justify-between gap-3">
+          <h2 id="results-title" className="text-xl">
+            Kết quả kiểm tra
+          </h2>
+          {state.kind === 'loading' && <span className="text-xs text-ink-mute">Đang kiểm tra…</span>}
+        </div>
+      )}
+      {result &&
+        result.warnings.length > 0 &&
+        (page ? <SeverityTiles warnings={result.warnings} /> : <SeverityCounts warnings={result.warnings} className="mt-2" />)}
+      <div
+        className={
+          page && result && result.warnings.length > 0
+            ? 'mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]'
+            : ''
+        }
+      >
+      {page && result && result.warnings.length > 0 && (
+        <nav aria-label="Danh sách cảnh báo" className="hidden lg:sticky lg:top-4 lg:block">
+          <ul className="flex flex-col gap-1">
+            {result.warnings.map((w, i) => (
+              <li key={`${w.rule.key}:${w.product_keys.join('+')}`}>
+                <button
+                  onClick={() => {
+                    const card = document.getElementById(`${idPrefix}-${i}`)
+                    card?.scrollIntoView({ block: 'start' })
+                    card?.focus({ preventScroll: true })
+                  }}
+                  className="flex w-full flex-col gap-1.5 rounded-md px-5 py-4 text-left hover:bg-surface"
+                >
+                  <span className="flex flex-wrap items-center gap-2">
+                    <SeverityBadge severity={w.rule.severity} />
+                    <span className="text-xs text-ink-mute">{KIND_LABELS[w.rule.kind]}</span>
+                  </span>
+                  <span className="leading-snug font-semibold">{w.rule.title_vi}</span>
+                  <span className="text-xs text-ink-mute">
+                    {w.product_keys.map((k) => names.get(k) ?? k).join(isUsageNote(w) ? ', ' : ' + ')} ·{' '}
+                    {formatOccurrences(w.occurrences)}
+                  </span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      )}
+      <div className={page ? 'mt-6 space-y-4 lg:mt-0' : 'mt-4 space-y-3'}>
         {state.kind === 'empty' && (
           <Notice>Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.</Notice>
         )}
@@ -56,7 +113,7 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
             <p>{checkError(state.problem)}</p>
             <button
               onClick={state.retry}
-              className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
+              className="mt-2 min-h-11 rounded-full bg-surface px-4 font-semibold text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
             >
               Thử lại
             </button>
@@ -92,11 +149,26 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
           </DataNote>
         ))}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
-        {result?.warnings.map((w) => {
+        {result?.warnings.map((w, i) => {
           const usage = w.rule.kind === 'usage'
           const rinseOff = usage ? [] : w.product_keys.filter((k) => applications.get(k) === 'rinse_off')
           return (
-            <RuleCard key={`${w.rule.key}:${w.product_keys.join('+')}`} rule={w.rule} collapsible>
+            <RuleCard
+              key={`${w.rule.key}:${w.product_keys.join('+')}`}
+              id={`${idPrefix}-${i}`}
+              rule={w.rule}
+              collapsible
+              footer={
+                page && (
+                  <a
+                    href={href({ page: 'routine', tab: 'week' })}
+                    className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-primary"
+                  >
+                    Mở lịch tuần để sắp xếp lại ›
+                  </a>
+                )
+              }
+            >
               <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
                 <dt className="text-ink-mute">Sản phẩm</dt>
                 <dd className="font-medium">
@@ -127,6 +199,7 @@ export function WarningsPanel({ state, products, found = NONE }: Props) {
             đã có nguồn đáng tin cậy.
           </p>
         )}
+      </div>
       </div>
     </section>
   )
@@ -192,6 +265,27 @@ function announcement(state: CheckState): string {
   if (parts.length === 0) parts.push('chưa có cảnh báo kết hợp, không có nghĩa là chắc chắn an toàn')
   if (notes > 0) parts.push(`${notes} lưu ý khi dùng`)
   return `Đã kiểm tra routine: ${parts.join('; ')}.`
+}
+
+/** The counts as tiles (the check tab): one per severity that has warnings, then the usage notes. */
+function SeverityTiles({ warnings }: { warnings: Warning[] }) {
+  const { counts, notes } = tally(warnings)
+  return (
+    <div className="mt-5 grid grid-cols-2 gap-2 sm:grid-cols-4">
+      {counts.map(([severity, n]) => (
+        <div key={severity} className="rounded-md bg-surface p-3">
+          <SeverityBadge severity={severity} />
+          <p className="mt-1 text-xl font-semibold tabular-nums">{n}</p>
+        </div>
+      ))}
+      {notes > 0 && (
+        <div className="rounded-md bg-surface p-3">
+          <span className="text-xs font-semibold text-ink-soft">Lưu ý khi dùng</span>
+          <p className="mt-1 text-xl font-semibold tabular-nums">{notes}</p>
+        </div>
+      )}
+    </div>
+  )
 }
 
 /** "1 Nên tránh, 2 Thận trọng" badges, then the number of usage notes. */

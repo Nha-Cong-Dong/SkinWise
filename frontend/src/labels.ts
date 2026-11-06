@@ -7,12 +7,13 @@ export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6]
 
 export const SESSION_LABELS: Record<Session, string> = { AM: 'Sáng', PM: 'Tối' }
 
-// Most severe first. `badge`: label on a pale background; `mark`: the icon's colour.
-export const SEVERITY: Record<Severity, { label: string; badge: string; mark: string }> = {
-  avoid: { label: 'Nên tránh', badge: 'bg-avoid-soft text-avoid-ink', mark: 'text-avoid' },
-  caution: { label: 'Thận trọng', badge: 'bg-caution-soft text-caution-ink', mark: 'text-caution' },
-  info: { label: 'Thông tin', badge: 'bg-icy text-info-ink', mark: 'text-info' },
-  safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe' },
+// Most severe first. `badge`: label on a pale background; `mark`: the icon's colour; `bar`: the
+// 4px severity bar on the left of a warning card.
+export const SEVERITY: Record<Severity, { label: string; badge: string; mark: string; bar: string }> = {
+  avoid: { label: 'Nên tránh', badge: 'bg-avoid-soft text-avoid-ink', mark: 'text-avoid', bar: 'bg-avoid' },
+  caution: { label: 'Thận trọng', badge: 'bg-caution-soft text-caution-ink', mark: 'text-caution', bar: 'bg-caution' },
+  info: { label: 'Thông tin', badge: 'bg-icy text-info-ink', mark: 'text-info', bar: 'bg-info' },
+  safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe', bar: 'bg-safe' },
 }
 
 export const KIND_LABELS: Record<Rule['kind'], string> = {
@@ -48,7 +49,12 @@ export const VERIFICATION_LABELS: Record<string, string> = {
   verified: 'Đã xác minh với trang nguồn',
 }
 
-function formatDays(days: number[]): string {
+/** Today as a day of the week, 0 = Monday (the routine's numbering), on this device's clock. */
+export function todayIndex(now = new Date()): number {
+  return (now.getDay() + 6) % 7
+}
+
+export function formatDays(days: number[]): string {
   return days.length === 7 ? 'mỗi ngày' : days.map((d) => DAY_LABELS[d]).join(', ')
 }
 

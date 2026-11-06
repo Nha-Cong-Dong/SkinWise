@@ -7,20 +7,18 @@ import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
 import { PhotoReaderStatus, ReadFromPhoto } from './ReadFromPhoto'
+import { btn, btnPrimary, field, segBox, segOption, sm } from './ui'
 
 type Props = { actions: RoutineActions }
 
 type DraftProps = Props & { draft: AddDraft; setDraft: Dispatch<SetStateAction<AddDraft>> }
-
-const field =
-  'w-full rounded-md border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus-visible:outline-none focus:ring-2 focus:ring-link/20'
 
 /** Content of the "add product" dialog: search the catalogue or paste an ingredient list. */
 export function AddProduct({ actions, draft, setDraft }: DraftProps) {
   const tab = draft.tab
   return (
     <div>
-      <div className="flex gap-1 rounded-full bg-paper p-1 text-sm" role="tablist">
+      <div className={segBox} role="tablist">
         {(
           [
             ['search', 'Tìm sản phẩm'],
@@ -32,7 +30,7 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
             role="tab"
             aria-selected={tab === value}
             onClick={() => setDraft((d) => ({ ...d, tab: value }))}
-            className={`flex-1 rounded-full px-3 py-1.5 ${tab === value ? 'bg-primary font-medium text-surface' : 'text-ink-soft hover:text-ink'}`}
+            className={segOption(tab === value)}
           >
             {label}
           </button>
@@ -75,16 +73,18 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
 
   return (
     <div className="mt-4">
-      <input
-        type="search"
-        value={query}
-        onChange={(e) => setQuery(e.target.value)}
-        placeholder="Tên sản phẩm hoặc thành phần"
-        aria-label="Tìm sản phẩm"
-        aria-describedby="search-hint"
-        data-autofocus
-        className={field}
-      />
+      <label className="block text-xs font-semibold">
+        Tên sản phẩm hoặc thành phần
+        <input
+          type="search"
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          placeholder="vd. retinol, niacinamide, BHA"
+          aria-describedby="search-hint"
+          data-autofocus
+          className={`${field} mt-1 font-normal`}
+        />
+      </label>
       <p id="search-hint" className="mt-1.5 text-xs text-ink-mute">
         Gõ tên hãng, tên sản phẩm hoặc tên thành phần (vd. retinol, niacinamide, BHA). Gõ không dấu cũng được.
       </p>
@@ -97,7 +97,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
               setError(false)
               setAttempt((n) => n + 1)
             }}
-            className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
+            className="mt-2 min-h-11 rounded-full bg-surface px-4 font-semibold text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
           >
             Thử lại
           </button>
@@ -112,17 +112,17 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
           để kiểm tra sản phẩm bất kỳ.
         </p>
       )}
-      <ul className="mt-2 divide-y divide-line">
+      <ul className="mt-3 border-b border-line">
         {results?.map((p) => {
           const isAdded = added.has(productKeyFor(p.id))
           return (
-            <li key={p.id} className="flex items-center gap-3 py-3">
+            <li key={p.id} className="flex items-center gap-4 border-t border-line py-3.5">
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-ink-mute">
                   {p.brand}
-                  {p.application && <span className="ml-2">{APPLICATION_LABELS[p.application]}</span>}
+                  {p.application && ` · ${APPLICATION_LABELS[p.application]}`}
                 </p>
-                <p className="text-sm leading-snug font-medium">{p.name}</p>
+                <p className="leading-snug font-semibold">{p.name}</p>
                 {p.matched_ingredients.length > 0 && (
                   <p className="mt-0.5 text-xs leading-snug break-words text-ink-mute">
                     Có: {p.matched_ingredients.join(', ')}
@@ -138,7 +138,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
                   actions.addProduct({ name: p.name, brand: p.brand, productId: p.id, inci: null, groups: p.groups })
                 }
                 aria-label={`${isAdded ? 'Đã thêm' : 'Thêm'} ${p.brand ? `${p.brand} ` : ''}${p.name}`}
-                className="shrink-0 rounded-full bg-primary px-3.5 py-1.5 text-sm font-medium text-surface hover:bg-primary-hover disabled:bg-paper disabled:text-ink-mute"
+                className={`${isAdded ? btn : btnPrimary} ${sm} shrink-0 disabled:opacity-100 disabled:border-line disabled:bg-surface disabled:text-ink-mute`}
               >
                 {isAdded ? 'Đã thêm' : 'Thêm'}
               </button>
@@ -217,7 +217,7 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
       }}
     >
       {origin ? (
-        <div className="rounded-md bg-paper p-3.5 text-sm leading-relaxed text-ink-soft">
+        <div className="rounded-md border border-dashed border-primary/35 bg-thistle/15 p-4 text-sm leading-relaxed text-ink-soft">
           <p className="font-semibold text-ink">Chữ đọc từ ảnh bằng AI, có thể sai</p>
           <p className="mt-1">
             Chữ nhỏ trên chai cong dễ bị đọc nhầm, và một chữ sai trong tên hoạt chất có thể làm mất cảnh báo. Hãy so
@@ -247,13 +247,17 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
       ) : (
         <ReadFromPhoto reader={reader} />
       )}
-      <input
-        value={name}
-        onChange={(e) => update({ name: e.target.value })}
-        placeholder="Tên sản phẩm (để bạn dễ nhận ra)"
-        aria-label="Tên sản phẩm"
-        className={field}
-      />
+      <label className="block text-xs font-semibold">
+        Tên sản phẩm
+        <input
+          value={name}
+          onChange={(e) => update({ name: e.target.value })}
+          placeholder="Để bạn dễ nhận ra trong tủ"
+          className={`${field} mt-1 font-normal`}
+        />
+      </label>
+      <label className="block text-xs font-semibold">
+        Bảng thành phần
       <textarea
         value={text}
         onChange={(e) => {
@@ -265,9 +269,9 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
         rows={6}
         disabled={reading} // the text read off the photo would replace what is typed meanwhile
         placeholder="Ingredients: Aqua, Glycerin, Niacinamide, …"
-        aria-label="Bảng thành phần"
-        className={`${field} text-sm leading-relaxed disabled:opacity-60`}
+        className={`${field} mt-1 text-sm leading-[1.7] font-normal disabled:opacity-60`}
       />
+      </label>
       {unreadable > 0 && (
         <p className="text-sm text-caution-ink">
           Còn {unreadable} chỗ đánh dấu {UNREADABLE} chưa đọc được. Sửa theo bao bì hoặc xoá đi rồi mới phân tích.
@@ -288,12 +292,12 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
         <button
           onClick={() => analyze()}
           disabled={!text.trim() || state === 'loading' || unreadable > 0 || unchecked}
-          className="rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40"
+          className={analysis && !unchecked ? btn : btnPrimary}
         >
           {state === 'loading' ? 'Đang phân tích…' : 'Phân tích'}
         </button>
         {analysis && !unchecked && (
-          <button onClick={add} className="rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover">
+          <button onClick={add} className={btnPrimary}>
             Thêm vào sản phẩm của tôi
           </button>
         )}

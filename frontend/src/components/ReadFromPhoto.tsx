@@ -1,5 +1,6 @@
 import { useRef } from 'react'
 import type { PhotoReaderState, usePhotoReader } from '../photoReader'
+import { btn } from './ui'
 
 type Props = { reader: ReturnType<typeof usePhotoReader> }
 
@@ -9,13 +10,9 @@ export function ReadFromPhoto({ reader }: Props) {
   const { state, read } = reader
 
   return (
-    <div className="rounded-md border border-dashed border-ink-mute/40 p-3.5">
+    <div className="rounded-md border border-dashed border-primary/35 bg-thistle/15 p-4">
       <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
-        <button
-          onClick={() => input.current?.click()}
-          disabled={state === 'loading'}
-          className="rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40"
-        >
+        <button onClick={() => input.current?.click()} disabled={state === 'loading'} className={btn}>
           {state === 'loading' ? 'Đang đọc ảnh…' : 'Đọc từ ảnh nhãn'}
         </button>
         <span className="text-xs text-ink-mute">hoặc dán ảnh (Ctrl+V) hay bảng thành phần vào ô bên dưới</span>

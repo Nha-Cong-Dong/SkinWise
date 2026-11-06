@@ -61,7 +61,7 @@ export function SeverityIcon({ severity, className }: IconProps & { severity: Se
 export function SeverityBadge({ severity, children }: { severity: Severity; children?: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-1 text-xs font-semibold whitespace-nowrap ${SEVERITY[severity].badge}`}
+      className={`inline-flex items-center gap-1 rounded-sm py-0.5 pr-1.5 pl-1 text-xs font-semibold whitespace-nowrap ${SEVERITY[severity].badge}`}
     >
       <SeverityIcon severity={severity} className="size-4" />
       {children ?? SEVERITY[severity].label}

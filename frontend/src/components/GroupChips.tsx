@@ -5,7 +5,7 @@ import { formatLabelLine, type LabelGroups } from '../routine'
 type Props = {
   codes: string[]
   empty?: string
-  /** `night`: on the evening panel. */
+  /** `night`: on the evening panel (the chips stay thistle; only the "none" line changes colour). */
   tone?: 'day' | 'night'
   /** The label lines behind each group, from the routine check; without it the chip shows the group only. */
   found?: LabelGroups
@@ -55,9 +55,7 @@ export function GroupChips({ codes, empty, tone = 'day', found, note = true }: P
           <span
             key={code}
             title={title || undefined}
-            className={`inline-flex max-w-full min-w-0 rounded-full px-2 py-px text-xs font-medium ${
-              tone === 'night' ? 'bg-dusk-raised text-on-dusk' : 'bg-thistle text-thistle-ink'
-            }`}
+            className="inline-flex max-w-full min-w-0 rounded-full bg-thistle px-2 py-px text-xs font-semibold text-thistle-ink"
           >
             <span className="shrink-0">{name(code)}</span>
             {found && first && (

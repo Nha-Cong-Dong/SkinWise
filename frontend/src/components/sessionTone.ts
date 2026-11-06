@@ -1,0 +1,31 @@
+// Each session has its own palette: the morning panel is a pink dawn, the evening panel dusk.
+export const TONE = {
+  AM: {
+    panel: 'bg-[linear-gradient(to_bottom,var(--color-petal),var(--color-dawn)_120px)] text-ink',
+    tag: 'bg-dawn text-dawn-ink',
+    mute: 'text-ink-mute',
+    row: 'border-t border-petal first:border-t-0',
+    list: '',
+    step: 'bg-neutral text-ink-soft',
+    button: 'text-ink-mute hover:bg-surface hover:text-ink',
+    remove: 'text-ink-mute hover:bg-avoid-soft hover:text-avoid-ink',
+    dayOn: 'border-primary bg-primary text-surface',
+    dayOff: 'border-line bg-surface text-ink-mute hover:border-primary',
+    tick: 'border-primary bg-surface text-primary',
+    warn: 'text-caution-ink',
+  },
+  PM: {
+    panel: 'dusk-panel bg-[linear-gradient(to_bottom,var(--color-dusk-raised),var(--color-dusk)_120px)] text-on-dusk',
+    tag: 'bg-dusk-raised text-on-dusk',
+    mute: 'text-dusk-mute',
+    row: 'rounded-md bg-dusk-raised px-3',
+    list: 'flex flex-col gap-2',
+    step: 'bg-dusk text-dusk-mute',
+    button: 'text-dusk-mute hover:bg-dusk hover:text-on-dusk',
+    remove: 'text-dusk-mute hover:bg-avoid hover:text-surface',
+    dayOn: 'border-thistle bg-thistle text-dusk',
+    dayOff: 'border-dusk-line bg-transparent text-dusk-mute hover:border-thistle hover:text-on-dusk',
+    tick: 'border-thistle bg-dusk text-thistle',
+    warn: 'text-thistle',
+  },
+}
