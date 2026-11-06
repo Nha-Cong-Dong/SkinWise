@@ -7,6 +7,7 @@ Exit code 1 if any product fails, so it can gate a PR.
 import sys
 import urllib.error
 
+from app.console import use_utf8_output
 from app.inci import parse_inci
 from app.seed import load_toml
 from app.sources import BlockedError, fetch_text, first_out_of_order, missing_on_page
@@ -42,4 +43,5 @@ def main(slugs: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    use_utf8_output()
     sys.exit(main(sys.argv[1:]))

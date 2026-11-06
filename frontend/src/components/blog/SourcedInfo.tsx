@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type Ingredient, type InciAnalysis, type PostDetail, type PostProductOut, type ProductDetail } from '../../api'
+import { api, requestError, requestProblem, type Ingredient, type InciAnalysis, type PostDetail, type PostProductOut, type ProductDetail } from '../../api'
 import { AUTHOR_NAMED, portableCheckRequest, portableProducts } from '../../blog'
 import { href } from '../../router'
 import type { CheckState } from '../../routine'
@@ -43,7 +43,7 @@ export function SourcedInfo({ post }: { post: PostDetail }) {
 
 type Analysis =
   | { kind: 'loading' }
-  | { kind: 'error'; missing: boolean }
+  | { kind: 'error'; missing: boolean; message: string }
   | { kind: 'seeded'; detail: ProductDetail }
   | { kind: 'pasted'; analysis: InciAnalysis }
 
@@ -55,7 +55,12 @@ function ProductAnalysis({ product }: { product: PostProductOut }) {
   useEffect(() => {
     let cancelled = false
     const done = (next: Analysis) => !cancelled && setState(next)
-    const failed = (e: unknown) => done({ kind: 'error', missing: (e as { status?: number }).status === 404 })
+    const failed = (e: unknown) =>
+      done({
+        kind: 'error',
+        missing: (e as { status?: number }).status === 404,
+        message: requestError(e, 'Không phân tích được sản phẩm này.'),
+      })
     if (product.product_id !== null) {
       api.product(product.product_id).then((detail) => done({ kind: 'seeded', detail }), failed)
     } else {
@@ -81,7 +86,7 @@ function ProductAnalysis({ product }: { product: PostProductOut }) {
         {state.kind === 'loading' && <Loading>Đang phân tích…</Loading>}
         {state.kind === 'error' && (
           <LoadError onRetry={state.missing ? undefined : () => setAttempt((n) => n + 1)}>
-            {state.missing ? 'Sản phẩm này không còn trong danh sách của SkinWise.' : 'Không phân tích được sản phẩm này.'}
+            {state.missing ? 'Sản phẩm này không còn trong danh sách của SkinWise.' : state.message}
           </LoadError>
         )}
         {(state.kind === 'seeded' || state.kind === 'pasted') && (
@@ -152,7 +157,7 @@ function RoutineAnalysis({ routine }: { routine: PortableRoutine }) {
       : loaded.kind === 'ready'
         ? { kind: 'done', result: loaded.value }
         : loaded.kind === 'error'
-          ? { kind: 'error', message: (loaded.error as Error).message ?? '', retry }
+          ? { kind: 'error', message: (loaded.error as Error).message ?? '', problem: requestProblem(loaded.error), retry }
           : { kind: 'loading', previous: null }
 
   if (state.kind === 'empty') {

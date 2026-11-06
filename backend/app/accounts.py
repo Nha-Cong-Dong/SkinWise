@@ -11,7 +11,9 @@ import hashlib
 import json
 import re
 import secrets
+import threading
 import time
+import weakref
 from collections import deque
 from dataclasses import dataclass
 from datetime import UTC, datetime, timedelta
@@ -28,7 +30,7 @@ TOKEN_TTL = {"verify": timedelta(hours=24), "reset": timedelta(minutes=30)}
 UNVERIFIED_TTL = timedelta(days=7)  # unverified accounts are removed after this
 SESSION_TTL = timedelta(days=30)
 # The privacy policy the sign-in form shows (frontend PolicyText). A new version asks again.
-POLICY_VERSION = "2026-10-26-draft"
+POLICY_VERSION = "2026-11-05-draft"
 PURPOSE = "account"  # sign in, and keep the routine for use on several devices
 # One plain address: no characters that could make a header or the SMTP envelope name
 # several recipients ("a,b@x", "a <b@x>", quotes, brackets).
@@ -54,44 +56,82 @@ def normalize_email(raw: str) -> str | None:
 # outlives the window. ---
 
 
+# How often every RateLimit drops the keys whose window has passed (app.main also runs
+# sweep_rate_limits() on this interval while the server is idle). A key (an IP, or the
+# sha256 of an email or user id) is therefore kept at most its window + SWEEP_INTERVAL after
+# its last event: 1 hour + 1 minute for an IP (the longest IP window, email requests).
+SWEEP_INTERVAL = 60.0
+_all_limits: "weakref.WeakSet[RateLimit]" = weakref.WeakSet()
+
+
 class RateLimit:
     """At most `limit` events per `window` seconds for each key (an email or an IP). Addresses
-    are kept only as sha256, and a key goes as soon as its window holds no events."""
+    are kept only as sha256, and a key goes once its window holds no events: when it is checked
+    again, or at the next sweep (at most SWEEP_INTERVAL later)."""
 
     def __init__(self, limits: dict[str, tuple[int, float]]) -> None:
         self._limits = limits  # kind -> (limit, window in seconds)
         self._recent: dict[str, deque[float]] = {}
+        self._lock = threading.Lock()  # sync routes run in a thread pool
+        self._last_sweep = time.monotonic()
+        _all_limits.add(self)
 
     def _keys(self, email: str, ip: str | None) -> list[tuple[str, str]]:
         keys = [("email", f"email:{_hash(email)}")]
         return keys + ([("ip", f"ip:{ip}")] if ip else [])
 
+    def _expire(self, key: str, times: deque[float], now: float) -> None:
+        window = self._limits[key.split(":", 1)[0]][1]
+        while times and now - times[0] > window:
+            times.popleft()
+        if not times:
+            del self._recent[key]
+
+    def sweep(self, now: float | None = None) -> None:
+        """Drop every key whose window holds no events any more."""
+        now = time.monotonic() if now is None else now
+        with self._lock:
+            self._last_sweep = now
+            for key, times in list(self._recent.items()):
+                self._expire(key, times, now)
+
+    def _sweep_if_due(self, now: float) -> None:
+        if now - self._last_sweep >= SWEEP_INTERVAL:
+            self.sweep(now)
+
     def blocked(self, email: str, ip: str | None) -> bool:
         now = time.monotonic()
+        self._sweep_if_due(now)
         blocked = False
-        for kind, key in self._keys(email, ip):
-            limit, window = self._limits[kind]
-            times = self._recent.get(key)
-            if times is None:
-                continue
-            while times and now - times[0] > window:
-                times.popleft()
-            if not times:
-                del self._recent[key]
-            elif len(times) >= limit:
-                blocked = True
+        with self._lock:
+            for kind, key in self._keys(email, ip):
+                times = self._recent.get(key)
+                if times is None:
+                    continue
+                self._expire(key, times, now)
+                if key in self._recent and len(times) >= self._limits[kind][0]:
+                    blocked = True
         return blocked
 
     def record(self, email: str, ip: str | None) -> None:
         now = time.monotonic()
-        for _, key in self._keys(email, ip):
-            self._recent.setdefault(key, deque()).append(now)
+        self._sweep_if_due(now)
+        with self._lock:
+            for _, key in self._keys(email, ip):
+                self._recent.setdefault(key, deque()).append(now)
 
     def __len__(self) -> int:
         return len(self._recent)
 
     def clear(self) -> None:
-        self._recent.clear()
+        with self._lock:
+            self._recent.clear()
+
+
+def sweep_rate_limits() -> None:
+    """Sweep every rate limit in the process (called periodically by app.main)."""
+    for limit in list(_all_limits):
+        limit.sweep()
 
 
 # Every request that sends an email (register, resend verification, forgot password).
@@ -210,6 +250,33 @@ def _account_state(db: Db, email: str) -> Any:
     ).first()
 
 
+def purge_unverified(db: Db) -> int:
+    """Remove unverified accounts older than UNVERIFIED_TTL, unless a verify link sent to them
+    is still usable (they registered again or asked for a new link), and the links left for
+    the removed addresses. Runs on every registration and daily from scripts.purge (systemd
+    timer in deploy/), so it happens even when nobody registers. Returns the accounts removed."""
+    emails = list(
+        db.execute(
+            text(
+                """
+                DELETE FROM users u WHERE u.email_verified_at IS NULL
+                  AND u.created_at < now() - make_interval(days => :days)
+                  AND NOT EXISTS (
+                    SELECT 1 FROM email_tokens t
+                    WHERE t.email = u.email AND t.purpose = 'verify'
+                      AND t.used_at IS NULL AND t.expires_at > now()
+                  )
+                RETURNING u.email
+                """
+            ),
+            {"days": UNVERIFIED_TTL.days},
+        ).scalars()
+    )
+    if emails:
+        db.execute(text("DELETE FROM email_tokens WHERE email = ANY(:e)"), {"e": emails})
+    return len(emails)
+
+
 def register(db: Db, email: str, password: str, policy_version: str) -> str | None:
     """Create an unverified account, or replace the password of one that is still unverified,
     and return a verify token tied to this password. A verified address is left as it is: None.
@@ -217,20 +284,7 @@ def register(db: Db, email: str, password: str, policy_version: str) -> str | No
     accounts older than UNVERIFIED_TTL are removed here, unless a verify link sent to them is
     still usable (they registered again or asked for a new link)."""
     password_hash = hash_password(password)  # always, so every case takes as long
-    db.execute(
-        text(
-            """
-            DELETE FROM users u WHERE u.email_verified_at IS NULL
-              AND u.created_at < now() - make_interval(days => :days)
-              AND NOT EXISTS (
-                SELECT 1 FROM email_tokens t
-                WHERE t.email = u.email AND t.purpose = 'verify'
-                  AND t.used_at IS NULL AND t.expires_at > now()
-              )
-            """
-        ),
-        {"days": UNVERIFIED_TTL.days},
-    )
+    purge_unverified(db)
     row = db.execute(
         text(
             """

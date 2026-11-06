@@ -34,7 +34,7 @@ Mọi cảnh báo đều:
 
 | Tính năng | Mô tả |
 |---|---|
-| Thêm sản phẩm | Chọn từ danh sách sản phẩm có sẵn (tìm kiếm chấp nhận gõ sai, không dấu) hoặc dán bảng thành phần in trên bao bì |
+| Thêm sản phẩm | Chọn từ danh sách sản phẩm có sẵn hoặc dán bảng thành phần in trên bao bì. Tìm theo tên hãng / tên sản phẩm (chấp nhận gõ sai, không dấu) hoặc theo tên thành phần, hoạt chất, nhóm (vd. "retinol", "vitamin c", "BHA"); kết quả ghi thành phần nào khớp |
 | Nhận diện hoạt chất | Chuẩn hoá tên INCI, gom về khoảng 10 nhóm hoạt chất: AHA, BHA, PHA, retinoid, vitamin C, niacinamide, benzoyl peroxide… |
 | Xếp lịch routine | Gán sản phẩm vào buổi sáng/tối và các ngày trong tuần, theo thứ tự các bước |
 | Phát hiện trùng hoạt chất | Cảnh báo khi nhiều sản phẩm trong cùng một buổi chứa cùng nhóm hoạt chất |
@@ -142,10 +142,17 @@ Yêu cầu: Python 3.13+ với [uv](https://docs.astral.sh/uv/), Node.js 22+, Po
    ```bash
    cd backend
    uv run python -m scripts.demo_blog           # hỏi mật khẩu chung (hoặc đặt DEMO_BLOG_PASSWORD)
-   uv run python -m scripts.demo_blog --reset   # xoá rồi tạo lại, chỉ đụng tài khoản @skinwise.test
+   uv run python -m scripts.demo_blog --reset   # xoá rồi tạo lại, chỉ đụng tài khoản @skinwise.test (giữ demo@)
    ```
 
-7. Triển khai lên máy chủ: xem [deploy/README.md](deploy/README.md) (nginx, HTTPS, systemd, sao lưu). Chưa triển khai ở đâu.
+   Tài khoản demo đăng nhập sẵn cho máy trình diễn: `demo@skinwise.test`, đã xác thực, có routine mẫu.
+
+   ```bash
+   uv run python -m scripts.demo_account          # hỏi mật khẩu (hoặc đặt DEMO_ACCOUNT_PASSWORD)
+   uv run python -m scripts.demo_account --reset  # xoá rồi tạo lại
+   ```
+
+7. Triển khai lên máy chủ: xem [deploy/README.md](deploy/README.md) (nginx, HTTPS, systemd, sao lưu, giới hạn tần suất, thời hạn giữ nhật ký, dọn tài khoản chưa xác thực hằng ngày bằng `scripts.purge`). Chưa triển khai ở đâu.
 
 ## Lộ trình
 

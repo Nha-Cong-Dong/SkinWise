@@ -2,11 +2,12 @@
 
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
+from app.accounts_api import CurrentUser
 from app.concentration import OnePercentLine, one_percent_line
-from app.db import get_session
+from app.db import DbSession
 from app.engine import (
     PAIR_KINDS,
     SEVERITY_ORDER,
@@ -102,7 +103,6 @@ GOALS_NOTICE_VI = (
     "Đây là thông tin chung có nguồn, không thay cho tư vấn của bác sĩ da liễu. Mụn viêm nhiều, "
     "đau hoặc để lại sẹo, hay đốm da thay đổi bất thường, nên đi khám."
 )
-DbSession = Annotated[Session, Depends(get_session)]
 
 router = APIRouter()
 
@@ -131,9 +131,18 @@ def functions(db: DbSession) -> list[FunctionOut]:
     return [FunctionOut.model_validate(f) for f in list_functions(db)]
 
 
-def suggestions_for(db: Session, resolved: list[ResolvedEntry]) -> dict[int, list[Suggestion]]:
-    """Close known names for each entry nothing recognised, by position."""
-    return {r.entry.position: suggest(db, r.entry.candidates[0]) for r in resolved if not r.known}
+# Each unrecognised line costs a trigram lookup, so one request looks up at most this many
+# (a pasted list of hundreds of unknown names held the server for close to a minute). Lines
+# past the budget simply get no suggestion.
+MAX_SUGGESTED_LINES = 30
+
+
+def suggestions_for(
+    db: Session, resolved: list[ResolvedEntry], budget: int = MAX_SUGGESTED_LINES
+) -> dict[int, list[Suggestion]]:
+    """Close known names for the first `budget` entries nothing recognised, by position."""
+    unknown = [r for r in resolved if not r.known][: max(budget, 0)]
+    return {r.entry.position: suggest(db, r.entry.candidates[0]) for r in unknown}
 
 
 def ingredient_fields(
@@ -193,7 +202,7 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 
 
 @router.post("/inci/analyze")
-def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
+def analyze_inci(db: DbSession, user: CurrentUser, body: InciAnalyzeRequest) -> InciAnalysis:
     label = read_label_text(body.text)
     resolved = mark_allergens(db, resolve(db, label.entries))
     # Key-ingredient lists and Drug Facts labels are not in order of weight.
@@ -215,7 +224,7 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
 
 
 @router.post("/routine/check")
-def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
+def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> RoutineCheckResponse:
     seeded_ids = [p.product_id for p in body.products if p.product_id is not None]
     applications = product_applications(db, seeded_ids)
     missing = set(seeded_ids) - applications.keys()
@@ -229,13 +238,16 @@ def check(db: DbSession, body: RoutineCheckRequest) -> RoutineCheckResponse:
     keys = {n: key for key, n in ids.items()}
     groups_by_id: dict[int, set[str]] = {}
     possible_actives: dict[str, list[str]] = {}
+    budget = MAX_SUGGESTED_LINES  # shared by every pasted list in the request
     for p in body.products:
         if p.product_id is not None:
             groups_by_id[ids[p.key]] = seeded_groups[p.product_id]
             continue
         resolved = resolve(db, read_label_text(p.inci or "").entries)
         groups_by_id[ids[p.key]] = product_groups(resolved)
-        names = [s.name for ss in suggestions_for(db, resolved).values() for s in ss if s.groups]
+        suggestions = suggestions_for(db, resolved, budget)
+        budget -= len(suggestions)
+        names = [s.name for ss in suggestions.values() for s in ss if s.groups]
         possible_actives[p.key] = list(dict.fromkeys(names))
     items = [
         RoutineItem(ids[i.product_key], i.session, frozenset(i.days), i.step) for i in body.items

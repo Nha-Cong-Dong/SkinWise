@@ -1,4 +1,4 @@
-import type { Severity, Warning } from '../api'
+import { SESSION_EXPIRED, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
 import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
 import { currentResult, isUsageNote, maybeIncomplete, type CheckState, type MyProduct } from '../routine'
 import { SeverityBadge } from './Icons'
@@ -35,7 +35,7 @@ export function WarningsPanel({ state, products }: Props) {
         )}
         {state.kind === 'error' && (
           <div className="rounded-xl bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
-            <p>Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.</p>
+            <p>{checkError(state.problem)}</p>
             <button
               onClick={state.retry}
               className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
@@ -117,7 +117,7 @@ function tally(warnings: Warning[]) {
 
 /** The status line a screen reader announces once a check finishes. */
 function announcement(state: CheckState): string {
-  if (state.kind === 'error') return 'Không kiểm tra được routine.'
+  if (state.kind === 'error') return checkError(state.problem)
   if (state.kind !== 'done') return ''
   const { counts, notes } = tally(state.result.warnings)
   const parts = counts.map(([severity, n]) => `${n} ${SEVERITY[severity].label.toLowerCase()}`)
@@ -139,4 +139,10 @@ export function SeverityCounts({ warnings, className }: { warnings: Warning[]; c
       {notes > 0 && <span className="text-xs opacity-80">{notes} lưu ý khi dùng</span>}
     </p>
   )
+}
+
+function checkError(problem: RequestProblem): string {
+  if (problem === 'signed-out') return `Không kiểm tra được routine. ${SESSION_EXPIRED}`
+  if (problem === 'too-many') return `Không kiểm tra được routine. ${TOO_FAST}`
+  return 'Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.'
 }

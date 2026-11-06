@@ -1,11 +1,12 @@
 """Made-up community reviews for the blog demo, from data/demo_blog.toml:
 
 uv run python -m scripts.demo_blog           # create what is missing; safe to run again
-uv run python -m scripts.demo_blog --reset   # delete every @skinwise.test account, then create
+uv run python -m scripts.demo_blog --reset   # delete the @skinwise.test blog accounts, then create
 
 Five verified accounts demo1..demo5@skinwise.test share one password, asked when an account
 has to be created (or taken from DEMO_BLOG_PASSWORD). Only addresses at @skinwise.test are ever
-created or deleted. Posts already there (same author and title) are left as they are.
+created or deleted, and --reset keeps demo@skinwise.test (the account of scripts.demo_account).
+Posts already there (same author and title) are left as they are.
 """
 
 import getpass
@@ -20,7 +21,9 @@ from sqlalchemy.engine import Connection
 
 from app import blog, images
 from app.blog_api import _post_data
+from app.console import use_utf8_output
 from app.db import get_engine, init_schema
+from app.demo_account import DEMO_EMAIL
 from app.passwords import hash_password, password_problem
 from app.schemas import PostIn
 
@@ -36,21 +39,28 @@ def demo_email(n: int) -> str:
 
 
 def remove_demo_accounts(conn: Connection) -> tuple[int, list[str]]:
-    """Delete every @skinwise.test account and what cascades from it; returns the count and
-    the image files to remove after the commit."""
+    """Delete every @skinwise.test account except demo@skinwise.test (scripts.demo_account),
+    with what cascades from it and its email links; returns the count and the image files to
+    remove after the commit."""
     pattern = "%" + DOMAIN.replace("_", r"\_")
+    match = "u.email LIKE :p AND u.email <> :keep"
+    params = {"p": pattern, "keep": DEMO_EMAIL}
     files = list(
         conn.execute(
             text(
                 "SELECT i.file_name FROM blog_images i JOIN users u ON u.id = i.owner_id "
-                "WHERE u.email LIKE :p"
+                f"WHERE {match}"
             ),
-            {"p": pattern},
+            params,
         ).scalars()
     )
-    removed = conn.execute(text("DELETE FROM users WHERE email LIKE :p"), {"p": pattern}).rowcount
+    emails = list(
+        conn.execute(text(f"DELETE FROM users u WHERE {match} RETURNING u.email"), params).scalars()
+    )
+    # email_tokens has no foreign key to users (links exist before the account is verified).
+    conn.execute(text("DELETE FROM email_tokens WHERE email = ANY(:e)"), {"e": emails})
     blog.drop_orphan_reports(conn)
-    return removed, files
+    return len(emails), files
 
 
 def ask_password() -> str:
@@ -163,7 +173,6 @@ def create_posts(conn: Connection, posts: list[dict[str, Any]], users: dict[int,
 
 
 def main(args: list[str]) -> int:
-    sys.stdout.reconfigure(encoding="utf-8")  # Vietnamese text; Windows consoles use cp1252
     if any(a not in ("--reset",) for a in args):
         print(__doc__)
         return 1
@@ -174,7 +183,10 @@ def main(args: list[str]) -> int:
         with engine.begin() as conn:
             removed, files = remove_demo_accounts(conn)
         images.delete_files(files)
-        print(f"Removed {removed} {DOMAIN} accounts and everything they wrote.")
+        print(
+            f"Removed {removed} {DOMAIN} blog accounts and everything they wrote "
+            f"(kept {DEMO_EMAIL})."
+        )
     with engine.begin() as conn:
         users = ensure_accounts(conn, data["account"])
         created = create_posts(conn, data["post"], users)
@@ -183,4 +195,5 @@ def main(args: list[str]) -> int:
 
 
 if __name__ == "__main__":
+    use_utf8_output()
     sys.exit(main(sys.argv[1:]))

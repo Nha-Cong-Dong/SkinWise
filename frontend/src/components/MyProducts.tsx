@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { api, type InciAnalysis, type ProductDetail } from '../api'
+import { api, requestError, type InciAnalysis, type ProductDetail } from '../api'
 import { APPLICATION_LABELS, SESSION_LABELS, VERIFICATION_LABELS } from '../labels'
 import { maybeIncomplete, sampleRoutine, type MyProduct, type RemovedProduct, type RoutineActions } from '../routine'
 import { Dialog } from './Dialog'
@@ -243,13 +243,13 @@ function SeededIngredients({ productId }: { productId: number }) {
 
 function PastedIngredients({ inci }: { inci: string }) {
   const [analysis, setAnalysis] = useState<InciAnalysis | null>(null)
-  const [error, setError] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
-    api.analyzeInci(inci).then(setAnalysis, () => setError(true))
+    api.analyzeInci(inci).then(setAnalysis, (e) => setError(requestError(e, 'Không phân tích được bảng thành phần.')))
   }, [inci])
 
-  if (error) return <p className="text-sm text-avoid-ink">Không phân tích được bảng thành phần.</p>
+  if (error) return <p className="text-sm text-avoid-ink">{error}</p>
   if (!analysis) return <p className="text-sm text-ink-mute">Đang tải…</p>
   return <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
 }

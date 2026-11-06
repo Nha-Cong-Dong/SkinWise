@@ -1,0 +1,20 @@
+# Copy to /etc/systemd/system/ with skinwise-purge.timer, then:
+#   systemctl daemon-reload && systemctl enable --now skinwise-purge.timer
+# Removes accounts never verified within 7 days (backend/scripts/purge.py).
+# Not yet run on a server (the development machine has no systemd).
+
+[Unit]
+Description=SkinWise: remove unverified accounts older than 7 days
+After=postgresql.service
+Requires=postgresql.service
+
+[Service]
+Type=oneshot
+User=skinwise
+Group=skinwise
+WorkingDirectory=/srv/skinwise/app/backend
+ExecStart=/usr/local/bin/uv run --no-sync python -m scripts.purge
+NoNewPrivileges=true
+ProtectSystem=strict
+ProtectHome=true
+PrivateTmp=true

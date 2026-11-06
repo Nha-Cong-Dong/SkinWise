@@ -1,9 +1,11 @@
 """Load backend/data/*.toml into the database: uv run python -m scripts.seed"""
 
+from app.console import use_utf8_output
 from app.db import get_engine, init_schema
 from app.seed import seed
 
 if __name__ == "__main__":
+    use_utf8_output()
     engine = get_engine()
     init_schema(engine)
     counts = seed(engine)

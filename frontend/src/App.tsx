@@ -74,14 +74,15 @@ function App() {
   const [adding, setAdding] = useState(false)
   const [addDraft, setAddDraft] = useState(EMPTY_ADD_DRAFT) // outlives the dialog's content
   const [sharing, setSharing] = useState(false)
-  const { incoming, dismiss } = useIncomingRoutine() // a shared routine link was opened
   const [groups, setGroups] = useState<Map<string, Group>>(new Map())
   const [functions, setFunctions] = useState<Map<string, CosmeticFunction>>(new Map())
   const actions = useRoutine()
-  const check = useRoutineCheck(actions.routine)
   // Signing in is required (plan/h-accounts.md); the review page has its own sign-in.
   const account = useAccount()
   const me = account.state.kind === 'signed-in' ? account.state.me : null
+  // Both need a session: nothing is sent from the sign-in form or #review.
+  const check = useRoutineCheck(actions.routine, page === 'review' ? null : (me?.email ?? null), account.refresh)
+  const { incoming, retry: retryIncoming, dismiss } = useIncomingRoutine(me !== null) // a shared routine link was opened
   const accountOffline = account.state.kind === 'signed-in' && account.state.offline === true
   const sync = useRoutineSync(actions, me?.email ?? null)
   const profile = useProfileOwner(me?.email ?? null)
@@ -414,7 +415,17 @@ function App() {
           title={<h2 className="text-xl font-bold">Routine được chia sẻ với bạn</h2>}
         >
           {incoming?.kind === 'loading' && <p className="text-sm text-ink-mute">Đang mở routine…</p>}
-          {incoming?.kind === 'error' && <p className="text-sm text-avoid-ink">{incoming.message}</p>}
+          {incoming?.kind === 'error' && (
+            <div className="text-sm text-avoid-ink">
+              <p>{incoming.message}</p>
+              <button
+                onClick={retryIncoming}
+                className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
+              >
+                Thử lại
+              </button>
+            </div>
+          )}
           {incoming?.kind === 'ready' && (
             <ReplaceConfirm
               incoming={incoming}

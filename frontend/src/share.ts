@@ -3,7 +3,7 @@
 // stores nothing.
 
 import { useEffect, useState } from 'react'
-import { api, type Session } from './api'
+import { api, requestError, type Session } from './api'
 import { newId, productKeyFor, type Entry, type MyProduct, type Routine } from './routine'
 
 export const FORMAT = 'skinwise-routine'
@@ -18,6 +18,9 @@ const MAX_NAME = 200
 const MAX_KEY = 100
 const MAX_LINK = 400_000 // characters after "#routine="
 const MAX_UNPACKED = 1_000_000 // bytes: a link must not unpack into anything bigger
+// Requests in flight while opening a routine. /inci/analyze has its own nginx limit
+// (deploy/nginx/skinwise.conf: burst 60, enough for MAX_PRODUCTS); this only spreads the load.
+const MAX_PARALLEL = 4
 
 /**
  * What leaves the device: product keys, step order, days, the user's own names and pasted
@@ -95,8 +98,10 @@ export function parsePortable(value: unknown): PortableRoutine {
 export async function restore(portable: PortableRoutine): Promise<{ routine: Routine; dropped: string[] }> {
   const keyFor = new Map<string, string>() // key in the file -> key in the routine
   const dropped: string[] = []
-  const restored = await Promise.all(
-    portable.products.map(async (p): Promise<MyProduct | null> => {
+  const restored = await mapLimited(
+    portable.products,
+    MAX_PARALLEL,
+    async (p): Promise<MyProduct | null> => {
       try {
         if (p.productId !== undefined) {
           const detail = await api.product(p.productId)
@@ -112,9 +117,14 @@ export async function restore(portable: PortableRoutine): Promise<{ routine: Rou
           dropped.push(p.name || `sản phẩm số ${p.productId}`)
           return null
         }
-        throw new ImportError('Không mở được routine: không kết nối được máy chủ SkinWise. Hãy thử lại sau.')
+        const reason = requestError(e, '') // signed out, or too many requests
+        throw new ImportError(
+          reason
+            ? `Không mở được routine. ${reason}`
+            : 'Không mở được routine: không kết nối được máy chủ SkinWise. Hãy thử lại sau.',
+        )
       }
-    }),
+    },
   )
   // The same catalogue product listed twice in a file becomes one product.
   const products = [...new Map(restored.filter((p) => p !== null).map((p) => [p.key, p])).values()]
@@ -122,6 +132,26 @@ export async function restore(portable: PortableRoutine): Promise<{ routine: Rou
     .filter((e) => keyFor.has(e.productKey))
     .map((e) => ({ id: newId(), productKey: keyFor.get(e.productKey)!, session: e.session, days: e.days }))
   return { routine: { products, entries }, dropped }
+}
+
+/** `fn` over `items` with at most `limit` calls at a time, results in order; stops at the first failure. */
+async function mapLimited<T, R>(items: T[], limit: number, fn: (item: T) => Promise<R>): Promise<R[]> {
+  const results: R[] = new Array(items.length)
+  let next = 0
+  let failed = false
+  const worker = async () => {
+    while (!failed && next < items.length) {
+      const i = next++
+      try {
+        results[i] = await fn(items[i])
+      } catch (e) {
+        failed = true
+        throw e
+      }
+    }
+  }
+  await Promise.all(Array.from({ length: Math.min(limit, items.length) }, worker))
+  return results
 }
 
 // --- File ---
@@ -229,12 +259,19 @@ export type Incoming =
 
 /**
  * Watches the address for a routine link. The routine is never applied here: the caller asks the
- * user first. `dismiss` clears the link from the address.
+ * user first. Opening it needs a session (/inci/analyze), so a link opened before signing in waits
+ * until `signedIn`. `retry` reads the link again; `dismiss` clears it from the address.
  */
-export function useIncomingRoutine(): { incoming: Incoming | null; dismiss: () => void } {
+export function useIncomingRoutine(signedIn: boolean): {
+  incoming: Incoming | null
+  retry: () => void
+  dismiss: () => void
+} {
   const [incoming, setIncoming] = useState<Incoming | null>(null)
+  const [attempt, setAttempt] = useState(0)
 
   useEffect(() => {
+    if (!signedIn) return // the link stays in the address until then
     let cancelled = false
     const read = () => {
       const payload = linkPayload(location.hash)
@@ -253,10 +290,11 @@ export function useIncomingRoutine(): { incoming: Incoming | null; dismiss: () =
       cancelled = true
       window.removeEventListener('hashchange', read)
     }
-  }, [])
+  }, [signedIn, attempt])
 
   return {
     incoming,
+    retry: () => setAttempt((n) => n + 1),
     dismiss: () => {
       if (linkPayload(location.hash) !== null) history.replaceState(null, '', location.pathname)
       setIncoming(null)

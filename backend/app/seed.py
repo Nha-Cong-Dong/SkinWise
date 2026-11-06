@@ -10,7 +10,7 @@ from sqlalchemy.engine import Connection
 
 from app.goals import SHARED_GOAL, goal_problems
 from app.inci import normalize_name, parse_inci
-from app.ingredients import resolve
+from app.ingredients import clear_suggestion_cache, resolve
 from app.rules import rule_problems
 
 DATA_DIR = Path(__file__).resolve().parent.parent / "data"
@@ -95,6 +95,7 @@ def seed(engine: Engine) -> dict[str, int]:
         for rule in rules:
             _seed_rule(conn, rule, source_ids)
         seed_goals(conn, goals_data, source_ids)
+    clear_suggestion_cache()
     items = goals_data.get("item", [])
     return {
         "groups": len(groups),
@@ -277,8 +278,9 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
         conn.execute(
             text(
                 """
-                INSERT INTO product_ingredients (product_id, position, ingredient_id, raw_name)
-                VALUES (:product_id, :position, :ingredient_id, :raw_name)
+                INSERT INTO product_ingredients
+                  (product_id, position, ingredient_id, raw_name, search_name)
+                VALUES (:product_id, :position, :ingredient_id, :raw_name, :search_name)
                 """
             ),
             {
@@ -286,6 +288,7 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
                 "position": r.entry.position,
                 "ingredient_id": r.ingredient_id,
                 "raw_name": r.entry.raw,
+                "search_name": normalize_name(r.entry.raw),
             },
         )
 

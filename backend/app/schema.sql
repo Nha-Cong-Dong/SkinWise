@@ -71,6 +71,9 @@ CREATE TABLE IF NOT EXISTS product_ingredients (
   raw_name      text NOT NULL,          -- as written on the label, kept even if unresolved
   PRIMARY KEY (product_id, position)
 );
+-- Added for ingredient search: raw_name normalized by app.inci.normalize_name (filled by
+-- the seed; init_schema backfills rows left NULL by older databases). Shown/search only.
+ALTER TABLE product_ingredients ADD COLUMN IF NOT EXISTS search_name text;
 
 -- Deterministic warning rules, written against functional groups.
 CREATE TABLE IF NOT EXISTS rules (

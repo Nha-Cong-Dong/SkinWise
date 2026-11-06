@@ -11,9 +11,12 @@ Trình duyệt ──HTTPS──► nginx ──┬── /            frontend/
 
 | File | Dùng làm gì |
 |---|---|
-| `nginx/skinwise.conf` | HTTPS, chuyển `/api/` sang backend, gzip, cache file tĩnh, giới hạn kích thước request |
+| `nginx/skinwise.conf` | HTTPS, chuyển `/api/` sang backend, gzip, cache file tĩnh, giới hạn kích thước request, giới hạn tần suất theo IP: `/api/routine/check` 30/phút (dồn tối đa 30), `/api/inci/analyze` 60/phút (dồn tối đa 60, đủ cho link chia sẻ có 50 bảng tự dán) |
 | `nginx/skinwise-headers.conf` | Header bảo mật (CSP, HSTS, nosniff…), chép vào `/etc/nginx/snippets/` |
 | `systemd/skinwise-api.service` | Chạy uvicorn sau nginx, tự khởi động lại |
+| `systemd/skinwise-purge.service` + `.timer` | Mỗi ngày xoá tài khoản không xác thực email trong 7 ngày (`scripts.purge`) |
+| `logrotate/nginx` | Thay `/etc/logrotate.d/nginx`: log nginx (có IP) giữ tối đa 14 ngày |
+| `journald/skinwise.conf` | Chép vào `/etc/systemd/journald.conf.d/`: journal (log uvicorn, có IP) giữ tối đa 14 ngày |
 | `backup.sh` | Sao lưu DB + ảnh blog mỗi ngày, giữ 30 ngày |
 
 ## Các bước
@@ -49,7 +52,9 @@ Trình duyệt ──HTTPS──► nginx ──┬── /            frontend/
 
 5. **nginx + HTTPS:** thay `skinwise.example.vn` trong `nginx/skinwise.conf` bằng tên miền thật. Xin chứng chỉ trước bằng `certbot certonly --webroot -w /var/www/certbot -d <tên miền>` (cần khối `listen 80` chạy trước, tạm bỏ khối 443). Chép hai file nginx vào chỗ của chúng, rồi `nginx -t && systemctl reload nginx`.
 
-6. **Sao lưu:** cron của người dùng `skinwise`: `15 3 * * * /srv/skinwise/app/deploy/backup.sh`. Thử khôi phục ít nhất một lần: `pg_restore --clean -d skinwise db-YYYY-MM-DD.dump`.
+6. **Xoá tài khoản chưa xác thực và giới hạn thời gian giữ log:** chép `systemd/skinwise-purge.service` và `.timer` vào `/etc/systemd/system/`, rồi `systemctl daemon-reload && systemctl enable --now skinwise-purge.timer`. Chép `logrotate/nginx` đè lên `/etc/logrotate.d/nginx` (kiểm bằng `logrotate -d`), `journald/skinwise.conf` vào `/etc/systemd/journald.conf.d/` rồi `systemctl restart systemd-journald`.
+
+7. **Sao lưu:** cron của người dùng `skinwise`: `15 3 * * * /srv/skinwise/app/deploy/backup.sh`. Thử khôi phục ít nhất một lần: `pg_restore --clean -d skinwise db-YYYY-MM-DD.dump`.
 
 ## Cấu hình (`backend/.env`)
 
@@ -67,6 +72,7 @@ Trình duyệt ──HTTPS──► nginx ──┬── /            frontend/
 - **IP người dùng:** nginx ghi `X-Forwarded-For $remote_addr` (không nối thêm giá trị trình duyệt gửi), uvicorn chỉ tin header này từ `127.0.0.1`. Nếu đặt thêm một proxy hay CDN phía trước, phải sửa cả hai chỗ, nếu không mọi người dùng chung một IP và 20 lần đăng nhập sai của bất kỳ ai sẽ khoá đăng nhập của tất cả.
 - **Schema:** `scripts.seed` áp `app/schema.sql` (chạy lại không lỗi) rồi nạp dữ liệu. Chưa có migration: trước mỗi lần cập nhật có đổi schema, sao lưu DB.
 - **Cập nhật:** `git pull`, `uv sync --locked --no-dev`, `uv run python -m scripts.seed`, build lại frontend, `systemctl restart skinwise-api`.
-- **Log:** uvicorn ghi đường dẫn và mã trạng thái vào journald (`journalctl -u skinwise-api`), không ghi nội dung request; nginx ghi IP trong access log. Đặt thời hạn giữ log (vd. `logrotate` 14 ngày, `SystemMaxRetentionSec=14d` cho journald) và ghi thời hạn đó vào chính sách quyền riêng tư.
+- **Log:** uvicorn ghi IP, đường dẫn và mã trạng thái vào journald (`journalctl -u skinwise-api`), không ghi nội dung request; nginx ghi IP trong access log. Thời hạn giữ: **14 ngày** cho cả hai (`logrotate/nginx`: xoay mỗi ngày, giữ 13 file cũ; `journald/skinwise.conf`: `MaxFileSec=1day`, `MaxRetentionSec=13day`, áp cho cả journal của máy). Con số này nằm trong chính sách quyền riêng tư: đổi ở đây thì đổi cả ở đó.
+- **IP trong bộ nhớ:** các giới hạn tần suất giữ IP (và sha256 của email / id tài khoản) trong bộ nhớ tiến trình, tối đa cửa sổ giới hạn + 1 phút sau lần cuối IP đó được đếm: lâu nhất 1 giờ 1 phút (gửi email). Mỗi phút có một lượt dọn (`app/accounts.py`, `SWEEP_INTERVAL`).
 - **Tài liệu API** (`/api/docs`) đang mở. Muốn tắt thì thêm `location /api/docs { return 404; }` và tương tự cho `/api/openapi.json`.
-- **Cấu hình nginx chưa được chạy thử** (máy làm dự án không có nginx): chạy `nginx -t` và kiểm header bằng `curl -I https://<tên miền>/` sau khi cài.
+- **Cấu hình nginx, logrotate, journald và systemd timer chưa được chạy thử** (máy làm dự án không có chúng): chạy `nginx -t`, `logrotate -d /etc/logrotate.d/nginx`, `systemd-analyze verify skinwise-purge.timer` và kiểm header bằng `curl -I https://<tên miền>/` sau khi cài.

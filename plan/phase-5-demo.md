@@ -54,5 +54,15 @@ Khoá cổng hackathon (`ANTHROPIC_BASE_URL`) hết hạn **10/11 lúc 01:47**, 
 - Dự phòng ngày demo (mục trên): quay video, chuẩn bị máy demo
 - Chọn máy chủ tại Việt Nam và triển khai thật theo `deploy/README.md`
 - Migration thay cho `schema.sql` thuần (hiện: sao lưu trước khi đổi schema)
-- Tìm sản phẩm theo tên hoạt chất (hiện chỉ theo tên hãng / sản phẩm, giao diện đã nói rõ)
+- [x] Tìm sản phẩm theo tên hoạt chất (6/11): khớp tên trên nhãn, từ điển + đồng nghĩa, tên nhóm, ở đầu một từ, từ 3 ký tự; kết quả ghi "Có: …"
+- Đồng ý lại chính sách khi `POLICY_VERSION` đổi: chưa có (tài khoản đã đồng ý bản 26/10 không được hỏi lại). Bắt buộc trước khi mở công khai
+
+## Sửa theo đánh giá sản phẩm 4/11 (6/11)
+
+- [x] H1: `/routine/check`, `/inci/analyze` bắt đăng nhập (401); `suggest()` tối đa 30 dòng / request + cache; ngưỡng trigram 0,44 để index lọc đúng (400 tên lạ: 38 s → 5 s; cả request 1,3 s); nginx `limit_req` (chưa chạy `nginx -t`). Frontend: 401 → về đăng nhập, 429 → câu tiếng Việt; link `#routine=` chỉ mở sau khi đăng nhập
+- [x] H2: chính sách bản `2026-11-05-draft`: bỏ câu Google Fonts, đủ dữ liệu blog, ai thấy gì, ảnh nhãn gửi Anthropic, IP trong bộ nhớ ~1 giờ, nhật ký 14 ngày, tài khoản chưa xác thực ~7 ngày (dọn hằng ngày: `scripts.purge` + systemd timer), sao lưu 30 ngày
+- [x] H3 (phần code): `scripts.demo_account` tạo `demo@skinwise.test` đã xác thực, có routine mẫu. Còn lại: quay video đọc ảnh nhãn, kịch bản demo
+- [x] M2: script in tiếng Việt không còn lỗi cp1252 (`app/console.py`)
+- [x] L3: ô tìm sản phẩm lỗi có nút "Thử lại"
+- Còn mở: M1 ("Fragrance" chưa nhận ra, cần nguồn), M3 (mất mạng bị chặn ở cổng đăng nhập), L1, L2, L4
 - Theo dõi lỗi: hiện chỉ có journald + log nginx; dịch vụ ngoài (Sentry…) là chuyển dữ liệu ra nước ngoài, cần cân nhắc theo Luật 91/2025

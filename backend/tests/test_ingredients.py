@@ -190,3 +190,29 @@ def test_new_common_names_cite_a_label_page() -> None:
         for source in entry.get("sources", []):
             assert source["url"].startswith("https://"), entry["name"]
             assert source["quote"].strip(), entry["name"]
+
+
+def test_suggestions_are_cached_per_name(engine: Engine, monkeypatch) -> None:
+    from app import ingredients
+
+    ingredients.clear_suggestion_cache()
+    with engine.connect() as conn:
+        first = ingredients.suggest(conn, "salicilic acid")
+        assert first[0].name == "Salicylic Acid"
+        calls = []
+        monkeypatch.setattr(conn, "execute", lambda *a, **k: calls.append(a))
+        assert ingredients.suggest(conn, "salicilic acid") == first
+        assert calls == []  # answered from the cache
+    ingredients.clear_suggestion_cache()
+
+
+def test_suggestion_cache_is_bounded(engine: Engine, monkeypatch) -> None:
+    from app import ingredients
+
+    monkeypatch.setattr(ingredients, "SUGGESTION_CACHE_SIZE", 2)
+    ingredients.clear_suggestion_cache()
+    with engine.connect() as conn:
+        for name in ["salicilic acid", "glycerine", "azeliac acid"]:
+            ingredients.suggest(conn, name)
+    assert list(ingredients._cache) == ["glycerine", "azeliac acid"]
+    ingredients.clear_suggestion_cache()

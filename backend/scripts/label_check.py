@@ -11,6 +11,7 @@ import base64
 import sys
 from pathlib import Path
 
+from app.console import use_utf8_output
 from app.db import get_engine
 from app.inci import parse_inci, read_label_text
 from app.ingredients import product_groups, resolve
@@ -51,6 +52,7 @@ def compare(text: str, slug: str) -> bool:
 
 
 if __name__ == "__main__":
+    use_utf8_output()
     if len(sys.argv) not in (2, 3):
         sys.exit(__doc__)
     path = Path(sys.argv[1])

@@ -41,6 +41,9 @@ class ProductSummary(FromAttributes):
     # Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only.
     application: Literal["rinse_off", "leave_on"] | None
     groups: list[str]
+    # Label names of the ingredient lines that matched a /products search query (at most 5,
+    # in label order); [] otherwise. Display only.
+    matched_ingredients: list[str] = []
 
 
 class SuggestionOut(FromAttributes):

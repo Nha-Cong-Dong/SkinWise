@@ -1,5 +1,5 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { api, type InciAnalysis, type ProductSummary } from '../api'
+import { api, requestError, type InciAnalysis, type ProductSummary } from '../api'
 import { APPLICATION_LABELS } from '../labels'
 import { pastedImage, usePhotoReader } from '../photoReader'
 import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
@@ -51,6 +51,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ProductSummary[] | null>(null)
   const [error, setError] = useState(false)
+  const [attempt, setAttempt] = useState(0) // bumped by "Thử lại" to search the same query again
   const added = new Set(actions.routine.products.map((p) => p.key))
 
   useEffect(() => {
@@ -70,7 +71,7 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
       clearTimeout(timer)
       controller.abort()
     }
-  }, [query])
+  }, [query, attempt])
 
   return (
     <div className="mt-4">
@@ -78,19 +79,33 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
         type="search"
         value={query}
         onChange={(e) => setQuery(e.target.value)}
-        placeholder="Tên hãng hoặc sản phẩm"
+        placeholder="Tên sản phẩm hoặc thành phần"
         aria-label="Tìm sản phẩm"
         aria-describedby="search-hint"
         data-autofocus
         className={field}
       />
       <p id="search-hint" className="mt-1.5 text-xs text-ink-mute">
-        Gõ không dấu hay gõ sai một chút cũng được. Chỉ tìm theo tên hãng và tên sản phẩm, chưa tìm theo hoạt chất.
+        Gõ tên hãng, tên sản phẩm hoặc tên thành phần (vd. retinol, niacinamide, BHA). Gõ không dấu cũng được.
       </p>
-      {error && <p className="mt-3 text-sm text-avoid-ink">Không tải được danh sách sản phẩm.</p>}
+      {error && (
+        <div className="mt-3 rounded-xl bg-avoid-soft p-3.5 text-sm leading-relaxed text-avoid-ink">
+          <p>Không tải được danh sách sản phẩm.</p>
+          <button
+            type="button"
+            onClick={() => {
+              setError(false)
+              setAttempt((n) => n + 1)
+            }}
+            className="mt-2 min-h-10 rounded-full bg-surface px-4 font-medium text-avoid-ink ring-1 ring-avoid/40 hover:bg-white"
+          >
+            Thử lại
+          </button>
+        </div>
+      )}
       {results?.length === 0 && (
         <p className="mt-3 text-sm text-ink-mute">
-          Không tìm thấy sản phẩm nào có tên này. SkinWise mới có khoảng 30 sản phẩm mẫu và chưa tìm theo hoạt chất.{' '}
+          Không tìm thấy sản phẩm nào có tên hoặc thành phần này. SkinWise mới có khoảng 30 sản phẩm mẫu.{' '}
           <button type="button" onClick={onPaste} className="font-medium text-link underline underline-offset-2">
             Dán bảng thành phần in trên bao bì
           </button>{' '}
@@ -108,6 +123,11 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
                   {p.application && <span className="ml-2">{APPLICATION_LABELS[p.application]}</span>}
                 </p>
                 <p className="text-sm leading-snug font-medium">{p.name}</p>
+                {p.matched_ingredients.length > 0 && (
+                  <p className="mt-0.5 text-xs leading-snug break-words text-ink-mute">
+                    Có: {p.matched_ingredients.join(', ')}
+                  </p>
+                )}
                 <div className="mt-1">
                   <GroupChips codes={p.groups} empty="Không có hoạt chất trong danh sách theo dõi" />
                 </div>
@@ -136,6 +156,7 @@ const UNREADABLE = '[?]'
 function PasteInci({ actions, draft, setDraft }: DraftProps) {
   const { name, text, analysis, origin, photo } = draft
   const [state, setState] = useState<'idle' | 'loading' | 'error' | 'added'>('idle')
+  const [failure, setFailure] = useState('') // what to say when state is 'error'
   const [bigPhoto, setBigPhoto] = useState(false)
   const update = (change: Partial<AddDraft>) => setDraft((d) => ({ ...d, ...change }))
   const clear = () => {
@@ -163,7 +184,10 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
         setDraft((d) => (d.text === input ? { ...d, analysis: a } : d))
         setState('idle')
       })
-      .catch(() => setState('error'))
+      .catch((e) => {
+        setFailure(requestError(e, 'Không phân tích được bảng thành phần.'))
+        setState('error')
+      })
   }
 
   const add = () => {
@@ -275,7 +299,7 @@ function PasteInci({ actions, draft, setDraft }: DraftProps) {
         )}
         {state === 'added' && <p className="text-sm text-safe-ink">Đã thêm vào “Sản phẩm của tôi”.</p>}
       </div>
-      {state === 'error' && <p className="text-sm text-avoid-ink">Không phân tích được bảng thành phần.</p>}
+      {state === 'error' && <p className="text-sm text-avoid-ink">{failure}</p>}
       {analysis && (
         <AnalysisPreview
           analysis={analysis}

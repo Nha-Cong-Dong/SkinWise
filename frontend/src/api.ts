@@ -22,6 +22,8 @@ export type ProductSummary = {
   verification_status: 'unverified' | 'user_confirmed' | 'verified'
   application: Application | null
   groups: string[]
+  // Ingredients (as printed on the label) that made the product match a search; [] when none.
+  matched_ingredients: string[]
 }
 
 /** Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only. */
@@ -50,7 +52,8 @@ export type CosmeticFunction = {
   definition_en: string | null
 }
 
-export type ProductDetail = ProductSummary & {
+// matched_ingredients belongs to search results only; /products/{id} may or may not carry it.
+export type ProductDetail = Omit<ProductSummary, 'matched_ingredients'> & {
   ingredients_source: string
   source_url: string | null
   source_retrieved_at: string | null
@@ -176,6 +179,24 @@ export class ApiError extends Error {
     this.status = status
     this.body = body
   }
+}
+
+export const SESSION_EXPIRED = 'Phiên đăng nhập đã hết. Hãy đăng nhập lại.'
+// 429: too many requests from this address (nginx limit_req on /routine/check and /inci/analyze).
+export const TOO_FAST = 'Bạn thao tác quá nhanh, thử lại sau ít phút.'
+
+/** Why a request failed, in the terms the user can act on. */
+export type RequestProblem = 'signed-out' | 'too-many' | 'failed'
+
+export function requestProblem(e: unknown): RequestProblem {
+  const status = e instanceof ApiError ? e.status : 0
+  return status === 401 ? 'signed-out' : status === 429 ? 'too-many' : 'failed'
+}
+
+/** The message for a failed request: a 401 or 429 says so, anything else is `fallback`. */
+export function requestError(e: unknown, fallback: string): string {
+  const problem = requestProblem(e)
+  return problem === 'signed-out' ? SESSION_EXPIRED : problem === 'too-many' ? TOO_FAST : fallback
 }
 
 // --- User accounts (backend/app/accounts_api.py) ---
