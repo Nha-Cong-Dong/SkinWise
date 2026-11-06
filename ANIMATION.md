@@ -127,7 +127,8 @@ Trong React, gán thứ tự so le bằng biến CSS:
 - Vòng focus (`:focus-visible`) **không** có chuyển động: hiện ngay.
 
 ### 5.4. Thẻ mở/thu, dropdown, tooltip
-- Mở/thu thẻ (vd. "Xem nguyên văn" trong `RuleCard`, khối "Chất liên quan trên nhãn"): giữ quy tắc 200–240ms ease-out đã có. Phần nội dung mở ra dùng `.motion-fade`; chiều cao đổi bằng `grid-template-rows: 0fr → 1fr` (không animate `height: auto` bằng JS).
+- Mở/thu thẻ (vd. khối "Chất liên quan trên nhãn"): giữ quy tắc 200–240ms ease-out đã có. Phần nội dung mở ra dùng `.motion-fade`; chiều cao đổi bằng `grid-template-rows: 0fr → 1fr` (không animate `height: auto` bằng JS).
+- **Ngoại lệ (mục 7):** phần mở ra trong `RuleCard` ("Xem nguyên văn", nguồn, đoạn trích) hiện ngay, không fade, không trễ.
 - Dropdown tìm sản phẩm: `.motion-tab` (fade + 4px từ trên xuống), 180ms. Đóng: fade 120ms.
 - Tooltip: `.motion-fade`, độ trễ hiện 300ms, đóng ngay.
 
@@ -155,7 +156,7 @@ Trong React, gán thứ tự so le bằng biến CSS:
 | **Hôm nay** | 0 tiêu đề + ngày · 1 panel buổi sáng · 2 panel buổi tối · 3 tóm tắt cảnh báo (nếu có) | Đánh dấu đã dùng một bước: đổi màu 120ms, dấu tích fade-in 120ms (không vẽ nét, không nảy) |
 | **Lịch tuần** | 0 tiêu đề + chọn ngày · 1 buổi sáng · 2 buổi tối | Đổi ngày: nội dung hai buổi `.motion-tab`. Thêm bước: `.motion-item` |
 | **Tủ đồ** | 0 tiêu đề + ô tìm · 1 thanh lọc · 2… từng thẻ sản phẩm (tối đa 6 nấc) | Dropdown tìm: 5.4. Thêm sản phẩm: `.motion-item`. Xoá + hoàn tác: 5.6. Ảnh: 5.7 |
-| **Kiểm tra** | 0 tiêu đề + tóm tắt · 1 danh sách cảnh báo **cả khối một lần** · 2 khối "không có cảnh báo ≠ an toàn" | Kết quả kiểm tra mới: chỉ lớp tô baby pink 600ms trên thẻ vừa xuất hiện / vừa đổi (đã có). Mở nguyên văn / nguồn: 5.4 |
+| **Kiểm tra** | 0 tiêu đề + tóm tắt · 1 danh sách cảnh báo **cả khối một lần** · 2 khối "không có cảnh báo ≠ an toàn" | Kết quả kiểm tra mới: chỉ lớp tô baby pink 600ms trên thẻ vừa xuất hiện / vừa đổi (đã có). Mở nguyên văn / nguồn: hiện ngay, không chuyển động (mục 7) |
 
 ## 7. Những thứ không chuyển động
 
