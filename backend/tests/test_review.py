@@ -285,13 +285,25 @@ def test_call_model_reports_refusals_and_outages(monkeypatch: pytest.MonkeyPatch
     fake_anthropic(monkeypatch, lambda r: httpx2.Response(200, json=message("refusal", "")))
     with pytest.raises(DraftingError) as refused:
         drafts.call_model("prompt")
-    assert refused.value.status == 502
+    assert refused.value.status == 502 and not refused.value.setup
 
     error = {"type": "error", "error": {"type": "authentication_error", "message": "bad key"}}
     fake_anthropic(monkeypatch, lambda r: httpx2.Response(401, json=error))
     with pytest.raises(DraftingError) as unauthorised:
         drafts.call_model("prompt")
-    assert unauthorised.value.status == 503
+    assert unauthorised.value.status == 503 and unauthorised.value.setup
+
+    error = {"type": "error", "error": {"type": "permission_error", "message": "no access"}}
+    fake_anthropic(monkeypatch, lambda r: httpx2.Response(403, json=error))
+    with pytest.raises(DraftingError) as forbidden:
+        drafts.call_model("prompt")
+    assert forbidden.value.setup
+
+    error = {"type": "error", "error": {"type": "rate_limit_error", "message": "slow down"}}
+    fake_anthropic(monkeypatch, lambda r: httpx2.Response(429, json=error))
+    with pytest.raises(DraftingError) as busy:
+        drafts.call_model("prompt")
+    assert busy.value.status == 503 and not busy.value.setup
 
 
 def test_toml_strings_round_trip() -> None:

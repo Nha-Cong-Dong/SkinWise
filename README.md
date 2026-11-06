@@ -53,6 +53,7 @@ Mọi cảnh báo đều:
 | Đọc bảng thành phần từ ảnh nhãn | AI chỉ chép chữ in trên ảnh, ghi `[?]` chỗ không đọc chắc; người dùng so với bao bì và sửa trước khi phân tích. Ảnh không được lưu. Mỗi tài khoản tối đa 10 ảnh / 10 phút, cả máy chủ 100 ảnh / ngày |
 | Mục tiêu da | Chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn; lựa chọn chỉ lưu trên máy. Chỉ để hiển thị, không ảnh hưởng cảnh báo |
 | Review cộng đồng (bản demo) | Người dùng viết bài review kèm sản phẩm, ảnh và routine; lọc theo loại da, thích, lưu, bình luận, báo cáo, "Thử routine này". Cuối mỗi bài, phần "Thông tin có nguồn (SkinWise)" tách riêng khỏi trải nghiệm của người viết. Nội dung bài không bao giờ ảnh hưởng cảnh báo. Bài có chữ "trị/chữa", số điện thoại, email, link thì chờ duyệt; 3 báo cáo thì tạm ẩn. Chỉ dùng dữ liệu mẫu, chưa mở công khai |
+| Lời giải thích dễ hiểu | Luật nào có bản dễ hiểu đã duyệt thì thẻ hiện bản đó trước, bấm "Xem nguyên văn" để đọc lời giải thích gốc. Bản dễ hiểu do AI soạn nháp ngoài app (`scripts.plain_drafts`), người duyệt sửa và bật; không gọi AI khi người dùng dùng app |
 | Routine mẫu | Một nút ở trang trống để xem SkinWise kiểm tra thế nào, với 4 sản phẩm bán ở Việt Nam; không phải gợi ý cách dùng |
 
 ### Dự kiến sau hackathon
@@ -93,7 +94,7 @@ SkinWise được xây theo nguyên tắc **"không có nguồn thì không có 
 1. Mỗi luật gắn với nguồn uy tín và **lưu nguyên văn đoạn trích** hỗ trợ luật đó.
 2. Hệ thống tự kiểm tra đoạn trích có thực sự xuất hiện trên trang nguồn.
 3. Luật chỉ được bật sau khi có người đọc và đối chiếu với nguồn.
-4. AI **không được tạo ra cảnh báo** và không được tự "nhớ" bảng thành phần của sản phẩm. AI chỉ soạn bản nháp thẻ myth cho người duyệt, từ những trang nguồn người duyệt chọn: mỗi ý phải kèm đoạn trích nguyên văn, máy chủ tìm lại từng đoạn trích trên trang, và bản nháp không bao giờ hiện cho người dùng. Bản nháp chỉ thành thẻ khi người duyệt đọc nguồn và tự bật như mọi luật khác.
+4. AI **không được tạo ra cảnh báo** và không được tự "nhớ" bảng thành phần của sản phẩm. AI chỉ soạn bản nháp thẻ myth cho người duyệt, từ những trang nguồn người duyệt chọn: mỗi ý phải kèm đoạn trích nguyên văn, máy chủ tìm lại từng đoạn trích trên trang, và bản nháp không bao giờ hiện cho người dùng. Bản nháp chỉ thành thẻ khi người duyệt đọc nguồn và tự bật như mọi luật khác. AI cũng soạn nháp bản dễ hiểu của lời giải thích; bản này chỉ hiện khi người duyệt đã sửa và duyệt, và nguyên văn luôn mở được ngay trên thẻ.
 
 Mỗi sản phẩm cũng ghi lại bảng thành phần lấy từ đâu (nhập tay, dữ liệu mẫu, Open Beauty Facts…) và trạng thái xác minh.
 

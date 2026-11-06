@@ -30,11 +30,13 @@ FALLBACK_MODELS = {"claude-fable-5-1", "claude-opus-5-5", "claude-opus-5", "clau
 
 
 class DraftingError(Exception):
-    """Drafting failed for a reason the reviewer can act on. `status` is the HTTP status."""
+    """Drafting failed for a reason the reviewer can act on. `status` is the HTTP status;
+    `setup` is true when the key is missing, wrong or not allowed, so retrying cannot help."""
 
-    def __init__(self, message: str, status: int) -> None:
+    def __init__(self, message: str, status: int, setup: bool = False) -> None:
         super().__init__(message)
         self.status = status
+        self.setup = setup
 
 
 # What the model must return. Severity is limited to info/safe: a myth card never warns.
@@ -158,6 +160,14 @@ def build_prompt(draft: DraftInput, pages: dict[str, str]) -> str:
 
 def call_model(prompt: str) -> tuple[ModelDraft, str]:
     """The draft and the model that wrote it. Tests replace this function."""
+    return structured_call(SYSTEM_PROMPT, prompt, ModelDraft, max_tokens=16000)
+
+
+def structured_call[T: BaseModel](
+    system: str, prompt: str, output_format: type[T], max_tokens: int
+) -> tuple[T, str]:
+    """One structured request to DRAFT_MODEL: the parsed answer and the model that wrote it.
+    Also used by app.plain (scripts.plain_drafts). Never called from a user-facing route."""
     settings = get_settings()
     extra: dict[str, Any] = {}
     if settings.draft_model in FALLBACK_MODELS:
@@ -168,15 +178,15 @@ def call_model(prompt: str) -> tuple[ModelDraft, str]:
         )
         response = client.beta.messages.parse(
             model=settings.draft_model,
-            max_tokens=16000,
+            max_tokens=max_tokens,
             output_config={"effort": "high"},
-            system=SYSTEM_PROMPT,
+            system=system,
             messages=[{"role": "user", "content": prompt}],
-            output_format=ModelDraft,
+            output_format=output_format,
             **extra,
         )
     except (anthropic.AuthenticationError, anthropic.PermissionDeniedError) as e:
-        raise DraftingError(f"AI drafting is not set up: {e.message}", 503) from e
+        raise DraftingError(f"AI drafting is not set up: {e.message}", 503, setup=True) from e
     except anthropic.RateLimitError as e:
         raise DraftingError("the AI service is busy; try again in a minute", 503) from e
     except anthropic.APIStatusError as e:
@@ -189,7 +199,9 @@ def call_model(prompt: str) -> tuple[ModelDraft, str]:
         # How the SDK reports that it found no API key, auth token or profile at all.
         if "authentication" not in str(e):
             raise
-        raise DraftingError("AI drafting is not set up: no Anthropic API key", 503) from e
+        raise DraftingError(
+            "AI drafting is not set up: no Anthropic API key", 503, setup=True
+        ) from e
     if response.stop_reason == "refusal":
         raise DraftingError("the model declined to write this draft", 502)
     if response.stop_reason == "max_tokens" or response.parsed_output is None:

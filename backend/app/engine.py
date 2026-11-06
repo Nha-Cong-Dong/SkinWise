@@ -52,6 +52,9 @@ class Rule:
     explanation_vi: str
     sources: tuple[RuleSource, ...]
     reviewed_at: date | None = None  # when a reviewer read the sources and published it
+    # A reviewer-approved plain-language version of explanation_vi. Display only: the engine
+    # never reads it.
+    plain_vi: str | None = None
 
 
 @dataclass(frozen=True)

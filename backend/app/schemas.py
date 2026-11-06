@@ -143,6 +143,9 @@ class RuleOut(FromAttributes):
     explanation_vi: str
     sources: list[SourceOut]
     reviewed_at: date | None  # when a reviewer read the sources and published the rule
+    # Reviewer-approved plain-language version of explanation_vi; null when there is none.
+    # explanation_vi stays the verbatim, source-faithful text.
+    plain_vi: str | None
 
 
 class GoalItemOut(FromAttributes):

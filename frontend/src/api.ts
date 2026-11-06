@@ -93,6 +93,7 @@ export type Rule = {
   group_b: string | null
   title_vi: string
   explanation_vi: string
+  plain_vi: string | null // reviewed plain-language rewording of explanation_vi; null when none
   sources: Source[]
   reviewed_at: string | null // YYYY-MM-DD: when a reviewer read the sources and published the rule
 }

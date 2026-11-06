@@ -1,11 +1,18 @@
+import hashlib
 from collections.abc import Iterator
+from datetime import date
 
 import pytest
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
 from app.engine import RoutineItem, check_routine
-from app.rules import load_product_groups, load_published_rules, rule_problems
+from app.rules import (
+    explanation_hash,
+    load_product_groups,
+    load_published_rules,
+    rule_problems,
+)
 from app.seed import load_toml
 
 URL = "https://example.org/source"
@@ -157,3 +164,60 @@ def test_usage_rule_fires_for_seeded_products(conn: Connection) -> None:
     warnings = [w for w in check_routine(routine, groups, load_published_rules(conn))
                 if w.rule.key == "test-usage"]  # fmt: skip
     assert [w.product_ids for w in warnings] == [(lactic,)]
+
+
+def test_plain_vi_problems() -> None:
+    explanation = "Dùng chung có thể làm da khô."
+    rule = {**DRAFT, "explanation_vi": explanation}
+    plain = {
+        **rule,
+        "plain_vi": "Dùng chung có thể làm khô da.",
+        "plain_for": explanation_hash(explanation),
+        "plain_reviewed_by": "x",
+        "plain_reviewed_at": date(2026, 11, 6),
+    }
+    assert rule_problems(rule, set()) == []  # no plain_* fields: as before
+    assert rule_problems(plain, set()) == []
+    # plain_vi without its hash or reviewer
+    no_review = {k: v for k, v in plain.items() if not k.startswith("plain_reviewed")}
+    assert rule_problems(no_review, set()) == [
+        "plain_vi without plain_reviewed_by",
+        "plain_vi without plain_reviewed_at",
+    ]
+    assert rule_problems({**plain, "plain_for": ""}, set()) == ["plain_vi without plain_for"]
+    # explanation_vi edited after the plain version was reviewed
+    edited = {**plain, "explanation_vi": explanation + " Thêm ý."}
+    assert rule_problems(edited, set()) == ["explanation_vi changed since plain_vi was reviewed"]
+    # reviewer fields left behind after plain_vi was removed
+    orphan = {k: v for k, v in plain.items() if k != "plain_vi"}
+    assert rule_problems(orphan, set()) == [
+        "plain_for, plain_reviewed_by, plain_reviewed_at without plain_vi"
+    ]
+    assert rule_problems({**plain, "plain_vi": "  "}, set()) == [
+        "plain_vi is empty",
+        "plain_for, plain_reviewed_by, plain_reviewed_at without plain_vi",
+    ]
+
+
+def test_plain_fields_of_the_wrong_type() -> None:
+    rule = {**DRAFT, "explanation_vi": "e"}
+    # A typo in rules.toml gives a clear problem, not a crash in the seed.
+    assert rule_problems({**rule, "plain_vi": 1}, set()) == ["plain_vi must be a string"]
+    assert rule_problems({**rule, "plain_vi": ["a"]}, set()) == ["plain_vi must be a string"]
+    quoted_date = {
+        **rule,
+        "plain_vi": "p",
+        "plain_for": explanation_hash("e"),
+        "plain_reviewed_by": "x",
+        "plain_reviewed_at": "2026-11-06",
+    }
+    assert rule_problems(quoted_date, set()) == [
+        "plain_reviewed_at must be a date, written without quotes: 2026-11-06"
+    ]
+
+
+def test_explanation_hash() -> None:
+    # sha256 of the UTF-8 bytes, first 12 hex digits
+    assert explanation_hash("có thể") == hashlib.sha256("có thể".encode()).hexdigest()[:12]
+    assert len(explanation_hash("x")) == 12
+    assert explanation_hash("a") != explanation_hash("a ")

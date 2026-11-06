@@ -313,15 +313,19 @@ def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) 
         text(
             """
             INSERT INTO rules (key, kind, severity, scope, evidence_level, group_a, group_b,
-                               title_vi, explanation_vi, published, reviewed_by, reviewed_at)
+                               title_vi, explanation_vi, published, reviewed_by, reviewed_at,
+                               plain_vi, plain_reviewed_by, plain_reviewed_at)
             VALUES (:key, :kind, :severity, :scope, :evidence_level, :group_a, :group_b,
-                    :title_vi, :explanation_vi, :published, :reviewed_by, :reviewed_at)
+                    :title_vi, :explanation_vi, :published, :reviewed_by, :reviewed_at,
+                    :plain_vi, :plain_reviewed_by, :plain_reviewed_at)
             ON CONFLICT (key) DO UPDATE SET
               kind = excluded.kind, severity = excluded.severity, scope = excluded.scope,
               evidence_level = excluded.evidence_level, group_a = excluded.group_a,
               group_b = excluded.group_b, title_vi = excluded.title_vi,
               explanation_vi = excluded.explanation_vi, published = excluded.published,
-              reviewed_by = excluded.reviewed_by, reviewed_at = excluded.reviewed_at
+              reviewed_by = excluded.reviewed_by, reviewed_at = excluded.reviewed_at,
+              plain_vi = excluded.plain_vi, plain_reviewed_by = excluded.plain_reviewed_by,
+              plain_reviewed_at = excluded.plain_reviewed_at
             RETURNING id
             """
         ),
@@ -332,6 +336,10 @@ def _seed_rule(conn: Connection, r: dict[str, Any], source_ids: dict[str, int]) 
             "published": bool(r.get("published")),
             "reviewed_by": r.get("reviewed_by"),
             "reviewed_at": r.get("reviewed_at"),
+            # Absent from rules.toml means NULL: removing plain_vi there removes it here.
+            "plain_vi": r.get("plain_vi"),
+            "plain_reviewed_by": r.get("plain_reviewed_by"),
+            "plain_reviewed_at": r.get("plain_reviewed_at"),
         },
     ).scalar_one()
 

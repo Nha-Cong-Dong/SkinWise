@@ -105,6 +105,13 @@ ALTER TABLE rules DROP CONSTRAINT IF EXISTS rules_scope_check;
 ALTER TABLE rules ADD CONSTRAINT rules_scope_check
   CHECK (scope IN ('same_step', 'same_session', 'same_day', 'routine'));
 
+-- Added 6/11: a plain-language version of explanation_vi, drafted by AI outside the app
+-- (scripts.plain_drafts), corrected and approved by a reviewer in rules.toml. Display only;
+-- the seed refuses a plain_vi without a reviewer or written for an older explanation_vi.
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS plain_vi text;
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS plain_reviewed_by text;
+ALTER TABLE rules ADD COLUMN IF NOT EXISTS plain_reviewed_at timestamptz;
+
 -- One row per quote: a rule may quote several passages from the same source page.
 CREATE TABLE IF NOT EXISTS rule_sources (
   rule_id   integer NOT NULL REFERENCES rules(id) ON DELETE CASCADE,
