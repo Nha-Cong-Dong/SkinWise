@@ -168,7 +168,7 @@ export function DraftCard({
         </p>
       )}
       <div className="flex items-center gap-2 text-sm text-slate-600">
-        <GroupChips codes={[d.group_a, d.group_b]} />
+        <GroupChips codes={[d.group_a, d.group_b]} note={false} />
         <span className="text-xs">
           {SCOPE_LABELS[d.scope]} · bằng chứng {EVIDENCE_LABELS[d.evidence_level]}
         </span>

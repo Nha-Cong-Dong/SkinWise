@@ -164,6 +164,24 @@ def product_groups(resolved: list[ResolvedEntry]) -> set[str]:
 
 
 @dataclass(frozen=True)
+class GroupIngredient:
+    """An entry on the label that puts the product in a group. Shown only: the engine works on
+    groups, never on which entry or where it stands."""
+
+    group: str
+    name: str  # as written on the label
+    position: int  # 1-based order on the label
+
+
+def group_ingredients(resolved: list[ResolvedEntry]) -> list[GroupIngredient]:
+    """One item per (group, entry), by position then group; its groups are product_groups()."""
+    return sorted(
+        (GroupIngredient(g, r.entry.raw, r.entry.position) for r in resolved for g in r.groups),
+        key=lambda gi: (gi.position, gi.group),
+    )
+
+
+@dataclass(frozen=True)
 class GroupRow:
     code: str
     name_vi: str

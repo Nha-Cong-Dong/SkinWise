@@ -19,8 +19,10 @@ from app.engine import (
 from app.goals import load_goals
 from app.inci import read_label_text
 from app.ingredients import (
+    GroupIngredient,
     ResolvedEntry,
     Suggestion,
+    group_ingredients,
     list_functions,
     list_groups,
     mark_allergens,
@@ -32,6 +34,7 @@ from app.ingredients import (
 from app.products import (
     get_product,
     product_applications,
+    product_group_ingredients,
     search_products,
 )
 from app.rules import load_product_groups, load_published_rules
@@ -57,6 +60,7 @@ from app.schemas import (
     TextNotice,
     WarningOut,
 )
+from app.schemas import GroupIngredient as GroupIngredientOut
 
 # Silence is easy to read as "safe", so an empty result always says what it does not mean.
 NO_ROUTINE_WARNING_VI = (
@@ -99,6 +103,10 @@ TEXT_NOTICES_VI = {
         "kiểm tra có thể thiếu cảnh báo."
     ),
 }
+
+# Key-ingredient lists and Drug Facts labels are not in order of weight.
+UNORDERED_NOTICES = frozenset({"highlight_list", "drug_facts"})
+
 GOALS_NOTICE_VI = (
     "Đây là thông tin chung có nguồn, không thay cho tư vấn của bác sĩ da liễu. Mụn viêm nhiều, "
     "đau hoặc để lại sẹo, hay đốm da thay đổi bất thường, nên đi khám."
@@ -205,8 +213,7 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
 def analyze_inci(db: DbSession, user: CurrentUser, body: InciAnalyzeRequest) -> InciAnalysis:
     label = read_label_text(body.text)
     resolved = mark_allergens(db, resolve(db, label.entries))
-    # Key-ingredient lists and Drug Facts labels are not in order of weight.
-    unordered = {"highlight_list", "drug_facts"} & set(label.notices)
+    unordered = UNORDERED_NOTICES & set(label.notices)
     line = None if unordered else one_percent_line(resolved)
     suggestions = suggestions_for(db, resolved)
     return InciAnalysis(
@@ -232,18 +239,28 @@ def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> Routin
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT,
                             f"unknown product ids: {sorted(missing)}")  # fmt: skip
     seeded_groups = load_product_groups(db, seeded_ids)
+    seeded_listed = product_group_ingredients(db, seeded_ids)
 
     # The engine works on integer ids; client keys map to 1..n and back.
     ids = {p.key: n for n, p in enumerate(body.products, start=1)}
     keys = {n: key for key, n in ids.items()}
     groups_by_id: dict[int, set[str]] = {}
     possible_actives: dict[str, list[str]] = {}
+    # Shown only, never given to the engine: (group entries, entry count, in order of weight).
+    listed: dict[str, tuple[list[GroupIngredient], int, bool]] = {}
     budget = MAX_SUGGESTED_LINES  # shared by every pasted list in the request
     for p in body.products:
         if p.product_id is not None:
             groups_by_id[ids[p.key]] = seeded_groups[p.product_id]
+            listed[p.key] = (*seeded_listed[p.product_id], True)
             continue
-        resolved = resolve(db, read_label_text(p.inci or "").entries)
+        label = read_label_text(p.inci or "")
+        resolved = resolve(db, label.entries)
+        listed[p.key] = (
+            group_ingredients(resolved),
+            len(resolved),
+            not (UNORDERED_NOTICES & set(label.notices)),
+        )
         groups_by_id[ids[p.key]] = product_groups(resolved)
         suggestions = suggestions_for(db, resolved, budget)
         budget -= len(suggestions)
@@ -269,6 +286,9 @@ def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> Routin
                 groups=sorted(groups_by_id[ids[p.key]]),
                 possible_actives=possible_actives.get(p.key, []),
                 application=applications.get(p.product_id) if p.product_id else None,
+                group_ingredients=[GroupIngredientOut.model_validate(g) for g in listed[p.key][0]],
+                ingredient_count=listed[p.key][1],
+                ordered=listed[p.key][2],
             )
             for p in body.products
         ],

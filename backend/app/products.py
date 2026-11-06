@@ -9,7 +9,7 @@ from sqlalchemy.engine import Connection
 from sqlalchemy.orm import Session
 
 from app.inci import normalize_name, parse_inci
-from app.ingredients import ResolvedEntry, resolve
+from app.ingredients import GroupIngredient, ResolvedEntry, resolve
 
 # word_similarity compares the query with the best-matching part of "brand name", so a
 # query naming only the product still scores high. 0.3 tolerates a typo per word or so.
@@ -189,3 +189,33 @@ def product_applications(db: Session | Connection, product_ids: list[int]) -> di
     if not product_ids:
         return {}
     return {row.id: row.application for row in db.execute(_APPLICATIONS, {"ids": product_ids})}
+
+
+# Same rows and join as load_product_groups(), so the groups listed here are the product's.
+_GROUP_INGREDIENTS = text(
+    """
+    SELECT pi.product_id, pi.position, pi.raw_name, ig.group_code
+    FROM product_ingredients pi
+    LEFT JOIN ingredient_groups ig ON ig.ingredient_id = pi.ingredient_id
+    WHERE pi.product_id IN :ids
+    ORDER BY pi.product_id, pi.position, ig.group_code
+    """
+).bindparams(bindparam("ids", expanding=True))
+
+
+def product_group_ingredients(
+    db: Session | Connection, product_ids: list[int]
+) -> dict[int, tuple[list[GroupIngredient], int]]:
+    """For each seeded product: the entries that put it in each group, and how many entries
+    its list has. Positions are those the seed stored from parse_inci(), the same the product
+    detail shows. Shown only."""
+    found: dict[int, tuple[list[GroupIngredient], set[int]]] = {
+        pid: ([], set()) for pid in product_ids
+    }
+    if product_ids:
+        for row in db.execute(_GROUP_INGREDIENTS, {"ids": product_ids}):
+            items, positions = found[row.product_id]
+            positions.add(row.position)
+            if row.group_code is not None:
+                items.append(GroupIngredient(row.group_code, row.raw_name, row.position))
+    return {pid: (items, len(positions)) for pid, (items, positions) in found.items()}

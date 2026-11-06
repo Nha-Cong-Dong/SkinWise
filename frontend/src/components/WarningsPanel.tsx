@@ -1,13 +1,31 @@
 import { SESSION_EXPIRED, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
 import { SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
-import { currentResult, isUsageNote, maybeIncomplete, type CheckState, type MyProduct } from '../routine'
+import {
+  currentResult,
+  formatLabelLine,
+  isUsageNote,
+  maybeIncomplete,
+  type CheckState,
+  type LabelGroups,
+  type MyProduct,
+} from '../routine'
 import { SeverityBadge } from './Icons'
 import { DataNote, Notice } from './Notice'
 import { RuleCard } from './RuleCard'
 
-type Props = { state: CheckState; products: MyProduct[] }
+type Props = {
+  state: CheckState
+  products: MyProduct[]
+  /**
+   * Label lines behind each product's groups (product key), from the last check; left out where
+   * the label lines are not shown (a blog post's routine).
+   */
+  found?: Map<string, LabelGroups>
+}
 
-export function WarningsPanel({ state, products }: Props) {
+const NONE = new Map<string, LabelGroups>()
+
+export function WarningsPanel({ state, products, found = NONE }: Props) {
   const names = new Map(products.map((p) => [p.key, p.name]))
   const result = currentResult(state)
   const checked = new Set(result?.products.map((p) => p.key))
@@ -82,6 +100,7 @@ export function WarningsPanel({ state, products }: Props) {
                 <dt className="text-ink-mute">Khi nào</dt>
                 <dd>{formatOccurrences(w.occurrences)}</dd>
               </dl>
+              <RuleIngredients warning={w} names={names} found={found} />
               <p className="mt-2 text-xs leading-relaxed text-ink-mute">
                 {usage
                   ? 'Lưu ý cho mọi sản phẩm có nhóm hoạt chất này trong routine.'
@@ -100,6 +119,45 @@ export function WarningsPanel({ state, products }: Props) {
         )}
       </div>
     </section>
+  )
+}
+
+/**
+ * For each product of a warning, the label lines in the rule's groups, with their place on the
+ * label. Display only: nothing here changes the warning. Hidden when no line matches.
+ */
+function RuleIngredients({
+  warning,
+  names,
+  found,
+}: {
+  warning: Warning
+  names: Map<string, string>
+  found: Map<string, LabelGroups>
+}) {
+  const ruleGroups = [warning.rule.group_a, warning.rule.group_b].filter((g): g is string => g !== null)
+  const rows = warning.product_keys.flatMap((key) => {
+    const product = found.get(key)
+    if (!product) return []
+    // One line can be in both groups of the rule (or the same group twice): list it once.
+    const seen = new Set<number>()
+    const lines = product.ingredients.filter(
+      (i) => ruleGroups.includes(i.group) && !seen.has(i.position) && seen.add(i.position),
+    )
+    return lines.length > 0 ? [{ key, text: lines.map((l) => formatLabelLine(l, product)).join(', ') }] : []
+  })
+  if (rows.length === 0) return null
+  return (
+    <div className="mt-2 text-sm">
+      <p className="text-ink-mute">Chất liên quan trên nhãn:</p>
+      <ul className="mt-0.5 space-y-0.5">
+        {rows.map((r) => (
+          <li key={r.key} className="break-words">
+            <span className="font-medium">{names.get(r.key) ?? r.key}:</span> {r.text}
+          </li>
+        ))}
+      </ul>
+    </div>
   )
 }
 

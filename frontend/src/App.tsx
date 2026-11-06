@@ -25,6 +25,7 @@ import {
   EMPTY_ADD_DRAFT,
   currentResult,
   isUsageNote,
+  labelGroups,
   useRoutine,
   useRoutineCheck,
   type CheckState,
@@ -174,6 +175,8 @@ function App() {
     }
   }
 
+  const found = labelGroups(check) // which label line put each product in each group
+
   if (page !== 'review' && link && account.state.kind !== 'checking') {
     return (
       <EmailLinkPage
@@ -279,19 +282,19 @@ function App() {
                 {/* The three columns have visible h2 titles; the page title is for screen readers. */}
                 <h1 className="sr-only">Routine của tôi</h1>
                 <div className="lg:col-start-1 lg:row-start-1">
-                  <MyProducts actions={actions} onAdd={() => setAdding(true)} />
+                  <MyProducts actions={actions} found={found} onAdd={() => setAdding(true)} />
                 </div>
                 <div className="lg:col-start-1 lg:row-start-2 xl:col-start-2 xl:row-start-1">
-                  <RoutineBoard actions={actions} flagged={flagged} onShare={() => setSharing(true)} />
+                  <RoutineBoard actions={actions} flagged={flagged} found={found} onShare={() => setSharing(true)} />
                 </div>
                 <ResultsAside check={check}>
-                  <WarningsPanel state={check} products={actions.routine.products} />
+                  <WarningsPanel state={check} products={actions.routine.products} found={found} />
                 </ResultsAside>
               </div>
               </>
             ) : page === 'goals' ? (
               <div className="mx-auto max-w-3xl">
-                <GoalsPage routine={actions.routine} />
+                <GoalsPage routine={actions.routine} found={found} />
               </div>
             ) : page === 'myths' ? (
               <div className="mx-auto max-w-2xl">

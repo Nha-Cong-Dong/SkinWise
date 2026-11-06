@@ -117,7 +117,7 @@ Người dùng chọn một hoặc vài mục tiêu cố định: da dễ nổi 
 - Mục tiêu đã chọn **chỉ lưu trên máy** (localStorage), không gửi lên máy chủ, không đồng bộ theo tài khoản. "Tôi bị mụn / da nhạy cảm" có thể bị coi là dữ liệu sức khoẻ theo Luật 91/2025; lưu trên máy thì không phải sửa chính sách hay xin thêm đồng ý. Đăng xuất hoặc xoá tài khoản thì xoá luôn mục tiêu khỏi máy, giống routine, để người dùng sau trên máy dùng chung không thấy (review 28/10).
 - Chỉ gợi ý nhóm hoạt chất đã có trong `functional_groups.toml`. Ceramide, kojic acid và kem chống nắng chỉ nằm trong thẻ thông tin, không tạo nhóm mới. Không gợi ý sản phẩm hay thương hiệu cụ thể. Không dùng chữ "trị"/"chữa" (mỹ phẩm không được nói là chữa bệnh). Thuốc kê đơn chỉ được nhắc kèm câu "cần bác sĩ kê đơn".
 - Nguồn: AAD, DermNet, Mayo Clinic, StatPearls, bài tổng quan PMC. Không dùng nguồn tiếng Việt, vì lần tìm 28/10 chỉ ra trang tổng hợp và quảng cáo.
-- Nhãn routine chỉ tính sản phẩm đã xếp lịch và nói rõ là khớp theo nhóm ("Routine có sản phẩm thuộc nhóm …"), vì nguồn có thể chỉ nói về một chất trong nhóm. Nhóm cha khớp sản phẩm thuộc nhóm con, giống `/rules`.
+- Nhãn routine chỉ tính sản phẩm đã xếp lịch và nói rõ là khớp theo nhóm ("Routine có sản phẩm chứa chất thuộc nhóm …", đổi chữ 6/11), vì nguồn có thể chỉ nói về một chất trong nhóm. Nhóm cha khớp sản phẩm thuộc nhóm con, giống `/rules`.
 
 ## Review cộng đồng: bản demo dữ liệu mẫu, không mở công khai (28–29/10)
 Người dùng chọn làm blog review sau khi đã cân nhắc rủi ro (nội dung chưa kiểm chứng đứng cạnh cảnh báo có nguồn; cùng loại rủi ro khiến tính năng câu hỏi bị bỏ 27/10). Chi tiết: `_workspace/feature-blog/01_spec.md` (không commit).
@@ -128,6 +128,13 @@ Người dùng chọn làm blog review sau khi đã cân nhắc rủi ro (nội 
 - **Ảnh:** tối đa 4 ảnh / bài, 5 MB, ≤ 100 MP; máy chủ mở lại bằng Pillow, lưu WebP ≤ 1600 px, không EXIF / GPS. Xoá bài, bỏ ảnh, xoá tài khoản thì xoá cả file. Không thêm `python-multipart`: đọc multipart bằng thư viện chuẩn.
 - **Quyền xoá:** tác giả xoá được bài / bình luận của mình kể cả khi người duyệt đã gỡ. `/me/export` có hồ sơ, bài, bình luận, ảnh, thích, lưu, báo cáo.
 - Nháp bài viết giữ trong `sessionStorage` theo tài khoản, xoá khi đăng xong / đăng xuất / xoá tài khoản; ảnh không được giữ.
+
+## Nhãn nhóm ghi rõ chất nào, đứng thứ mấy; không đặt ngưỡng nồng độ (6/11)
+Ví dụ gây hiểu lầm: Bifida Biome Serum Toner được gắn PHA (đúng: Lactobionic Acid là PHA, Grimes 2004, PMID 15002656), nhưng chất này đứng thứ 29/41, ngay trước một chất ghi 10 ppb. Chip "PHA" trơn khiến người dùng tưởng đây là sản phẩm tẩy da chết. Chi tiết: `_workspace/feature-group-ingredients/01_spec.md` (không commit).
+- `/routine/check` trả thêm `group_ingredients` (nhóm, tên trên nhãn, vị trí), `ingredient_count`, `ordered` cho mỗi sản phẩm. **Chỉ để hiển thị**: không đổi engine, cảnh báo, `resolve()`.
+- Chip trên lịch và "Sản phẩm của tôi" ghi `PHA · Lactobionic Acid (thứ 29/41)`, kèm câu "Bảng thành phần không ghi nồng độ, nên có chất này không có nghĩa là đủ lượng để có tác dụng" (tooltip + một dòng hiện trên trang). Cảnh báo có khối "Chất liên quan trên nhãn". Trang Mục tiêu đổi chữ + câu lưu ý.
+- **Không** dùng vị trí để ẩn / giảm cảnh báo hay bỏ nhãn nhóm: ngưỡng nồng độ phải có nguồn. Danh sách "thành phần nổi bật" và nhãn Drug Facts (`ordered = false`) không hiện vị trí.
+- Còn treo: sản phẩm mẫu ghép từ nhãn Drug Facts (CeraVe Acne Foaming Cream Cleanser, hoạt chất đặt đầu) vẫn trả `ordered = true`. Sửa cần một cờ trong `products.toml` + cột trong `schema.sql` + seed.
 
 ## Mỗi giai đoạn một nhánh + một PR (22/10)
 Giữ `main` luôn chạy được cho demo. Sửa nhỏ (README, lỗi chính tả) commit thẳng lên `main`.

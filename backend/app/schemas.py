@@ -212,6 +212,12 @@ class RoutineCheckRequest(BaseModel):
         return self
 
 
+class GroupIngredient(FromAttributes):
+    group: str
+    name: str  # as written on the label
+    position: int  # 1-based order in the list as read
+
+
 class RoutineProductResult(BaseModel):
     key: str
     groups: list[str]
@@ -219,6 +225,11 @@ class RoutineProductResult(BaseModel):
     # are not checked, so the routine may be missing warnings for them.
     possible_actives: list[str]
     application: Literal["rinse_off", "leave_on"] | None  # seeded products only
+    # Shown only: which label entries put the product in each group, where they stand, and
+    # whether the list is in order of weight (key-ingredient lists and Drug Facts are not).
+    group_ingredients: list[GroupIngredient]
+    ingredient_count: int
+    ordered: bool
 
 
 class OccurrenceOut(FromAttributes):

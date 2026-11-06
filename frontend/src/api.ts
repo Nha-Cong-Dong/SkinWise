@@ -136,8 +136,23 @@ export type Warning = {
 
 export type RoutineCheckResponse = {
   warnings: Warning[]
-  products: { key: string; groups: string[]; possible_actives: string[]; application: Application | null }[]
+  products: {
+    key: string
+    groups: string[]
+    possible_actives: string[]
+    application: Application | null
+    group_ingredients: GroupIngredient[] // display only: which label line put the product in which group
+    ingredient_count: number // lines in the list `position` counts in
+    ordered: boolean // false: key-ingredient list or Drug Facts label, not in order of weight
+  }[]
   notice_vi: string | null
+}
+
+/** A label line that puts a product in a group (parent groups included). Display only. */
+export type GroupIngredient = {
+  group: string
+  name: string // as printed on the label
+  position: number // 1-based line number in the list as read
 }
 
 // Review page (backend/app/review_api.py).

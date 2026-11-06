@@ -54,7 +54,7 @@ export function IngredientList({ ingredients, onePercentMarker, onSuggest }: Pro
                       ≤ 1%
                     </span>
                   )}
-                  {i.groups.length > 0 && <GroupChips codes={i.groups} />}
+                  {i.groups.length > 0 && <GroupChips codes={i.groups} note={false} />}
                   {i.fragrance_allergen && (
                     <span
                       className="rounded-full border border-dashed border-ink-mute px-1.5 text-xs text-ink-soft"

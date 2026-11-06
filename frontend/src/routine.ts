@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react'
 import {
   api,
   requestProblem,
+  type GroupIngredient,
   type InciAnalysis,
   type RequestProblem,
   type ProductSummary,
@@ -246,6 +247,28 @@ export type CheckState =
 /** The result to show: the last finished check, kept while a newer one runs. */
 export function currentResult(state: CheckState): RoutineCheckResponse | null {
   return state.kind === 'done' ? state.result : state.kind === 'loading' ? state.previous : null
+}
+
+/** The label lines behind a product's groups, from the last check. Display only. */
+export type LabelGroups = {
+  ingredients: GroupIngredient[] // sorted by position, then group
+  count: number // lines on the label as read
+  ordered: boolean // false: positions say nothing about amounts
+}
+
+/** Product key -> label lines behind its groups; the previous answer is kept while a new check runs. */
+export function labelGroups(state: CheckState): Map<string, LabelGroups> {
+  return new Map(
+    (currentResult(state)?.products ?? []).map((p) => [
+      p.key,
+      { ingredients: p.group_ingredients ?? [], count: p.ingredient_count, ordered: p.ordered },
+    ]),
+  )
+}
+
+/** "Lactobionic Acid (thứ 29/41)", or just the name when the list is not in order of weight. */
+export function formatLabelLine(line: GroupIngredient, found: LabelGroups): string {
+  return found.ordered ? `${line.name} (thứ ${line.position}/${found.count})` : line.name
 }
 
 /**
