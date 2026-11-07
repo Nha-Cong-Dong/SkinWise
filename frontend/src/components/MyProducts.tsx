@@ -216,7 +216,7 @@ function ProductRow({ product, found, severity, actions, onRemove, motion, photo
   return (
     <li className={`${motion.className} flex min-w-0 flex-col gap-3 rounded-md bg-surface p-4 lg:p-5`} style={motion.style}>
       <div className="flex min-w-0 gap-3">
-        <ProductImage image={photo} name={product.name} size="sm" />
+        <ProductImage image={photo} name={product.name} brand={product.brand} size="sm" />
         <div className="min-w-0">
           <a href={detail} className="block leading-snug text-pretty text-ink hover:text-primary">
             <span className="block text-xs text-ink-mute">{product.brand ?? 'Tự nhập bảng thành phần'}</span>

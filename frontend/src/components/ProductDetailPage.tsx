@@ -83,7 +83,7 @@ function Detail({ product, actions, found, check, onRemove }: Omit<Props, 'produ
       <div className="mt-2 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:gap-10">
         <div className="motion-enter flex min-w-0 flex-col gap-8">
           <header className="flex items-start gap-4">
-            <ProductImage image={photo} name={product.name} size="lg" />
+            <ProductImage image={photo} name={product.name} brand={product.brand} size="lg" caption />
             <div className="min-w-0">
               <p className="text-xs text-ink-mute">{meta}</p>
               <h1 className="text-3xl break-words lg:text-4xl">{product.name}</h1>
