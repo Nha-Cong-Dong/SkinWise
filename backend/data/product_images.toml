@@ -46,13 +46,13 @@ checked = true
 
 [[image]]
 slug = "cerave-sua-rua-mat-danh-cho-da-kho"
-barcode = "3606000537699"
-source_url = "https://world.openbeautyfacts.org/product/3606000537699"
-image_url = "https://images.openbeautyfacts.org/images/products/360/600/053/7699/front_en.9.full.jpg"
+barcode = "3337875597333"
+source_url = "https://world.openbeautyfacts.org/product/3337875597333"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/559/7333/front_en.39.full.jpg"
 license = "CC BY-SA 3.0"
-fetched_at = 2026-11-06T18:54:11Z
-sha256 = "fa4f379d867e06a71c7bd5e9d1e707e59c95fbe121ccc290ea062b61201cd4f1"
-checked = false
+fetched_at = 2026-11-07T05:05:04Z
+sha256 = "be73f8c4ef4c9bcfaf70e5f7d7a9a7992fdb05e0d7d758ffd311dc12c6106b00"
+checked = true
 
 [[image]]
 slug = "la-roche-posay-anthelios-uvmune-400-anti-dark-spots-fluid-spf50"
@@ -76,13 +76,13 @@ checked = true
 
 [[image]]
 slug = "la-roche-posay-cicaplast-baume-b5-plus"
-barcode = "3337872412998"
-source_url = "https://world.openbeautyfacts.org/product/3337872412998"
-image_url = "https://images.openbeautyfacts.org/images/products/333/787/241/2998/front_fr.11.full.jpg"
+barcode = "3337875816779"
+source_url = "https://world.openbeautyfacts.org/product/3337875816779"
+image_url = "https://images.openbeautyfacts.org/images/products/333/787/581/6779/front_en.3.full.jpg"
 license = "CC BY-SA 3.0"
-fetched_at = 2026-11-06T18:54:11Z
-sha256 = "11cf089db5dd4ab3c8926922d751a34f20c76b76f47f81552f15c881b4c5678d"
-checked = false
+fetched_at = 2026-11-07T05:05:04Z
+sha256 = "60376f76b86ede75363e340a76fcb9ead38cfa964edb2c82c9614aca6a8c5386"
+checked = true
 
 [[image]]
 slug = "la-roche-posay-effaclar-micro-peeling-purifying-gel"
@@ -112,6 +112,26 @@ image_url = "https://images.openbeautyfacts.org/images/products/333/787/589/0021
 license = "CC BY-SA 3.0"
 fetched_at = 2026-11-06T18:54:11Z
 sha256 = "e0fc2890fc08ab5f8378f353e50b26b5ed67430fac5c07adeb73a9310aa97c9e"
+checked = true
+
+[[image]]
+slug = "the-ordinary-azelaic-acid-suspension-10"
+barcode = "0769915190588"
+source_url = "https://world.openbeautyfacts.org/product/0769915190588"
+image_url = "https://images.openbeautyfacts.org/images/products/076/991/519/0588/front_en.13.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-07T05:05:04Z
+sha256 = "fb31c1dad1780b6a7650062984830fd1ffacc2345cbf74514577c356e6b046c2"
+checked = true
+
+[[image]]
+slug = "the-ordinary-lactic-acid-10-ha"
+barcode = "0769915190373"
+source_url = "https://world.openbeautyfacts.org/product/0769915190373"
+image_url = "https://images.openbeautyfacts.org/images/products/076/991/519/0373/front_en.12.full.jpg"
+license = "CC BY-SA 3.0"
+fetched_at = 2026-11-07T05:05:04Z
+sha256 = "b2831e1f6ba33d1f7278bc66e600d041ce90968f5b9f8df3ef26c7a6f6dc938f"
 checked = true
 
 [[image]]
