@@ -7,12 +7,7 @@ import pytest
 from fastapi.testclient import TestClient
 
 from app import open_beauty_facts as obf
-from app.open_beauty_facts import (
-    IngredientsText,
-    choose_text,
-    ingredient_texts,
-    normalize_barcode,
-)
+from app.open_beauty_facts import IngredientsText, choose_text, ingredient_texts
 
 # Trimmed from the real record of 3337875598996 (CeraVe, fetched 26/10/2026): the main field is
 # a French translation, the English field holds the INCI names.
@@ -27,21 +22,6 @@ CERAVE = {
         "fr": "Eau, glycérine, alcool cétéarylique, niacinamide",
     },
 }
-
-
-def test_normalize_barcode_checks_the_check_digit() -> None:
-    assert normalize_barcode("3337875597180") == "3337875597180"
-    assert normalize_barcode(" 3337875-597180 ") == "3337875597180"
-    assert normalize_barcode("96385074") == "96385074"  # EAN-8
-    assert normalize_barcode("3337875597181") is None  # one digit off
-    assert normalize_barcode("33378755971") is None  # 11 digits
-    assert normalize_barcode("３３３７８７５５９７１８０") is None  # full-width digits
-    assert normalize_barcode("") is None
-
-
-def test_normalize_barcode_files_upc_a_as_ean_13() -> None:
-    # Open Beauty Facts answers 500 to the 12-digit form.
-    assert normalize_barcode("079298300086") == "0079298300086"
 
 
 def test_ingredient_texts_lists_each_text_once_main_first() -> None:
@@ -73,6 +53,7 @@ def test_barcode_route_returns_the_best_list_with_attribution(
     assert response.status_code == 200
     body = response.json()
     assert asked == ["3337875598996"]
+    assert body["source"] == "open_beauty_facts"
     assert body["ingredients_text"] == "aqua, water, glycerin, cetearyl alcohol, niacinamide"
     assert body["name"] == "moisturising cream"
     assert body["brand"] == "CeraVe"

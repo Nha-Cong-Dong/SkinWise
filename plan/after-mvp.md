@@ -151,6 +151,10 @@ Làm 26/10 (nhánh `feat/barcode-ocr`). Quyết định: [decisions.md](decision
 - [x] Quét mã vạch bằng camera: `BarcodeDetector` đọc từ ảnh chụp (`<input type="file" capture>`), nút chỉ hiện khi trình duyệt hỗ trợ; luôn có ô gõ mã số; không thêm thư viện
 - [x] Không tìm thấy sản phẩm (hoặc có sản phẩm nhưng chưa có bảng thành phần): dẫn sang dán INCI và link đóng góp lên Open Beauty Facts
 - [x] Test: `tests/test_open_beauty_facts.py` (mã vạch, chọn ngôn ngữ, route, lỗi mạng; không gọi mạng thật)
+- [x] Mã vạch cho sản phẩm mẫu (26/10, quyết định ở [decisions.md](decisions.md), mục "Mã vạch cho sản phẩm mẫu"): `[[product.barcodes]]` trong `products.toml`, bảng `product_barcodes`, `GET /barcode/{code}` tra sản phẩm mẫu trước Open Beauty Facts, giao diện thêm thẳng theo id. 23/30 sản phẩm, 34 mã, mỗi mã có trang nguồn và qua `verify_products`. Test: `tests/test_barcodes.py`
+  - [ ] 7 sản phẩm The Ordinary chưa có mã: trang hãng không ghi, đang tìm ở nhà bán lẻ
+  - [ ] Some By Mi 30ml / 6ml: mới có một nguồn (ô barcode của lamthaocosmetics.vn), cần nguồn thứ hai
+  - [ ] Tối 26/10 larocheposay.vn bỏ bảng thành phần khỏi trang Cicaplast Baume B5+ (cả `gtin13` 3337872413018, đã gỡ mã này) và Anthelios UVMune 400 Anti Dark Spots, nên `verify_products` còn 28/30. Chờ quyết: đợi trang khôi phục, hay đổi nguồn Cicaplast sang trang Ấn Độ (bảng y hệt)
 
 **Xong khi:** nhập một mã vạch có trên Open Beauty Facts thì sản phẩm vào routine với nhãn nguồn và trạng thái xác minh, cảnh báo giống như dán cùng bảng thành phần. ✅ Đã thử với dữ liệu thật (3337875598996, CeraVe: bản ghi có bản tiếng Pháp và tiếng Anh, route chọn tiếng Anh, nhận ra 22/27 dòng vì cộng đồng tách sai tên).
 

@@ -8,6 +8,7 @@ from typing import Any
 from sqlalchemy import Engine, text
 from sqlalchemy.engine import Connection
 
+from app.barcodes import barcode_problems, normalize_barcode
 from app.inci import normalize_name, parse_inci
 from app.ingredients import resolve
 from app.rules import rule_problems
@@ -65,6 +66,8 @@ def seed(engine: Engine) -> dict[str, int]:
     problems = [f"{r['key']}: {p}" for r in rules for p in rule_problems(r, known_urls)]
     if problems:
         raise ValueError("rules.toml:\n  " + "\n  ".join(problems))
+    if problems := barcode_problems(products):
+        raise ValueError("products.toml:\n  " + "\n  ".join(problems))
 
     eu_names, functions = load_eu_names(), load_functions()
     used = {code for _, _, codes in eu_names.values() for code in codes}
@@ -275,6 +278,26 @@ def _seed_product(conn: Connection, p: dict[str, Any]) -> None:
                 "position": r.entry.position,
                 "ingredient_id": r.ingredient_id,
                 "raw_name": r.entry.raw,
+            },
+        )
+
+    conn.execute(text("DELETE FROM product_barcodes WHERE product_id = :id"), {"id": product_id})
+    for b in p.get("barcodes", []):
+        conn.execute(
+            text(
+                """
+                INSERT INTO product_barcodes (code, product_id, size, source_url)
+                VALUES (:code, :product_id, :size, :source_url)
+                ON CONFLICT (code) DO UPDATE SET
+                  product_id = excluded.product_id, size = excluded.size,
+                  source_url = excluded.source_url
+                """
+            ),
+            {
+                "code": normalize_barcode(b["code"]),
+                "product_id": product_id,
+                "size": b.get("size"),
+                "source_url": b["source_url"],
             },
         )
 

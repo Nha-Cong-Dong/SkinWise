@@ -81,7 +81,9 @@ def call_model(media_type: str, data: str) -> ModelLabel:
         extra = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
     image = {"type": "base64", "media_type": media_type, "data": data}
     try:
-        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        client = anthropic.Anthropic(
+            api_key=settings.anthropic_api_key, base_url=settings.anthropic_base_url
+        )
         response = client.beta.messages.parse(
             model=settings.label_model,
             max_tokens=16000,

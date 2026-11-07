@@ -72,6 +72,16 @@ CREATE TABLE IF NOT EXISTS product_ingredients (
   PRIMARY KEY (product_id, position)
 );
 
+-- Barcodes of seeded products, each with the page that prints it (re-checked by
+-- verify_products). The code is in normalize_barcode() form: a UPC-A as its EAN-13.
+CREATE TABLE IF NOT EXISTS product_barcodes (
+  code        text PRIMARY KEY,
+  product_id  integer NOT NULL REFERENCES products(id) ON DELETE CASCADE,
+  size        text,                    -- the size it is printed on, as the source page names it
+  source_url  text NOT NULL
+);
+CREATE INDEX IF NOT EXISTS product_barcodes_product_id ON product_barcodes (product_id);
+
 -- Deterministic warning rules, written against functional groups.
 CREATE TABLE IF NOT EXISTS rules (
   id             serial PRIMARY KEY,

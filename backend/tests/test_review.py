@@ -360,6 +360,8 @@ def message(stop_reason: str, text_: str) -> dict:
 
 
 def test_call_model_sends_a_structured_request(monkeypatch: pytest.MonkeyPatch) -> None:
+    # A model that takes fallbacks, whatever the developer's .env chose.
+    monkeypatch.setattr(get_settings(), "draft_model", "claude-opus-5-5")
     expected = model_draft()
     sent = fake_anthropic(
         monkeypatch,

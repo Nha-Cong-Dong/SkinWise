@@ -69,8 +69,17 @@ export type InciAnalysis = {
   one_percent_marker: string | null
 }
 
+/** A sample product found by one of its barcodes: added by id, like a search result. */
+export type SampleBarcodeProduct = {
+  source: 'skinwise'
+  barcode: string
+  size: string | null // the size this barcode is printed on, when its source page names it
+  product: ProductSummary
+}
+
 /** A product found on Open Beauty Facts: community data under the ODbL, not verified. */
-export type BarcodeProduct = {
+export type OpenBeautyFactsProduct = {
+  source: 'open_beauty_facts'
   barcode: string
   name: string | null
   brand: string | null
@@ -80,6 +89,9 @@ export type BarcodeProduct = {
   retrieved_at: string
   last_modified_at: string | null
 }
+
+/** The sample products are looked up first: their lists were checked against the brand's page. */
+export type BarcodeResult = SampleBarcodeProduct | OpenBeautyFactsProduct
 
 /** The ingredient list an AI model copied off a label photo, for the user to check. */
 export type LabelReading = {
@@ -226,7 +238,7 @@ export const api = {
     request<ProductSummary[]>(`/products?${new URLSearchParams({ q })}`, { signal }),
   product: (id: number) => request<ProductDetail>(`/products/${id}`),
   analyzeInci: (text: string) => post<InciAnalysis>('/inci/analyze', { text }),
-  barcode: (code: string) => request<BarcodeProduct>(`/barcode/${encodeURIComponent(code)}`),
+  barcode: (code: string) => request<BarcodeResult>(`/barcode/${encodeURIComponent(code)}`),
   readLabel: (body: { media_type: 'image/jpeg'; data: string }) => post<LabelReading>('/label/read', body),
   checkRoutine: (body: RoutineCheckRequest, signal?: AbortSignal) =>
     post<RoutineCheckResponse>('/routine/check', body, signal),

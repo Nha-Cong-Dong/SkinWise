@@ -166,7 +166,9 @@ def call_model(prompt: str) -> tuple[ModelDraft, str]:
     if settings.draft_model in FALLBACK_MODELS:
         extra = {"betas": ["server-side-fallback-2026-07-01"], "fallbacks": "default"}
     try:
-        client = anthropic.Anthropic(api_key=settings.anthropic_api_key)
+        client = anthropic.Anthropic(
+            api_key=settings.anthropic_api_key, base_url=settings.anthropic_base_url
+        )
         response = client.beta.messages.parse(
             model=settings.draft_model,
             max_tokens=16000,

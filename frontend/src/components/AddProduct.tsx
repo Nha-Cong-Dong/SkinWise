@@ -1,12 +1,12 @@
 import { useEffect, useState, type Dispatch, type SetStateAction } from 'react'
-import { api, type BarcodeProduct, type InciAnalysis, type ProductSummary } from '../api'
-import { APPLICATION_LABELS } from '../labels'
-import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
+import { api, type InciAnalysis, type OpenBeautyFactsProduct, type ProductSummary } from '../api'
+import type { AddDraft, RoutineActions } from '../routine'
 import { BarcodeLookup, OpenBeautyFactsCredit } from './BarcodeLookup'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
 import { ReadFromPhoto } from './ReadFromPhoto'
+import { SampleProduct } from './SampleProduct'
 
 type Props = { actions: RoutineActions }
 
@@ -19,8 +19,8 @@ const field =
 export function AddProduct({ actions, draft, setDraft }: DraftProps) {
   const tab = draft.tab
 
-  // A barcode lookup fills the paste tab, where the user compares the list with the package.
-  const takeFound = (product: BarcodeProduct) => {
+  // A list found on Open Beauty Facts fills the paste tab, where the user compares it with the package.
+  const takeFound = (product: OpenBeautyFactsProduct) => {
     const text = product.ingredients_text ?? ''
     const pasted = draft.text.trim()
     if (pasted && pasted !== text && !confirm('Thay bảng thành phần đang dán bằng bảng từ Open Beauty Facts?')) return
@@ -64,7 +64,11 @@ export function AddProduct({ actions, draft, setDraft }: DraftProps) {
       {tab === 'search' ? (
         <SearchProducts actions={actions} />
       ) : tab === 'barcode' ? (
-        <BarcodeLookup onUse={takeFound} onPaste={() => setDraft((d) => ({ ...d, tab: 'paste' }))} />
+        <BarcodeLookup
+          actions={actions}
+          onUse={takeFound}
+          onPaste={() => setDraft((d) => ({ ...d, tab: 'paste' }))}
+        />
       ) : (
         <PasteInci actions={actions} draft={draft} setDraft={setDraft} />
       )}
@@ -76,7 +80,6 @@ function SearchProducts({ actions }: Props) {
   const [query, setQuery] = useState('')
   const [results, setResults] = useState<ProductSummary[] | null>(null)
   const [error, setError] = useState(false)
-  const added = new Set(actions.routine.products.map((p) => p.key))
 
   useEffect(() => {
     const controller = new AbortController()
@@ -115,32 +118,11 @@ function SearchProducts({ actions }: Props) {
         </p>
       )}
       <ul className="mt-2 divide-y divide-line">
-        {results?.map((p) => {
-          const isAdded = added.has(productKeyFor(p.id))
-          return (
-            <li key={p.id} className="flex items-center gap-3 py-3">
-              <div className="min-w-0 flex-1">
-                <p className="text-xs text-ink-mute">
-                  {p.brand}
-                  {p.application && <span className="ml-2">{APPLICATION_LABELS[p.application]}</span>}
-                </p>
-                <p className="text-sm leading-snug font-medium">{p.name}</p>
-                <div className="mt-1">
-                  <GroupChips codes={p.groups} empty="Không có hoạt chất trong danh sách theo dõi" />
-                </div>
-              </div>
-              <button
-                disabled={isAdded}
-                onClick={() =>
-                  actions.addProduct({ name: p.name, brand: p.brand, productId: p.id, inci: null, groups: p.groups })
-                }
-                className="shrink-0 rounded-full bg-ink px-3.5 py-1.5 text-sm font-medium text-white hover:bg-link disabled:bg-paper disabled:text-ink-mute"
-              >
-                {isAdded ? 'Đã thêm' : 'Thêm'}
-              </button>
-            </li>
-          )
-        })}
+        {results?.map((p) => (
+          <li key={p.id} className="py-3">
+            <SampleProduct product={p} actions={actions} />
+          </li>
+        ))}
       </ul>
     </div>
   )

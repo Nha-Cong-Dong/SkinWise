@@ -78,6 +78,25 @@ def get_product(db: Session | Connection, product_id: int) -> ProductDetailRow |
     return ProductDetailRow(*columns, ingredients=tuple(resolve(db, parse_inci(raw or ""))))
 
 
+_BY_BARCODE = text(
+    f"""
+    SELECT {_COLUMNS}, b.size
+    FROM product_barcodes b JOIN products p ON p.id = b.product_id
+    WHERE b.code = :code
+    """
+)
+
+
+def product_by_barcode(db: Session | Connection, code: str) -> tuple[ProductRow, str | None] | None:
+    """The seeded product printed with this barcode (in normalize_barcode form), and the size
+    the barcode belongs to, if its source page names one."""
+    row = db.execute(_BY_BARCODE, {"code": code}).first()
+    if row is None:
+        return None
+    *columns, size = row
+    return ProductRow(*columns), size
+
+
 def existing_product_ids(db: Session | Connection, product_ids: list[int]) -> set[int]:
     return set(product_applications(db, product_ids))
 

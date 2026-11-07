@@ -4,6 +4,11 @@
 # verification_status: "verified" chỉ khi verify_products đạt và đã có người xem lại.
 # application: "rinse_off" (rửa trôi: sữa rửa mặt, mặt nạ rửa đi) | "leave_on" (để lại trên da: toner, serum,
 #   kem dưỡng, kem chống nắng), theo định nghĩa của Quy định EU 1223/2009. Hiện chỉ để hiển thị.
+# [[product.barcodes]]: mã vạch (EAN/UPC) để GET /barcode/{code} tìm ra sản phẩm mẫu. Mỗi mã chép từ một
+#   trang cho thấy đó là mã của sản phẩm này (source_url: "gtin13" trong dữ liệu sản phẩm, ô "Barcode"/"Mã vạch"
+#   của nhà bán lẻ chính hãng; trường khác thì có ghi chú ngay trên mã); verify_products kiểm tra mã còn trên trang. Không chép từ trí nhớ, không suy
+#   ra theo dãy số, không lấy từ Open Beauty Facts hay trang tra mã vạch. size: cỡ in mã này, như trang nguồn ghi.
+#   Mỗi mã chỉ thuộc một sản phẩm.
 
 # --- AHA ---
 # The Ordinary Glycolic Acid 7% Exfoliating Toner: dropped, its page (all regions tried) has an empty
@@ -45,6 +50,21 @@ retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """Water (Aqua/Eau), Methylpropanediol, Butylene Glycol, Salicylic Acid, Polysorbate 20, Camellia Oleifera Leaf Extract, Sodium Hydroxide, Tetrasodium EDTA."""
 
+[[product.barcodes]]
+code = "0655439920100"
+size = "118 ml"
+source_url = "https://www.paulaschoice.co.uk/skin-perfecting-2pct-bha-liquid-exfoliant/2010.html"
+
+[[product.barcodes]]
+code = "0655439020121"
+size = "236 ml"
+source_url = "https://www.paulaschoice.co.uk/skin-perfecting-2pct-bha-liquid-exfoliant/2010.html"
+
+[[product.barcodes]]
+code = "0655439020169"
+size = "30 ml"
+source_url = "https://www.paulaschoice.co.uk/skin-perfecting-2pct-bha-liquid-exfoliant/2010.html"
+
 # Sold as "SA Smoothing Cleanser" outside the US; the US site names it Renewing SA Cleanser.
 [[product]]
 slug = "cerave-renewing-sa-cleanser"
@@ -56,6 +76,14 @@ source_url = "https://www.cerave.com/skincare/cleansers/renewing-sa-cleanser"
 retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """Aqua/Water/Eau, Cocamidopropyl Hydroxysultaine, Glycerin, Sodium Lauroyl Sarcosinate, Niacinamide, Gluconolactone, Peg-150 Pentaerythrityl Tetrastearate, Sodium Methyl Cocoyl Taurate, Zea Mays Oil/Corn Oil, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Calcium Gluconate, Sodium Chloride, Salicylic Acid, Sodium Benzoate, Sodium Lauroyl Lactylate, Cholecalciferol, Cholesterol, Phenoxyethanol, Disodium Edta, Tetrasodium Edta, Hydrolyzed Hyaluronic Acid, Phytosphingosine, Xanthan Gum, Ethylhexylglycerin"""
+
+# The CeraVe US pages have no gtin13. The code is "dimension48" in the page's analytics data, the field L'Oréal
+# sites use for the EAN (on the CeraVe, La Roche-Posay and Vichy Vietnam pages it equals gtin13), next to the size
+# in "dimension35". Same for the other three CeraVe US products; Open Beauty Facts has the same codes for them.
+[[product.barcodes]]
+code = "3606000537552"
+size = "8 fl oz"
+source_url = "https://www.cerave.com/skincare/cleansers/renewing-sa-cleanser"
 
 # --- AHA + BHA + PHA ---
 # Korean-label English names (e.g. "Purified Water", "Papaya Fruit Extract"), not INCI. This formula lists
@@ -70,6 +98,14 @@ source_url = "https://en.somebymi.com/product/aha-bha-pha-30-days-miracle-toner-
 retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """Purified Water, Butylene Glycol, Dipropylene Glycol, Glycerin, Niacinamide, Tea Tree Leaf Water, Polyglyceryl-4 Caprate, Papaya Fruit Extract, Esculenta Lentinus Seed Extract, Witch Hazel Extract, Lotus Flower Extract, Swiftlet Nest Extract, Sodium Hyaluronate, Fructan, Allantoin, Adenosine, Hydroxyethyl Urea, Xylitol, Salicylic Acid (100 ppm), Lactobionic Acid (100 ppm), Citric Acid (500 ppm), Sodium Citrate, 1,2-Hexanediol, Benzyl Glycol, Ethylhexylglycerin, Raspberry Ketone, Peppermint Oil"""
+
+# The Some By Mi site prints no barcode. A Dutch drugstore shows "EAN: 8809326333661" next to "Inhoud: 150ML"
+# (and gtin13); lamthaocosmetics.vn has the same code as the barcode of its 150ml variant. The Dutch page lists an
+# EU formula (adds Phenoxyethanol, Caprylyl Glycol...) under the same code: the barcode does not tell markets apart.
+[[product.barcodes]]
+code = "8809326333661"
+size = "150ml"
+source_url = "https://www.deonlinedrogist.nl/drogist/some-by-mi-aha-bha-pha-30-days-miracle-toner-150ml.htm"
 
 # --- Retinoid ---
 
@@ -94,6 +130,11 @@ source_url = "https://www.cerave.com/skincare/serums/resurfacing-retinol-serum"
 retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """AQUA/WATER/EAU, PROPANEDIOL, DIMETHICONE , CETEARYL ETHYLHEXANOATE, NIACINAMIDE, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, DIPOTASSIUM GLYCYRRHIZATE, HYDROGENATED LECITHIN, POTASSIUM PHOSPHATE, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, CETEARYL ALCOHOL, BEHENTRIMONIUM METHOSULFATE, DIMETHICONOL, LECITHIN, SODIUM CITRATE, RETINOL, SODIUM HYALURONATE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, PHENOXYETHANOL, ALCOHOL, ISOPROPYL MYRISTATE, CAPRYLYL GLYCOL, CITRIC ACID, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, PENTYLENE GLYCOL, PHYTOSPHINGOSINE, XANTHAN GUM, POLYSORBATE 20, ETHYLHEXYLGLYCERIN"""
+
+[[product.barcodes]]
+code = "3606000512276"
+size = "1 fl oz"
+source_url = "https://www.cerave.com/skincare/serums/resurfacing-retinol-serum"
 
 # --- Vitamin C ---
 # Klairs Freshly Juiced Vitamin Drop: dropped, klairscosmetics.com returned HTTP 500 on every request.
@@ -147,6 +188,22 @@ retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """AQUA/WATER, NIACINAMIDE, ACETYL GLUCOSAMINE, ETHOXYDIGLYCOL, BUTYLENE GLYCOL, PENTYLENE GLYCOL, COCAMIDOPROPYL DIMETHYLAMINE, PEG-40 HYDROGENATED CASTOR OIL, BENINCASA CERIFERA FRUIT EXTRACT, MADECASSIC ACID, ASIATIC ACID, ASIATICOSIDE, CENTELLA ASIATICA EXTRACT, FERULIC ACID, SALICYLIC ACID, ZINC PCA, PHELLODENDRON AMURENSE BARK EXTRACT, TOCOPHEROL, BISABOLOL, DIMETHYL ISOSORBIDE, GLYCERETH-26, HYDROXYACETOPHENONE, BIS-PEG-18 METHYL ETHER DIMETHYL SILANE, HYDROXYETHYLCELLULOSE, MELALEUCA ALTERNIFOLIA LEAF OIL, LAVANDULA ANGUSTIFOLIA FLOWER OIL, ROSMARINUS OFFICINALIS LEAF OIL, DISODIUM PHOSPHATE, POLYSORBATE 60, SODIUM PHOSPHATE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, CITRIC ACID, POTASSIUM SORBATE."""
 
+# Cocoon pages give the code as "oms_sku" in the product's own data (the object with its main_ingredients and
+# suitable), not in the related products on the same page. Same for the other three Cocoon products;
+# lamthaocosmetics.vn has all four as the barcode of the same size. thegioiskinfood.com shows 8936104... codes for
+# N7 70ml, the 310ml toner and C22 30ml that no Cocoon page confirms (old packaging?), so they are left out: a scan
+# of one finds no product rather than a wrong one. Other sizes come from that size's own Cocoon page, kept only when
+# the page carries the seeded ingredient list complete and in order (checked 2026-10-26).
+[[product.barcodes]]
+code = "8936217700230"
+size = "70ml"
+source_url = "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-70ml"
+
+[[product.barcodes]]
+code = "8936217701374"
+size = "30ml"
+source_url = "https://cocoonvietnam.com/san-pham/tinh-chat-bi-dao-n7-30ml"
+
 # --- Benzoyl peroxide ---
 # US OTC drug: the page prints "Active Ingredient : Benzoyl Peroxide 4%" then "Inactive Ingredients : ...".
 # Both are joined here, active first.
@@ -160,6 +217,11 @@ source_url = "https://www.cerave.com/skincare/cleansers/acne-benzoyl-peroxide-cl
 retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """Benzoyl Peroxide 4%, Water, Glycerin, Propylene Glycol, Cocamidopropyl Hydroxysultaine, Sodium C14-16 Olefin Sulfonate, Xanthan Gum, Potassium Hydroxide, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Niacinamide, Glycolic Acid, Sodium Chloride, Sodium Citrate, Sodium Hyaluronate, Sodium Lauroyl Lactylate, Sodium Hydroxide, Cholesterol, Phenoxyethanol, Propanediol, Citric Acid, Tetrasodium EDTA, Diethylhexyl Sodium Sulfosuccinate, Phytosphingosine, Ethylhexylglycerin, Benzoic Acid"""
+
+[[product.barcodes]]
+code = "3606000512238"
+size = "5 fl oz"
+source_url = "https://www.cerave.com/skincare/cleansers/acne-benzoyl-peroxide-cleanser"
 
 # --- Azelaic acid ---
 
@@ -187,6 +249,11 @@ retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """AQUA / WATER / EAU, GLYCERIN,CAPRYLIC/CAPRIC TRIGLYCERIDE, CETEARYL ALCOHOL, CETYL ALCOHOL, DIMETHICONE, PHENOXYETHANOL, POLYSORBATE 20, CETEARETH-20,BEHENTRIMONIUM METHOSULFATE, POLYGLYCERYL-3 DIISOSTEARATE, SODIUM LAUROYL LACTYLATE, ETHYLHEXYLGLYCERIN, POTASSIUM PHOSPHATE, DISODIUM EDTA, DIPOTASSIUM PHOSPHATE, CERAMIDE NP, CERAMIDE AP, PHYTOSPHINGOSINE, CHOLESTEROL, XANTHAN GUM, CARBOMER, SODIUM HYALURONATE, TOCOPHEROL, CERAMIDE EOP"""
 
+[[product.barcodes]]
+code = "3606000537743"
+size = "12 fl oz"
+source_url = "https://www.cerave.com/skincare/moisturizers/daily-moisturizing-lotion"
+
 # laroche-posay.us/.co.uk/.fr/.com.au/.ie return 403 to scripted requests; the India site serves the list
 # in its product JSON-LD.
 [[product]]
@@ -199,6 +266,16 @@ source_url = "https://www.laroche-posay.co.in/anthelios/anthelios-uvmune-400-inv
 retrieved_at = 2026-10-22
 verification_status = "unverified"
 ingredients = """AQUA / WATER / EAU,ALCOHOL DENAT.,TRIETHYL CITRATE,DIISOPROPYL SEBACATE,SILICA,ETHYLHEXYL SALICYLATE,BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE,ETHYLHEXYL TRIAZONE,BUTYL METHOXYDIBENZOYLMETHANE,GLYCERIN,PROPANEDIOL,C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER,CI 77891 / TITANIUM DIOXIDE,METHOXYPROPYLAMINO CYCLOHEXENYLIDENE ETHOXYETHYLCYANOACETATE,PERLITE,TOCOPHEROL,CAPRYLIC/CAPRIC TRIGLYCERIDE,ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER,CAPRYLYL GLYCOL,CI 77491 / IRON OXIDES,CI 77492 / IRON OXIDES,CI 77499 / IRON OXIDES,DIETHYLAMINO HYDROXYBENZOYL HEXYL BENZOATE,DROMETRIZOLE TRISILOXANE,HYDROXYETHYLCELLULOSE,SODIUM STEAROYL GLUTAMATE,TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID,TRIETHANOLAMINE,TRISODIUM ETHYLENEDIAMINE DISUCCINATE,PARFUM / FRAGRANCE,"""
+
+[[product.barcodes]]
+code = "3337875774543"
+size = "15 ml"
+source_url = "https://www.laroche-posay.co.in/anthelios/anthelios-uvmune-400-invisible-fluid-spf50"
+
+[[product.barcodes]]
+code = "3337875797597"
+size = "50 ml"
+source_url = "https://www.laroche-posay.co.in/anthelios/anthelios-uvmune-400-invisible-fluid-spf50"
 
 # ======================================================================================
 # Sản phẩm bán tại Việt Nam (thêm 26/10). Lấy từ trang tiếng Việt của hãng / nhà phân phối do hãng vận hành;
@@ -223,6 +300,11 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER,ALCOHOL DENAT.,PROPANEDIOL,GLYCOLIC ACID,NIACINAMIDE,DIMETHYL ISOSORBIDE,PENTYLENE GLYCOL,SALICYLIC ACID,SODIUM HYDROXIDE,PEG-60 HYDROGENATED CASTOR OIL,HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID,CITRIC ACID,PEG-30 GLYCERYL COCOATE,CAPRYLOYL SALICYLIC ACID,BIOSACCHARIDE GUM-1,MALTODEXTRIN,PHYTIC ACID,POLYQUATERNIUM-10,PARFUM / FRAGRANCE"""
 
+[[product.barcodes]]
+code = "3337875722827"
+size = "30ml"
+source_url = "https://www.larocheposay.vn/effaclar/effaclar-ultra-concentrated-serum"
+
 # Toner with 5% AHA (the page: "AHA 5% AHA gồm Lactic Acid ... và Glycolic Acid"). The page also embeds an English
 # translation; for this product its list is identical. The same formula is sold as 140ml.
 # Groups found by resolve() on 2026-10-26: AHA, EXFOLIANT_ACID (Lactic Acid, Glycolic Acid). Every entry recognised (0 unknown).
@@ -236,6 +318,16 @@ retrieved_at = 2026-10-26
 verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA/WATER, LACTIC ACID, GLYCERIN, PROPANEDIOL, SODIUM HYDROXIDE, BETAINE, PENTYLENE GLYCOL, CURCUMA LONGA ROOT EXTRACT, GLYCOLIC ACID, ALLANTOIN, BIS-PEG-18 METHYL ETHER DIMETHYL SILANE, PEG-40 HYDROGENATED CASTOR OIL, XANTHAN GUM, HYDROXYACETOPHENONE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, CURCUMA LONGA ROOT OIL, SODIUM BENZOATE, POTASSIUM SORBATE."""
+
+[[product.barcodes]]
+code = "8936217700483"
+size = "310ml"
+source_url = "https://cocoonvietnam.com/san-pham/nuoc-nghe-hung-yen-310ml"
+
+[[product.barcodes]]
+code = "8936217700476"
+size = "140ml"
+source_url = "https://cocoonvietnam.com/san-pham/nuoc-nghe-hung-yen-140ml"
 
 # Comma-separated list from the product JSON-LD; the visible "Thành phần" block has the same entries with "•".
 # Glycolic + salicylic acid; Ascorbyl Glucoside is a vitamin C derivative.
@@ -251,6 +343,11 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER, ALCOHOL DENAT., HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID, GLYCOLIC ACID, GLYCERIN, PROPANEDIOL, SODIUM HYDROXIDE, PEG/PPG/POLYBUTYLENE GLYCOL-8/5/3 GLYCERIN, SALICYLIC ACID, SODIUM POLYACRYLATE, ADENOSINE, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, ASCORBYL GLUCOSIDE, VITREOSCILLA FERMENT, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, XANTHAN GUM, PANTHENOL, MENTHOL"""
 
+[[product.barcodes]]
+code = "3337875791984"
+size = "30ml"
+source_url = "https://www.vichy.com.vn/all-products/skincare/face-serums/acne/normaderm-probio-bha-anti-imperfections-serum"
+
 # Rinse-off BHA cleanser. List from the product JSON-LD.
 # Groups found by resolve() on 2026-10-26: BHA, EXFOLIANT_ACID (Salicylic Acid, Capryloyl Salicylic Acid). Every entry recognised (0 unknown).
 [[product]]
@@ -264,6 +361,11 @@ verification_status = "unverified"
 application = "rinse_off"
 ingredients = """AQUA / WATER,SODIUM LAURETH SULFATE,DECYL GLUCOSIDE,GLYCERIN,SODIUM CHLORIDE,COCO-BETAINE,SALICYLIC ACID,PEG-150 PENTAERYTHRITYL TETRASTEARATE,PEG-6 CAPRYLIC/CAPRIC GLYCERIDES,ZINC GLUCONATE,SODIUM HYDROXIDE,CAPRYLOYL SALICYLIC ACID,TETRASODIUM EDTA,CITRIC ACID,MENTHOL,POLYQUATERNIUM-47,HEXYLENE GLYCOL,SODIUM BENZOATE"""
 
+[[product.barcodes]]
+code = "3337875708289"
+size = "400ml"
+source_url = "https://www.larocheposay.vn/effaclar/effaclar-micro-peeling-purifiying-gel"
+
 # Rinse-off cleanser with salicylic acid and niacinamide. English translation embedded in the page has the same list.
 # Groups found by resolve() on 2026-10-26: BHA, EXFOLIANT_ACID, NIACINAMIDE (Salicylic Acid, Niacinamide). Every entry recognised (0 unknown).
 [[product]]
@@ -276,6 +378,26 @@ retrieved_at = 2026-10-26
 verification_status = "unverified"
 application = "rinse_off"
 ingredients = """AQUA/WATER, POTASSIUM LAURETH PHOSPHATE, COCAMIDOPROPYL BETAINE, PEG-7 GLYCERYL COCOATE, GLYCERIN, BETAINE, PROPANEDIOL, COCOYL METHYL GLUCAMIDE, SODIUM LACTATE, BENINCASA CERIFERA FRUIT EXTRACT, CENTELLA ASIATICA EXTRACT, SALICYLIC ACID, NIACINAMIDE, PANTHENOL, BUTYLENE GLYCOL, ETHYLHEXYLGLYCERIN, GLYCERETH-26, PROPYLENE GLYCOL, ACRYLATES/STEARETH-20 METHACRYLATE COPOLYMER, PEG-120 METHYL GLUCOSE DIOLEATE, XANTHAN GUM, POLYSORBATE 20, MELALEUCA ALTERNIFOLIA LEAF OIL, LAVANDULA ANGUSTIFOLIA FLOWER OIL, ROSMARINUS OFFICINALIS LEAF OIL, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, CARAMEL, MENTHYL LACTATE, CITRIC ACID, PHENOXYETHANOL, SORBIC ACID, SODIUM BENZOATE, POTASSIUM SORBATE."""
+
+[[product.barcodes]]
+code = "8936217701244"
+size = "500ml"
+source_url = "https://cocoonvietnam.com/san-pham/gel-bi-dao-rua-mat-500ml"
+
+[[product.barcodes]]
+code = "8936217700162"
+size = "140ml"
+source_url = "https://cocoonvietnam.com/san-pham/gel-bi-dao-rua-mat-140ml"
+
+[[product.barcodes]]
+code = "8936217700179"
+size = "310ml"
+source_url = "https://cocoonvietnam.com/san-pham/gel-bi-dao-rua-mat-310ml"
+
+[[product.barcodes]]
+code = "8936217701329"
+size = "500ml, túi refill"
+source_url = "https://cocoonvietnam.com/san-pham/tui-refill-gel-bi-dao-rua-mat-500ml"
 
 # --- PHA ---
 
@@ -291,6 +413,13 @@ retrieved_at = 2026-10-26
 verification_status = "unverified"
 application = "leave_on"
 ingredients = """Water, Butylene Glycol, Tranexamic Acid, Diglycerin, Pentylene Glycol, PPG-26-Buteth-26, Bis-Ethoxydiglycol Cyclohexane 1,4-Dicarboxylate, Gluconolactone (PHA), Dihydroxypropyl Arginine HCl, Allantoin, Squalane, Dipotassium Glycyrrhizate, o-Cymen-5-ol, Pyrus Cydonia Seed Extract (Quince Seed Extract), Sodium Hyaluronate (HA), Sodium Acetylated Hyaluronate (Super HA), Hydrolyzed Sodium Hyaluronate (Nano HA), Coix Lacryma-Jobi Ma-yuen Seed Extract (Coix Seed Extract), Houttuynia Cordata Extract, Chamomilla Recutita (Matricaria) Flower Extract, PEG-40 Hydrogenated Castor Oil, PPG-10 Methyl Glucose Ether, Sodium Polyacryloyldimethyl Taurate, Sorbitan Sesquioleate, Xanthan Gum, Propylene Glycol, Propanediol, Camphor, Menthol, Sodium Metabisulfite, Disodium EDTA, Phenoxyethanol."""
+
+# Rohto-Mentholatum Vietnam's own shop (the "Mua sản phẩm" button on the source page links to it) uses the EAN as
+# the SKU: "SKU 8935006547605". thegioiskinfood.com has the same code as the barcode (30ml).
+[[product.barcodes]]
+code = "8935006547605"
+size = "30ml"
+source_url = "https://shop.rohto.com.vn/serum-du-ng-m-cho-da-m-n-nh-y-c-m-hada-labo-acne-care-calming-serum-30ml.html"
 
 # --- Retinoid ---
 # La Roche-Posay Retinol B3 Serum (larocheposay.vn/retinol/retinol-b3-serum): not used, the page's own list has
@@ -311,6 +440,11 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER / EAU, GLYCERIN, ISONONYL ISONONANOATE, PANTHENOL, NIACINAMIDE, DICAPRYLYL CARBONATE, PENTYLENE GLYCOL, DIISOPROPYL SEBACATE, CETYL ALCOHOL, PEG-40 STEARATE, SILICA, GLYCINE SOJA OIL / SOYBEAN OIL, HYDROLYZED RICE PROTEIN, ADENOSINE, PALMITOYL TETRAPEPTIDE-7, PALMITOYL TRIPEPTIDE-1, PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE, SODIUM HYDROXIDE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, VITREOSCILLA FERMENT, RETINOL, ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER, BUTYLENE GLYCOL, CAPRYLYL GLYCOL, CARBOMER, CITRIC ACID, HYDROXYETHYLCELLULOSE, PEG-30 DIPOLYHYDROXYSTEARATE, POLYSORBATE 20, SODIUM LACTATE, SODIUM POLYACRYLATE STARCH, SORBITAN TRISTEARATE, TOCOPHEROL, TRIDECETH-6, CI 15985 / YELLOW 6, PHENOXYETHANOL, PARFUM / FRAGRANCE"""
 
+[[product.barcodes]]
+code = "3337875873086"
+size = "50ml"
+source_url = "https://www.vichy.com.vn/all-products/skincare/night-creams/ageing-signs/lifactiv-b3-pure-retinol-cream-night"
+
 # --- Vitamin C ---
 
 # Comma-separated list from the product JSON-LD; the visible block has the same entries with "•". 15% ascorbic acid.
@@ -325,6 +459,11 @@ retrieved_at = 2026-10-26
 verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER, ASCORBIC ACID, ALCOHOL DENAT., DIPROPYLENE GLYCOL, GLYCERIN, LAURETH-23, NEOHESPERIDIN DIHYDROCHALCONE, SODIUM HYDROXIDE, TOCOPHEROL, HYDROLYZED HYALURONIC ACID, PINUS PINASTER BARK/BUD EXTRACT"""
+
+[[product.barcodes]]
+code = "3337875796583"
+size = "10ml"
+source_url = "https://www.vichy.com.vn/all-products/skincare/face-serums/ageing-signs/liftactiv-supreme-vitamin-c-serum"
 
 # The Vietnamese "Thành phần chi tiết" list (shown twice on the page). The English translation embedded in the same
 # page has an OLDER/different list: no Curcuma Longa Root Oil, Ethylhexylglycerin or Phenoxyethanol, and
@@ -343,6 +482,11 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA/WATER, 3-O-ETHYL ASCORBIC ACID, PROPANEDIOL, NIACINAMIDE, ETHOXYDIGLYCOL, ACETYL GLUCOSAMINE, GLYCERIN, 1,2-HEXANEDIOL, HEXYLRESORCINOL, BETAINE, BUTYLENE GLYCOL, PENTYLENE GLYCOL, CURCUMA LONGA ROOT OIL, CURCUMA LONGA ROOT EXTRACT, ZINGIBER OFFICINALE ROOT EXTRACT, FERULIC ACID, BISABOLOL, DIMETHYL ISOSORBIDE, ETHYLHEXYLGLYCERIN, POTASSIUM AZELOYL DIGLYCINATE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, SODIUM METABISULFITE, PHENOXYETHANOL, SODIUM BENZOATE, POTASSIUM SORBATE."""
 
+[[product.barcodes]]
+code = "8936217700537"
+size = "30ml"
+source_url = "https://cocoonvietnam.com/san-pham/tinh-chat-nghe-hung-yen-x2-2-22-vitamin-c-30ml"
+
 # --- Niacinamide ---
 
 # List from the product JSON-LD (the visible panel has the same entries with "•"). Also lists Retinyl Palmitate
@@ -359,6 +503,20 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER / EAU,DIMETHICONE,NIACINAMIDE,GLYCERIN,PROPYLENE GLYCOL,POLYSILICONE-11,SILICA,BIS-PEG/PPG-16/16 PEG/PPG-16/16 DIMETHICONE,CYSTOSEIRA TAMARISCIFOLIA EXTRACT,2-MERCAPTONICOTINOYL GLYCINE,PEG-20 METHYL GLUCOSE SESQUISTEARATE,SODIUM HYALURONATE,SODIUM HYDROXIDE,SODIUM THIOSULFATE,CARNOSINE,POLOXAMER 338,AMMONIUM POLYACRYLOYLDIMETHYL TAURATE,DIPOTASSIUM GLYCYRRHIZATE,CAPRYLIC/CAPRIC TRIGLYCERIDE,CAPRYLOYL SALICYLIC ACID,CAPRYLYL GLYCOL,CITRIC ACID,TRISODIUM ETHYLENEDIAMINE DISUCCINATE,XANTHAN GUM,PENTYLENE GLYCOL,OCTYLDODECANOL,RETINYL PALMITATE,TOCOPHEROL,PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE,PHENOXYETHANOL,CI 17200 / RED 33,PARFUM / FRAGRANCE"""
 
+# The Vietnam page's gtin13 is "24727751551" (11 digits, not a barcode). The La Roche-Posay Netherlands page gives
+# the 30 ml gtin13 and the same ingredient list (all 32 names, same order; checked 2026-10-26). Not the Indonesia
+# page's code: same name, different formula (Alcohol Denat., Phenylethyl Resorcinol).
+[[product.barcodes]]
+code = "3337875890021"
+size = "30 ml"
+source_url = "https://www.laroche-posay.nl/mela-b3/mela-b3-serum"
+
+# The La Roche-Posay India page has the same list too; its size selector gives the 10 ml code.
+[[product.barcodes]]
+code = "3337875953450"
+size = "10 ml"
+source_url = "https://www.laroche-posay.co.in/mela-b3/mela-b3-serum"
+
 # Official Rohto-Mentholatum Vietnam site. Niacinamide + Magnesium Ascorbyl Phosphate (vitamin C derivative)
 # + tranexamic acid. "Niacinamide ," (space before the comma) as printed.
 # Groups found by resolve() on 2026-10-26: NIACINAMIDE, VITAMIN_C_DERIVATIVE (Niacinamide, Magnesium Ascorbyl Phosphate). Every entry recognised (0 unknown).
@@ -373,6 +531,13 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """Water, Niacinamide , Dipropylene Glycol, Pentylene Glycol, Tranexamic Acid, Sodium Hyaluronate (HA), Hydrolyzed Hyaluronic Acid (Nano HA), Coix Lacryma-Jobi Ma-yuen (Job's Tears) Seed Extract, Saccharomyces/Coix Lacryma-Jobi Ma-Yuen Seed Ferment Filtrate, Ectoin, Magnesium Ascorbyl Phosphate, Sodium PCA, Serine, Tocopherol, Alanine, Arginine, Betaine, Glycine, PCA, Lysine HCl, Proline, Threonine, Terminalia Ferdinandiana Fruit Extract, Butylene Glycol, Ammonium Acryloyldimethyltaurate/VP Copolymer, Glutamic Acid, Glycerin, Sodium Lactate, Polysorbate 20, Disodium EDTA, Helichrysum Italicum Flower Oil, Sodium Metabisulfite."""
 
+# Rohto-Mentholatum Vietnam's own shop (linked from the source page), EAN as the SKU as for Acne Care Calming Serum.
+# thegioiskinfood.com has the same code as the barcode (30ml).
+[[product.barcodes]]
+code = "8935006544833"
+size = "30ml"
+source_url = "https://shop.rohto.com.vn/hada-labo-perfect-white-tranexamic-acid-serum.html"
+
 # L'Oréal Vietnam site; product name on the page: "Sữa dưỡng ẩm ban đêm" (Facial Moisturising Lotion PM).
 # List from the product JSON-LD ("Ingredient"); the visible copy differs only by "Dimethicone ," spacing.
 # Groups found by resolve() on 2026-10-26: NIACINAMIDE. Every entry recognised (0 unknown).
@@ -386,6 +551,11 @@ retrieved_at = 2026-10-26
 verification_status = "unverified"
 application = "leave_on"
 ingredients = """Aqua / Water / Eau, Glycerin, Caprylic/Capric Triglyceride, Niacinamide, Cetearyl Alcohol, Potassium Phosphate, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Dimethicone, Ceteareth-20, Behentrimonium Methosulfate, Sodium Lauroyl Lactylate, Sodium Hyaluronate, Cholesterol, Phenoxyethanol, Disodium EDTA, Dipotassium Phosphate, Caprylyl Glycol, Phytosphingosine, Xanthan Gum, Polyglyceryl-3 Diisostearate, Ethylhexylglycerin"""
+
+[[product.barcodes]]
+code = "3606000537453"
+size = "50 ml"
+source_url = "https://www.cerave.com.vn/cham-soc-da/duong-am/sua-duong-am-ban-dem"
 
 # --- No strong actives ---
 
@@ -405,6 +575,11 @@ verification_status = "unverified"
 application = "rinse_off"
 ingredients = """Aqua / Water / Eau, Glycerin, Cetearyl Alcohol, Peg-40 Stearate, Stearyl Alcohol, Potassium Phosphate, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Glyceryl Stearate, Behentrimonium Methosulfate, Sodium Lauroyl Lactylate, Sodium Hyaluronate, Cholesterol, Phenoxyethanol, Disodium EDTA, Dipotassium Phosphate, Tocopherol, Phytosphingosine, Xanthan Gum, Cetyl Alcohol, Polysorbate 20, Ethylhexylglycerin"""
 
+[[product.barcodes]]
+code = "3606000537699"
+size = "473 ml"
+source_url = "https://www.cerave.com.vn/cham-soc-da/lam-sach/sua-rua-mat-danh-cho-da-thuong-va-da-kho"
+
 # List from the product JSON-LD. The page ends the list with a Vietnamese "ingredients may change" notice, omitted.
 # Groups found by resolve() on 2026-10-26: none. Every entry recognised (0 unknown).
 [[product]]
@@ -418,6 +593,26 @@ verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER / EAU, HYDROGENATED POLYISOBUTENE, DIMETHICONE, GLYCERIN, BUTYROSPERMUM PARKII BUTTER / SHEA BUTTER, PANTHENOL, ZEA MAYS STARCH / CORN STARCH, PROPANEDIOL, BUTYLENE GLYCOL, CETYL PEG/PPG-10/1 DIMETHICONE, TRIHYDROXYSTEARIN, CENTELLA ASIATICA LEAF EXTRACT, POLYMNIA SONCHIFOLIA ROOT JUICE, ZINC GLUCONATE, MADECASSOSIDE, MANGANESE GLUCONATE, ALPHA-GLUCAN OLIGOSACCHARIDE, SILICA, ALUMINUM HYDROXIDE, MAGNESIUM SULFATE, MANNOSE, CAPRYLOYL GLYCINE, CAPRYLYL GLYCOL, VITREOSCILLA FERMENT, CITRIC ACID, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, LACTOBACILLUS, ACETYLATED GLYCOL STEARATE, MALTODEXTRIN, POLYGLYCERYL-4 ISOSTEARATE, TOCOPHEROL, PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE, CI 77891 / TITANIUM DIOXIDE"""
 
+# The 40ml code is from the page's analytics data (variant / dimension48). Its JSON-LD also gave gtin13
+# 3337872413018 (no size) until the evening of 2026-10-26, when the page dropped its product data (ingredient list
+# included); that code is left out until a page shows it again.
+[[product.barcodes]]
+code = "3337872412998"
+size = "40ml"
+source_url = "https://www.larocheposay.vn/cicaplast/cicaplast-baume-b5-plus"
+
+# The La Roche-Posay India page has the same ingredient list (all names, same order; checked 2026-10-26) under
+# other codes, from its size selector (variantEANId): another market's packaging of the same formula.
+[[product.barcodes]]
+code = "3337875816779"
+size = "15 ml"
+source_url = "https://www.laroche-posay.co.in/cicaplast/cicaplast-baume-b5-plus"
+
+[[product.barcodes]]
+code = "3337875816809"
+size = "40 ml"
+source_url = "https://www.laroche-posay.co.in/cicaplast/cicaplast-baume-b5-plus"
+
 # Sunscreen. List from the product JSON-LD (only copy of the list in the page HTML).
 # Groups found by resolve() on 2026-10-26: none. Every entry recognised (0 unknown).
 [[product]]
@@ -430,3 +625,8 @@ retrieved_at = 2026-10-26
 verification_status = "unverified"
 application = "leave_on"
 ingredients = """AQUA / WATER,HOMOSALATE,SILICA,OCTOCRYLENE,ETHYLHEXYL SALICYLATE,BUTYL METHOXYDIBENZOYLMETHANE,ETHYLHEXYL TRIAZONE,BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE,DROMETRIZOLE TRISILOXANE,ALUMINUM STARCH OCTENYLSUCCINATE,GLYCERIN,PENTYLENE GLYCOL,STYRENE/ACRYLATES COPOLYMER,POTASSIUM CETYL PHOSPHATE,DIMETHICONE,PERLITE,PROPYLENE GLYCOL,ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER,ALUMINUM HYDROXIDE,p-ANISIC ACID,CAPRYLYL GLYCOL,DISODIUM EDTA,INULIN LAURYL CARBAMATE,ISOPROPYL LAUROYL SARCOSINATE,PEG-8 LAURATE,SCUTELLARIA BAICALENSIS EXTRACT / SCUTELLARIA BAICALENSIS ROOT EXTRACT,SILICA SILYLATE,STEARIC ACID,STEARYL ALCOHOL,TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID,TITANIUM DIOXIDE,TITANIUM DIOXIDE [NANO] / TITANIUM DIOXIDE,TOCOPHEROL,TRIETHANOLAMINE,XANTHAN GUM,ZINC GLUCONATE"""
+
+[[product.barcodes]]
+code = "3337875917407"
+size = "50ml"
+source_url = "https://www.larocheposay.vn/anthelios/anthelios-uvmune-400-anti-dark-spots-fluid-spf50plus"

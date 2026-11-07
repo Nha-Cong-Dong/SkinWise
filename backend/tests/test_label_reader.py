@@ -111,6 +111,8 @@ def message(stop_reason: str, text: str) -> dict:
 def test_call_model_sends_the_photo_with_a_transcription_prompt(
     monkeypatch: pytest.MonkeyPatch,
 ) -> None:
+    # A model that takes fallbacks, whatever the developer's .env chose.
+    monkeypatch.setattr(get_settings(), "label_model", "claude-opus-5-5")
     expected = ModelLabel(found=True, text="Aqua, Glycerin")
     sent = fake_anthropic(
         monkeypatch,

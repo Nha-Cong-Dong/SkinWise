@@ -1,5 +1,7 @@
 import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
-import { api, ApiError, type BarcodeProduct } from '../api'
+import { api, ApiError, type BarcodeResult, type OpenBeautyFactsProduct, type SampleBarcodeProduct } from '../api'
+import type { RoutineActions } from '../routine'
+import { SampleProduct } from './SampleProduct'
 
 const LICENSE_URL = 'https://opendatacommons.org/licenses/odbl/1-0/'
 const CONTRIBUTE_URL = 'https://world.openbeautyfacts.org/contribute'
@@ -32,20 +34,22 @@ function useCanScan(): boolean {
 type State =
   | { kind: 'idle' }
   | { kind: 'loading' }
-  | { kind: 'found'; product: BarcodeProduct }
+  | { kind: 'found'; result: BarcodeResult }
   | { kind: 'invalid' }
   | { kind: 'not_found'; code: string }
   | { kind: 'unreadable' } // no barcode found in the photo
   | { kind: 'error' }
 
 type Props = {
-  /** Take the product's ingredient list to the paste tab, to compare and add. */
-  onUse: (product: BarcodeProduct) => void
+  actions: RoutineActions
+  /** Take an Open Beauty Facts product's ingredient list to the paste tab, to compare and add. */
+  onUse: (product: OpenBeautyFactsProduct) => void
   onPaste: () => void
 }
 
-/** Look a product up on Open Beauty Facts by the digits under its barcode, or a photo of it. */
-export function BarcodeLookup({ onUse, onPaste }: Props) {
+/** Look a product up by the digits under its barcode, or a photo of it: first among SkinWise's
+ *  sample products, then on Open Beauty Facts. */
+export function BarcodeLookup({ actions, onUse, onPaste }: Props) {
   const [code, setCode] = useState('')
   const [state, setState] = useState<State>({ kind: 'idle' })
   const canScan = useCanScan()
@@ -61,7 +65,7 @@ export function BarcodeLookup({ onUse, onPaste }: Props) {
     const id = ++latest.current
     setState({ kind: 'loading' })
     api.barcode(digits).then(
-      (product) => id === latest.current && setState({ kind: 'found', product }),
+      (result) => id === latest.current && setState({ kind: 'found', result }),
       (e) => {
         if (id !== latest.current) return
         const status = e instanceof ApiError ? e.status : 0
@@ -143,8 +147,8 @@ export function BarcodeLookup({ onUse, onPaste }: Props) {
         </>
       )}
       <p className="text-xs leading-relaxed text-ink-mute">
-        Tra trên Open Beauty Facts, cơ sở dữ liệu mỹ phẩm do cộng đồng đóng góp. Hiện có rất ít sản phẩm bán ở Việt
-        Nam.
+        Tra trong sản phẩm mẫu của SkinWise, rồi trên Open Beauty Facts, cơ sở dữ liệu mỹ phẩm do cộng đồng đóng góp
+        (hiện có rất ít sản phẩm bán ở Việt Nam).
       </p>
 
       <div aria-live="polite">
@@ -165,30 +169,50 @@ export function BarcodeLookup({ onUse, onPaste }: Props) {
           </p>
         )}
         {state.kind === 'not_found' && (
-          <Missing onPaste={onPaste}>Open Beauty Facts chưa có sản phẩm mã {state.code}.</Missing>
+          <Missing onPaste={onPaste}>SkinWise và Open Beauty Facts đều chưa có sản phẩm mã {state.code}.</Missing>
         )}
-        {state.kind === 'found' && !state.product.ingredients_text && (
-          <Missing onPaste={onPaste}>
-            Open Beauty Facts có “{state.product.name ?? `sản phẩm mã ${state.product.barcode}`}” nhưng chưa có bảng
-            thành phần.
-          </Missing>
-        )}
-        {state.kind === 'found' && state.product.ingredients_text && (
-          <Found product={state.product} onUse={() => onUse(state.product)} />
-        )}
+        {state.kind === 'found' &&
+          (state.result.source === 'skinwise' ? (
+            <FoundSample hit={state.result} actions={actions} />
+          ) : (
+            <FoundOnOpenBeautyFacts product={state.result} onUse={onUse} onPaste={onPaste} />
+          ))}
       </div>
     </div>
   )
 }
 
-function Found({ product, onUse }: { product: BarcodeProduct; onUse: () => void }) {
+function FoundSample({ hit, actions }: { hit: SampleBarcodeProduct; actions: RoutineActions }) {
+  return (
+    <div className="rounded-xl bg-surface p-4 ring-1 ring-line">
+      <SampleProduct product={hit.product} actions={actions} size={hit.size} />
+      <p className="mt-3 text-xs leading-relaxed text-ink-mute">
+        Sản phẩm mẫu của SkinWise: bảng thành phần lấy từ trang chính hãng.
+      </p>
+    </div>
+  )
+}
+
+type FoundProps = {
+  product: OpenBeautyFactsProduct
+  onUse: (product: OpenBeautyFactsProduct) => void
+  onPaste: () => void
+}
+
+function FoundOnOpenBeautyFacts({ product, onUse, onPaste }: FoundProps) {
+  if (!product.ingredients_text)
+    return (
+      <Missing onPaste={onPaste}>
+        Open Beauty Facts có “{product.name ?? `sản phẩm mã ${product.barcode}`}” nhưng chưa có bảng thành phần.
+      </Missing>
+    )
   return (
     <div className="rounded-xl bg-surface p-4 ring-1 ring-line">
       <p className="text-xs text-ink-mute">{product.brand ?? 'Không ghi hãng'}</p>
       <p className="text-sm leading-snug font-medium">{product.name ?? `Sản phẩm mã ${product.barcode}`}</p>
       <p className="mt-2 line-clamp-3 text-xs leading-relaxed text-ink-soft">{product.ingredients_text}</p>
       <button
-        onClick={onUse}
+        onClick={() => onUse(product)}
         className="mt-3 rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link"
       >
         So với bao bì và thêm

@@ -26,7 +26,6 @@ PRODUCT_URL = "https://world.openbeautyfacts.org/product/{code}"
 LICENSE_URL = "https://opendatacommons.org/licenses/odbl/1-0/"
 
 _TEXT_FIELD = re.compile(r"ingredients_text_([a-z]{2,3})")
-_GTIN_LENGTHS = {8, 12, 13, 14}  # EAN-8, UPC-A, EAN-13, GTIN-14
 
 
 class OpenBeautyFactsError(Exception):
@@ -46,23 +45,6 @@ class FoundProduct:
     brand: str | None
     ingredients: IngredientsText | None  # None: the record has no ingredient list yet
     last_modified_at: datetime | None
-
-
-def normalize_barcode(raw: str) -> str | None:
-    """The digits of a GTIN barcode with a valid check digit, or None.
-
-    Spaces and dashes are ignored. A wrong check digit is almost always a typo, and looking it
-    up would show some other product.
-    """
-    code = re.sub(r"[\s-]", "", raw)
-    if not (code.isascii() and code.isdigit()) or len(code) not in _GTIN_LENGTHS:
-        return None
-    if len(code) == 12:
-        code = "0" + code  # Open Beauty Facts files a UPC-A under its EAN-13 form
-    body, check = code[:-1], int(code[-1])
-    # From the right, digits are weighted 3, 1, 3, 1...
-    total = sum(int(d) * (3 if i % 2 == 0 else 1) for i, d in enumerate(reversed(body)))
-    return code if (10 - total % 10) % 10 == check else None
 
 
 def fetch_record(code: str, timeout: float = 15) -> dict | None:

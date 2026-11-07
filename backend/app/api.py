@@ -8,6 +8,7 @@ from sqlalchemy.orm import Session
 
 from app import label_reader
 from app import open_beauty_facts as obf
+from app.barcodes import normalize_barcode
 from app.concentration import OnePercentLine, one_percent_line
 from app.db import get_session
 from app.engine import (
@@ -31,9 +32,11 @@ from app.ingredients import (
     with_ancestors,
 )
 from app.products import (
+    ProductRow,
     existing_product_ids,
     get_product,
     product_applications,
+    product_by_barcode,
     search_products,
 )
 from app.questions import add_question, list_answered
@@ -41,7 +44,7 @@ from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
     AnsweredQuestionOut,
-    BarcodeProduct,
+    BarcodeResult,
     FunctionOut,
     GroupOut,
     InciAnalysis,
@@ -50,6 +53,7 @@ from app.schemas import (
     LabelImage,
     LabelReadingOut,
     OccurrenceOut,
+    OpenBeautyFactsProduct,
     ProductDetail,
     ProductSummary,
     QuestionCreate,
@@ -59,6 +63,7 @@ from app.schemas import (
     RoutineProductResult,
     RuleOut,
     RulesResponse,
+    SampleBarcodeProduct,
     SuggestionOut,
     TextNotice,
     WarningOut,
@@ -158,7 +163,10 @@ def products(
     q: Annotated[str, Query(max_length=200)] = "",
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> list[ProductSummary]:
-    rows = search_products(db, q, limit)
+    return summaries(db, search_products(db, q, limit))
+
+
+def summaries(db: Session, rows: list[ProductRow]) -> list[ProductSummary]:
     groups_by_id = load_product_groups(db, [r.id for r in rows])
     return [
         ProductSummary.model_validate({**r.__dict__, "groups": sorted(groups_by_id[r.id])})
@@ -209,12 +217,16 @@ def analyze_inci(db: DbSession, body: InciAnalyzeRequest) -> InciAnalysis:
 
 
 @router.get("/barcode/{code}")
-def barcode(db: DbSession, code: Annotated[str, Path(max_length=40)]) -> BarcodeProduct:
-    """A product on Open Beauty Facts by barcode. Community data: the frontend shows it as
-    unverified and the user compares it with the package before adding it."""
-    normalized = obf.normalize_barcode(code)
+def barcode(db: DbSession, code: Annotated[str, Path(max_length=40)]) -> BarcodeResult:
+    """A seeded product printed with this barcode, else the product on Open Beauty Facts.
+    Open Beauty Facts is community data: the frontend shows it as unverified and the user
+    compares it with the package before adding it."""
+    normalized = normalize_barcode(code)
     if normalized is None:
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "invalid barcode")
+    if seeded := product_by_barcode(db, normalized):
+        row, size = seeded
+        return SampleBarcodeProduct(barcode=normalized, size=size, product=summaries(db, [row])[0])
     try:
         record = obf.fetch_record(normalized)
     except obf.OpenBeautyFactsError as e:
@@ -226,7 +238,7 @@ def barcode(db: DbSession, code: Annotated[str, Path(max_length=40)]) -> Barcode
         return sum(r.known for r in resolve(db, read_label_text(text).entries))
 
     found = obf.read_record(normalized, record, known)
-    return BarcodeProduct(
+    return OpenBeautyFactsProduct(
         barcode=found.barcode,
         name=found.name,
         brand=found.brand,

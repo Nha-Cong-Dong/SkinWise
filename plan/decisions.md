@@ -102,6 +102,13 @@ Open Beauty Facts là dữ liệu cộng đồng: thử 26/10 thấy bản ghi c
 - Mã vạch kiểm chữ số kiểm tra trước khi gọi Open Beauty Facts: gõ sai một số thường ra mã của sản phẩm khác. UPC-A 12 số đổi sang dạng EAN-13 (Open Beauty Facts trả lỗi 500 cho dạng 12 số).
 - Quét bằng camera dùng API `BarcodeDetector` của trình duyệt trên ảnh chụp; nút chỉ hiện khi trình duyệt hỗ trợ (không có trên Safari, Firefox). Không thêm thư viện quét mã.
 
+## Mã vạch cho sản phẩm mẫu: mỗi mã một trang nguồn, tra trước Open Beauty Facts (26/10)
+Mã vạch sai làm người dùng quét ra nhầm sản phẩm và nhận cảnh báo của sản phẩm khác, nên mã cũng theo nguyên tắc nguồn như bảng thành phần:
+- Mỗi mã trong `products.toml` kèm `source_url`: trang cho thấy đó là mã của đúng sản phẩm này. Thứ tự ưu tiên: trang hãng (`gtin13` trong dữ liệu sản phẩm; với trang L'Oréal là `dimension48`, trường trùng `gtin13` ở mọi trang Việt Nam), cửa hàng chính hãng của hãng, rồi nhà bán lẻ ghi rõ ô "Barcode"/"EAN" cạnh tên và cỡ. Không chép từ trí nhớ, không suy ra theo dãy số, không lấy từ Open Beauty Facts hay trang tra mã (chỉ dùng để đối chiếu). `verify_products` kiểm mã còn trên trang.
+- Trang hãng ở thị trường khác chỉ dùng khi bảng thành phần trên đó khớp bảng đã lưu (vd. Mela B3: trang Hà Lan khớp đủ 32 tên; trang Indonesia cùng tên nhưng khác công thức nên bỏ). Hai nguồn ghi hai mã khác nhau cho cùng sản phẩm và cỡ thì không thêm mã chưa trang hãng nào xác nhận: quét ra "không có" tốt hơn ra nhầm.
+- Mã vạch không phân biệt công thức theo thị trường (Some By Mi: cùng mã cho bản Hàn và bản EU), cũng như khi chọn sản phẩm mẫu theo tên. Thẻ kết quả ghi "bảng thành phần lấy từ trang chính hãng".
+- `GET /barcode/{code}` tra sản phẩm mẫu trước, trả `source: "skinwise"`; giao diện thêm theo id như kết quả tìm tên. Không có mới hỏi Open Beauty Facts.
+
 ## Đọc bảng thành phần từ ảnh: Claude chỉ chép chữ, người dùng sửa và xác nhận (hướng G, 26/10)
 Chọn Claude qua backend (SDK `anthropic` và khoá đã có cho hướng E) thay vì Tesseract.js (thêm thư viện, tải dữ liệu ngôn ngữ nặng, đọc kém chữ nhỏ trên chai cong) hay OCR cài trên máy chủ. Đánh đổi: ảnh rời máy người dùng tới Anthropic, và mỗi ảnh tốn phí (Opus 5.5: ảnh tối đa 4.784 token, khoảng 0,02 USD tiền đầu vào mỗi ảnh, cộng phần chữ trả về). Tài liệu kỹ thuật gọi đây là OCR nhưng mô hình là AI, nên phải giữ nguyên tắc "AI không tự nhớ bảng thành phần":
 - Lời nhắc chỉ cho chép chữ in trên ảnh, giữ nguyên chính tả và thứ tự, ghi `[?]` cho mỗi tên không đọc chắc; cấm thêm, sửa hay sắp lại tên theo hiểu biết về sản phẩm. Nhãn nhiều thứ tiếng: chỉ chép bảng tên INCI chữ Latin.

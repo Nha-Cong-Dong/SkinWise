@@ -97,9 +97,20 @@ class InciAnalysis(BaseModel):
     one_percent_marker: str | None  # the capped ingredient that marks the 1% line
 
 
-class BarcodeProduct(BaseModel):
+class SampleBarcodeProduct(BaseModel):
+    """A seeded product found by one of its barcodes (data/products.toml). Added to a routine
+    by id, like a search result."""
+
+    source: Literal["skinwise"] = "skinwise"
+    barcode: str
+    size: str | None  # the size this barcode is printed on, when its source page names it
+    product: ProductSummary
+
+
+class OpenBeautyFactsProduct(BaseModel):
     """A product found on Open Beauty Facts: community data, passed through, not stored."""
 
+    source: Literal["open_beauty_facts"] = "open_beauty_facts"
     barcode: str
     name: str | None
     brand: str | None
@@ -110,6 +121,12 @@ class BarcodeProduct(BaseModel):
     license_url: str  # ODbL
     retrieved_at: datetime
     last_modified_at: datetime | None
+
+
+# The seeded products are looked up first: their lists were checked against the brand's page.
+BarcodeResult = Annotated[
+    SampleBarcodeProduct | OpenBeautyFactsProduct, Field(discriminator="source")
+]
 
 
 class LabelImage(BaseModel):
