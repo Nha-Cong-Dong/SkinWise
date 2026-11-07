@@ -7,7 +7,8 @@ import {
   currentResult,
   dataGaps,
   formatLabelLine,
-  isUsageNote,
+  groupByRule,
+  warningProducts,
   type CheckState,
   type LabelGroups,
   type MyProduct,
@@ -48,6 +49,8 @@ export function WarningsPanel({
   const result = currentResult(state)
   const { incomplete, misspelled } = dataGaps(result, products)
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
+  // One card per rule; a rule raised for several pairs of products lists every pair inside it.
+  const groups = groupByRule(result?.warnings ?? [])
 
   return (
     <section aria-labelledby="results-title" id={page ? 'results' : undefined}>
@@ -90,8 +93,8 @@ export function WarningsPanel({
       {page && result && result.warnings.length > 0 && (
         <nav aria-label="Danh sách cảnh báo" className="hidden lg:sticky lg:top-4 lg:block">
           <ul className="flex flex-col gap-1">
-            {result.warnings.map((w, i) => (
-              <li key={`${w.rule.key}:${w.product_keys.join('+')}`}>
+            {groups.map((g, i) => (
+              <li key={g.rule.key}>
                 <button
                   onClick={() => {
                     const card = document.getElementById(`${idPrefix}-${i}`)
@@ -101,13 +104,14 @@ export function WarningsPanel({
                   className="flex w-full flex-col gap-1.5 rounded-md px-5 py-4 text-left hover:bg-surface"
                 >
                   <span className="flex flex-wrap items-center gap-2">
-                    <SeverityBadge severity={w.rule.severity} />
-                    <span className="text-xs text-ink-mute">{KIND_LABELS[w.rule.kind]}</span>
+                    <SeverityBadge severity={g.rule.severity} />
+                    <span className="text-xs text-ink-mute">{KIND_LABELS[g.rule.kind]}</span>
                   </span>
-                  <span className="leading-snug font-semibold">{w.rule.title_vi}</span>
+                  <span className="leading-snug font-semibold">{g.rule.title_vi}</span>
                   <span className="text-xs text-ink-mute">
-                    {w.product_keys.map((k) => names.get(k) ?? k).join(isUsageNote(w) ? ', ' : ' + ')} ·{' '}
-                    {formatOccurrences(w.occurrences)}
+                    {g.warnings.length === 1
+                      ? `${warningProducts(g.warnings[0], names)} · ${formatOccurrences(g.warnings[0].occurrences)}`
+                      : `${g.warnings.length} cặp sản phẩm: ${g.productKeys.map((k) => names.get(k) ?? k).join(', ')}`}
                   </span>
                 </button>
               </li>
@@ -160,14 +164,15 @@ export function WarningsPanel({
           </DataNote>
         ))}
         {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
-        {result?.warnings.map((w, i) => {
-          const usage = w.rule.kind === 'usage'
-          const rinseOff = usage ? [] : w.product_keys.filter((k) => applications.get(k) === 'rinse_off')
+        {groups.map((g, i) => {
+          const usage = g.rule.kind === 'usage'
+          const rinseOff = usage ? [] : g.productKeys.filter((k) => applications.get(k) === 'rinse_off')
+          const single = g.warnings.length === 1 ? g.warnings[0] : null
           return (
             <RuleCard
-              key={`${w.rule.key}:${w.product_keys.join('+')}`}
+              key={g.rule.key}
               id={`${idPrefix}-${i}`}
-              rule={w.rule}
+              rule={g.rule}
               collapsible
               footer={
                 page && (
@@ -180,24 +185,38 @@ export function WarningsPanel({
                 )
               }
             >
-              <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
-                <dt className="text-ink-mute">Sản phẩm</dt>
-                <dd className="font-medium">
-                  {w.product_keys.map((k, n) => (
-                    <span key={k}>
-                      {n > 0 && <span className="font-normal text-ink-mute">{usage ? ', ' : ' + '}</span>}
-                      {names.get(k) ?? k}
-                    </span>
-                  ))}
-                </dd>
-                <dt className="text-ink-mute">Khi nào</dt>
-                <dd>{formatOccurrences(w.occurrences)}</dd>
-              </dl>
-              <RuleIngredients warning={w} names={names} found={found} />
+              {single ? (
+                <dl className="mt-3 grid grid-cols-[auto_minmax(0,1fr)] gap-x-3 gap-y-1 text-sm">
+                  <dt className="text-ink-mute">Sản phẩm</dt>
+                  <dd className="font-medium">
+                    {single.product_keys.map((k, n) => (
+                      <span key={k}>
+                        {n > 0 && <span className="font-normal text-ink-mute">{usage ? ', ' : ' + '}</span>}
+                        {names.get(k) ?? k}
+                      </span>
+                    ))}
+                  </dd>
+                  <dt className="text-ink-mute">Khi nào</dt>
+                  <dd>{formatOccurrences(single.occurrences)}</dd>
+                </dl>
+              ) : (
+                <div className="mt-3 text-sm">
+                  <p className="text-ink-mute">{g.warnings.length} cặp sản phẩm:</p>
+                  <ul className="mt-1 space-y-1.5">
+                    {g.warnings.map((w) => (
+                      <li key={w.product_keys.join('+')}>
+                        <span className="font-medium">{warningProducts(w, names)}</span>
+                        <span className="block text-xs text-ink-mute">{formatOccurrences(w.occurrences)}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+              <RuleIngredients rule={g.rule} productKeys={g.productKeys} names={names} found={found} />
               <p className="mt-2 text-xs leading-relaxed text-ink-mute">
                 {usage
                   ? 'Lưu ý cho mọi sản phẩm có nhóm hoạt chất này trong routine.'
-                  : `Luật áp dụng khi hai sản phẩm dùng ${SCOPE_LABELS[w.rule.scope]}.`}
+                  : `Luật áp dụng khi hai sản phẩm dùng ${SCOPE_LABELS[g.rule.scope]}.`}
                 {rinseOff.length > 0 &&
                   ` ${rinseOff.map((k) => `“${names.get(k) ?? k}”`).join(', ')} là sản phẩm rửa trôi; SkinWise hiện áp dụng luật như nhau cho sản phẩm rửa trôi và sản phẩm để lại trên da.`}
               </p>
@@ -217,20 +236,22 @@ export function WarningsPanel({
 }
 
 /**
- * For each product of a warning, the label lines in the rule's groups, with their place on the
- * label. Display only: nothing here changes the warning. Hidden when no line matches.
+ * For each product of a rule's warnings, the label lines in the rule's groups, with their place on
+ * the label. Display only: nothing here changes the warning. Hidden when no line matches.
  */
 function RuleIngredients({
-  warning,
+  rule,
+  productKeys,
   names,
   found,
 }: {
-  warning: Warning
+  rule: Warning['rule']
+  productKeys: string[]
   names: Map<string, string>
   found: Map<string, LabelGroups>
 }) {
-  const ruleGroups = [warning.rule.group_a, warning.rule.group_b].filter((g): g is string => g !== null)
-  const rows = warning.product_keys.flatMap((key) => {
+  const ruleGroups = [rule.group_a, rule.group_b].filter((g): g is string => g !== null)
+  const rows = productKeys.flatMap((key) => {
     const product = found.get(key)
     if (!product) return []
     // One line can be in both groups of the rule (or the same group twice): list it once.
@@ -256,15 +277,17 @@ function RuleIngredients({
 }
 
 /**
- * How many combination warnings at each severity, most severe first; "Lưu ý khi dùng" notes are
- * counted on their own, not as warnings.
+ * How many combination warnings at each severity, most severe first, counted as cards (one per
+ * rule, however many pairs of products it lists); "Lưu ý khi dùng" notes are counted on their own,
+ * not as warnings.
  */
 function tally(warnings: Warning[]) {
-  const combinations = warnings.filter((w) => !isUsageNote(w))
+  const groups = groupByRule(warnings)
+  const combinations = groups.filter((g) => g.rule.kind !== 'usage')
   const counts = (Object.keys(SEVERITY) as Severity[])
-    .map((severity) => [severity, combinations.filter((w) => w.rule.severity === severity).length] as const)
+    .map((severity) => [severity, combinations.filter((g) => g.rule.severity === severity).length] as const)
     .filter(([, n]) => n > 0)
-  return { counts, notes: warnings.length - combinations.length }
+  return { counts, notes: groups.length - combinations.length }
 }
 
 /** The status line a screen reader announces once a check finishes. */

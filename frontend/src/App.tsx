@@ -30,6 +30,7 @@ import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
 import {
   EMPTY_ADD_DRAFT,
   currentResult,
+  groupByRule,
   isCombinationAlert,
   isUsageNote,
   labelGroups,
@@ -631,7 +632,8 @@ const TABS: [RoutineTab, string][] = [
  */
 function RoutineTabs({ tab, check }: { tab: RoutineTab; check: CheckState }) {
   const result = currentResult(check)
-  const warnings = result ? result.warnings.filter(isCombinationAlert).length : 0
+  // Counted as cards: one per rule, however many pairs of products it lists.
+  const warnings = result ? groupByRule(result.warnings.filter(isCombinationAlert)).length : 0
   return (
     <nav aria-label="Lịch dùng">
       <div className="grid grid-cols-4 gap-1 rounded-md border border-line bg-surface p-1 lg:inline-flex lg:rounded-full">

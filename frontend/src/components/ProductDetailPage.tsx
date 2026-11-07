@@ -6,7 +6,7 @@ import { href, navigate } from '../router'
 import {
   checkError,
   currentResult,
-  isUsageNote,
+  groupByRule,
   maybeIncomplete,
   type CheckState,
   type LabelGroups,
@@ -18,6 +18,7 @@ import { SeverityBadge } from './Icons'
 import { IngredientList } from './IngredientList'
 import { scheduleOf } from './shelf'
 import { DataNote } from './Notice'
+import { WarningPairs } from './WarningPairs'
 import { cataloguePhoto, photoError, userPhoto } from './photos'
 import { PhotoCredit, ProductImage } from './ProductImage'
 import { btn, btnDanger, btnGhostDanger, sm } from './ui'
@@ -248,6 +249,7 @@ function RelatedWarnings({ product, actions, check }: { product: MyProduct; acti
   const names = new Map(actions.routine.products.map((p) => [p.key, p.name]))
   const checked = result?.products.some((p) => p.key === product.key) ?? false
   const warnings = (result?.warnings ?? []).filter((w) => w.product_keys.includes(product.key))
+  const groups = groupByRule(warnings)
   if (check.kind === 'error') {
     return (
       <div className="rounded-md bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
@@ -277,21 +279,18 @@ function RelatedWarnings({ product, actions, check }: { product: MyProduct; acti
   }
   return (
     <>
-      {warnings.map((w) => (
+      {groups.map(({ rule: r, warnings: ws }) => (
         <article
-          key={`${w.rule.key}:${w.product_keys.join('+')}`}
+          key={r.key}
           className="relative overflow-hidden rounded-md bg-surface py-4 pr-4 pl-6"
         >
-          <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${SEVERITY[w.rule.severity].bar}`} />
+          <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${SEVERITY[r.severity].bar}`} />
           <div className="flex flex-wrap items-center gap-2">
-            <SeverityBadge severity={w.rule.severity} />
-            <span className="text-xs text-ink-mute">{KIND_LABELS[w.rule.kind]}</span>
+            <SeverityBadge severity={r.severity} />
+            <span className="text-xs text-ink-mute">{KIND_LABELS[r.kind]}</span>
           </div>
-          <h3 className="mt-2 leading-snug font-semibold text-pretty">{w.rule.title_vi}</h3>
-          <p className="mt-1 text-xs text-ink-mute">
-            {w.product_keys.map((k) => names.get(k) ?? k).join(isUsageNote(w) ? ', ' : ' + ')} ·{' '}
-            {formatOccurrences(w.occurrences)}
-          </p>
+          <h3 className="mt-2 leading-snug font-semibold text-pretty">{r.title_vi}</h3>
+          <WarningPairs warnings={ws} names={names} when={(w) => formatOccurrences(w.occurrences)} />
           <a
             href={href({ page: 'routine', tab: 'check' })}
             className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary"

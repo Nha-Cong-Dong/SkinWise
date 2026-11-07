@@ -2,11 +2,21 @@ import { useState } from 'react'
 import type { Session, Severity, Warning } from '../api'
 import { DAY_NAMES, KIND_LABELS, SESSION_LABELS, SEVERITY, todayIndex } from '../labels'
 import { href } from '../router'
-import { currentResult, dataGaps, isUsageNote, sessionEntries, type CheckState, type RoutineActions } from '../routine'
+import {
+  currentResult,
+  dataGaps,
+  groupByRule,
+  isUsageNote,
+  sessionEntries,
+  type CheckState,
+  type RoutineActions,
+  type WarningGroup,
+} from '../routine'
 import { SeverityBadge } from './Icons'
 import { DataNote, Notice } from './Notice'
 import { SessionShell, SessionSwitch } from './RoutineBoard'
 import { TONE } from './sessionTone'
+import { WarningPairs } from './WarningPairs'
 import { stagger } from './motion'
 import { btn, btnPrimary } from './ui'
 
@@ -132,8 +142,8 @@ export function TodayPage({ actions, check }: Props) {
           )}
           {/* Always with the result, also beside usage notes: no combination warning ≠ safe. */}
           {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
-          {todays.map((w) => (
-            <TodayWarning key={`${w.rule.key}:${w.product_keys.join('+')}`} warning={w} today={today} actions={actions} />
+          {groupByRule(todays).map((g) => (
+            <TodayWarning key={g.rule.key} group={g} today={today} actions={actions} />
           ))}
           {result && !result.notice_vi && result.warnings.length > 0 && todays.length === 0 && !noStepsToday && (
             <p className="text-sm text-ink-soft">Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn.</p>
@@ -200,14 +210,18 @@ function TodaySession({
   )
 }
 
-/** One warning that applies today: the rule's own title, the products, today's sessions. */
-function TodayWarning({ warning, today, actions }: { warning: Warning; today: number; actions: RoutineActions }) {
-  const names = new Map(actions.routine.products.map((p) => [p.key, p.name]))
+/** Today's sessions of one warning: "Buổi sáng và Buổi tối, hôm nay". */
+function todayWhen(warning: Warning, today: number): string {
   const sessions = [...new Set(warning.occurrences.filter((o) => o.day === today).map((o) => o.session))]
-  const when = sessions.includes(null)
+  return sessions.includes(null)
     ? 'Trong ngày hôm nay'
     : sessions.map((s) => `Buổi ${SESSION_LABELS[s!].toLowerCase()}`).join(' và ') + ', hôm nay'
-  const usage = isUsageNote(warning)
+}
+
+/** One rule that applies today: its own title, then each pair of products and today's sessions. */
+function TodayWarning({ group, today, actions }: { group: WarningGroup; today: number; actions: RoutineActions }) {
+  const names = new Map(actions.routine.products.map((p) => [p.key, p.name]))
+  const warning = group.warnings[0]
   return (
     <article className="relative overflow-hidden rounded-md bg-surface py-4 pr-4 pl-6">
       <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${SEVERITY[warning.rule.severity].bar}`} />
@@ -216,9 +230,7 @@ function TodayWarning({ warning, today, actions }: { warning: Warning; today: nu
         <span className="text-xs text-ink-mute">{KIND_LABELS[warning.rule.kind]}</span>
       </div>
       <h3 className="mt-2 font-sans text-base leading-snug font-semibold text-pretty">{warning.rule.title_vi}</h3>
-      <p className="mt-1 text-xs text-ink-mute">
-        {warning.product_keys.map((k) => names.get(k) ?? k).join(usage ? ', ' : ' + ')} · {when}
-      </p>
+      <WarningPairs warnings={group.warnings} names={names} when={(w) => todayWhen(w, today)} />
       <a
         href={href({ page: 'routine', tab: 'check' })}
         className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary"

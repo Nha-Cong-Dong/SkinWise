@@ -315,6 +315,38 @@ export function isCombinationAlert(w: Warning): boolean {
   return !isUsageNote(w) && isAlertSeverity(w.rule.severity)
 }
 
+/** Every warning of one rule: one card, listing each pair of products it was raised for. */
+export type WarningGroup = {
+  rule: Warning['rule']
+  /** One per pair of products (a usage rule has a single warning), in the order of the check. */
+  warnings: Warning[]
+  /** Every product of those warnings, each once, in order of first appearance. */
+  productKeys: string[]
+}
+
+/**
+ * Group the warnings of a check by rule, so four products with the same active group read as one
+ * card with six pairs, not six cards. Display only: every warning stays, in its pair, with its days.
+ */
+export function groupByRule(warnings: Warning[]): WarningGroup[] {
+  const groups = new Map<string, WarningGroup>()
+  for (const w of warnings) {
+    const group = groups.get(w.rule.key)
+    if (group) {
+      group.warnings.push(w)
+      for (const key of w.product_keys) if (!group.productKeys.includes(key)) group.productKeys.push(key)
+    } else {
+      groups.set(w.rule.key, { rule: w.rule, warnings: [w], productKeys: [...w.product_keys] })
+    }
+  }
+  return [...groups.values()]
+}
+
+/** "A + B" for a pair rule, "A, B, C" for the products of a usage note. */
+export function warningProducts(w: Warning, names: Map<string, string>): string {
+  return w.product_keys.map((k) => names.get(k) ?? k).join(isUsageNote(w) ? ', ' : ' + ')
+}
+
 /**
  * Re-check the routine whenever it changes (debounced; a newer check cancels an older one).
  * /routine/check needs a session: nothing is sent while `user` is null (signing in, #review), and
