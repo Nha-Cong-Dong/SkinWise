@@ -4,7 +4,7 @@ import { HANDLE_PATTERN, normalizeHandle } from '../../blog'
 import { SKIN_TYPE_LABELS } from '../../labels'
 import { useProfile } from '../../profile'
 import { Dialog, DialogTitle } from '../Dialog'
-import { field, primary, secondary } from './styles'
+import { field, primary, secondary, selectField } from './styles'
 
 type Props = {
   open: boolean
@@ -79,7 +79,7 @@ function ProfileForm({
       </label>
       <label className="block">
         <span className="font-medium text-ink">Loại da (không bắt buộc)</span>
-        <select value={skin} onChange={(e) => setSkin(e.target.value as SkinType | '')} className={`mt-1 ${field}`}>
+        <select value={skin} onChange={(e) => setSkin(e.target.value as SkinType | '')} className={`mt-1 ${selectField}`}>
           <option value="">Không ghi</option>
           {(Object.keys(SKIN_TYPE_LABELS) as SkinType[]).map((s) => (
             <option key={s} value={s}>

@@ -3,7 +3,7 @@ import { api, type RulesResponse } from '../api'
 import { GroupsContext } from '../groups'
 import { Notice } from './Notice'
 import { RuleCard } from './RuleCard'
-import { btnPrimary, field } from './ui'
+import { btnPrimary, selectField } from './ui'
 import { stagger } from './motion'
 
 export function MythPage() {
@@ -63,7 +63,7 @@ function PairLookup() {
           onChange(e.target.value)
           setResult(null)
         }}
-        className={`${field} min-h-11 ${value ? 'text-ink' : 'text-ink-mute'}`}
+        className={`${selectField} min-h-11 ${value ? 'text-ink' : 'text-ink-mute'}`}
       >
         <option value="">{label}</option>
         {[...groups.values()].map((g) => (
@@ -76,13 +76,16 @@ function PairLookup() {
   )
 
   return (
-    <section aria-labelledby="pair-title" className="rounded-md border border-line bg-surface p-4 sm:p-6">
+    <section aria-labelledby="pair-title" className="rounded-lg border border-line/60 bg-surface p-5 sm:p-7">
       <h2 id="pair-title" className="font-sans text-base font-semibold text-balance sm:text-xl">
         Hai hoạt chất này dùng chung được không?
       </h2>
-      <div className="mt-3 flex flex-col items-stretch gap-2 sm:flex-row sm:items-center">
+      <div className="mt-4 flex flex-col items-stretch gap-2.5 sm:flex-row sm:items-center sm:gap-3">
         {select(a, setA, 'Chọn hoạt chất thứ nhất')}
-        <span className="hidden text-center font-semibold text-ink-mute sm:block" aria-hidden="true">
+        <span
+          className="hidden size-8 shrink-0 items-center justify-center rounded-full bg-wash font-semibold text-primary sm:inline-flex"
+          aria-hidden="true"
+        >
           +
         </span>
         {select(b, setB, 'Chọn hoạt chất thứ hai')}

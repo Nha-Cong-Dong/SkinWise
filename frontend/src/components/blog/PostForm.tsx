@@ -16,7 +16,7 @@ import { pickedKey, toPostProduct, type Picked } from './picked'
 import { PostMissing } from './PostPage'
 import { ProductPicker } from './ProductPicker'
 import { DemoFooter, LoadError, Loading } from './parts'
-import { field, primary, secondary } from './styles'
+import { field, primary, secondary, selectField } from './styles'
 import { BlogShell } from './Shell'
 
 /** #/blog/viet: a new post, optionally starting with one catalogue product (from a product page). */
@@ -316,7 +316,7 @@ function PostForm({
               skinTouched.current = true
               setSkin((e.target.value || null) as SkinType | null)
             }}
-            className={`mt-1 ${field}`}
+            className={`mt-1 ${selectField}`}
           >
             <option value="">Không ghi</option>
             {(Object.keys(SKIN_TYPE_LABELS) as SkinType[]).map((s) => (
@@ -328,7 +328,7 @@ function PostForm({
         </label>
         <label className="block">
           <span className="font-semibold text-ink">Sản phẩm có được tặng?</span>
-          <select value={disclosure} onChange={(e) => setDisclosure(e.target.value as Disclosure)} className={`mt-1 ${field}`}>
+          <select value={disclosure} onChange={(e) => setDisclosure(e.target.value as Disclosure)} className={`mt-1 ${selectField}`}>
             {(Object.keys(DISCLOSURE_LABELS) as Disclosure[]).map((d) => (
               <option key={d} value={d}>
                 {DISCLOSURE_LABELS[d]}

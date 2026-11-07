@@ -464,16 +464,17 @@ Cảm giác "mềm mại có chiều sâu" đến từ **các lớp tông màu**
 2. **Hai panel buổi là vật thể sâu nhất trong giao diện.** Panel sáng là một lớp Dawn; panel tối là một mảng Dusk, vùng tối lớn duy nhất của app ở chế độ sáng. Trong mỗi panel được phép có một lớp chuyển màu rất nhẹ từ trên xuống: Petal → Dawn, hoặc Dusk-raised → Dusk, trong 120px đầu. **Đây là chỗ duy nhất có gradient ngoài logo.** Không có gradient nào khác, không có chữ gradient, không có hiệu ứng kính mờ.
 3. **Đường kẻ mảnh** (`border`, 1px) chia các hàng. Không dùng để quây nội dung thành hộp.
 
-Chỉ có **một shadow**, dành cho thứ thật sự nổi trên trang: dialog, dropdown tìm sản phẩm, menu tài khoản. Ánh sáng chiếu từ trên xuống, shadow ngả màu Dusk, không bao giờ là đen trung tính: `0 1px 2px rgba(47, 42, 85, 0.10), 0 8px 24px rgba(47, 42, 85, 0.12)`. Ở chế độ tối, shadow không thấy được nên vật nổi dùng nền Night-raised với viền Night-border. Thẻ, nút và panel buổi không có shadow. Nền phía sau dialog là Dusk 50%, không làm mờ.
+Chỉ có **một shadow**, dành cho thứ thật sự nổi trên trang: dialog, dropdown tìm sản phẩm, menu tài khoản. Ánh sáng chiếu từ trên xuống, shadow ngả màu Dusk, không bao giờ là đen trung tính: `0 1px 2px rgba(47, 42, 85, 0.10), 0 8px 24px rgba(47, 42, 85, 0.12)`. Ở chế độ tối, shadow không thấy được nên vật nổi dùng nền Night-raised với viền Night-border. Thẻ, nút và panel buổi không có shadow. Ngoại lệ duy nhất (07/11): lựa chọn đang bật trong nhóm nút chọn (viên trắng nổi trên rãnh thistle) có bóng rất nhẹ `0 1px 3px rgba(47, 42, 85, 0.12)`. Nền phía sau dialog là Dusk 50%, không làm mờ.
 
 ## Shapes
 
 Bo góc **theo thứ bậc**: vật càng lớn và càng tĩnh thì góc càng mềm.
 
-- **`sm` (4px):** ô nhập, badge, tooltip, khối trích dẫn. Là những thứ cần đọc hoặc gõ chính xác.
+- **`sm` (4px):** badge, tooltip, khối trích dẫn. Là những thứ cần đọc chính xác.
+- **`xl` (12px, đổi 07/11 vì người dùng thấy 4px quá cứng):** ô nhập, ô chọn (mũi tên vẽ riêng, lớp `select-field`).
 - **`md` (8px):** nút, thẻ, hàng bước trong một buổi.
 - **`lg` (14px):** chỉ hai panel buổi. Đây là hai vật mềm nhất hệ thống vì chúng là hai "ánh sáng", và độ cong của chúng gợi lại vòng tròn của logo.
-- **`full`:** nút ngày (T2–CN), đĩa số bước, chip nhóm hoạt chất, nhãn "Buổi sáng", ảnh đại diện. Là những vật nhỏ, tròn, đi theo bộ. Không thứ gì lớn hơn 36px có dạng viên thuốc.
+- **`full`:** nút ngày (T2–CN), đĩa số bước, chip nhóm hoạt chất, nhãn "Buổi sáng", ảnh đại diện. Là những vật nhỏ, tròn, đi theo bộ. Ngoại lệ: nút chính / phụ và **nhóm nút chọn** (rãnh `wash` dạng viên thuốc, lựa chọn đang bật là viên trắng chữ Primary, không tô Primary đặc; bộ chọn buổi dùng tông của buổi: trắng chữ Dawn-ink / Dusk chữ On-dusk). Nút bị khoá dùng nền `wash-strong` chữ Mute, không làm mờ nút Primary.
 
 Hệ thống này gom sáu kiểu bo góc trong code cũ: `rounded` và `rounded-md` thành `sm`; `rounded-lg` và `rounded-xl` thành `md`; `rounded-2xl` thành `lg` và **chỉ** dùng cho panel buổi.
 
