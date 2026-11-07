@@ -319,14 +319,16 @@ sources = [
 # ======================================================================================
 # Bài "aging" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
 # phản biện 2 vòng (21/21 đoạn đạt ở vòng 2). Lời văn do Claude soạn.
-# CHƯA BẬT: người duyệt đọc nguồn, rồi đặt published = true, reviewed_by, reviewed_at.
+# ĐÃ BẬT: người dùng (Vân Anh) duyệt ngày 07/11/2026; sửa lời văn hay đoạn trích thì phải duyệt lại.
 # Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles-5/01_results.json (aging: final.dropped_claims).
 # ======================================================================================
 
 [[article]]
 goal = "aging"
 title_vi = "Dấu hiệu lão hoá: những điều nên biết"
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-11-07
 
 [[article.section]]
 heading_vi = "Vì sao da lão hoá"
@@ -616,14 +618,16 @@ sources = [
 # ======================================================================================
 # Bài "dark-spots" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
 # phản biện 2 vòng (22/22 đoạn đạt ở vòng 2). Lời văn do Claude soạn.
-# CHƯA BẬT: người duyệt đọc nguồn, rồi đặt published = true, reviewed_by, reviewed_at.
+# ĐÃ BẬT: người dùng (Vân Anh) duyệt ngày 07/11/2026; sửa lời văn hay đoạn trích thì phải duyệt lại.
 # Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles-5/01_results.json (dark-spots: final.dropped_claims).
 # ======================================================================================
 
 [[article]]
 goal = "dark-spots"
 title_vi = "Thâm và không đều màu: những điều nên biết"
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-11-07
 
 [[article.section]]
 heading_vi = "Đốm thâm đến từ đâu"
@@ -923,14 +927,16 @@ sources = [
 # ======================================================================================
 # Bài "dry-sensitive" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
 # phản biện 2 vòng (22/23 đoạn đạt ở vòng 2; s4p2: người điều phối áp đúng cách sửa người phản biện đề xuất). Lời văn do Claude soạn.
-# CHƯA BẬT: người duyệt đọc nguồn, rồi đặt published = true, reviewed_by, reviewed_at.
+# ĐÃ BẬT: người dùng (Vân Anh) duyệt ngày 07/11/2026; sửa lời văn hay đoạn trích thì phải duyệt lại.
 # Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles-5/01_results.json (dry-sensitive: final.dropped_claims).
 # ======================================================================================
 
 [[article]]
 goal = "dry-sensitive"
 title_vi = "Da khô và da nhạy cảm: những điều nên biết"
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-11-07
 
 [[article.section]]
 heading_vi = "Da khô và da nhạy cảm"
@@ -1227,14 +1233,16 @@ sources = [
 # ======================================================================================
 # Bài "oily-pores" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
 # phản biện 2 vòng (14/18 đoạn đạt ở vòng 2; s1p1, s1p2, s2p1, s2p3: người điều phối áp đúng cách sửa người phản biện đề xuất). Lời văn do Claude soạn.
-# CHƯA BẬT: người duyệt đọc nguồn, rồi đặt published = true, reviewed_by, reviewed_at.
+# ĐÃ BẬT: người dùng (Vân Anh) duyệt ngày 07/11/2026; sửa lời văn hay đoạn trích thì phải duyệt lại.
 # Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles-5/01_results.json (oily-pores: final.dropped_claims).
 # ======================================================================================
 
 [[article]]
 goal = "oily-pores"
 title_vi = "Da dầu và lỗ chân lông to: những điều nên biết"
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-11-07
 
 [[article.section]]
 heading_vi = "Vì sao da dầu và lỗ chân lông trông to"
@@ -1480,14 +1488,16 @@ sources = [
 # ======================================================================================
 # Bài "redness" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
 # phản biện 2 vòng (16/16 đoạn đạt ở vòng 2). Lời văn do Claude soạn.
-# CHƯA BẬT: người duyệt đọc nguồn, rồi đặt published = true, reviewed_by, reviewed_at.
+# ĐÃ BẬT: người dùng (Vân Anh) duyệt ngày 07/11/2026; sửa lời văn hay đoạn trích thì phải duyệt lại.
 # Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles-5/01_results.json (redness: final.dropped_claims).
 # ======================================================================================
 
 [[article]]
 goal = "redness"
 title_vi = "Da đỏ, dễ kích ứng: những điều nên biết"
-published = false
+published = true
+reviewed_by = "Vân Anh"
+reviewed_at = 2026-11-07
 
 [[article.section]]
 heading_vi = "Da đỏ có thể do nhiều nguyên nhân"
