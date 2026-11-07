@@ -162,7 +162,7 @@ function Detail({ product, actions, found, check, onRemove }: Omit<Props, 'produ
               ))}
             </div>
             <a
-              href={href({ page: 'routine', tab: 'week' })}
+              href={href({ page: 'routine', tab: 'week', product: product.key })}
               className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary"
             >
               Sắp xếp trong lịch tuần ›

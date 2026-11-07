@@ -15,7 +15,7 @@ import {
 } from '../routine'
 import { SeverityBadge } from './Icons'
 import { DataNote, Notice } from './Notice'
-import { stagger } from './motion'
+import { spotClass, stagger, useSpotlight } from './motion'
 import { RuleCard } from './RuleCard'
 
 type Props = {
@@ -66,19 +66,17 @@ export function WarningsPanel({
     card?.focus({ preventScroll: true })
   }, [focusIndex, idPrefix])
   // The card picked in the list beside the cards (wide screens); until then, the one a link chose.
-  const [picked, setPicked] = useState<string | null>(null)
-  const pickedIndex = picked ? groups.findIndex((g) => g.rule.key === picked) : -1
+  // Each pick is a new target, so picking the same card again lifts it again.
+  const [picked, setPicked] = useState<{ key: string; n: number } | null>(null)
+  const pickedIndex = picked ? groups.findIndex((g) => g.rule.key === picked.key) : -1
   const lit = pickedIndex >= 0 ? pickedIndex : focusIndex
+  const target = picked && pickedIndex >= 0 ? `${picked.key}#${picked.n}` : focus && focusIndex >= 0 ? focus : null
+  // Lit until the user's next click or key press (ANIMATION.md 5.9).
+  const on = useSpotlight(target)
   const pick = (i: number) => {
     const card = document.getElementById(`${idPrefix}-${i}`)
     if (!card) return
-    if (i === lit) {
-      // The same card again: replay its lift, so the click always shows where it is.
-      card.classList.remove('motion-spotlight')
-      void card.offsetWidth
-      card.classList.add('motion-spotlight')
-    }
-    setPicked(groups[i].rule.key)
+    setPicked((p) => ({ key: groups[i].rule.key, n: (p?.n ?? 0) + 1 }))
     card.scrollIntoView({ block: 'start' })
     card.focus({ preventScroll: true })
   }
@@ -128,8 +126,8 @@ export function WarningsPanel({
               <li key={g.rule.key}>
                 <button
                   onClick={() => pick(i)}
-                  aria-current={i === lit ? 'true' : undefined}
-                  className={`flex w-full flex-col gap-1.5 rounded-md px-5 py-4 text-left hover:bg-surface ${i === lit ? 'bg-surface' : ''}`}
+                  aria-current={i === lit && on ? 'true' : undefined}
+                  className={`flex w-full flex-col gap-1.5 rounded-md px-5 py-4 text-left hover:bg-surface ${i === lit && on ? 'bg-surface' : ''}`}
                 >
                   <span className="flex flex-wrap items-center gap-2">
                     <SeverityBadge severity={g.rule.severity} />
@@ -201,7 +199,7 @@ export function WarningsPanel({
               key={g.rule.key}
               id={`${idPrefix}-${i}`}
               rule={g.rule}
-              className={i === lit ? 'motion-spotlight' : ''}
+              className={spotClass(i === lit, on)}
               collapsible
               footer={
                 page && (

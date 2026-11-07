@@ -16,7 +16,7 @@ import {
 } from '../routine'
 import { GroupChips, LABEL_CHIP_NOTE } from './GroupChips'
 import { Glyph, MoonIcon, SeverityBadge, SunIcon } from './Icons'
-import { stagger } from './motion'
+import { spotClass, stagger, useSpotlight } from './motion'
 import { TONE } from './sessionTone'
 import { btn } from './ui'
 import { SeverityCounts } from './WarningsPanel'
@@ -32,6 +32,8 @@ type Props = {
   check: CheckState
   /** A rule key from the check tab ("Mở lịch tuần để sắp xếp lại"): show where that warning is. */
   focus?: string
+  /** A product key from its page ("Sắp xếp trong lịch tuần"): show that product's steps. */
+  product?: string
 }
 
 /** The warnings of the focused rule in the last check, or null (no focus, or no such warning now). */
@@ -63,11 +65,27 @@ function spotDays(spot: WarningGroup | null, entry: Entry): number[] {
 }
 
 /** "Lịch tuần": one session at a time, each step with its days of the week. */
-export function RoutineBoard({ actions, flagged, found, onShare, check, focus }: Props) {
+export function RoutineBoard({ actions, flagged, found, onShare, check, focus, product }: Props) {
   const spot = focusedGroup(check, focus)
-  // Opened from a warning: start on its first session. Fixed on the first answer that names one
-  // (the check may answer after the tab opens), so later edits never move the view on their own.
-  const spotSession = spotSessions(spot)[0] ?? null
+  const mine = product && actions.routine.entries.some((e) => e.productKey === product) ? product : null
+  // What the link pointed at stays lit until the user's next click or key press (ANIMATION.md
+  // 5.9); clicks inside the banner (choosing its session) keep it.
+  const banner = useRef<HTMLDivElement>(null)
+  const lit = useSpotlight(focus ?? mine, banner)
+  /** Days of a step the link points at; empty when the step is not part of it. */
+  const pointedDays = (e: Entry): number[] =>
+    spot ? spotDays(spot, e) : mine && e.productKey === mine ? [...e.days].sort((a, b) => a - b) : []
+  const spotted = (day: number, s: Session) =>
+    spot
+      ? spot.warnings.some((w) => w.occurrences.some((o) => o.day === day && (o.session === s || o.session === null)))
+      : mine !== null && sessionEntries(actions.routine, s).some((e) => e.productKey === mine && e.days.includes(day))
+  // Opened from a warning or a product: start on its first session. Fixed on the first answer that
+  // names one (the check may answer after the tab opens), so later edits never move the view.
+  const spotSession = spot
+    ? (spotSessions(spot)[0] ?? null)
+    : mine
+      ? ((['AM', 'PM'] as const).find((s) => sessionEntries(actions.routine, s).some((e) => e.productKey === mine)) ?? null)
+      : null
   const [arrival, setArrival] = useState<Session | null>(spotSession)
   if (arrival === null && spotSession !== null) setArrival(spotSession)
   const [chosen, setChosen] = useState<Session | null>(null)
@@ -102,9 +120,13 @@ export function RoutineBoard({ actions, flagged, found, onShare, check, focus }:
       </header>
       {named && <p className="motion-enter mt-3 max-w-3xl text-xs leading-relaxed text-ink-mute">{LABEL_CHIP_NOTE}</p>}
 
-      {focus && <FocusBanner spot={spot} check={check} session={session} onSession={chooseSession} />}
+      {focus && lit && (
+        <div ref={banner}>
+          <FocusBanner spot={spot} check={check} session={session} onSession={chooseSession} />
+        </div>
+      )}
 
-      <WeekOverview actions={actions} check={check} session={session} onSession={chooseSession} spot={spot} />
+      <WeekOverview actions={actions} check={check} session={session} onSession={chooseSession} spotted={spotted} lit={lit} />
 
       <div
         className="motion-enter mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18.75rem] lg:gap-8"
@@ -117,7 +139,9 @@ export function RoutineBoard({ actions, flagged, found, onShare, check, focus }:
           flagged={flagged}
           found={found}
           className={switched ? 'motion-tab' : ''}
-          spot={spot}
+          pointedDays={pointedDays}
+          lit={lit}
+          spotNote={spot ? 'Bước thuộc cảnh báo đang xem' : 'Bước của sản phẩm vừa chọn'}
           scrollToSpot={!switched}
         />
         <aside className="flex flex-col gap-4">
@@ -195,19 +219,21 @@ function WeekOverview({
   check,
   session,
   onSession,
-  spot,
+  spotted,
+  lit,
 }: {
   actions: RoutineActions
   check: CheckState
   session: Session
   onSession: (s: Session) => void
-  spot: WarningGroup | null
+  /** Whether a day and session holds what the link pointed at. */
+  spotted: (day: number, s: Session) => boolean
+  lit: boolean
 }) {
   const warnings = (currentResult(check)?.warnings ?? []).filter(isCombinationAlert)
   const applies = (list: Warning[], day: number, s: Session) =>
     list.some((w) => w.occurrences.some((o) => o.day === day && (o.session === s || o.session === null)))
   const warned = (day: number, s: Session) => applies(warnings, day, s)
-  const spotted = (day: number, s: Session) => spot !== null && applies(spot.warnings, day, s)
   return (
     <section aria-label="Cả tuần" className="motion-enter mt-5 rounded-md bg-surface p-2 lg:hidden" style={stagger(1)}>
       <div className="grid grid-cols-[2.75rem_repeat(7,minmax(0,1fr))] items-center gap-1">
@@ -224,6 +250,7 @@ function WeekOverview({
             actions={actions}
             warned={warned}
             spotted={spotted}
+            lit={lit}
             selected={session === s}
             onSession={onSession}
           />
@@ -239,6 +266,7 @@ function WeekRow({
   actions,
   warned,
   spotted,
+  lit,
   selected,
   onSession,
 }: {
@@ -246,6 +274,7 @@ function WeekRow({
   actions: RoutineActions
   warned: (day: number, s: Session) => boolean
   spotted: (day: number, s: Session) => boolean
+  lit: boolean
   selected: boolean
   onSession: (s: Session) => void
 }) {
@@ -269,7 +298,7 @@ function WeekRow({
             key={day}
             onClick={() => onSession(s)}
             aria-label={`${DAY_NAMES[day]}, buổi ${label.toLowerCase()}: ${n} bước${flag ? ', có kết hợp nên tránh hoặc cần thận trọng' : ''}`}
-            className={`h-11 rounded-md text-xs font-semibold tabular-nums ${tone} ${selected ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : ''} ${lifted ? 'motion-spotlight' : ''}`}
+            className={`h-11 rounded-md text-xs font-semibold tabular-nums ${tone} ${selected ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : ''} ${spotClass(lifted, lit)}`}
           >
             {n}
             {flag && ' !'}
@@ -456,20 +485,25 @@ function SessionPanel({
   flagged,
   found,
   className,
-  spot,
+  pointedDays,
+  lit,
+  spotNote,
   scrollToSpot,
-}: Omit<Props, 'onShare' | 'check' | 'focus'> & {
+}: Omit<Props, 'onShare' | 'check' | 'focus' | 'product'> & {
   session: Session
   className: string
-  /** The focused warning: its steps in this session are lifted and their days ringed. */
-  spot: WarningGroup | null
+  /** Days of a step that a link points at: such steps are lifted and those days ringed. */
+  pointedDays: (e: Entry) => number[]
+  lit: boolean
+  /** Read out on a lifted step, before its days. */
+  spotNote: string
   /** Bring the first lifted step into view (on arrival, not after the user switches sessions). */
   scrollToSpot: boolean
 }) {
   const entries = sessionEntries(actions.routine, session)
   const firstSpot = useRef<HTMLLIElement>(null)
   const scrolled = useRef(false)
-  const firstSpotIndex = entries.findIndex((e) => spotDays(spot, e).length > 0)
+  const firstSpotIndex = entries.findIndex((e) => pointedDays(e).length > 0)
   useEffect(() => {
     if (!scrollToSpot || scrolled.current || firstSpotIndex < 0) return
     scrolled.current = true
@@ -498,7 +532,9 @@ function SessionPanel({
               <EntryRow
                 key={entry.id}
                 rowRef={i === firstSpotIndex ? firstSpot : undefined}
-                spotDays={spotDays(spot, entry)}
+                spotDays={pointedDays(entry)}
+                lit={lit}
+                spotNote={spotNote}
                 entry={entry}
                 step={i + 1}
                 last={i === entries.length - 1}
@@ -530,8 +566,11 @@ type EntryProps = {
   night: boolean
   /** Added after the panel mounted. */
   fresh: boolean
-  /** Days of this step that the focused warning names; empty when the step is not part of it. */
+  /** Days of this step that a link points at; empty when the step is not part of it. */
   spotDays: number[]
+  /** Still lit: the user has not clicked or pressed a key since arriving. */
+  lit: boolean
+  spotNote: string
   rowRef?: Ref<HTMLLIElement>
 }
 
@@ -539,7 +578,7 @@ type EntryProps = {
  * A step: the product, then its week as round day buttons. Every row's week starts at the same
  * place, so reading one column top to bottom gives what is used that day.
  */
-function EntryRow({ entry, step, last, product, severity, found, actions, tone, night, fresh, spotDays, rowRef }: EntryProps) {
+function EntryRow({ entry, step, last, product, severity, found, actions, tone, night, fresh, spotDays, lit, spotNote, rowRef }: EntryProps) {
   const spotted = spotDays.length > 0
   // 44px on phones (fingers), 36px from md.
   const iconButton = `inline-flex size-11 items-center justify-center rounded-md disabled:opacity-25 disabled:hover:bg-transparent md:size-9 ${tone.button}`
@@ -547,11 +586,11 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
   return (
     <li
       ref={rowRef}
-      className={`${fresh ? 'motion-item ' : ''}${spotted ? `motion-spotlight ${night ? '' : 'spotlight-wide '}` : ''}grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 py-3.5 xl:grid-cols-[1.5rem_minmax(0,1fr)_auto] xl:items-center ${tone.row}`}
+      className={`${fresh ? 'motion-item ' : ''}${spotted ? `${spotClass(true, lit)} ${night ? '' : 'spotlight-wide '}` : ''}grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 py-3.5 xl:grid-cols-[1.5rem_minmax(0,1fr)_auto] xl:items-center ${tone.row}`}
     >
-      {spotted && (
+      {spotted && lit && (
         <span className="sr-only">
-          Bước thuộc cảnh báo đang xem, vào {spotDays.map((d) => DAY_NAMES[d]).join(', ')}.
+          {spotNote}, vào {spotDays.map((d) => DAY_NAMES[d]).join(', ')}.
         </span>
       )}
       <span
@@ -616,7 +655,7 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
                 onClick={() => actions.toggleDay(entry.id, day)}
                 aria-pressed={on}
                 aria-label={`${DAY_LABELS[day]}, ${DAY_NAMES[day]}`}
-                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff} ${ringed ? 'spotlight-day' : ''}`}
+                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff} ${ringed ? (lit ? 'spotlight-day' : 'spotlight-day spotlight-off') : ''}`}
               >
                 {DAY_LABELS[day]}
                 {on && (

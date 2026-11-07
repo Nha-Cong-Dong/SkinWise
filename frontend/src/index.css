@@ -457,7 +457,7 @@
   }
   /* What a link pointed at (a warning card, the steps of a warning in the week, ANIMATION.md 5.9):
      no outline; it rises once and settles 5px above its place with a soft blush glow, which stays
-     so the place is still marked after the motion. The text never fades or waits. */
+     until the user next clicks or presses a key. The text never fades or waits. */
   .motion-spotlight {
     position: relative;
     isolation: isolate;
@@ -484,6 +484,24 @@
   /* A day the warning applies on: the same glow, smaller, no ring. */
   .spotlight-day {
     box-shadow: 0 0 14px 3px rgb(255 175 204 / 1), 0 0 4px 1px rgb(240 120 165 / 0.6);
+  }
+  /* The user's next click, tap or key press (useSpotlight): it settles back into the page. */
+  .motion-spotlight.spotlight-off {
+    animation: none;
+    transform: none;
+    box-shadow: none;
+    transition:
+      transform 220ms var(--ease-out-strong),
+      box-shadow 220ms var(--ease-out-strong);
+  }
+  .spotlight-wide.spotlight-off::before {
+    animation: none;
+    opacity: 0;
+    transition: opacity 220ms var(--ease-out-strong);
+  }
+  .spotlight-day.spotlight-off {
+    box-shadow: none;
+    transition: box-shadow 220ms var(--ease-out-strong);
   }
 }
 :root {

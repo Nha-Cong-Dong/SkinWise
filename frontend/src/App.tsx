@@ -182,7 +182,7 @@ function App() {
   // (?chu-y=): the tab scrolls to it itself, and its effect runs before this one.
   const currentPage = pageKey(route)
   const shownPage = useRef(currentPage)
-  const pointed = route.page === 'routine' && route.focus !== undefined
+  const pointed = route.page === 'routine' && (route.focus !== undefined || route.product !== undefined)
   useEffect(() => {
     if (shownPage.current === currentPage) return
     shownPage.current = currentPage
@@ -368,8 +368,9 @@ function App() {
                     <TodayPage actions={actions} check={check} />
                   ) : route.tab === 'week' ? (
                     <RoutineBoard
-                      key={route.focus ?? ''}
+                      key={`${route.focus ?? ''}|${route.product ?? ''}`}
                       focus={route.focus}
+                      product={route.product}
                       actions={actions}
                       flagged={flagged}
                       found={found}
