@@ -253,16 +253,17 @@ application = "leave_on"
 ingredients = """AQUA / WATER, ALCOHOL DENAT., HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID, GLYCOLIC ACID, GLYCERIN, PROPANEDIOL, SODIUM HYDROXIDE, PEG/PPG/POLYBUTYLENE GLYCOL-8/5/3 GLYCERIN, SALICYLIC ACID, SODIUM POLYACRYLATE, ADENOSINE, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, ASCORBYL GLUCOSIDE, VITREOSCILLA FERMENT, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, XANTHAN GUM, PANTHENOL, MENTHOL"""
 
 # Rinse-off BHA cleanser. List from the product JSON-LD.
-# Groups found by resolve() on 2026-10-26: BHA, EXFOLIANT_ACID (Salicylic Acid, Capryloyl Salicylic Acid). Every entry recognised (0 unknown).
-# 29/10: trang larocheposay.vn nay chỉ trả bản rút gọn, không có bảng thành phần trong HTML; verify_products trượt nên
-# chưa đổi sang verified. Kiểm lại trang (hoặc thay bằng trang chính hãng khác) trước khi duyệt.
+# Groups found by resolve() on 2026-11-07: BHA, EXFOLIANT_ACID (Salicylic Acid, Capryloyl Salicylic Acid). Every entry recognised (0 unknown).
+# 07/11: nguồn đổi từ larocheposay.vn (từ 29/10 không còn bảng thành phần trong HTML) sang trang chính hãng
+# Trung Đông / châu Phi (MEA, tiếng Anh). Bảng trên trang MEA giống hệt bảng VN cũ (18 chất, cùng thứ tự);
+# trang in mã công thức B243870/1 dưới bảng. Công thức VN giờ chỉ được xác nhận gián tiếp qua trang MEA.
 [[product]]
 slug = "la-roche-posay-effaclar-micro-peeling-purifying-gel"
 brand = "La Roche-Posay"
 name = "Effaclar Micro-Peeling Purifying Gel"
-market = "VN"
-source_url = "https://www.larocheposay.vn/effaclar/effaclar-micro-peeling-purifiying-gel"
-retrieved_at = 2026-10-26
+market = "MEA"
+source_url = "https://www.laroche-posay-me.com/en/effaclar/effaclar-micro-peeling-purifying-gel"
+retrieved_at = 2026-11-07
 verification_status = "unverified"
 application = "rinse_off"
 ingredients = """AQUA / WATER,SODIUM LAURETH SULFATE,DECYL GLUCOSIDE,GLYCERIN,SODIUM CHLORIDE,COCO-BETAINE,SALICYLIC ACID,PEG-150 PENTAERYTHRITYL TETRASTEARATE,PEG-6 CAPRYLIC/CAPRIC GLYCERIDES,ZINC GLUCONATE,SODIUM HYDROXIDE,CAPRYLOYL SALICYLIC ACID,TETRASODIUM EDTA,CITRIC ACID,MENTHOL,POLYQUATERNIUM-47,HEXYLENE GLYCOL,SODIUM BENZOATE"""
@@ -408,32 +409,36 @@ verification_status = "verified"
 application = "rinse_off"
 ingredients = """Aqua / Water / Eau, Glycerin, Cetearyl Alcohol, Peg-40 Stearate, Stearyl Alcohol, Potassium Phosphate, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Glyceryl Stearate, Behentrimonium Methosulfate, Sodium Lauroyl Lactylate, Sodium Hyaluronate, Cholesterol, Phenoxyethanol, Disodium EDTA, Dipotassium Phosphate, Tocopherol, Phytosphingosine, Xanthan Gum, Cetyl Alcohol, Polysorbate 20, Ethylhexylglycerin"""
 
-# List from the product JSON-LD. The page ends the list with a Vietnamese "ingredients may change" notice, omitted.
-# Groups found by resolve() on 2026-10-26: none. Every entry recognised (0 unknown).
-# 29/10: trang larocheposay.vn nay chỉ trả bản rút gọn, không có bảng thành phần trong HTML; verify_products trượt nên
-# chưa đổi sang verified. Kiểm lại trang (hoặc thay bằng trang chính hãng khác) trước khi duyệt.
+# List from the product JSON-LD (PropertyValue "Ingredients") of the Malaysian brand page.
+# Groups found by resolve() on 2026-11-07: none. TRIBIOMA is a trade name, not an INCI name: it stays unrecognised.
+# 07/11: nguồn đổi từ larocheposay.vn (từ 29/10 không còn bảng thành phần trong HTML) sang trang chính hãng Malaysia.
+# Công thức MY khác bảng VN cũ (bỏ 10 chất như Centella Asiatica Leaf Extract, thêm 4: Aluminum Starch Octenylsuccinate,
+# Tribioma, Disodium EDTA, Copper Gluconate); không chất nào là hoạt chất nên cảnh báo không đổi. "HEA BUTTER" là lỗi
+# chính tả của trang, giữ nguyên văn. Đổi sang bảng MY theo quyết định của người dùng ngày 07/11.
 [[product]]
 slug = "la-roche-posay-cicaplast-baume-b5-plus"
 brand = "La Roche-Posay"
 name = "Cicaplast Baume B5+"
-market = "VN"
-source_url = "https://www.larocheposay.vn/cicaplast/cicaplast-baume-b5-plus"
-retrieved_at = 2026-10-26
+market = "MY"
+source_url = "https://www.laroche-posay.com.my/en-my/cicaplast/cicaplast-baume-b5-plus"
+retrieved_at = 2026-11-07
 verification_status = "unverified"
 application = "leave_on"
-ingredients = """AQUA / WATER / EAU, HYDROGENATED POLYISOBUTENE, DIMETHICONE, GLYCERIN, BUTYROSPERMUM PARKII BUTTER / SHEA BUTTER, PANTHENOL, ZEA MAYS STARCH / CORN STARCH, PROPANEDIOL, BUTYLENE GLYCOL, CETYL PEG/PPG-10/1 DIMETHICONE, TRIHYDROXYSTEARIN, CENTELLA ASIATICA LEAF EXTRACT, POLYMNIA SONCHIFOLIA ROOT JUICE, ZINC GLUCONATE, MADECASSOSIDE, MANGANESE GLUCONATE, ALPHA-GLUCAN OLIGOSACCHARIDE, SILICA, ALUMINUM HYDROXIDE, MAGNESIUM SULFATE, MANNOSE, CAPRYLOYL GLYCINE, CAPRYLYL GLYCOL, VITREOSCILLA FERMENT, CITRIC ACID, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, LACTOBACILLUS, ACETYLATED GLYCOL STEARATE, MALTODEXTRIN, POLYGLYCERYL-4 ISOSTEARATE, TOCOPHEROL, PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE, CI 77891 / TITANIUM DIOXIDE"""
+ingredients = """AQUA,HYDROGENATED POLYISOBUTENE,DIMETHICONE,GLYCERIN,BUTYROSPERMUM PARKII BUTTER / HEA BUTTER,PANTHENOL,PROPANEDIOL,BUTYLENE GLYCOL,ALUMINUM STARCH OCTENYLSUCCINATE,CETYL PEG/PPG-10/1 DIMETHICONE,TRIHYDROXYSTEARIN,ZINC GLUCONATE,MADECASSOSIDE,TRIBIOMA,MANGANESE GLUCONATE,SILICA,ALUMINUM HYDROXIDE,MAGNESIUM SULFATE,DISODIUM EDTA,COPPER GLUCONATE,CAPRYLOYL GLYCINE,CITRIC ACID,ACETYLATED GLYCOL STEARATE,POLYGLYCERYL-4 ISOSTEARATE,TOCOPHEROL,PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE,CI 77891 / TITANIUM DIOXIDE"""
 
-# Sunscreen. List from the product JSON-LD (only copy of the list in the page HTML).
-# Groups found by resolve() on 2026-10-26: none. Every entry recognised (0 unknown).
-# 29/10: trang larocheposay.vn nay chỉ trả bản rút gọn, không có bảng thành phần trong HTML; verify_products trượt nên
-# chưa đổi sang verified. Kiểm lại trang (hoặc thay bằng trang chính hãng khác) trước khi duyệt.
+# Sunscreen. List from the product JSON-LD of the Singapore brand page; the page ends the list with a stray comma, kept.
+# Groups found by resolve() on 2026-11-07: none.
+# 07/11: nguồn đổi từ larocheposay.vn (từ 29/10 không còn bảng thành phần trong HTML) sang trang chính hãng Singapore,
+# cùng EAN 3337875917407 với trang VN cũ. Bảng VN cũ (có Homosalate, Octocrylene, không có Melasyl =
+# 2-Mercaptonicotinoyl Glycine mà tên sản phẩm quảng cáo) nhiều khả năng không phải của sản phẩm này nên đã thay;
+# cảnh báo không đổi (cả hai bảng không có nhóm hoạt chất). Đổi theo quyết định của người dùng ngày 07/11.
 [[product]]
 slug = "la-roche-posay-anthelios-uvmune-400-anti-dark-spots-fluid-spf50"
 brand = "La Roche-Posay"
 name = "Anthelios UVMune 400 Anti-Dark Spots Fluid SPF50+"
-market = "VN"
-source_url = "https://www.larocheposay.vn/anthelios/anthelios-uvmune-400-anti-dark-spots-fluid-spf50plus"
-retrieved_at = 2026-10-26
+market = "SG"
+source_url = "https://www.laroche-posay.sg/anthelios/anthelios-uvmune-400-anti-dark-spots-fluid-spf50plus"
+retrieved_at = 2026-11-07
 verification_status = "unverified"
 application = "leave_on"
-ingredients = """AQUA / WATER,HOMOSALATE,SILICA,OCTOCRYLENE,ETHYLHEXYL SALICYLATE,BUTYL METHOXYDIBENZOYLMETHANE,ETHYLHEXYL TRIAZONE,BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE,DROMETRIZOLE TRISILOXANE,ALUMINUM STARCH OCTENYLSUCCINATE,GLYCERIN,PENTYLENE GLYCOL,STYRENE/ACRYLATES COPOLYMER,POTASSIUM CETYL PHOSPHATE,DIMETHICONE,PERLITE,PROPYLENE GLYCOL,ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER,ALUMINUM HYDROXIDE,p-ANISIC ACID,CAPRYLYL GLYCOL,DISODIUM EDTA,INULIN LAURYL CARBAMATE,ISOPROPYL LAUROYL SARCOSINATE,PEG-8 LAURATE,SCUTELLARIA BAICALENSIS EXTRACT / SCUTELLARIA BAICALENSIS ROOT EXTRACT,SILICA SILYLATE,STEARIC ACID,STEARYL ALCOHOL,TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID,TITANIUM DIOXIDE,TITANIUM DIOXIDE [NANO] / TITANIUM DIOXIDE,TOCOPHEROL,TRIETHANOLAMINE,XANTHAN GUM,ZINC GLUCONATE"""
+ingredients = """AQUA / WATER / EAU,ALCOHOL DENAT.,SILICA,DIISOPROPYL ADIPATE,DIISOPROPYL SEBACATE,ETHYLHEXYL TRIAZONE,BUTYL METHOXYDIBENZOYLMETHANE,BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE,DICAPRYLYL CARBONATE,GLYCERIN,PROPANEDIOL,C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER,DIETHYLAMINO HYDROXYBENZOYL HEXYL BENZOATE,C12-15 ALKYL BENZOATE,METHOXYPROPYLAMINO CYCLOHEXENYLIDENE ETHOXYETHYLCYANOACETATE,PERLITE,DROMETRIZOLE TRISILOXANE,ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER,CITRIC ACID,DISODIUM PHOSPHATE,HYDROXYACETOPHENONE,HYDROXYETHYLCELLULOSE,2-MERCAPTONICOTINOYL GLYCINE,PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE,PENTYLENE GLYCOL,POLYSORBATE 60,SODIUM PHOSPHATE,SODIUM THIOSULFATE,TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID,TOCOPHEROL,TRIETHANOLAMINE,TRISODIUM ETHYLENEDIAMINE DISUCCINATE,"""
