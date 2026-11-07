@@ -272,9 +272,9 @@ function App() {
           {/* Phones: logo and account on top, the four pages in a tab bar at the bottom of the screen.
               From 1024px: one bar on top with the logo, the pages and the account. */}
           <header className="border-b border-line bg-surface">
-            <div className="mx-auto flex min-h-16 max-w-[75rem] items-center gap-6 px-4 sm:px-6 lg:min-h-20 lg:gap-6 lg:px-10 xl:gap-10">
+            <div className="mx-auto flex min-h-16 max-w-[75rem] items-center gap-6 px-4 sm:px-6 lg:gap-6 lg:px-10 xl:gap-8">
               <a href={href({ page: 'routine', tab: 'today' })} className="inline-flex shrink-0 rounded-md">
-                <Logo className="h-10 w-auto lg:h-13" />
+                <Logo className="h-9 w-auto lg:h-10" />
               </a>
               <nav className="hidden flex-1 gap-1 lg:flex xl:gap-2" aria-label="Điều hướng chính">
                 {MENU.map(([target, label, isCurrent]) => (
@@ -282,7 +282,7 @@ function App() {
                     key={label}
                     href={href(target)}
                     aria-current={isCurrent(route) ? 'page' : undefined}
-                    className={`inline-flex min-h-11.5 items-center rounded-full px-4 text-[1.0625rem] whitespace-nowrap xl:px-5.5 ${isCurrent(route) ? 'bg-primary font-semibold text-surface' : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'}`}
+                    className={`inline-flex min-h-10 items-center rounded-full px-3.5 text-[0.9375rem] whitespace-nowrap xl:px-4.5 ${isCurrent(route) ? 'bg-primary font-semibold text-surface' : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'}`}
                   >
                     {label}
                     {target === ALL_POSTS && me && <UnreadBadge />}
@@ -577,11 +577,11 @@ function AccountButton({
       onClick={onClick}
       aria-label={name}
       title={status ? `${shown} · ${status}` : shown}
-      className="motion-press inline-flex size-11 shrink-0 items-center justify-center rounded-full lg:size-12"
+      className="motion-press inline-flex size-11 shrink-0 items-center justify-center rounded-full"
     >
       <span
         aria-hidden="true"
-        className="relative inline-flex size-11 items-center justify-center rounded-full bg-thistle text-sm font-semibold text-thistle-ink lg:size-12 lg:text-base"
+        className="relative inline-flex size-11 items-center justify-center rounded-full bg-thistle text-sm font-semibold text-thistle-ink lg:size-10"
       >
         {initial(email)}
         {warn && (
