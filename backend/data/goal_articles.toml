@@ -9,8 +9,8 @@
 # ======================================================================================
 # Bài mẫu "acne" (07/11/2026). Nguồn do Claude tìm, đoạn trích đã kiểm nguyên văn trên trang và qua
 # phản biện 2 vòng (24/25 đoạn đạt; s2p5: người điều phối bỏ cụm "(một BHA)" không có trích dẫn đỡ,
-# theo cách (a) của người phản biện). Lời văn là bản nháp do Claude soạn. CHƯA BẬT: người duyệt
-# đọc nguồn rồi mới đặt published = true kèm reviewed_by / reviewed_at.
+# theo cách (a) của người phản biện). Lời văn do Claude soạn. ĐÃ BẬT: người dùng (Vân Anh) đọc
+# và duyệt ngày 07/11/2026; sửa lời văn hay đoạn trích thì phải duyệt lại.
 # Ý bị bỏ vì không có nguồn hoặc để giữ độ dài: _workspace/goal-articles/01_results.json (final.dropped_claims).
 # ======================================================================================
 [[article]]
@@ -112,7 +112,7 @@ sources = [
 ]
 
 # Lưu ý người duyệt (s2p5):
-#   - Chữ 'BHA' do tôi thêm để khớp với nhóm BHA của app; nguồn không dùng chữ BHA và không có đoạn trích đỡ. Trang AAD treat còn có câu 'It’s effective for treating whiteheads and pimples', hơi khác trang adult ('whiteheads and blackheads'). Bài theo trang adult.
+#   - Cụm "(một BHA)" đã bị bỏ (nguồn không dùng chữ BHA, không có đoạn trích đỡ). Trang AAD treat còn có câu 'It’s effective for treating whiteheads and pimples', hơi khác trang adult ('whiteheads and blackheads'). Bài theo trang adult.
 [[article.section.paragraph]]
 text_vi = "Salicylic acid đã được dùng cho mụn từ lâu. Theo AAD, chất này làm thông lỗ chân lông bị bít và tẩy tế bào chết, nên hợp nhất với mụn đầu trắng và đầu đen. Salicylic acid có nhiều nồng độ và nhiều dạng, kể cả sữa rửa mặt và kem dưỡng ẩm."
 sources = [
