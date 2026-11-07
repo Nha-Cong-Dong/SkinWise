@@ -100,10 +100,16 @@ export function SessionSwitch({
   count?: (s: Session) => number
 }) {
   return (
-    <div className={`${segBox} min-w-0 flex-1 sm:flex-none`} role="group" aria-label="Chọn buổi">
+    // Softer than the shared segmented control: 14px box, 10px options (box radius minus its padding).
+    <div className={`${segBox} min-w-0 flex-1 rounded-lg! sm:flex-none`} role="group" aria-label="Chọn buổi">
       {(['AM', 'PM'] as const).map((s) => (
-        <button key={s} aria-pressed={session === s} onClick={() => onChange(s)} className={`${segOption(session === s)} sm:px-5`}>
-          {s === 'AM' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
+        <button
+          key={s}
+          aria-pressed={session === s}
+          onClick={() => onChange(s)}
+          className={`${segOption(session === s)} gap-2! rounded-[10px]! text-sm! sm:px-5`}
+        >
+          {s === 'AM' ? <SunIcon className="size-[1.125rem]" /> : <MoonIcon className="size-[1.125rem]" />}
           Buổi {SESSION_LABELS[s].toLowerCase()}
           {count && ` · ${count(s)}`}
         </button>
