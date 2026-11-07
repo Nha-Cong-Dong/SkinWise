@@ -26,7 +26,7 @@ export function RuleCard({ rule, children, collapsible = false, id, footer, clas
     <article
       id={id}
       tabIndex={id ? -1 : undefined}
-      className={`relative scroll-mt-4 overflow-hidden rounded-md bg-surface py-4 pr-4 pl-6 focus:ring-2 focus:ring-primary focus:ring-offset-2 focus:ring-offset-neutral focus:outline-none sm:py-6 sm:pr-6 sm:pl-8 ${className}`}
+      className={`relative scroll-mt-4 overflow-hidden rounded-md bg-surface py-4 pr-4 pl-6 focus:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-neutral sm:py-6 sm:pr-6 sm:pl-8 ${className}`}
     >
       {/* The severity bar: colour repeats the badge, the badge's word and icon carry the meaning. */}
       <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${SEVERITY[rule.severity].bar}`} />

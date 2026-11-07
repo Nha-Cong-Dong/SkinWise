@@ -152,9 +152,9 @@ Trong React, gán thứ tự so le bằng biến CSS:
 ### 5.9. Chỉ ra chỗ một link trỏ tới (`.motion-spotlight`)
 Thêm 07/11 theo yêu cầu người dùng: bấm từ một cảnh báo sang tab khác thì phải thấy ngay đúng chỗ, không phải tự lướt tìm.
 - Link mang khoá luật: `#/lich-dung/lich-tuan?chu-y=<khoá>` ("Mở lịch tuần để sắp xếp lại" ở tab Kiểm tra) và `#/lich-dung/kiem-tra?chu-y=<khoá>` ("Xem giải thích và nguồn" ở Hôm nay và trang sản phẩm).
-- Kiểm tra: cuộn ngay (không mượt) tới thẻ của luật đó, chuyển focus vào thẻ. Lịch tuần: mở đúng buổi của cảnh báo, cuộn tới bước đầu tiên thuộc cảnh báo, khoanh ngày cảnh báo áp dụng, ô tuần trên điện thoại cũng được tô; khung trên cùng ghi tên cảnh báo, các buổi có cảnh báo, "Xem giải thích", "Bỏ đánh dấu", và nói rõ khi kết quả mới không còn cảnh báo đó.
-- Chuyển động: khối dịch lên 8px một lần (320ms, `--ease-out-strong`); lớp blush phía sau sáng lên hai lần trong 1,4 giây (≤ 2 lần/giây), rồi **đứng yên ở mức tô nhạt** để chỗ đó vẫn được đánh dấu sau khi hết chuyển động. Chỉ `transform` và `opacity` của lớp nền; chữ không mờ, không trễ (mục 7 vẫn giữ). Tắt khi bật giảm chuyển động (chỉ còn lớp tô nhạt).
-- Chỉ hiển thị: nhóm theo luật và ngày khoanh lấy nguyên từ kết quả kiểm tra, không suy ra thêm.
+- Kiểm tra: cuộn ngay (không mượt) tới thẻ của luật đó, chuyển focus vào thẻ. Lịch tuần: mở đúng buổi của cảnh báo, cuộn tới bước đầu tiên thuộc cảnh báo, đánh dấu ngày cảnh báo áp dụng bằng quầng hồng, ô tuần trên điện thoại cũng được tô; khung trên cùng ghi tên cảnh báo, các buổi có cảnh báo, "Xem giải thích", "Bỏ đánh dấu", và nói rõ khi kết quả mới không còn cảnh báo đó.
+- Chuyển động: không viền. Khối đi lên từ 4px phía dưới về vị trí **cao hơn chỗ cũ 2px** (520ms, `--ease-out-strong`) và một quầng bóng hồng (blush) toả nhẹ bên dưới hiện dần; cả hai **đứng yên** sau đó để chỗ đó vẫn được đánh dấu. Ngày cảnh báo áp dụng có quầng hồng nhỏ, không viền. Thẻ ở tab Kiểm tra chỉ có vòng focus khi dùng bàn phím (`focus-visible`). Chữ không mờ, không trễ (mục 7 vẫn giữ). Ngoại lệ có chủ đích với mục 1: trạng thái nghỉ khác giao diện không chuyển động (nhô 2px + bóng), và quầng bóng là `box-shadow` chạy một lần. Tắt khi bật giảm chuyển động (hiện ngay ở trạng thái nghỉ).
+- Chỉ hiển thị: nhóm theo luật và ngày được đánh dấu lấy nguyên từ kết quả kiểm tra, không suy ra thêm.
 
 ## 6. Từng màn hình
 

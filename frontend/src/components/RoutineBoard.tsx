@@ -348,7 +348,7 @@ function FocusBanner({
       </div>
       <p className="mt-1.5 leading-snug font-semibold text-pretty">{spot.rule.title_vi}</p>
       <p className="mt-1 text-sm text-ink-soft">
-        Các bước được tô hồng là sản phẩm của cảnh báo này; ngày được khoanh là ngày cảnh báo áp dụng.
+        Các bước nổi lên là sản phẩm của cảnh báo này; ngày có quầng hồng là ngày cảnh báo áp dụng.
       </p>
       <div className="mt-1 flex flex-wrap items-center gap-x-4">
         {sessions.length > 1 &&
@@ -616,7 +616,7 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
                 onClick={() => actions.toggleDay(entry.id, day)}
                 aria-pressed={on}
                 aria-label={`${DAY_LABELS[day]}, ${DAY_NAMES[day]}`}
-                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff} ${ringed ? `ring-2 ring-blush ring-offset-2 ${night ? 'ring-offset-dusk-raised' : 'ring-offset-dawn'}` : ''}`}
+                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff} ${ringed ? 'spotlight-day' : ''}`}
               >
                 {DAY_LABELS[day]}
                 {on && (

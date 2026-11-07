@@ -456,51 +456,47 @@
     transform: scale(0.98);
   }
   /* What a link pointed at (a warning card, the steps of a warning in the week, ANIMATION.md 5.9):
-     it rises 8px once, a blush layer behind it glows twice, then stays as a soft tint so the
-     place is still marked after the motion. The text never moves on its own or fades. */
+     no outline; it rises once and settles 2px above its place with a soft blush glow, which stays
+     so the place is still marked after the motion. The text never fades or waits. */
   .motion-spotlight {
     position: relative;
     isolation: isolate;
-    animation: spotlight-rise var(--duration-enter) var(--ease-out-strong) backwards;
+    transform: translateY(-2px);
+    animation: spotlight-lift 520ms var(--ease-out-strong) backwards;
   }
-  .motion-spotlight::before {
+  .motion-spotlight:not(.spotlight-wide) {
+    box-shadow: var(--spot-glow);
+    animation-name: spotlight-lift, spotlight-glow;
+  }
+  /* Morning rows have no background of their own: a raised surface behind them carries the glow,
+     reaching a little past the text. */
+  .spotlight-wide::before {
     content: '';
     position: absolute;
-    inset: 0;
-    z-index: -1;
-    border-radius: inherit;
-    background: var(--color-blush);
-    opacity: 0.22;
-    pointer-events: none;
-    animation: spotlight-glow 1400ms var(--ease-out-soft) var(--duration-enter) backwards;
-  }
-  /* Morning rows have no padding of their own: the tint reaches a little past the text. */
-  .spotlight-wide::before {
     inset: 0 -0.5rem;
+    z-index: -1;
     border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--spot-glow);
+    pointer-events: none;
+    animation: spotlight-glow 520ms var(--ease-out-strong) backwards;
+  }
+  /* A day the warning applies on: the same glow, smaller, no ring. */
+  .spotlight-day {
+    box-shadow: 0 0 10px 1px rgb(255 175 204 / 0.85);
   }
 }
-@keyframes spotlight-rise {
+:root {
+  --spot-glow: 0 10px 28px -8px rgb(255 175 204 / 0.85), 0 2px 10px -4px rgb(255 175 204 / 0.6);
+}
+@keyframes spotlight-lift {
   from {
-    transform: translateY(var(--motion-rise));
+    transform: translateY(var(--motion-rise-sm));
   }
 }
-/* Two soft peaks (well under 3 per second), ending on the resting tint of .motion-spotlight. */
 @keyframes spotlight-glow {
-  0% {
-    opacity: 0;
-  }
-  25% {
-    opacity: 0.5;
-  }
-  50% {
-    opacity: 0.22;
-  }
-  75% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 0.22;
+  from {
+    box-shadow: 0 0 0 0 rgb(255 175 204 / 0);
   }
 }
 
