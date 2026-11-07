@@ -30,6 +30,7 @@ import { syncLabel, useRoutineSync, type ServerCopy } from './sync'
 import {
   EMPTY_ADD_DRAFT,
   currentResult,
+  isCombinationAlert,
   isUsageNote,
   labelGroups,
   useRoutine,
@@ -624,12 +625,13 @@ const TABS: [RoutineTab, string][] = [
 ]
 
 /**
- * The four tabs of "Lịch dùng". "Kiểm tra" carries the number of combination warnings from the
- * last check (usage notes are not warnings).
+ * The four tabs of "Lịch dùng". "Kiểm tra" carries the number of combination warnings of severity
+ * avoid / caution from the last check (usage notes are not warnings; a bare number on an info / safe
+ * card such as a myth would read as a warning).
  */
 function RoutineTabs({ tab, check }: { tab: RoutineTab; check: CheckState }) {
   const result = currentResult(check)
-  const warnings = result ? result.warnings.filter((w) => !isUsageNote(w)).length : 0
+  const warnings = result ? result.warnings.filter(isCombinationAlert).length : 0
   return (
     <nav aria-label="Lịch dùng">
       <div className="grid grid-cols-4 gap-1 rounded-md border border-line bg-surface p-1 lg:inline-flex lg:rounded-full">

@@ -45,6 +45,7 @@ export function LandingPage({ onStart, onSignIn }: Props) {
         <nav aria-label="Trong trang" className="hidden items-center gap-6 text-xs font-semibold md:flex">
           {(
             [
+              ['lp-features', 'Chức năng'],
               ['lp-problem', 'Vấn đề'],
               ['lp-solution', 'Giải pháp'],
               ['lp-how', 'Cách hoạt động'],
@@ -76,6 +77,7 @@ export function LandingPage({ onStart, onSignIn }: Props) {
           <ThemeSwitch />
         </div>
 
+        <Features onStart={onStart} />
         <Problem />
         <Solution />
         <How />
@@ -162,6 +164,72 @@ function Section({ id, title, children }: { id: string; title: string; children:
       </h2>
       {children}
     </section>
+  )
+}
+
+/** Simple 24×24 stroke drawings for the feature cards; decorative (the card's name says it). */
+const FEATURE_ICONS = {
+  // A calendar page.
+  schedule: 'M5.5 6.5h13a1 1 0 0 1 1 1v11a1 1 0 0 1-1 1h-13a1 1 0 0 1-1-1v-11a1 1 0 0 1 1-1zM4.5 10.5h15M8.5 4.5v4M15.5 4.5v4',
+  // A target.
+  goals: 'M12 3.5a8.5 8.5 0 1 0 0 17 8.5 8.5 0 1 0 0-17zM12 8a4 4 0 1 0 0 8 4 4 0 1 0 0-8zM12 11.5v1',
+  // A tick and a cross: true or false.
+  myths: 'M4 12.5l3 3 6-7M14.5 10.5l5 5M19.5 10.5l-5 5',
+  // A speech bubble.
+  reviews: 'M5.5 5.5h13a1 1 0 0 1 1 1v8.5a1 1 0 0 1-1 1H11l-4 3.5v-3.5H5.5a1 1 0 0 1-1-1V6.5a1 1 0 0 1 1-1zM8.5 9.5h7M8.5 12.5h4.5',
+}
+
+/** "Chức năng": the four parts of the app, each opening the register form (approved copy). */
+function Features({ onStart }: { onStart: () => void }) {
+  const items: [keyof typeof FEATURE_ICONS, string, string][] = [
+    [
+      'schedule',
+      'Lịch dùng',
+      'Xếp sản phẩm theo buổi sáng, tối và từng ngày; SkinWise nhắc khi trùng hoạt chất hay có kết hợp cần thận trọng, kèm nguồn.',
+    ],
+    ['goals', 'Mục tiêu', 'Chọn mục tiêu da, như da dễ nổi mụn, để đọc về các nhóm hoạt chất liên quan, có trích nguồn.'],
+    [
+      'myths',
+      'Đúng hay sai',
+      'Những lời đồn về cách kết hợp hoạt chất, đối chiếu với nguồn: điều nào có bằng chứng, điều nào chưa.',
+    ],
+    [
+      'reviews',
+      'Đánh giá (bản thử)',
+      'Đọc và viết review sản phẩm cùng cộng đồng; bài được kiểm duyệt và không ảnh hưởng tới cảnh báo.',
+    ],
+  ]
+  return (
+    <Section id="lp-features" title="Bốn việc SkinWise giúp bạn">
+      <ul className="mt-6 grid grid-cols-[minmax(0,1fr)] gap-3 sm:grid-cols-2 sm:gap-4 lg:grid-cols-4">
+        {items.map(([icon, title, body], i) => (
+          <li key={icon} className="motion-enter flex" style={stagger(i + 1)}>
+            <button
+              onClick={onStart}
+              className="flex min-h-11 w-full flex-col items-start gap-3 rounded-md bg-surface p-5 text-left hover:bg-surface/70"
+            >
+              <span
+                aria-hidden="true"
+                className="inline-flex size-10 items-center justify-center rounded-full bg-wash text-primary"
+              >
+                <svg viewBox="0 0 24 24" className="size-5" aria-hidden="true">
+                  <path
+                    d={FEATURE_ICONS[icon]}
+                    fill="none"
+                    stroke="currentColor"
+                    strokeWidth={1.75}
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                  />
+                </svg>
+              </span>
+              <span className="font-semibold">{title}</span>
+              <span className="text-ink-soft">{body}</span>
+            </button>
+          </li>
+        ))}
+      </ul>
+    </Section>
   )
 }
 
@@ -340,7 +408,11 @@ function Demo() {
                 ))}
               </div>
               <div className="min-w-0 lg:sticky lg:top-4">
-                <WarningsPanel state={check} products={routine.products} />
+                <WarningsPanel
+                  state={check}
+                  products={routine.products}
+                  emptyText="Chưa chọn ngày nào. Bấm vào một nút ngày để kiểm tra."
+                />
               </div>
             </>
           )}

@@ -2,9 +2,9 @@ import { useState } from 'react'
 import type { Session, Severity, Warning } from '../api'
 import { DAY_NAMES, KIND_LABELS, SESSION_LABELS, SEVERITY, todayIndex } from '../labels'
 import { href } from '../router'
-import { currentResult, isUsageNote, sessionEntries, type CheckState, type RoutineActions } from '../routine'
+import { currentResult, dataGaps, isUsageNote, sessionEntries, type CheckState, type RoutineActions } from '../routine'
 import { SeverityBadge } from './Icons'
-import { Notice } from './Notice'
+import { DataNote, Notice } from './Notice'
 import { SessionShell, SessionSwitch } from './RoutineBoard'
 import { TONE } from './sessionTone'
 import { stagger } from './motion'
@@ -48,6 +48,10 @@ export function TodayPage({ actions, check }: Props) {
   const stepsToday = (s: Session) => sessionEntries(actions.routine, s).filter((e) => e.days.includes(today))
   const empty = actions.routine.entries.length === 0
   const noStepsToday = stepsToday('AM').length === 0 && stepsToday('PM').length === 0
+  // Today's products whose result may be missing warnings (the check tab says which and why).
+  const usedToday = new Set([...stepsToday('AM'), ...stepsToday('PM')].map((e) => e.productKey))
+  const gaps = dataGaps(result, actions.routine.products.filter((p) => usedToday.has(p.key)))
+  const mayMiss = gaps.incomplete.length > 0 || gaps.misspelled.some((p) => usedToday.has(p.key))
 
   return (
     <section aria-labelledby="today-title">
@@ -115,11 +119,23 @@ export function TodayPage({ actions, check }: Props) {
               </a>
             </p>
           )}
+          {mayMiss && (
+            <DataNote title="Có thể thiếu cảnh báo">
+              Kết quả cho sản phẩm dùng hôm nay có thể chưa đầy đủ.{' '}
+              <a
+                href={href({ page: 'routine', tab: 'check' })}
+                className="inline-flex min-h-11 items-center font-semibold text-primary"
+              >
+                Xem chi tiết ›
+              </a>
+            </DataNote>
+          )}
+          {/* Always with the result, also beside usage notes: no combination warning ≠ safe. */}
+          {result?.notice_vi && <Notice>{result.notice_vi}</Notice>}
           {todays.map((w) => (
             <TodayWarning key={`${w.rule.key}:${w.product_keys.join('+')}`} warning={w} today={today} actions={actions} />
           ))}
-          {result && result.warnings.length === 0 && result.notice_vi && <Notice>{result.notice_vi}</Notice>}
-          {result && result.warnings.length > 0 && todays.length === 0 && !noStepsToday && (
+          {result && !result.notice_vi && result.warnings.length > 0 && todays.length === 0 && !noStepsToday && (
             <p className="text-sm text-ink-soft">Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn.</p>
           )}
         </div>

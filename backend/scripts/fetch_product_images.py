@@ -11,6 +11,7 @@ at the image; only then does scripts.seed serve it. Prints, per product: image /
 no image on Open Beauty Facts.
 """
 
+import http.client
 import sys
 import time
 import tomllib
@@ -35,7 +36,7 @@ def http_get(url: str) -> bytes | None:
     except urllib.error.HTTPError as e:
         print(f"  HTTP {e.code} for {url}")
         return None
-    except (urllib.error.URLError, ConnectionError, TimeoutError) as e:
+    except (http.client.HTTPException, OSError) as e:  # URLError, timeouts, a cut body
         print(f"  cannot reach {url}: {e}")
         return None
 
@@ -62,7 +63,11 @@ IMAGE, NO_BARCODE, NO_IMAGE = "có ảnh", "không có mã vạch", "OBF không 
 def fetch(
     slugs: list[str], barcodes: dict[str, list[str]], get: pi.Get = http_get
 ) -> dict[str, str]:
-    """Fetch and record the images; returns slug -> outcome."""
+    """Fetch and record the images; returns slug -> outcome.
+
+    product_images.toml is written before each image file, so a run stopped at any point
+    never leaves a checked entry whose file changed (which would block scripts.seed): at
+    worst an entry is unchecked while the old file is still there, and nothing is served."""
     entries = {e["slug"]: e for e in pi.load_entries(pi.TOML_PATH)}
     outcome: dict[str, str] = {}
     pi.IMAGE_DIR.mkdir(parents=True, exist_ok=True)
@@ -76,10 +81,10 @@ def fetch(
         if fetched is None:
             outcome[slug] = NO_IMAGE  # an earlier entry, if any, stays as it was
             continue
-        pi.image_path(slug).write_bytes(fetched.data)
         entries[slug] = pi.update_entry(entries.get(slug), slug, fetched, now)
+        pi.write_entries(list(entries.values()), pi.TOML_PATH)
+        pi.write_atomically(pi.image_path(slug), fetched.data)
         outcome[slug] = IMAGE
-    pi.write_entries(list(entries.values()), pi.TOML_PATH)
     return outcome
 
 

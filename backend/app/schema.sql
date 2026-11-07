@@ -499,7 +499,8 @@ CREATE TABLE IF NOT EXISTS blog_notifications (
 );
 CREATE INDEX IF NOT EXISTS blog_notifications_recipient
   ON blog_notifications (recipient_id, created_at);
--- One like notice per person and post / comment, even after unliking and liking again.
+-- One like notice per person and post / comment while the like stands (unliking deletes it).
+-- actor_id of a like notice is never shown: kept only to delete it on unlike / with the account.
 CREATE UNIQUE INDEX IF NOT EXISTS blog_notifications_one_like
   ON blog_notifications (kind, actor_id, post_id, coalesce(comment_id, 0))
   WHERE kind IN ('post_liked', 'comment_liked');

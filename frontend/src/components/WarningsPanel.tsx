@@ -1,12 +1,13 @@
 import { useId } from 'react'
-import { SESSION_EXPIRED, SUGGESTIONS_TRUNCATED_VI, TOO_FAST, type RequestProblem, type Severity, type Warning } from '../api'
+import { SUGGESTIONS_TRUNCATED_VI, type Severity, type Warning } from '../api'
 import { KIND_LABELS, SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
 import { href } from '../router'
 import {
+  checkError,
   currentResult,
+  dataGaps,
   formatLabelLine,
   isUsageNote,
-  maybeIncomplete,
   type CheckState,
   type LabelGroups,
   type MyProduct,
@@ -29,17 +30,23 @@ type Props = {
    * beside the cards. Without it, a section of another page (a blog post's routine).
    */
   page?: boolean
+  /** What to say while there is nothing to check; the default asks for products in a session. */
+  emptyText?: string
 }
 
 const NONE = new Map<string, LabelGroups>()
 
-export function WarningsPanel({ state, products, found = NONE, page = false }: Props) {
+export function WarningsPanel({
+  state,
+  products,
+  found = NONE,
+  page = false,
+  emptyText = 'Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.',
+}: Props) {
   const idPrefix = useId()
   const names = new Map(products.map((p) => [p.key, p.name]))
   const result = currentResult(state)
-  const checked = new Set(result?.products.map((p) => p.key))
-  const incomplete = products.filter((p) => checked.has(p.key) && maybeIncomplete(p))
-  const misspelled = (result?.products ?? []).filter((p) => p.possible_actives.length > 0 || p.suggestions_truncated)
+  const { incomplete, misspelled } = dataGaps(result, products)
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
 
   return (
@@ -110,7 +117,7 @@ export function WarningsPanel({ state, products, found = NONE, page = false }: P
       )}
       <div className={page ? 'mt-6 space-y-4 lg:mt-0' : 'mt-4 space-y-3'}>
         {state.kind === 'empty' && (
-          <Notice>Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.</Notice>
+          <Notice>{emptyText}</Notice>
         )}
         {state.kind === 'error' && (
           <div className="rounded-md bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
@@ -305,10 +312,4 @@ export function SeverityCounts({ warnings, className }: { warnings: Warning[]; c
       {notes > 0 && <span className="text-xs opacity-80">{notes} lưu ý khi dùng</span>}
     </p>
   )
-}
-
-function checkError(problem: RequestProblem): string {
-  if (problem === 'signed-out') return `Không kiểm tra được routine. ${SESSION_EXPIRED}`
-  if (problem === 'too-many') return `Không kiểm tra được routine. ${TOO_FAST}`
-  return 'Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.'
 }

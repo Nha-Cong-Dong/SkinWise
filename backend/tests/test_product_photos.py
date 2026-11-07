@@ -199,6 +199,56 @@ def test_fetch_writes_unchecked_entries_and_keeps_checked_when_unchanged(image_d
     assert pi.load_entries(pi.TOML_PATH)[0]["checked"] is False
 
 
+def test_a_run_stopped_half_way_never_blocks_the_seed(
+    image_dir: Path, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    barcodes = {"a": ["1"], "b": ["2"]}
+    script.fetch(["a", "b"], barcodes, FakeObf({"1": png(), "2": png((1, 2, 3))}))
+    pi.write_entries([{**e, "checked": True} for e in pi.load_entries(pi.TOML_PATH)], pi.TOML_PATH)
+    assert pi.image_problems(pi.load_entries(pi.TOML_PATH), {"a", "b"}) == []
+
+    # Stopped (Ctrl+C, a network error not caught) on b, after a's image changed on OBF.
+    def stop_on_b(url: str) -> bytes | None:
+        if url == pi.OBF_API.format(code="2"):
+            raise KeyboardInterrupt
+        return FakeObf({"1": png((9, 9, 9))})(url)
+
+    with pytest.raises(KeyboardInterrupt):
+        script.fetch(["a", "b"], barcodes, stop_on_b)
+    entries = {e["slug"]: e for e in pi.load_entries(pi.TOML_PATH)}
+    assert entries["a"]["checked"] is False and entries["b"]["checked"] is True
+    assert pi.image_problems(list(entries.values()), {"a", "b"}) == []
+
+    # Stopped between writing the TOML and the image: the entry is unchecked, nothing is
+    # served, and the seed still runs.
+    pi.write_entries([{**e, "checked": True} for e in pi.load_entries(pi.TOML_PATH)], pi.TOML_PATH)
+    real_write = pi.write_atomically
+
+    def stop_on_image(path: Path, data: str | bytes) -> None:
+        if path.suffix == ".webp":
+            raise KeyboardInterrupt
+        real_write(path, data)
+
+    monkeypatch.setattr(pi, "write_atomically", stop_on_image)
+    with pytest.raises(KeyboardInterrupt):
+        script.fetch(["b"], barcodes, FakeObf({"2": png((4, 5, 6))}))
+    entries = {e["slug"]: e for e in pi.load_entries(pi.TOML_PATH)}
+    assert entries["b"]["checked"] is False
+    assert pi.image_problems(list(entries.values()), {"a", "b"}) == []
+    assert not list(image_dir.glob("*.tmp"))
+
+
+def test_http_get_survives_a_cut_body(monkeypatch: pytest.MonkeyPatch) -> None:
+    import http.client
+
+    def cut(*args: object, **kwargs: object) -> None:
+        raise http.client.IncompleteRead(b"partial")
+
+    monkeypatch.setattr(script, "PAUSE_SECONDS", 0)
+    monkeypatch.setattr(script.urllib.request, "urlopen", cut)
+    assert script.http_get("https://example.invalid/x") is None
+
+
 def test_large_images_are_shrunk_to_800(image_dir: Path) -> None:
     script.fetch(["a"], {"a": ["1"]}, FakeObf({"1": png(size=(2000, 1000))}))
     with Image.open(image_dir / "a.webp") as image:
@@ -276,6 +326,32 @@ def test_upload_errors(make_user) -> None:
         data={"replaces": "abc"},
     )
     assert response.status_code == 422
+
+
+def test_replaces_must_be_ascii_digits(make_user, upload_dir: Path) -> None:
+    me = make_user()
+    # The form is read as latin-1, so the byte 0xB2 is '²': str.isdigit() says yes, int() no.
+    for value in [b"\xb2", b"1\xb9", b"1" * 19, b"-1", b"1.0"]:
+        body = b"".join(
+            [
+                b"--skinwise-test\r\n",
+                b'Content-Disposition: form-data; name="replaces"\r\n\r\n',
+                value,
+                b"\r\n--skinwise-test\r\n",
+                b'Content-Disposition: form-data; name="file"; filename="p.png"\r\n',
+                b"Content-Type: image/png\r\n\r\n",
+                png(),
+                b"\r\n--skinwise-test--\r\n",
+            ]
+        )
+        response = me.post(
+            "/me/product-photos",
+            content=body,
+            headers={"content-type": "multipart/form-data; boundary=skinwise-test"},
+        )
+        assert response.status_code == 422, (value, response.text)
+        assert response.json()["detail"] == "replaces must be a photo id"
+    assert not upload_dir.exists() or list(upload_dir.iterdir()) == []
 
 
 def test_replacing_deletes_the_old_photo(make_user, upload_dir: Path) -> None:
@@ -424,7 +500,16 @@ def test_nul_characters_are_a_bad_request_not_a_server_error(
     ]:
         assert client.get(path).status_code == 422, path
     me = make_user(f"n_{uuid.uuid4().hex[:8]}")
-    assert me.post("/inci/analyze", json={"inci": "Aqua, Nia\u0000cinamide"}).status_code == 422
+    nul = {"detail": "text must not contain NUL characters"}  # from the handler in app/main.py
+    response = me.post("/inci/analyze", json={"text": "Aqua, Nia\u0000cinamide"})
+    assert (response.status_code, response.json()) == (422, nul)
+    # A list pasted into a routine check reaches the database the same way.
+    check = {
+        "products": [{"key": "p1", "inci": "Aqua, Nia\u0000cinamide, Glycerin"}],
+        "items": [{"product_key": "p1", "session": "AM", "step": 1, "days": [0]}],
+    }
+    response = me.post("/routine/check", json=check)
+    assert (response.status_code, response.json()) == (422, nul)
     assert me.get("/blog/posts", params={"q": "ab\x00c"}).status_code == 422
     assert me.get("/blog/authors/a%00b").status_code == 422
 

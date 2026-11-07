@@ -668,6 +668,9 @@ NoticeKind = Literal[
     "post_removed",
 ]
 STATUS_NOTICES = ("post_pending", "post_visible", "post_hidden", "post_removed")
+# Who liked is never shown (the privacy policy says others do not see who liked): the actor
+# is kept only so that unliking can remove the notice, and so it goes with that account.
+LIKE_NOTICES = ("post_liked", "comment_liked")
 
 
 def notify(
@@ -679,7 +682,8 @@ def notify(
     comment_id: int | None = None,
 ) -> None:
     """Record one notification. Nobody is notified of their own action; a like is notified
-    once per person and post / comment, even after unliking and liking again (unique index)."""
+    at most once per person and post / comment while it stands (unique index), and the
+    notice goes when the like is taken back (`_drop_like_notice`)."""
     if recipient is None or (actor is not None and str(actor) == str(recipient)):
         return
     db.execute(
@@ -688,6 +692,19 @@ def notify(
             "VALUES (:r, :a, :k, :p, :c) ON CONFLICT DO NOTHING"
         ),
         {"r": recipient, "a": actor, "k": kind, "p": post_id, "c": comment_id},
+    )
+
+
+def _drop_like_notice(db: Db, actor: str, *, post_id: int = 0, comment_id: int = 0) -> None:
+    """Unliking removes the like notice it caused, read or not: the comment's when
+    comment_id is given, else the post's."""
+    if not comment_id:
+        sql = "kind = 'post_liked' AND post_id = :p"
+    else:
+        sql = "kind = 'comment_liked' AND comment_id = :c"
+    db.execute(
+        text(f"DELETE FROM blog_notifications WHERE actor_id = :a AND {sql}"),
+        {"a": actor, "p": post_id, "c": comment_id},
     )
 
 
@@ -700,6 +717,7 @@ def _post_author(db: Db, post_id: int) -> str | None:
 # A notification is shown while what it points to is visible: the post, and the comment when
 # there is one. Status notices go to the post's author and are always shown.
 _STATUS_LIST = ", ".join(f"'{k}'" for k in STATUS_NOTICES)
+_LIKE_LIST = ", ".join(f"'{k}'" for k in LIKE_NOTICES)
 _NOTICE_SHOWN = f"""
     (n.kind IN ({_STATUS_LIST})
      OR (p.status = 'visible'
@@ -723,11 +741,13 @@ def unread_count(db: Db, viewer: str) -> int:
 
 
 def activity(db: Db, viewer: str, limit: int) -> dict[str, Any]:
-    """The viewer's latest notifications that may be shown, newest first."""
+    """The viewer's latest notifications that may be shown, newest first. Like notices never
+    name who liked, also for rows written before that rule (checked here, when reading)."""
     rows = db.execute(
         text(
             f"""
-            SELECT n.id, n.kind, n.created_at, n.read_at IS NOT NULL AS read, pr.handle,
+            SELECT n.id, n.kind, n.created_at, n.read_at IS NOT NULL AS read,
+                   CASE WHEN n.kind IN ({_LIKE_LIST}) THEN NULL ELSE pr.handle END AS handle,
                    n.post_id, p.title, n.comment_id,
                    CASE WHEN c.status = 'visible' AND c.deleted_at IS NULL
                         THEN left(c.body, {NOTICE_EXCERPT_LENGTH}) END AS excerpt
@@ -804,6 +824,7 @@ def set_like(db: Db, post_id: int, user_id: str, on: bool) -> int:
             text("DELETE FROM blog_likes WHERE post_id = :p AND user_id = :u"),
             {"p": post_id, "u": user_id},
         )
+        _drop_like_notice(db, user_id, post_id=post_id)
     return db.execute(
         text("SELECT count(*) FROM blog_likes WHERE post_id = :p"), {"p": post_id}
     ).scalar_one()
@@ -1055,6 +1076,7 @@ def set_comment_like(db: Db, comment_id: int, user_id: str, on: bool) -> int:
             text("DELETE FROM blog_comment_likes WHERE comment_id = :c AND user_id = :u"),
             {"c": comment_id, "u": user_id},
         )
+        _drop_like_notice(db, user_id, comment_id=comment_id)
     return db.execute(
         text("SELECT count(*) FROM blog_comment_likes WHERE comment_id = :c"), {"c": comment_id}
     ).scalar_one()

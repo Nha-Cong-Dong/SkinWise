@@ -5,7 +5,7 @@ import { useCallback, useEffect, useState } from 'react'
 import { ApiError, SIGNED_OUT_EVENT, api, type Me } from './api'
 
 /** The privacy policy shown on the form that creates an account; must match POLICY_VERSION in backend/app/accounts.py. */
-export const POLICY_VERSION = '2026-11-05-draft'
+export const POLICY_VERSION = '2026-11-07-draft'
 
 export type AccountState =
   | { kind: 'checking' }

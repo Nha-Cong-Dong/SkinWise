@@ -30,7 +30,7 @@ TOKEN_TTL = {"verify": timedelta(hours=24), "reset": timedelta(minutes=30)}
 UNVERIFIED_TTL = timedelta(days=7)  # unverified accounts are removed after this
 SESSION_TTL = timedelta(days=30)
 # The privacy policy the sign-in form shows (frontend PolicyText). A new version asks again.
-POLICY_VERSION = "2026-11-05-draft"
+POLICY_VERSION = "2026-11-07-draft"
 PURPOSE = "account"  # sign in, and keep the routine for use on several devices
 # One plain address: no characters that could make a header or the SMTP envelope name
 # several recipients ("a,b@x", "a <b@x>", quotes, brackets).

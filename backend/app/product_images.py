@@ -12,6 +12,7 @@ Display only: nothing here reaches the warning engine. Images are never taken fr
 
 import hashlib
 import json
+import os
 import tomllib
 from collections.abc import Callable
 from dataclasses import dataclass
@@ -113,7 +114,18 @@ def write_entries(entries: list[dict[str, Any]], path: Path = TOML_PATH) -> None
         for key in (*REQUIRED, "checked"):
             lines.append(f"{key} = {_toml_value(e.get(key, False))}")
         lines.append("")
-    path.write_text("\n".join(lines), encoding="utf-8")
+    write_atomically(path, "\n".join(lines))
+
+
+def write_atomically(path: Path, data: str | bytes) -> None:
+    """Write through a temporary file next to `path`, so a stop half-way leaves either the
+    old file or the new one, never a cut one. Text is written as Path.write_text would."""
+    tmp = path.with_name(path.name + ".tmp")
+    if isinstance(data, str):
+        tmp.write_text(data, encoding="utf-8")
+    else:
+        tmp.write_bytes(data)
+    os.replace(tmp, path)
 
 
 # --- Seed and API ---

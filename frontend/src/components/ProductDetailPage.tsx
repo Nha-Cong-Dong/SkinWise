@@ -4,6 +4,7 @@ import { useGroupName } from '../groups'
 import { APPLICATION_LABELS, KIND_LABELS, SESSION_LABELS, SEVERITY, VERIFICATION_LABELS, formatOccurrences } from '../labels'
 import { href, navigate } from '../router'
 import {
+  checkError,
   currentResult,
   isUsageNote,
   maybeIncomplete,
@@ -247,12 +248,29 @@ function RelatedWarnings({ product, actions, check }: { product: MyProduct; acti
   const names = new Map(actions.routine.products.map((p) => [p.key, p.name]))
   const checked = result?.products.some((p) => p.key === product.key) ?? false
   const warnings = (result?.warnings ?? []).filter((w) => w.product_keys.includes(product.key))
-  if (!checked) {
+  if (check.kind === 'error') {
     return (
-      <p className="text-sm text-ink-soft">
-        Sản phẩm chưa có trong lịch dùng (hoặc chưa kiểm tra xong), nên chưa được kiểm tra kết hợp.
-      </p>
+      <div className="rounded-md bg-avoid-soft p-4 text-sm leading-relaxed text-avoid-ink">
+        <p>{checkError(check.problem)}</p>
+        <button
+          onClick={check.retry}
+          className="mt-2 min-h-11 rounded-full bg-surface px-4 font-semibold text-avoid-ink ring-1 ring-avoid/40 hover:bg-neutral"
+        >
+          Thử lại
+        </button>
+      </div>
     )
+  }
+  if (!checked) {
+    // The check only covers steps with at least one day (toCheckRequest drops the others).
+    const entries = actions.routine.entries.filter((e) => e.productKey === product.key)
+    const text =
+      entries.length === 0
+        ? 'Sản phẩm chưa có trong lịch dùng, nên chưa được kiểm tra kết hợp.'
+        : entries.every((e) => e.days.length === 0)
+          ? 'Sản phẩm chưa được chọn ngày dùng nào, nên chưa được kiểm tra kết hợp.'
+          : 'Đang kiểm tra…'
+    return <p className="text-sm text-ink-soft">{text}</p>
   }
   if (warnings.length === 0) {
     return <p className="text-sm text-ink-soft">Chưa có cảnh báo, không có nghĩa là chắc chắn an toàn.</p>

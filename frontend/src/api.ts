@@ -454,7 +454,7 @@ export type ActivityItem = {
   kind: NoticeKind
   created_at: string
   read: boolean
-  actor_handle: string | null // null for status notices, or when that user has no nickname
+  actor_handle: string | null // null for status notices and likes (who liked is never shown), or when that user has no nickname
   post_id: number
   post_title: string
   comment_id: number | null // the new comment / reply, or the liked comment

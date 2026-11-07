@@ -20,6 +20,14 @@ export const SEVERITY: Record<Severity, { label: string; badge: string; mark: st
   safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe', bar: 'bg-safe' },
 }
 
+/**
+ * The severities that ask for care (the two most severe in SEVERITY). Only these earn a bare "!"
+ * or a count with no label: an info / safe card (a myth such as vitamin C + niacinamide) says
+ * the pair is mostly fine, so marking it like a warning would mislead.
+ */
+export const ALERT_SEVERITIES = (Object.keys(SEVERITY) as Severity[]).slice(0, 2)
+export const isAlertSeverity = (s: Severity): boolean => ALERT_SEVERITIES.includes(s)
+
 export const KIND_LABELS: Record<Rule['kind'], string> = {
   conflict: 'Kết hợp cần lưu ý',
   duplicate: 'Trùng hoạt chất',

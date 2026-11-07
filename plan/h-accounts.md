@@ -206,6 +206,7 @@ Còn thiếu trước khi mở cho người dùng thật:
 - [ ] Triển khai theo hướng A: HTTPS (cookie tự bật `Secure` khi `APP_URL` là https), Alembic, sao lưu, tự lưu font
 - [ ] Giới hạn tần suất đang nằm trong bộ nhớ của một tiến trình: chạy nhiều tiến trình thì chuyển vào DB
 - [ ] Sau reverse proxy: chạy uvicorn với `FORWARDED_ALLOW_IPS` chỉ chứa IP của proxy (mặc định tin `127.0.0.1`); để rộng hơn thì client tự gửi `X-Forwarded-For` để né giới hạn theo IP
+- [ ] Hỏi đồng ý lại khi `POLICY_VERSION` đổi: hiện chỉ kiểm lúc đăng ký, người đã đồng ý bản cũ không được hỏi (review 07/11; bản 2026-11-07-draft thêm ảnh sản phẩm + thông báo). Hướng: `GET /me` trả bản đã đồng ý mới nhất, lệch thì chặn bằng màn đồng ý lại, `POST /me/consent`
 - [ ] Việc định kỳ xoá tài khoản không dùng 24 tháng (cần gửi email báo trước, nên làm sau khi có dịch vụ email)
 
 ## 15. Đã chốt (người duyệt, 26/10)

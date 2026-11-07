@@ -786,7 +786,10 @@ class ActivityItem(BaseModel):
     kind: NoticeKind
     created_at: datetime
     read: bool
-    actor_handle: str | None  # None for status notices (post_pending ... post_removed)
+    # Who commented / replied. Always None for likes (post_liked, comment_liked: who liked is
+    # never shown) and for status notices (post_pending ... post_removed); None too when that
+    # user has no nickname.
+    actor_handle: str | None
     post_id: int
     post_title: str
     comment_id: int | None  # the new comment / reply, or the liked comment

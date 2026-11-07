@@ -10,12 +10,19 @@ import { setUnread } from './unread'
 
 const LIMIT = 50
 
-/** What happened, after the person who did it ("lan_dakho đã thích bài của bạn"). */
-const ACTED: Record<Exclude<NoticeKind, `post_${'pending' | 'visible' | 'hidden' | 'removed'}`>, string> = {
-  post_liked: 'đã thích bài của bạn',
+/** What happened, after the person who did it ("lan_dakho đã bình luận bài của bạn"). */
+const ACTED: Record<'post_commented' | 'comment_replied', string> = {
   post_commented: 'đã bình luận bài của bạn',
   comment_replied: 'đã trả lời bình luận của bạn',
-  comment_liked: 'đã thích bình luận của bạn',
+}
+
+/**
+ * Likes never name who liked (the privacy policy says others do not see who liked), so these are
+ * shown with no handle, avatar or author link even if the API ever sends one.
+ */
+const LIKED: Record<'post_liked' | 'comment_liked', string> = {
+  post_liked: 'Có người đã thích bài của bạn',
+  comment_liked: 'Có người đã thích bình luận của bạn',
 }
 
 /** Notices about the user's own post, with no one named. */
@@ -38,6 +45,10 @@ const ICON: Record<NoticeKind, BlogIconName> = {
 }
 
 const isStatus = (kind: NoticeKind): kind is keyof typeof STATUS => kind in STATUS
+const isLike = (kind: NoticeKind): kind is keyof typeof LIKED => kind in LIKED
+
+/** The person to name for a notice: only comments and replies name someone. */
+const actorOf = (item: ActivityItem): string | null => (isStatus(item.kind) || isLike(item.kind) ? null : item.actor_handle)
 
 /** Where a notice leads: the post, at the comment when there is one. */
 function link(item: ActivityItem): string {
@@ -45,12 +56,40 @@ function link(item: ActivityItem): string {
   return item.comment_id !== null ? `${post}?bl=${item.comment_id}` : post
 }
 
-function Line({ item }: { item: ActivityItem }) {
+function Line({ item, actor }: { item: ActivityItem; actor: string | null }) {
   if (isStatus(item.kind)) return <>{STATUS[item.kind]}:</>
+  if (isLike(item.kind)) return <>{LIKED[item.kind]}:</>
   return (
     <>
-      <span className="font-semibold break-all text-ink">{item.actor_handle ?? 'Một người dùng'}</span> {ACTED[item.kind]}:
+      <span className="font-semibold break-all text-ink">{actor ?? 'Một người dùng'}</span> {ACTED[item.kind]}:
     </>
+  )
+}
+
+function Row({ item }: { item: ActivityItem }) {
+  const actor = actorOf(item)
+  return (
+    <a href={link(item)} className="group grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-start gap-x-3 py-4">
+      {actor === null ? (
+        <span
+          aria-hidden="true"
+          className="inline-flex size-9 items-center justify-center rounded-full border border-line bg-paper text-ink-soft"
+        >
+          <BlogIcon name={ICON[item.kind]} className="size-[1.125rem]" />
+        </span>
+      ) : (
+        <Avatar handle={actor} />
+      )}
+      <span className="min-w-0 text-sm leading-relaxed text-ink-soft">
+        <Line item={item} actor={actor} />{' '}
+        <span className="font-semibold text-ink group-hover:text-primary group-hover:underline">{item.post_title}</span>
+        {item.excerpt_vi && <span className="mt-0.5 block break-words text-ink">“{item.excerpt_vi}”</span>}
+        <span className="mt-0.5 block text-xs">
+          <When iso={item.created_at} />
+        </span>
+      </span>
+      {!item.read && <span className="mt-1 rounded-full bg-wash px-2 text-xs leading-relaxed font-semibold text-primary">Mới</span>}
+    </a>
   )
 }
 
@@ -85,29 +124,7 @@ export function ActivityPage() {
         <ul className="rounded-md border border-line bg-surface px-4 sm:px-6">
           {state.value.items.map((item) => (
             <li key={item.id} className="border-b border-line last:border-b-0">
-              <a href={link(item)} className="group grid grid-cols-[2.25rem_minmax(0,1fr)_auto] items-start gap-x-3 py-4">
-                {isStatus(item.kind) || !item.actor_handle ? (
-                  <span
-                    aria-hidden="true"
-                    className="inline-flex size-9 items-center justify-center rounded-full border border-line bg-paper text-ink-soft"
-                  >
-                    <BlogIcon name={ICON[item.kind]} className="size-[1.125rem]" />
-                  </span>
-                ) : (
-                  <Avatar handle={item.actor_handle} />
-                )}
-                <span className="min-w-0 text-sm leading-relaxed text-ink-soft">
-                  <Line item={item} />{' '}
-                  <span className="font-semibold text-ink group-hover:text-primary group-hover:underline">{item.post_title}</span>
-                  {item.excerpt_vi && <span className="mt-0.5 block break-words text-ink">“{item.excerpt_vi}”</span>}
-                  <span className="mt-0.5 block text-xs">
-                    <When iso={item.created_at} />
-                  </span>
-                </span>
-                {!item.read && (
-                  <span className="mt-1 rounded-full bg-wash px-2 text-xs leading-relaxed font-semibold text-primary">Mới</span>
-                )}
-              </a>
+              <Row item={item} />
             </li>
           ))}
         </ul>

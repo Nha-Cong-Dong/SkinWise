@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import {
   api,
   requestProblem,
+  SESSION_EXPIRED,
+  TOO_FAST,
   type GroupIngredient,
   type InciAnalysis,
   type RequestProblem,
@@ -15,7 +17,7 @@ import {
   type TextNotice,
   type Warning,
 } from './api'
-import { ALL_DAYS } from './labels'
+import { ALL_DAYS, isAlertSeverity } from './labels'
 
 export type MyProduct = {
   key: string
@@ -40,6 +42,22 @@ const INFORMATIONAL: TextNotice['code'][] = ['vietnamese_names', 'drug_facts']
 /** The pasted list may not be the whole label, so the check may miss warnings. */
 export function maybeIncomplete(product: MyProduct): boolean {
   return (product.notices ?? []).some((n) => !INFORMATIONAL.includes(n.code))
+}
+
+/**
+ * Why a check result may be missing warnings, per product: pasted lists that may not be the
+ * whole label (`incomplete`), and products with unrecognised names that may be misspelled actives
+ * or that were not all looked up (`misspelled`). Only products the result covers count.
+ */
+export function dataGaps(
+  result: RoutineCheckResponse | null,
+  products: MyProduct[],
+): { incomplete: MyProduct[]; misspelled: RoutineCheckResponse['products'] } {
+  const checked = new Set(result?.products.map((p) => p.key))
+  return {
+    incomplete: products.filter((p) => checked.has(p.key) && maybeIncomplete(p)),
+    misspelled: (result?.products ?? []).filter((p) => p.possible_actives.length > 0 || p.suggestions_truncated),
+  }
 }
 
 /**
@@ -292,6 +310,11 @@ export function isUsageNote(w: Warning): boolean {
   return w.rule.kind === 'usage'
 }
 
+/** A combination warning that asks for care (avoid / caution): what "!" marks and tab counts show. */
+export function isCombinationAlert(w: Warning): boolean {
+  return !isUsageNote(w) && isAlertSeverity(w.rule.severity)
+}
+
 /**
  * Re-check the routine whenever it changes (debounced; a newer check cancels an older one).
  * /routine/check needs a session: nothing is sent while `user` is null (signing in, #review), and
@@ -342,4 +365,11 @@ export function useRoutineCheck(routine: Routine, user: string | null): CheckSta
     setAttempt((n) => n + 1)
   }
   return { kind: 'error', message: last.error ?? '', problem: last.problem ?? 'failed', retry }
+}
+
+/** Why the routine check failed, in the words every page uses. */
+export function checkError(problem: RequestProblem): string {
+  if (problem === 'signed-out') return `Không kiểm tra được routine. ${SESSION_EXPIRED}`
+  if (problem === 'too-many') return `Không kiểm tra được routine. ${TOO_FAST}`
+  return 'Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.'
 }

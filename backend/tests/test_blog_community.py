@@ -444,16 +444,18 @@ def test_social_notifications(make_user, groups) -> None:
     assert [i["kind"] for i in got["items"]] == ["post_commented", "post_commented", "post_liked"]
     assert got["unread_count"] == 3
     liked = got["items"][2]
-    assert liked["actor_handle"] == a_name and liked["post_id"] == post["id"]
+    assert liked["actor_handle"] is None and liked["post_id"] == post["id"]
     assert liked["post_title"] == post["title"] and liked["comment_id"] is None
     assert liked["excerpt_vi"] is None and liked["read"] is False
     commented = got["items"][1]
+    assert commented["actor_handle"] == a_name and got["items"][0]["actor_handle"] == b_name
     assert commented["comment_id"] == root["id"]
     assert commented["excerpt_vi"] == root["body"][:80] and len(commented["excerpt_vi"]) == 80
 
     got = activity(a)
     assert [i["kind"] for i in got["items"]] == ["comment_liked", "comment_replied"]
-    assert got["items"][0]["actor_handle"] == b_name
+    assert got["items"][0]["actor_handle"] is None  # who liked is never shown
+    assert got["items"][1]["actor_handle"] == b_name  # who replied is
     assert got["items"][0]["comment_id"] == root["id"]
     assert got["items"][1]["comment_id"] == reply["id"]
     assert got["items"][1]["excerpt_vi"] == "Trả lời a"
@@ -487,10 +489,63 @@ def test_a_like_is_notified_once(make_user, groups) -> None:
     reader = make_user(handle())
     for _ in range(3):
         reader.put(f"/blog/posts/{post['id']}/like")
-        reader.delete(f"/blog/posts/{post['id']}/like")
         reader.put(f"/blog/comments/{comment['id']}/like")
-        reader.delete(f"/blog/comments/{comment['id']}/like")
     assert sorted(kinds(author)) == ["comment_liked", "post_liked"]
+
+
+def test_unliking_removes_the_like_notice(make_user, groups) -> None:
+    author = make_user(handle())
+    post = create(author, catalogue(groups["none"]))
+    comment = author.post(f"/blog/posts/{post['id']}/comments", json={"body": "Gốc"}).json()
+    reader, other = make_user(handle()), make_user(handle())
+    for client in (reader, other):
+        client.put(f"/blog/posts/{post['id']}/like")
+        client.put(f"/blog/comments/{comment['id']}/like")
+    assert sorted(kinds(author)) == ["comment_liked"] * 2 + ["post_liked"] * 2
+    author.post("/me/activity/read", json={})  # read notices go too
+
+    assert reader.delete(f"/blog/posts/{post['id']}/like").status_code == 200
+    assert sorted(kinds(author)) == ["comment_liked"] * 2 + ["post_liked"]
+    assert reader.delete(f"/blog/comments/{comment['id']}/like").status_code == 200
+    assert sorted(kinds(author)) == ["comment_liked", "post_liked"]  # the other reader's stay
+
+    # Liking again notifies again, still without a name.
+    reader.put(f"/blog/posts/{post['id']}/like")
+    got = activity(author)
+    assert got["unread_count"] == 1
+    assert [i["actor_handle"] for i in got["items"]] == [None, None, None]
+
+
+def test_like_notices_never_name_who_liked(make_user, groups, engine) -> None:
+    author = make_user(handle())
+    post = create(author, catalogue(groups["none"]))
+    comment = author.post(f"/blog/posts/{post['id']}/comments", json={"body": "Gốc"}).json()
+    liker_name = handle()
+    liker = make_user(liker_name)
+    liker.put(f"/blog/posts/{post['id']}/like")
+    liker.put(f"/blog/comments/{comment['id']}/like")
+    response = author.get("/me/activity")
+    assert sorted(i["kind"] for i in response.json()["items"]) == ["comment_liked", "post_liked"]
+    assert liker_name not in response.text
+
+    # Rows written before this rule (or by any other path) are hidden when read, too.
+    with engine.begin() as conn:
+        actor = conn.execute(
+            text("SELECT user_id FROM user_profiles WHERE handle = :h"), {"h": liker_name}
+        ).scalar_one()
+        conn.execute(text("DELETE FROM blog_notifications WHERE actor_id = :a"), {"a": actor})
+        conn.execute(
+            text(
+                "INSERT INTO blog_notifications (recipient_id, actor_id, kind, post_id, comment_id)"
+                " SELECT author_id, :a, k, id, c FROM blog_posts, (VALUES "
+                " ('post_liked', NULL::bigint), ('comment_liked', CAST(:c AS bigint))) v(k, c)"
+                " WHERE id = :p"
+            ),
+            {"a": actor, "p": post["id"], "c": comment["id"]},
+        )
+    response = author.get("/me/activity")
+    assert len(response.json()["items"]) == 2
+    assert liker_name not in response.text
 
 
 def test_status_notifications(make_user, groups, client: TestClient, auth) -> None:

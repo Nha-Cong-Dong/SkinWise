@@ -4,7 +4,7 @@ import { ALL_DAYS, DAY_LABELS, DAY_NAMES, SESSION_LABELS } from '../labels'
 import { href } from '../router'
 import {
   currentResult,
-  isUsageNote,
+  isCombinationAlert,
   sessionEntries,
   type CheckState,
   type Entry,
@@ -113,8 +113,9 @@ export function SessionSwitch({
 }
 
 /**
- * Phones: the week at a glance, steps per day and session, "!" where a combination warning
- * applies (from the check's own days and sessions). A cell opens that session.
+ * Phones: the week at a glance, steps per day and session, "!" where a combination warning of
+ * severity avoid / caution applies (from the check's own days and sessions); info / safe cards
+ * (myths, info duplicates) get no mark. A cell opens that session.
  */
 function WeekOverview({
   actions,
@@ -127,7 +128,7 @@ function WeekOverview({
   session: Session
   onSession: (s: Session) => void
 }) {
-  const warnings = (currentResult(check)?.warnings ?? []).filter((w) => !isUsageNote(w))
+  const warnings = (currentResult(check)?.warnings ?? []).filter(isCombinationAlert)
   const warned = (day: number, s: Session) =>
     warnings.some((w) => w.occurrences.some((o) => o.day === day && (o.session === s || o.session === null)))
   return (
@@ -143,7 +144,7 @@ function WeekOverview({
           <WeekRow key={s} s={s} actions={actions} warned={warned} selected={session === s} onSession={onSession} />
         ))}
       </div>
-      <p className="mx-1 mt-2 text-xs text-ink-mute">Số là số bước. Dấu ! là buổi có cảnh báo kết hợp.</p>
+      <p className="mx-1 mt-2 text-xs text-ink-mute">Số là số bước. Dấu ! là buổi có kết hợp nên tránh hoặc cần thận trọng.</p>
     </section>
   )
 }
@@ -179,7 +180,7 @@ function WeekRow({
           <button
             key={day}
             onClick={() => onSession(s)}
-            aria-label={`${DAY_NAMES[day]}, buổi ${label.toLowerCase()}: ${n} bước${flag ? ', có cảnh báo' : ''}`}
+            aria-label={`${DAY_NAMES[day]}, buổi ${label.toLowerCase()}: ${n} bước${flag ? ', có kết hợp nên tránh hoặc cần thận trọng' : ''}`}
             className={`h-11 rounded-md text-xs font-semibold tabular-nums ${tone} ${selected ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : ''}`}
           >
             {n}
@@ -195,13 +196,13 @@ function WeekRow({
 function WarningsSummary({ check }: { check: CheckState }) {
   const result = currentResult(check)
   if (!result) return null
-  const combinations = result.warnings.filter((w) => !isUsageNote(w))
+  const alert = result.warnings.some(isCombinationAlert)
   return (
     <a
       href={href({ page: 'routine', tab: 'check' })}
       className="relative flex flex-col gap-1.5 overflow-hidden rounded-md bg-surface py-4 pr-5 pl-6 text-ink hover:bg-surface/70"
     >
-      {combinations.length > 0 && (
+      {alert && (
         <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-caution" />
       )}
       {result.warnings.length > 0 ? (

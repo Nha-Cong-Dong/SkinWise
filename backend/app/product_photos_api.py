@@ -4,6 +4,8 @@ Every route needs the user's session; a photo is served to its owner only (404 f
 else, so ids reveal nothing).
 """
 
+import re
+
 from fastapi import APIRouter, HTTPException, Request, Response, status
 from fastapi.concurrency import run_in_threadpool
 from fastapi.responses import FileResponse
@@ -54,7 +56,9 @@ def _replaced(fields: dict[str, bytes]) -> int | None:
     value = fields.get("replaces", b"").decode("latin-1").strip()
     if not value:
         return None
-    if not value.isdigit():
+    # ASCII digits only: str.isdigit() also accepts '²' and the like, which int() refuses;
+    # at most 18 digits so that the id fits a bigint.
+    if not re.fullmatch(r"[0-9]{1,18}", value):
         raise HTTPException(status.HTTP_422_UNPROCESSABLE_CONTENT, "replaces must be a photo id")
     return int(value)
 
