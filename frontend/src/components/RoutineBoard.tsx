@@ -1,12 +1,14 @@
-import { useState, type CSSProperties, type ReactNode } from 'react'
-import type { Session, Severity } from '../api'
-import { ALL_DAYS, DAY_LABELS, DAY_NAMES, SESSION_LABELS } from '../labels'
+import { useEffect, useRef, useState, type CSSProperties, type ReactNode, type Ref } from 'react'
+import type { Session, Severity, Warning } from '../api'
+import { ALL_DAYS, DAY_LABELS, DAY_NAMES, KIND_LABELS, SESSION_LABELS, SEVERITY } from '../labels'
 import { href } from '../router'
 import {
   currentResult,
+  groupByRule,
   isCombinationAlert,
   sessionEntries,
   type CheckState,
+  type WarningGroup,
   type Entry,
   type LabelGroups,
   type MyProduct,
@@ -28,17 +30,51 @@ type Props = {
   /** Label lines behind each product's groups (product key), from the last check. */
   found: Map<string, LabelGroups>
   check: CheckState
+  /** A rule key from the check tab ("Mở lịch tuần để sắp xếp lại"): show where that warning is. */
+  focus?: string
+}
+
+/** The warnings of the focused rule in the last check, or null (no focus, or no such warning now). */
+function focusedGroup(check: CheckState, focus: string | undefined): WarningGroup | null {
+  if (!focus) return null
+  return groupByRule(currentResult(check)?.warnings ?? []).find((g) => g.rule.key === focus) ?? null
+}
+
+/** The sessions the focused warning names, morning first (a same-day rule names none). */
+function spotSessions(spot: WarningGroup | null): Session[] {
+  const named = new Set(spot?.warnings.flatMap((w) => w.occurrences.map((o) => o.session)))
+  return (['AM', 'PM'] as const).filter((s) => named.has(s))
+}
+
+/**
+ * Days of one step that the focused warning names: its product is in the warning, and the warning
+ * applies on that day in the step's session (or all day). Display only, from the check's own days.
+ */
+function spotDays(spot: WarningGroup | null, entry: Entry): number[] {
+  if (!spot) return []
+  const days = new Set<number>()
+  for (const w of spot.warnings) {
+    if (!w.product_keys.includes(entry.productKey)) continue
+    for (const o of w.occurrences) {
+      if ((o.session === entry.session || o.session === null) && entry.days.includes(o.day)) days.add(o.day)
+    }
+  }
+  return [...days].sort((a, b) => a - b)
 }
 
 /** "Lịch tuần": one session at a time, each step with its days of the week. */
-export function RoutineBoard({ actions, flagged, found, onShare, check }: Props) {
-  const [session, setSession] = useState<Session>('AM')
+export function RoutineBoard({ actions, flagged, found, onShare, check, focus }: Props) {
+  const spot = focusedGroup(check, focus)
+  // Opened from a warning: start on its first session. Fixed on the first answer that names one
+  // (the check may answer after the tab opens), so later edits never move the view on their own.
+  const spotSession = spotSessions(spot)[0] ?? null
+  const [arrival, setArrival] = useState<Session | null>(spotSession)
+  if (arrival === null && spotSession !== null) setArrival(spotSession)
+  const [chosen, setChosen] = useState<Session | null>(null)
+  const session = chosen ?? arrival ?? 'AM'
   // After the first switch, the newly chosen session's panel fades in (ANIMATION.md 5.2).
-  const [switched, setSwitched] = useState(false)
-  const chooseSession = (s: Session) => {
-    setSwitched(true)
-    setSession(s)
-  }
+  const switched = chosen !== null
+  const chooseSession = (s: Session) => setChosen(s)
   // A step's chip names an ingredient once the check has answered for it: explain such chips once.
   const scheduled = new Set(actions.routine.entries.map((e) => e.productKey))
   const named = actions.routine.products.some(
@@ -66,7 +102,9 @@ export function RoutineBoard({ actions, flagged, found, onShare, check }: Props)
       </header>
       {named && <p className="motion-enter mt-3 max-w-3xl text-xs leading-relaxed text-ink-mute">{LABEL_CHIP_NOTE}</p>}
 
-      <WeekOverview actions={actions} check={check} session={session} onSession={chooseSession} />
+      {focus && <FocusBanner spot={spot} check={check} session={session} onSession={chooseSession} />}
+
+      <WeekOverview actions={actions} check={check} session={session} onSession={chooseSession} spot={spot} />
 
       <div
         className="motion-enter mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18.75rem] lg:gap-8"
@@ -79,6 +117,8 @@ export function RoutineBoard({ actions, flagged, found, onShare, check }: Props)
           flagged={flagged}
           found={found}
           className={switched ? 'motion-tab' : ''}
+          spot={spot}
+          scrollToSpot={!switched}
         />
         <aside className="flex flex-col gap-4">
           <WarningsSummary check={check} />
@@ -155,15 +195,19 @@ function WeekOverview({
   check,
   session,
   onSession,
+  spot,
 }: {
   actions: RoutineActions
   check: CheckState
   session: Session
   onSession: (s: Session) => void
+  spot: WarningGroup | null
 }) {
   const warnings = (currentResult(check)?.warnings ?? []).filter(isCombinationAlert)
-  const warned = (day: number, s: Session) =>
-    warnings.some((w) => w.occurrences.some((o) => o.day === day && (o.session === s || o.session === null)))
+  const applies = (list: Warning[], day: number, s: Session) =>
+    list.some((w) => w.occurrences.some((o) => o.day === day && (o.session === s || o.session === null)))
+  const warned = (day: number, s: Session) => applies(warnings, day, s)
+  const spotted = (day: number, s: Session) => spot !== null && applies(spot.warnings, day, s)
   return (
     <section aria-label="Cả tuần" className="motion-enter mt-5 rounded-md bg-surface p-2 lg:hidden" style={stagger(1)}>
       <div className="grid grid-cols-[2.75rem_repeat(7,minmax(0,1fr))] items-center gap-1">
@@ -174,7 +218,15 @@ function WeekOverview({
           </span>
         ))}
         {(['AM', 'PM'] as const).map((s) => (
-          <WeekRow key={s} s={s} actions={actions} warned={warned} selected={session === s} onSession={onSession} />
+          <WeekRow
+            key={s}
+            s={s}
+            actions={actions}
+            warned={warned}
+            spotted={spotted}
+            selected={session === s}
+            onSession={onSession}
+          />
         ))}
       </div>
       <p className="mx-1 mt-2 text-xs text-ink-mute">Số là số bước. Dấu ! là buổi có kết hợp nên tránh hoặc cần thận trọng.</p>
@@ -186,12 +238,14 @@ function WeekRow({
   s,
   actions,
   warned,
+  spotted,
   selected,
   onSession,
 }: {
   s: Session
   actions: RoutineActions
   warned: (day: number, s: Session) => boolean
+  spotted: (day: number, s: Session) => boolean
   selected: boolean
   onSession: (s: Session) => void
 }) {
@@ -203,6 +257,7 @@ function WeekRow({
       {ALL_DAYS.map((day) => {
         const n = entries.filter((e) => e.days.includes(day)).length
         const flag = n > 0 && warned(day, s)
+        const lifted = n > 0 && spotted(day, s)
         const tone =
           n === 0
             ? 'border border-dashed border-line bg-surface font-normal text-ink-mute'
@@ -214,7 +269,7 @@ function WeekRow({
             key={day}
             onClick={() => onSession(s)}
             aria-label={`${DAY_NAMES[day]}, buổi ${label.toLowerCase()}: ${n} bước${flag ? ', có kết hợp nên tránh hoặc cần thận trọng' : ''}`}
-            className={`h-11 rounded-md text-xs font-semibold tabular-nums ${tone} ${selected ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : ''}`}
+            className={`h-11 rounded-md text-xs font-semibold tabular-nums ${tone} ${selected ? 'ring-2 ring-primary ring-offset-1 ring-offset-surface' : ''} ${lifted ? 'motion-spotlight' : ''}`}
           >
             {n}
             {flag && ' !'}
@@ -245,6 +300,77 @@ function WarningsSummary({ check }: { check: CheckState }) {
       )}
       <span className="text-sm font-semibold text-primary">Xem trong Kiểm tra ›</span>
     </a>
+  )
+}
+
+/**
+ * Above the week when it was opened from a warning card: which warning the lifted steps belong
+ * to, its sessions, and the way back. Says so when the latest check no longer has that warning.
+ */
+function FocusBanner({
+  spot,
+  check,
+  session,
+  onSession,
+}: {
+  spot: WarningGroup | null
+  check: CheckState
+  session: Session
+  onSession: (s: Session) => void
+}) {
+  const result = currentResult(check)
+  if (!result) return null
+  const clear = (
+    <a href={href({ page: 'routine', tab: 'week' })} className="inline-flex min-h-11 items-center text-sm font-semibold text-ink-soft hover:text-ink">
+      Bỏ đánh dấu
+    </a>
+  )
+  if (!spot) {
+    return (
+      <div className="motion-tab mt-5 flex max-w-3xl flex-wrap items-center justify-between gap-x-4 rounded-md bg-surface px-5 py-3">
+        <p className="text-sm text-ink-soft">Kết quả kiểm tra mới không còn cảnh báo này trong lịch dùng.</p>
+        <span className="flex gap-4">
+          <a href={href({ page: 'routine', tab: 'check' })} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary">
+            Xem Kiểm tra ›
+          </a>
+          {clear}
+        </span>
+      </div>
+    )
+  }
+  const sessions = spotSessions(spot)
+  return (
+    <div className="motion-tab relative mt-5 max-w-3xl overflow-hidden rounded-md bg-surface py-3 pr-5 pl-6">
+      <span aria-hidden="true" className={`absolute inset-y-0 left-0 w-1 ${SEVERITY[spot.rule.severity].bar}`} />
+      <div className="flex flex-wrap items-center gap-2">
+        <SeverityBadge severity={spot.rule.severity} />
+        <span className="text-xs text-ink-mute">{KIND_LABELS[spot.rule.kind]}</span>
+      </div>
+      <p className="mt-1.5 leading-snug font-semibold text-pretty">{spot.rule.title_vi}</p>
+      <p className="mt-1 text-sm text-ink-soft">
+        Các bước được tô hồng là sản phẩm của cảnh báo này; ngày được khoanh là ngày cảnh báo áp dụng.
+      </p>
+      <div className="mt-1 flex flex-wrap items-center gap-x-4">
+        {sessions.length > 1 &&
+          sessions.map((s) => (
+            <button
+              key={s}
+              onClick={() => onSession(s)}
+              aria-pressed={session === s}
+              className={`inline-flex min-h-11 items-center text-sm font-semibold ${session === s ? 'text-ink' : 'text-primary'}`}
+            >
+              Buổi {SESSION_LABELS[s].toLowerCase()}
+            </button>
+          ))}
+        <a
+          href={href({ page: 'routine', tab: 'check', focus: spot.rule.key })}
+          className="inline-flex min-h-11 items-center text-sm font-semibold text-primary"
+        >
+          Xem giải thích ›
+        </a>
+        {clear}
+      </div>
+    </div>
   )
 }
 
@@ -330,8 +456,26 @@ function SessionPanel({
   flagged,
   found,
   className,
-}: Omit<Props, 'onShare' | 'check'> & { session: Session; className: string }) {
+  spot,
+  scrollToSpot,
+}: Omit<Props, 'onShare' | 'check' | 'focus'> & {
+  session: Session
+  className: string
+  /** The focused warning: its steps in this session are lifted and their days ringed. */
+  spot: WarningGroup | null
+  /** Bring the first lifted step into view (on arrival, not after the user switches sessions). */
+  scrollToSpot: boolean
+}) {
   const entries = sessionEntries(actions.routine, session)
+  const firstSpot = useRef<HTMLLIElement>(null)
+  const scrolled = useRef(false)
+  const firstSpotIndex = entries.findIndex((e) => spotDays(spot, e).length > 0)
+  useEffect(() => {
+    if (!scrollToSpot || scrolled.current || firstSpotIndex < 0) return
+    scrolled.current = true
+    // Instant, not smooth (ANIMATION.md 7): the lift itself shows where to look.
+    firstSpot.current?.scrollIntoView({ block: 'center' })
+  }, [scrollToSpot, firstSpotIndex])
   // Steps already there when the panel mounted; a step added later rises in (ANIMATION.md 5.6).
   const [initial] = useState(() => new Set(entries.map((e) => e.id)))
   const products = new Map(actions.routine.products.map((p) => [p.key, p]))
@@ -353,6 +497,8 @@ function SessionPanel({
             return product ? (
               <EntryRow
                 key={entry.id}
+                rowRef={i === firstSpotIndex ? firstSpot : undefined}
+                spotDays={spotDays(spot, entry)}
                 entry={entry}
                 step={i + 1}
                 last={i === entries.length - 1}
@@ -384,18 +530,30 @@ type EntryProps = {
   night: boolean
   /** Added after the panel mounted. */
   fresh: boolean
+  /** Days of this step that the focused warning names; empty when the step is not part of it. */
+  spotDays: number[]
+  rowRef?: Ref<HTMLLIElement>
 }
 
 /**
  * A step: the product, then its week as round day buttons. Every row's week starts at the same
  * place, so reading one column top to bottom gives what is used that day.
  */
-function EntryRow({ entry, step, last, product, severity, found, actions, tone, night, fresh }: EntryProps) {
+function EntryRow({ entry, step, last, product, severity, found, actions, tone, night, fresh, spotDays, rowRef }: EntryProps) {
+  const spotted = spotDays.length > 0
   // 44px on phones (fingers), 36px from md.
   const iconButton = `inline-flex size-11 items-center justify-center rounded-md disabled:opacity-25 disabled:hover:bg-transparent md:size-9 ${tone.button}`
   const session = `buổi ${SESSION_LABELS[entry.session].toLowerCase()}`
   return (
-    <li className={`${fresh ? 'motion-item ' : ''}grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 py-3.5 xl:grid-cols-[1.5rem_minmax(0,1fr)_auto] xl:items-center ${tone.row}`}>
+    <li
+      ref={rowRef}
+      className={`${fresh ? 'motion-item ' : ''}${spotted ? `motion-spotlight ${night ? '' : 'spotlight-wide '}` : ''}grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 py-3.5 xl:grid-cols-[1.5rem_minmax(0,1fr)_auto] xl:items-center ${tone.row}`}
+    >
+      {spotted && (
+        <span className="sr-only">
+          Bước thuộc cảnh báo đang xem, vào {spotDays.map((d) => DAY_NAMES[d]).join(', ')}.
+        </span>
+      )}
       <span
         className={`mt-0.5 flex size-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums xl:mt-0 ${tone.step}`}
       >
@@ -451,13 +609,14 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
         >
           {ALL_DAYS.map((day) => {
             const on = entry.days.includes(day)
+            const ringed = spotDays.includes(day)
             return (
               <button
                 key={day}
                 onClick={() => actions.toggleDay(entry.id, day)}
                 aria-pressed={on}
                 aria-label={`${DAY_LABELS[day]}, ${DAY_NAMES[day]}`}
-                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff}`}
+                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff} ${ringed ? `ring-2 ring-blush ring-offset-2 ${night ? 'ring-offset-dusk-raised' : 'ring-offset-dawn'}` : ''}`}
               >
                 {DAY_LABELS[day]}
                 {on && (

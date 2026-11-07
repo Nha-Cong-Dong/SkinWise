@@ -455,6 +455,53 @@
   .motion-press:active:not(:disabled) {
     transform: scale(0.98);
   }
+  /* What a link pointed at (a warning card, the steps of a warning in the week, ANIMATION.md 5.9):
+     it rises 8px once, a blush layer behind it glows twice, then stays as a soft tint so the
+     place is still marked after the motion. The text never moves on its own or fades. */
+  .motion-spotlight {
+    position: relative;
+    isolation: isolate;
+    animation: spotlight-rise var(--duration-enter) var(--ease-out-strong) backwards;
+  }
+  .motion-spotlight::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    border-radius: inherit;
+    background: var(--color-blush);
+    opacity: 0.22;
+    pointer-events: none;
+    animation: spotlight-glow 1400ms var(--ease-out-soft) var(--duration-enter) backwards;
+  }
+  /* Morning rows have no padding of their own: the tint reaches a little past the text. */
+  .spotlight-wide::before {
+    inset: 0 -0.5rem;
+    border-radius: var(--radius-md);
+  }
+}
+@keyframes spotlight-rise {
+  from {
+    transform: translateY(var(--motion-rise));
+  }
+}
+/* Two soft peaks (well under 3 per second), ending on the resting tint of .motion-spotlight. */
+@keyframes spotlight-glow {
+  0% {
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 0.22;
+  }
+  75% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 0.22;
+  }
 }
 
 /* Page titles use the display serif at 500 (the only weight shipped). Unlayered on purpose: it wins

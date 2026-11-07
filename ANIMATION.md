@@ -25,7 +25,7 @@ Bốn màn hình là bốn tab của "Lịch dùng" (`TABS` trong `frontend/src/
 1. **Bình tĩnh.** Chuyển động nhỏ, ngắn, một chiều. Người dùng gần như không "thấy" nó, chỉ thấy trang có cảm giác liền mạch.
 2. **Nhanh rồi chậm lại.** Mọi chuyển động vào dùng ease-out: đi nhanh ở đầu, giảm tốc êm ở cuối. Không bao giờ vượt quá điểm đích rồi quay lại.
 3. **Không nảy, không lò xo.** Không `cubic-bezier` có giá trị y > 1 hoặc < 0, không keyframe vượt điểm cuối (`105%`, `scale(1.05)` rồi về `1`), không lắc, không xoay.
-4. **Chuyển động phục vụ việc đọc.** Thứ tự xuất hiện bám thứ tự đọc (trên xuống, trái sang phải). Không có gì chuyển động để gây chú ý, trừ lớp tô báo thay đổi đã có.
+4. **Chuyển động phục vụ việc đọc.** Thứ tự xuất hiện bám thứ tự đọc (trên xuống, trái sang phải). Không có gì chuyển động để gây chú ý, trừ lớp tô báo thay đổi đã có và chỗ một link vừa trỏ tới (5.9).
 5. **Cảnh báo không bao giờ bị làm chậm.** Nội dung cảnh báo, đoạn trích nguồn và mức độ phải đọc được gần như ngay lập tức (xem mục 7).
 6. **Chỉ CSS.** Không thêm thư viện chuyển động (dự án chỉ dùng React + Tailwind). Không JavaScript điều khiển từng khung hình.
 
@@ -148,6 +148,13 @@ Trong React, gán thứ tự so le bằng biến CSS:
 ### 5.8. Đang tải
 - Chỉ hiện chỉ báo đang tải nếu chờ quá 300ms, rồi fade-in 180ms.
 - Không dùng shimmer chạy ngang. Nếu cần khung giữ chỗ: màu tĩnh, hoặc nhịp opacity 1 ↔ 0.6 chu kỳ 1,6 giây, ease-in-out, dừng ngay khi có dữ liệu.
+
+### 5.9. Chỉ ra chỗ một link trỏ tới (`.motion-spotlight`)
+Thêm 07/11 theo yêu cầu người dùng: bấm từ một cảnh báo sang tab khác thì phải thấy ngay đúng chỗ, không phải tự lướt tìm.
+- Link mang khoá luật: `#/lich-dung/lich-tuan?chu-y=<khoá>` ("Mở lịch tuần để sắp xếp lại" ở tab Kiểm tra) và `#/lich-dung/kiem-tra?chu-y=<khoá>` ("Xem giải thích và nguồn" ở Hôm nay và trang sản phẩm).
+- Kiểm tra: cuộn ngay (không mượt) tới thẻ của luật đó, chuyển focus vào thẻ. Lịch tuần: mở đúng buổi của cảnh báo, cuộn tới bước đầu tiên thuộc cảnh báo, khoanh ngày cảnh báo áp dụng, ô tuần trên điện thoại cũng được tô; khung trên cùng ghi tên cảnh báo, các buổi có cảnh báo, "Xem giải thích", "Bỏ đánh dấu", và nói rõ khi kết quả mới không còn cảnh báo đó.
+- Chuyển động: khối dịch lên 8px một lần (320ms, `--ease-out-strong`); lớp blush phía sau sáng lên hai lần trong 1,4 giây (≤ 2 lần/giây), rồi **đứng yên ở mức tô nhạt** để chỗ đó vẫn được đánh dấu sau khi hết chuyển động. Chỉ `transform` và `opacity` của lớp nền; chữ không mờ, không trễ (mục 7 vẫn giữ). Tắt khi bật giảm chuyển động (chỉ còn lớp tô nhạt).
+- Chỉ hiển thị: nhóm theo luật và ngày khoanh lấy nguyên từ kết quả kiểm tra, không suy ra thêm.
 
 ## 6. Từng màn hình
 

@@ -366,6 +366,8 @@ function App() {
                     <TodayPage actions={actions} check={check} />
                   ) : route.tab === 'week' ? (
                     <RoutineBoard
+                      key={route.focus ?? ''}
+                      focus={route.focus}
                       actions={actions}
                       flagged={flagged}
                       found={found}
@@ -382,7 +384,14 @@ function App() {
                       onRemove={(key) => setRemoved(actions.removeProduct(key))}
                     />
                   ) : (
-                    <WarningsPanel state={check} products={actions.routine.products} found={found} page />
+                    <WarningsPanel
+                      key={route.focus ?? ''}
+                      focus={route.focus}
+                      state={check}
+                      products={actions.routine.products}
+                      found={found}
+                      page
+                    />
                   )}
                 </TabPanel>
                 {(route.tab === 'week' || route.tab === 'shelf') && <ResultsBar check={check} />}

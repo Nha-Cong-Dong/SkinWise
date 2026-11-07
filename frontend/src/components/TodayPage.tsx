@@ -232,7 +232,7 @@ function TodayWarning({ group, today, actions }: { group: WarningGroup; today: n
       <h3 className="mt-2 font-sans text-base leading-snug font-semibold text-pretty">{warning.rule.title_vi}</h3>
       <WarningPairs warnings={group.warnings} names={names} when={(w) => todayWhen(w, today)} />
       <a
-        href={href({ page: 'routine', tab: 'check' })}
+        href={href({ page: 'routine', tab: 'check', focus: group.rule.key })}
         className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary"
       >
         Xem giải thích và nguồn ›

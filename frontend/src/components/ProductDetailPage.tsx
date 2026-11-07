@@ -292,7 +292,7 @@ function RelatedWarnings({ product, actions, check }: { product: MyProduct; acti
           <h3 className="mt-2 leading-snug font-semibold text-pretty">{r.title_vi}</h3>
           <WarningPairs warnings={ws} names={names} when={(w) => formatOccurrences(w.occurrences)} />
           <a
-            href={href({ page: 'routine', tab: 'check' })}
+            href={href({ page: 'routine', tab: 'check', focus: r.key })}
             className="mt-1 inline-flex min-h-11 items-center text-sm font-semibold text-primary"
           >
             Xem giải thích và nguồn ›

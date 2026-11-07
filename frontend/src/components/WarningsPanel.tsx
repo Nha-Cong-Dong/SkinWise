@@ -1,4 +1,4 @@
-import { useId } from 'react'
+import { useEffect, useId, useRef } from 'react'
 import { SUGGESTIONS_TRUNCATED_VI, type Severity, type Warning } from '../api'
 import { KIND_LABELS, SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
 import { href } from '../router'
@@ -33,6 +33,8 @@ type Props = {
   page?: boolean
   /** What to say while there is nothing to check; the default asks for products in a session. */
   emptyText?: string
+  /** A rule key from a link ("Xem giải thích và nguồn"): scroll to that card and lift it once. */
+  focus?: string
 }
 
 const NONE = new Map<string, LabelGroups>()
@@ -43,6 +45,7 @@ export function WarningsPanel({
   found = NONE,
   page = false,
   emptyText = 'Thêm sản phẩm vào buổi sáng hoặc tối để SkinWise kiểm tra routine.',
+  focus,
 }: Props) {
   const idPrefix = useId()
   const names = new Map(products.map((p) => [p.key, p.name]))
@@ -51,6 +54,17 @@ export function WarningsPanel({
   const applications = new Map(result?.products.map((p) => [p.key, p.application]))
   // One card per rule; a rule raised for several pairs of products lists every pair inside it.
   const groups = groupByRule(result?.warnings ?? [])
+  const focusIndex = focus ? groups.findIndex((g) => g.rule.key === focus) : -1
+  // Once, when the card is there (the check may answer after the tab opens): bring it into view
+  // and move focus to it, so a screen reader starts there too. Instant scroll (ANIMATION.md 7).
+  const focused = useRef(false)
+  useEffect(() => {
+    if (focused.current || focusIndex < 0) return
+    focused.current = true
+    const card = document.getElementById(`${idPrefix}-${focusIndex}`)
+    card?.scrollIntoView({ block: 'start' })
+    card?.focus({ preventScroll: true })
+  }, [focusIndex, idPrefix])
 
   return (
     <section aria-labelledby="results-title" id={page ? 'results' : undefined}>
@@ -173,14 +187,15 @@ export function WarningsPanel({
               key={g.rule.key}
               id={`${idPrefix}-${i}`}
               rule={g.rule}
+              className={i === focusIndex ? 'motion-spotlight' : ''}
               collapsible
               footer={
                 page && (
                   <a
-                    href={href({ page: 'routine', tab: 'week' })}
+                    href={href({ page: 'routine', tab: 'week', focus: g.rule.key })}
                     className="mt-3 inline-flex min-h-11 items-center text-sm font-semibold text-primary"
                   >
-                    Mở lịch tuần để sắp xếp lại ›
+                    {usage ? 'Xem các bước trong lịch tuần ›' : 'Mở lịch tuần để sắp xếp lại ›'}
                   </a>
                 )
               }
