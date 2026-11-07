@@ -14,12 +14,6 @@ type LoadState =
 const sectionId = (anchor: string) => `bai-viet-${anchor}`
 const sourceId = (n: number) => `bai-viet-nguon-${n}`
 
-/** "2026-11-08" -> "08/11/2026", without going through Date (no time zone shift). */
-function formatDay(iso: string): string {
-  const [y, m, d] = iso.slice(0, 10).split('-')
-  return y && m && d ? `${d}/${m}/${y}` : iso
-}
-
 /**
  * The address uses the hash for pages (router.ts), so in-page links cannot be `href="#…"`:
  * scroll to the element and move focus there, so keyboard and screen reader users follow.
@@ -105,9 +99,6 @@ export function GoalArticlePage({ code }: { code: string }) {
           </span>
         </p>
         <h1 className="mt-3 text-3xl text-balance lg:text-4xl">{article.title_vi}</h1>
-        <p className="mt-2 text-sm text-ink-mute">
-          Đã duyệt bởi {article.reviewed_by} ngày {formatDay(article.reviewed_at)}
-        </p>
       </header>
 
       <div
