@@ -16,7 +16,7 @@ import { GroupChips, LABEL_CHIP_NOTE } from './GroupChips'
 import { Glyph, MoonIcon, SeverityBadge, SunIcon } from './Icons'
 import { stagger } from './motion'
 import { TONE } from './sessionTone'
-import { btn, segBox, segOption } from './ui'
+import { btn } from './ui'
 import { SeverityCounts } from './WarningsPanel'
 
 type Props = {
@@ -100,20 +100,47 @@ export function SessionSwitch({
   count?: (s: Session) => number
 }) {
   return (
-    // Softer than the shared segmented control: 14px box, 10px options (box radius minus its padding).
-    <div className={`${segBox} min-w-0 flex-1 rounded-lg! sm:flex-none`} role="group" aria-label="Chọn buổi">
-      {(['AM', 'PM'] as const).map((s) => (
-        <button
-          key={s}
-          aria-pressed={session === s}
-          onClick={() => onChange(s)}
-          className={`${segOption(session === s)} gap-2! rounded-[10px]! text-sm! sm:px-5`}
-        >
-          {s === 'AM' ? <SunIcon className="size-[1.125rem]" /> : <MoonIcon className="size-[1.125rem]" />}
-          Buổi {SESSION_LABELS[s].toLowerCase()}
-          {count && ` · ${count(s)}`}
-        </button>
-      ))}
+    // A soft pill track; the chosen session takes its own tone (dawn white / dusk indigo) instead
+    // of the heavy primary fill, and the step count sits in a small chip.
+    <div
+      className="inline-grid min-w-0 flex-1 auto-cols-fr grid-flow-col gap-1 rounded-full bg-wash p-1 sm:flex-none"
+      role="group"
+      aria-label="Chọn buổi"
+    >
+      {(['AM', 'PM'] as const).map((s) => {
+        const on = session === s
+        const tone =
+          s === 'AM'
+            ? on
+              ? 'bg-surface text-dawn-ink shadow-[0_1px_3px_rgb(0_0_0/0.08)]'
+              : 'text-ink-soft hover:text-ink'
+            : on
+              ? 'bg-dusk text-on-dusk shadow-[0_1px_3px_rgb(0_0_0/0.12)]'
+              : 'text-ink-soft hover:text-ink'
+        const chip = on ? (s === 'AM' ? 'bg-dawn text-dawn-ink' : 'bg-dusk-raised text-on-dusk') : 'bg-surface text-ink-mute'
+        return (
+          <button
+            key={s}
+            aria-pressed={on}
+            onClick={() => onChange(s)}
+            className={`motion-press inline-flex min-h-11 items-center justify-center gap-2 rounded-full px-4 text-sm font-semibold whitespace-nowrap transition-colors sm:px-5 ${tone}`}
+          >
+            {s === 'AM' ? (
+              <SunIcon className={`size-[1.125rem] ${on ? '' : 'opacity-70'}`} />
+            ) : (
+              <MoonIcon className={`size-[1.125rem] ${on ? 'text-thistle' : 'opacity-70'}`} />
+            )}
+            Buổi {SESSION_LABELS[s].toLowerCase()}
+            {count && (
+              <span className={`min-w-5 rounded-full px-1.5 text-center text-xs leading-5 tabular-nums ${chip}`}>
+                <span className="sr-only">, </span>
+                {count(s)}
+                <span className="sr-only"> bước</span>
+              </span>
+            )}
+          </button>
+        )
+      })}
     </div>
   )
 }
