@@ -1,4 +1,4 @@
-import { useEffect, useId, useRef } from 'react'
+import { useEffect, useId, useRef, useState } from 'react'
 import { SUGGESTIONS_TRUNCATED_VI, type Severity, type Warning } from '../api'
 import { KIND_LABELS, SCOPE_LABELS, SEVERITY, formatOccurrences } from '../labels'
 import { href } from '../router'
@@ -65,6 +65,23 @@ export function WarningsPanel({
     card?.scrollIntoView({ block: 'start' })
     card?.focus({ preventScroll: true })
   }, [focusIndex, idPrefix])
+  // The card picked in the list beside the cards (wide screens); until then, the one a link chose.
+  const [picked, setPicked] = useState<string | null>(null)
+  const pickedIndex = picked ? groups.findIndex((g) => g.rule.key === picked) : -1
+  const lit = pickedIndex >= 0 ? pickedIndex : focusIndex
+  const pick = (i: number) => {
+    const card = document.getElementById(`${idPrefix}-${i}`)
+    if (!card) return
+    if (i === lit) {
+      // The same card again: replay its lift, so the click always shows where it is.
+      card.classList.remove('motion-spotlight')
+      void card.offsetWidth
+      card.classList.add('motion-spotlight')
+    }
+    setPicked(groups[i].rule.key)
+    card.scrollIntoView({ block: 'start' })
+    card.focus({ preventScroll: true })
+  }
 
   return (
     <section aria-labelledby="results-title" id={page ? 'results' : undefined}>
@@ -110,12 +127,9 @@ export function WarningsPanel({
             {groups.map((g, i) => (
               <li key={g.rule.key}>
                 <button
-                  onClick={() => {
-                    const card = document.getElementById(`${idPrefix}-${i}`)
-                    card?.scrollIntoView({ block: 'start' })
-                    card?.focus({ preventScroll: true })
-                  }}
-                  className="flex w-full flex-col gap-1.5 rounded-md px-5 py-4 text-left hover:bg-surface"
+                  onClick={() => pick(i)}
+                  aria-current={i === lit ? 'true' : undefined}
+                  className={`flex w-full flex-col gap-1.5 rounded-md px-5 py-4 text-left hover:bg-surface ${i === lit ? 'bg-surface' : ''}`}
                 >
                   <span className="flex flex-wrap items-center gap-2">
                     <SeverityBadge severity={g.rule.severity} />
@@ -187,7 +201,7 @@ export function WarningsPanel({
               key={g.rule.key}
               id={`${idPrefix}-${i}`}
               rule={g.rule}
-              className={i === focusIndex ? 'motion-spotlight' : ''}
+              className={i === lit ? 'motion-spotlight' : ''}
               collapsible
               footer={
                 page && (
