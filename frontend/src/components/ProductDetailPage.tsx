@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { api, requestError, SUGGESTIONS_TRUNCATED_VI, type InciAnalysis, type ProductDetail } from '../api'
+import { useEffect, useRef, useState } from 'react'
+import { ApiError, api, requestError, SUGGESTIONS_TRUNCATED_VI, type InciAnalysis, type ProductDetail } from '../api'
 import { useGroupName } from '../groups'
 import { APPLICATION_LABELS, KIND_LABELS, SESSION_LABELS, SEVERITY, VERIFICATION_LABELS, formatOccurrences } from '../labels'
 import { href, navigate } from '../router'
@@ -17,8 +17,10 @@ import { SeverityBadge } from './Icons'
 import { IngredientList } from './IngredientList'
 import { scheduleOf } from './shelf'
 import { DataNote } from './Notice'
-import { ProductImage } from './ProductImage'
-import { btn, btnDanger, sm } from './ui'
+import { cataloguePhoto, photoError, userPhoto } from './photos'
+import { PhotoCredit, ProductImage } from './ProductImage'
+import { btn, btnDanger, btnGhostDanger, sm } from './ui'
+import { stagger } from './motion'
 
 type Props = {
   productKey: string
@@ -67,19 +69,20 @@ function Detail({ product, actions, found, check, onRemove }: Omit<Props, 'produ
   }, [productId])
 
   const lines = found.get(product.key)
+  const photo = productId !== null ? cataloguePhoto(detail?.image) : userPhoto(product.photoId)
   const meta = [product.brand ?? 'Tự nhập bảng thành phần', detail?.application && APPLICATION_LABELS[detail.application]]
     .filter(Boolean)
     .join(' · ')
 
   return (
-    <div>
+    <div data-motion="enter">
       <a href={shelf} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary">
         ← Tủ đồ
       </a>
       <div className="mt-2 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,8fr)_minmax(0,4fr)] lg:gap-10">
-        <div className="flex min-w-0 flex-col gap-8">
+        <div className="motion-enter flex min-w-0 flex-col gap-8">
           <header className="flex items-start gap-4">
-            <ProductImage image={null} name={product.name} size="lg" />
+            <ProductImage image={photo} name={product.name} size="lg" />
             <div className="min-w-0">
               <p className="text-xs text-ink-mute">{meta}</p>
               <h1 className="text-3xl break-words lg:text-4xl">{product.name}</h1>
@@ -91,8 +94,12 @@ function Detail({ product, actions, found, check, onRemove }: Omit<Props, 'produ
                   Bảng thành phần có thể chưa đầy đủ, cảnh báo có thể bị thiếu
                 </p>
               )}
+              {productId === null && <OwnPhoto product={product} actions={actions} />}
             </div>
           </header>
+          {/* The photo's credit on its own line under the header: under a 96px photo it would wrap
+              to four lines. */}
+          <PhotoCredit image={photo} className="-mt-6" />
 
           <TrackedActives product={product} lines={lines} />
 
@@ -105,7 +112,7 @@ function Detail({ product, actions, found, check, onRemove }: Omit<Props, 'produ
                 detailError ? (
                   <p className="text-sm text-avoid-ink">Không tải được bảng thành phần.</p>
                 ) : !detail ? (
-                  <p className="text-sm text-ink-mute">Đang tải…</p>
+                  <p className="motion-loading text-sm text-ink-mute">Đang tải…</p>
                 ) : (
                   <>
                     <p className="mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-mute">
@@ -133,7 +140,8 @@ function Detail({ product, actions, found, check, onRemove }: Omit<Props, 'produ
           </section>
         </div>
 
-        <aside className="flex min-w-0 flex-col gap-4">
+        {/* Schedule, warnings (with the "no warning" line) and actions: one block. */}
+        <aside className="motion-enter flex min-w-0 flex-col gap-4" style={stagger(1)}>
           <section aria-labelledby="in-schedule" className="rounded-md bg-surface p-5">
             <h2 id="in-schedule" className="font-sans text-sm font-semibold">
               Trong lịch dùng
@@ -294,7 +302,7 @@ function PastedIngredients({ inci }: { inci: string }) {
   }, [inci])
 
   if (error) return <p className="text-sm text-avoid-ink">{error}</p>
-  if (!analysis) return <p className="text-sm text-ink-mute">Đang tải…</p>
+  if (!analysis) return <p className="motion-loading text-sm text-ink-mute">Đang tải…</p>
   return (
     <>
       {analysis.suggestions_truncated && (
@@ -304,5 +312,83 @@ function PastedIngredients({ inci }: { inci: string }) {
       )}
       <IngredientList ingredients={analysis.ingredients} onePercentMarker={analysis.one_percent_marker} />
     </>
+  )
+}
+
+/**
+ * "Thêm ảnh / Đổi ảnh / Xoá ảnh" for a product the user typed in (POST /me/product-photos). One
+ * photo per product: a new one replaces the old on the server. The photo id stays in the routine
+ * and is never put in a shared file or link.
+ */
+function OwnPhoto({ product, actions }: { product: MyProduct; actions: RoutineActions }) {
+  const input = useRef<HTMLInputElement>(null)
+  const [state, setState] = useState<{ kind: 'idle' } | { kind: 'busy' } | { kind: 'error'; message: string }>({
+    kind: 'idle',
+  })
+  const busy = state.kind === 'busy'
+  const current = product.photoId
+
+  const upload = async (file: File) => {
+    setState({ kind: 'busy' })
+    try {
+      let saved
+      try {
+        saved = await api.uploadProductPhoto(file, current)
+      } catch (e) {
+        // The old photo is gone already (cleaned up): upload without replacing it.
+        if (!(e instanceof ApiError && e.status === 404 && current !== undefined)) throw e
+        saved = await api.uploadProductPhoto(file)
+      }
+      actions.setProductPhoto(product.key, saved.id)
+      setState({ kind: 'idle' })
+    } catch (e) {
+      setState({ kind: 'error', message: photoError(e) })
+    }
+  }
+
+  const remove = async () => {
+    if (current === undefined) return
+    setState({ kind: 'busy' })
+    try {
+      await api.deleteProductPhoto(current)
+    } catch (e) {
+      // 404: already gone; the routine just forgets it.
+      if (!(e instanceof ApiError && e.status === 404)) return setState({ kind: 'error', message: photoError(e) })
+    }
+    actions.setProductPhoto(product.key, undefined)
+    setState({ kind: 'idle' })
+  }
+
+  return (
+    <div className="mt-3">
+      <div className="flex flex-wrap gap-2">
+        <button onClick={() => input.current?.click()} disabled={busy} className={`${btn} ${sm}`}>
+          {busy ? 'Đang lưu ảnh…' : current === undefined ? 'Thêm ảnh' : 'Đổi ảnh'}
+        </button>
+        {current !== undefined && (
+          <button onClick={() => void remove()} disabled={busy} className={btnGhostDanger}>
+            Xoá ảnh
+          </button>
+        )}
+      </div>
+      <input
+        ref={input}
+        type="file"
+        accept="image/jpeg,image/png,image/webp"
+        className="hidden"
+        onChange={(e) => {
+          const file = e.target.files?.[0]
+          e.target.value = '' // the same photo can be picked again
+          if (file) void upload(file)
+        }}
+      />
+      <p className="mt-1.5 max-w-[48ch] text-xs leading-relaxed text-ink-mute">
+        Chỉ chụp sản phẩm, đừng chụp mặt, da hay giấy tờ có thông tin cá nhân. Ảnh chỉ bạn xem được, không có trong
+        file hay link chia sẻ routine.
+      </p>
+      <div aria-live="polite">
+        {state.kind === 'error' && <p className="mt-1 text-sm text-avoid-ink">{state.message}</p>}
+      </div>
+    </div>
   )
 }

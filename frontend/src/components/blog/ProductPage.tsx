@@ -6,7 +6,10 @@ import { GroupChips } from '../GroupChips'
 import { IngredientList } from '../IngredientList'
 import { PostListView } from './BlogList'
 import { usePostList, type PostListHandle } from './hooks'
-import { DemoFooter, LoadError, Loading, primary, textLink } from './parts'
+import { ALL_POSTS } from '../../router'
+import { DemoFooter, LoadError, Loading } from './parts'
+import { primary, textLink } from './styles'
+import { BlogShell } from './Shell'
 
 /** #/san-pham/<id>: the ingredient list of a catalogue product, and the reviews of it. */
 export function ProductPage({ id }: { id: number }) {
@@ -22,6 +25,7 @@ export function ProductPage({ id }: { id: number }) {
           : { kind: 'loading' as const }
 
   return (
+    <BlogShell spot={null} title="Sản phẩm" heading={false} back={{ href: href(ALL_POSTS), label: 'Về danh sách bài review' }}>
     <div className="space-y-8">
       {state.kind === 'loading' && <Loading />}
       {state.kind === 'missing' && <p className="text-sm text-ink-soft">Không tìm thấy sản phẩm này trong danh sách của SkinWise.</p>}
@@ -46,11 +50,11 @@ export function ProductPage({ id }: { id: number }) {
       </section>
 
       {state.kind === 'ready' && (
-        <section aria-labelledby="ingredients-title" className="rounded-md border border-line bg-surface p-5 sm:p-6">
+        <section aria-labelledby="ingredients-title" className="rounded-md border border-line bg-surface p-4 sm:p-6">
           <h2 id="ingredients-title" className="text-lg font-bold">
             Bảng thành phần
           </h2>
-          <p className="mt-1 mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-mute">
+          <p className="mt-1 mb-3 flex flex-wrap gap-x-4 gap-y-1 text-xs text-ink-soft">
             {state.product.application && (
               <span>Sản phẩm {APPLICATION_LABELS[state.product.application].toLowerCase()}</span>
             )}
@@ -68,13 +72,14 @@ export function ProductPage({ id }: { id: number }) {
       )}
       <DemoFooter />
     </div>
+    </BlogShell>
   )
 }
 
 function ProductHeader({ product }: { product: ProductDetail }) {
   return (
     <header>
-      <p className="text-sm text-ink-mute">{product.brand}</p>
+      <p className="text-sm text-ink-soft">{product.brand}</p>
       <h1 className="text-2xl leading-tight font-bold text-pretty">{product.name}</h1>
       <div className="mt-2">
         <GroupChips codes={product.groups} empty="Không có hoạt chất trong danh sách SkinWise theo dõi" />

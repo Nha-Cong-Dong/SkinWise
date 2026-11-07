@@ -5,7 +5,7 @@ import { ImportError, downloadFile, makeLink, readFile, restore } from '../share
 import { DataNote } from './Notice'
 
 const primary = 'rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover disabled:opacity-40'
-const secondary = 'rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40'
+const secondary = 'rounded-full px-4 py-2 text-sm font-medium bg-wash text-primary ring-1 ring-primary/25 hover:bg-wash-strong disabled:opacity-40'
 // Messaging apps may cut links longer than this; a file always works.
 const LONG_LINK = 2000
 

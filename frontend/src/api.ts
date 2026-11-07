@@ -24,6 +24,21 @@ export type ProductSummary = {
   groups: string[]
   // Ingredients (as printed on the label) that made the product match a search; [] when none.
   matched_ingredients: string[]
+  image: ProductImageOut | null // a checked catalogue photo; null: show the initial instead
+}
+
+/** A catalogue product's photo from Open Beauty Facts (CC BY-SA 3.0). Display only. */
+export type ProductImageOut = {
+  url: string // "/product-images/<slug>.webp?v=…", without the /api prefix
+  credit_vi: string // "Ảnh: Open Beauty Facts (CC BY-SA 3.0)", shown under the photo as is
+  source_url: string // the product's page on Open Beauty Facts
+  license_url: string // the licence text
+}
+
+/** POST /me/product-photos: the user's own photo of a product they typed in. */
+export type ProductPhotoOut = {
+  id: number
+  url: string // "/me/product-photos/{id}", without the /api prefix; served to its owner only
 }
 
 /** Rinse-off (cleanser) or leave-on (serum, cream), as EU law defines them. Shown only. */
@@ -162,6 +177,12 @@ export type RoutineCheckRequest = {
   items: { product_key: string; session: Session; days: number[]; step: number }[]
 }
 
+/** POST /demo/check (landing page, no sign-in): sample products by id only, at most 10 products and 40 steps. */
+export type DemoCheckRequest = {
+  products: { key: string; product_id: number }[]
+  items: RoutineCheckRequest['items']
+}
+
 export type Warning = {
   rule: Rule
   product_keys: string[] // two for a pair rule; every product a usage rule is about
@@ -298,6 +319,7 @@ export type StoredRoutine = {
       groups: string[]
       notices?: TextNotice[]
       origin?: StoredOrigin | null // missing in routines saved before it existed
+      photoId?: number // the user's photo of a typed-in product; left out when none
     }[]
     entries: { id: string; productKey: string; session: Session; days: number[] }[]
   } | null
@@ -385,18 +407,62 @@ export type PostList = {
 }
 export type LikeOut = { liked: boolean; like_count: number }
 export type SaveOut = { saved: boolean }
-export type CommentIn = { body: string } // 1–2000
+/** `parent_id`: reply to that comment of the same post; a reply to a reply joins the same top-level comment. */
+export type CommentIn = { body: string; parent_id?: number | null } // body 1–2000
 
+/** GET /blog/posts/{id}/comments: top-level comments, each with one level of `replies`. */
 export type CommentOut = {
   id: number
   post_id: number
-  author: AuthorRef
-  body: string
-  status: ContentStatus
+  parent_id: number | null // the top-level comment of a reply; null for a top-level comment
+  reply_to_handle: string | null // a reply to a reply: that reply's author, shown as "@handle"
+  author: AuthorRef | null // null when `deleted`
+  body: string // "" when `deleted`
+  status: ContentStatus // "visible" for a deleted frame
   flags: string[] // only on the user's own comments
   is_mine: boolean
+  /** A top-level comment the user cannot see (deleted, waiting, hidden, removed) kept as an empty frame for its replies. */
+  deleted: boolean
+  like_count: number
+  liked_by_me: boolean
   created_at: string
+  replies: CommentOut[] // top-level comments only, oldest first; [] for a reply
 }
+
+/** GET /blog/trending: a catalogue product or an active group that ≥ 2 visible posts of the last days are about. */
+export type TrendingItem = {
+  kind: 'product' | 'group'
+  product_id: number | null // kind "product"
+  group: string | null // kind "group": the group code
+  label_vi: string // the catalogue product name, or the group's Vietnamese name
+  post_count: number
+}
+
+export type NoticeKind =
+  | 'post_liked'
+  | 'post_commented'
+  | 'comment_replied'
+  | 'comment_liked'
+  | 'post_pending'
+  | 'post_visible'
+  | 'post_hidden'
+  | 'post_removed'
+
+/** In-app notifications (GET /me/activity). Only about posts and comments that are visible now. */
+export type ActivityItem = {
+  id: number
+  kind: NoticeKind
+  created_at: string
+  read: boolean
+  actor_handle: string | null // null for status notices, or when that user has no nickname
+  post_id: number
+  post_title: string
+  comment_id: number | null // the new comment / reply, or the liked comment
+  excerpt_vi: string | null // the first 80 characters of that comment, only while visible
+}
+
+export type ActivityOut = { unread_count: number; items: ActivityItem[] } // newest first
+export type ActivityReadOut = { unread_count: number }
 
 export type ReportIn = {
   target_kind: 'post' | 'comment'
@@ -417,6 +483,9 @@ export type PostQuery = {
   product_id?: number
   author?: string // handle
   saved?: boolean
+  liked?: boolean // posts the user liked
+  q?: string // 2–100 characters once normalized (else 422); best matches first, `sort` is ignored
+  group?: string // a group code: posts with a catalogue product in that group (pasted lists not counted)
   sort?: 'new' | 'top'
   offset?: number
   limit?: number // ≤ 50
@@ -481,6 +550,8 @@ export const api = {
   readLabel: (body: { media_type: 'image/jpeg'; data: string }) => post<LabelReading>('/label/read', body),
   checkRoutine: (body: RoutineCheckRequest, signal?: AbortSignal) =>
     post<RoutineCheckResponse>('/routine/check', body, signal),
+  /** Public, for the landing page's demo; 429 when one address checks too often. */
+  demoCheck: (body: DemoCheckRequest, signal?: AbortSignal) => post<RoutineCheckResponse>('/demo/check', body, signal),
   rules: (params: { kind?: Rule['kind']; groups?: string[] }) => {
     const query = new URLSearchParams()
     if (params.kind) query.set('kind', params.kind)
@@ -528,6 +599,14 @@ export const api = {
   addComment: (postId: number, body: CommentIn) => post<CommentOut>(`/blog/posts/${postId}/comments`, body),
   deleteComment: (id: number) => send<void>('DELETE', `/blog/comments/${id}`),
   report: (body: ReportIn) => post<Record<string, never>>('/blog/reports', body),
+  /** 413 over 5 MB, 415 not JPEG / PNG / WebP, 409 at 60 photos, 429 too many uploads, 404 bad `replaces`. */
+  uploadProductPhoto: (file: File, replaces?: number) => {
+    const form = new FormData()
+    form.append('file', file)
+    if (replaces !== undefined) form.append('replaces', String(replaces))
+    return request<ProductPhotoOut>('/me/product-photos', { method: 'POST', body: form })
+  },
+  deleteProductPhoto: (id: number) => send<void>('DELETE', `/me/product-photos/${id}`),
   uploadImage: (file: File, caption: string) => {
     const form = new FormData()
     form.append('file', file)
@@ -535,6 +614,12 @@ export const api = {
     return request<ImageOut>('/blog/images', { method: 'POST', body: form })
   },
   author: (handle: string) => request<AuthorOut>(`/blog/authors/${encodeURIComponent(handle)}`),
+  trending: (days = 7) => request<TrendingItem[]>(`/blog/trending?${new URLSearchParams({ days: String(days) })}`),
+  likeComment: (id: number, on: boolean) => send<LikeOut>(on ? 'PUT' : 'DELETE', `/blog/comments/${id}/like`),
+  activity: (limit = 30, signal?: AbortSignal) =>
+    request<ActivityOut>(`/me/activity?${new URLSearchParams({ limit: String(limit) })}`, { signal }),
+  /** `ids` left out: mark every notification read. */
+  readActivity: (ids?: number[]) => post<ActivityReadOut>('/me/activity/read', ids ? { ids } : {}),
 }
 
 /** Everything SkinWise keeps about the signed-in user, as a file (GET /me/export). */

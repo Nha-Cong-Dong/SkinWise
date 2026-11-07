@@ -3,6 +3,7 @@ import { ApiError, api, type ArticleSource, type GoalArticle } from '../api'
 import { FEEDBACK_URL } from '../labels'
 import { href } from '../router'
 import { btn, btnGhost } from './ui'
+import { stagger } from './motion'
 
 type LoadState =
   | { kind: 'loading' }
@@ -66,7 +67,7 @@ export function GoalArticlePage({ code }: { code: string }) {
     return (
       <div className="space-y-4">
         {back}
-        {state.kind === 'loading' && <p className="text-sm text-ink-mute">Đang tải bài viết…</p>}
+        {state.kind === 'loading' && <p className="motion-loading text-sm text-ink-mute">Đang tải bài viết…</p>}
         {state.kind === 'missing' && (
           <>
             <h1 className="text-3xl">Chưa có bài viết cho mục tiêu này.</h1>
@@ -95,8 +96,8 @@ export function GoalArticlePage({ code }: { code: string }) {
 
   const { article } = state
   return (
-    <article>
-      <header className="max-w-[56rem]">
+    <article data-motion="enter">
+      <header className="motion-enter max-w-[56rem]">
         {back}
         <p className="mt-2">
           <span className="rounded-full bg-thistle px-2.5 py-0.5 text-xs font-semibold text-thistle-ink">
@@ -109,7 +110,10 @@ export function GoalArticlePage({ code }: { code: string }) {
         </p>
       </header>
 
-      <div className="mt-8 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10">
+      <div
+        className="motion-enter mt-8 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[12rem_minmax(0,1fr)] lg:gap-10"
+        style={stagger(1)}
+      >
         {article.sections.length > 0 ? (
           <nav aria-labelledby="bai-viet-muc-luc" className="rounded-md bg-surface p-4 lg:sticky lg:top-4 lg:bg-transparent lg:p-0">
             <h2
@@ -123,7 +127,7 @@ export function GoalArticlePage({ code }: { code: string }) {
                 <li key={s.anchor}>
                   <button
                     onClick={() => jumpTo(sectionId(s.anchor))}
-                    className="flex min-h-11 w-full items-baseline gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-ink-soft hover:bg-thistle/30 hover:text-primary lg:min-h-0"
+                    className="flex min-h-11 w-full items-baseline gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-ink-soft hover:bg-wash hover:text-primary lg:min-h-0"
                   >
                     <b className="min-w-3.5 font-semibold tabular-nums">{i + 1}</b>
                     {s.heading_vi}
@@ -134,7 +138,7 @@ export function GoalArticlePage({ code }: { code: string }) {
                 <li>
                   <button
                     onClick={() => jumpTo('bai-viet-nguon')}
-                    className="flex min-h-11 w-full items-baseline gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-ink-soft hover:bg-thistle/30 hover:text-primary lg:min-h-0"
+                    className="flex min-h-11 w-full items-baseline gap-2 rounded-md px-2.5 py-1.5 text-left text-sm leading-snug text-ink-soft hover:bg-wash hover:text-primary lg:min-h-0"
                   >
                     <b className="min-w-3.5 font-semibold tabular-nums">{article.sections.length + 1}</b>
                     Nguồn

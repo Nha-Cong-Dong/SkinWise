@@ -7,6 +7,7 @@ import { SeverityBadge } from './Icons'
 import { Notice } from './Notice'
 import { SessionShell, SessionSwitch } from './RoutineBoard'
 import { TONE } from './sessionTone'
+import { stagger } from './motion'
 import { btn, btnPrimary } from './ui'
 
 type Props = { actions: RoutineActions; check: CheckState }
@@ -50,7 +51,7 @@ export function TodayPage({ actions, check }: Props) {
 
   return (
     <section aria-labelledby="today-title">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="motion-enter flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs text-ink-mute">
             {DAY_NAMES[today]}, {date}
@@ -67,7 +68,7 @@ export function TodayPage({ actions, check }: Props) {
       </header>
 
       {empty ? (
-        <div className="mt-6 max-w-xl rounded-md bg-surface p-5">
+        <div className="motion-enter mt-6 max-w-xl rounded-md bg-surface p-5" style={stagger(1)}>
           <p className="text-ink-soft">Lịch dùng chưa có bước nào. Thêm sản phẩm vào tủ đồ rồi xếp vào buổi sáng hoặc tối.</p>
           <a href={href({ page: 'routine', tab: 'shelf' })} className={`${btnPrimary} mt-4`}>
             Mở tủ đồ
@@ -75,7 +76,7 @@ export function TodayPage({ actions, check }: Props) {
         </div>
       ) : (
         <>
-          <div className="mt-5 lg:hidden">
+          <div className="motion-enter mt-5 lg:hidden" style={stagger(1)}>
             <SessionSwitch session={session} onChange={setSession} count={(s) => stepsToday(s).length} />
           </div>
           <div className="mt-4 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:mt-6 lg:grid-cols-2">
@@ -87,13 +88,14 @@ export function TodayPage({ actions, check }: Props) {
                 steps={stepsToday(s)}
                 flagged={flaggedIn(s)}
                 className={s === session ? '' : 'hidden lg:block'}
+                order={s === 'AM' ? 1 : 2}
               />
             ))}
           </div>
         </>
       )}
 
-      <section aria-labelledby="today-warnings" className="mt-8 max-w-3xl">
+      <section aria-labelledby="today-warnings" className="motion-enter mt-8 max-w-3xl" style={stagger(3)}>
         <h2 id="today-warnings" className="text-xl">
           Cần lưu ý hôm nay
         </h2>
@@ -104,7 +106,7 @@ export function TodayPage({ actions, check }: Props) {
               Hôm nay chưa có bước nào trong lịch, nên chưa kiểm tra được kết hợp.
             </p>
           )}
-          {check.kind === 'loading' && !result && !noStepsToday && <p className="text-sm text-ink-mute">Đang kiểm tra…</p>}
+          {check.kind === 'loading' && !result && !noStepsToday && <p className="motion-loading text-sm text-ink-mute">Đang kiểm tra…</p>}
           {check.kind === 'error' && (
             <p className="text-sm text-avoid-ink">
               Không kiểm tra được routine.{' '}
@@ -132,7 +134,10 @@ function TodaySession({
   steps,
   flagged,
   className,
+  order,
 }: {
+  /** Place in the first-visit rise of the tab. */
+  order: number
   session: Session
   actions: RoutineActions
   steps: ReturnType<typeof sessionEntries>
@@ -145,7 +150,8 @@ function TodaySession({
     <SessionShell
       session={session}
       caption={steps.length > 0 ? `${steps.length} bước hôm nay` : undefined}
-      className={className}
+      className={`motion-enter ${className}`}
+      style={stagger(order)}
     >
       {steps.length === 0 ? (
         <p className={`px-1 pt-3 pb-1 text-sm ${tone.mute}`}>

@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type CSSProperties } from 'react'
 import { api, type Severity } from '../api'
 import { SESSION_LABELS } from '../labels'
 import { href } from '../router'
@@ -13,7 +13,9 @@ import {
 } from '../routine'
 import { GroupChips } from './GroupChips'
 import { Glyph, SeverityBadge } from './Icons'
-import { ProductImage } from './ProductImage'
+import { stagger } from './motion'
+import { photoOf, useCatalogueImages, type ProductPhoto } from './photos'
+import { PhotoCredit, ProductImage } from './ProductImage'
 import { scheduleOf } from './shelf'
 import { btn, btnGhost, btnGhostDanger, btnPrimary, field, sm } from './ui'
 
@@ -47,9 +49,12 @@ function fold(text: string): string {
 /** "Tủ đồ": every product the user added, ready to place in a session. */
 export function MyProducts({ actions, onAdd, found, flagged, check, onRemove }: Props) {
   const { products } = actions.routine
+  const images = useCatalogueImages() // catalogue photos by product id
   // Search and filter live only while the page is open.
   const [query, setQuery] = useState('')
   const [filter, setFilter] = useState<ShelfFilter>('all')
+  // Products already on the shelf when the page opened; one added later rises in (ANIMATION.md 5.6).
+  const [initial] = useState(() => new Set(products.map((p) => p.key)))
   const scheduled = new Set(actions.routine.entries.map((e) => e.productKey))
   const result = currentResult(check)
   // Exactly the products the check put in a warning (or usage note); unknown until a check has answered.
@@ -85,7 +90,7 @@ export function MyProducts({ actions, onAdd, found, flagged, check, onRemove }: 
 
   return (
     <section aria-labelledby="products-title">
-      <header className="flex flex-wrap items-end justify-between gap-4">
+      <header className="motion-enter flex flex-wrap items-end justify-between gap-4">
         <div>
           <p className="text-xs text-ink-mute">{products.length} sản phẩm</p>
           <h1 id="products-title" className="text-3xl lg:text-4xl">
@@ -100,7 +105,10 @@ export function MyProducts({ actions, onAdd, found, flagged, check, onRemove }: 
         )}
       </header>
       {products.length === 0 ? (
-        <div className="mt-6 max-w-2xl rounded-md border border-dashed border-ink-mute/40 bg-surface p-5">
+        <div
+          className="motion-enter mt-6 max-w-2xl rounded-md border border-dashed border-ink-mute/40 bg-surface p-5"
+          style={stagger(1)}
+        >
           <p className="text-sm leading-relaxed text-ink-soft">
             Thêm những sản phẩm bạn đang dùng: tìm trong danh sách có sẵn, hoặc dán bảng thành phần in trên bao bì.
           </p>
@@ -123,7 +131,7 @@ export function MyProducts({ actions, onAdd, found, flagged, check, onRemove }: 
         </div>
       ) : (
         <>
-        <div className="mt-6 flex flex-wrap items-end gap-4">
+        <div className="motion-enter mt-6 flex flex-wrap items-end gap-4" style={stagger(1)}>
           <label className="w-full text-xs font-semibold sm:max-w-sm">
             Tìm trong tủ
             <input
@@ -171,9 +179,11 @@ export function MyProducts({ actions, onAdd, found, flagged, check, onRemove }: 
           </p>
         ) : (
         <ul className="mt-4 grid grid-cols-[minmax(0,1fr)] gap-2 sm:grid-cols-2 sm:gap-4 lg:grid-cols-3">
-          {shown.map((p) => (
+          {shown.map((p, i) => (
             <ProductRow
+              photo={photoOf(p, images)}
               key={p.key}
+              motion={initial.has(p.key) ? { className: 'motion-enter', style: stagger(2 + i) } : { className: 'motion-item' }}
               product={p}
               found={found.get(p.key)}
               severity={flagged.get(p.key)}
@@ -195,20 +205,25 @@ type RowProps = {
   severity: Severity | undefined
   actions: RoutineActions
   onRemove: () => void
+  motion: { className: string; style?: CSSProperties }
+  photo: ProductPhoto | null
 }
 
 // Buttons repeat on every card, so their accessible names include the product (aria-label, which
 // starts with the visible word).
-function ProductRow({ product, found, severity, actions, onRemove }: RowProps) {
+function ProductRow({ product, found, severity, actions, onRemove, motion, photo }: RowProps) {
   const detail = href({ page: 'shelf-product', key: product.key })
   return (
-    <li className="flex min-w-0 flex-col gap-3 rounded-md bg-surface p-4 lg:p-5">
+    <li className={`${motion.className} flex min-w-0 flex-col gap-3 rounded-md bg-surface p-4 lg:p-5`} style={motion.style}>
       <div className="flex min-w-0 gap-3">
-        <ProductImage image={null} name={product.name} size="sm" />
-        <a href={detail} className="min-w-0 leading-snug text-pretty text-ink hover:text-primary">
-          <span className="block text-xs text-ink-mute">{product.brand ?? 'Tự nhập bảng thành phần'}</span>
-          <span className="font-semibold break-words">{product.name}</span>
-        </a>
+        <ProductImage image={photo} name={product.name} size="sm" />
+        <div className="min-w-0">
+          <a href={detail} className="block leading-snug text-pretty text-ink hover:text-primary">
+            <span className="block text-xs text-ink-mute">{product.brand ?? 'Tự nhập bảng thành phần'}</span>
+            <span className="font-semibold break-words">{product.name}</span>
+          </a>
+          <PhotoCredit image={photo} className="mt-1" />
+        </div>
       </div>
       {product.origin?.kind === 'photo' && (
         <p className="-mt-2 text-xs text-ink-mute">Đọc từ ảnh nhãn bằng AI, bạn đã so với bao bì</p>

@@ -6,6 +6,8 @@ import { productKeyFor, type AddDraft, type RoutineActions } from '../routine'
 import { GroupChips } from './GroupChips'
 import { IngredientList } from './IngredientList'
 import { DataNote } from './Notice'
+import { cataloguePhoto } from './photos'
+import { PhotoCredit, ProductImage } from './ProductImage'
 import { PhotoReaderStatus, ReadFromPhoto } from './ReadFromPhoto'
 import { btn, btnPrimary, field, segBox, segOption, sm } from './ui'
 
@@ -117,12 +119,14 @@ function SearchProducts({ actions, onPaste }: Props & { onPaste: () => void }) {
           const isAdded = added.has(productKeyFor(p.id))
           return (
             <li key={p.id} className="flex items-center gap-4 border-t border-line py-3.5">
+              <ProductImage image={cataloguePhoto(p.image)} name={p.name} size="sm" />
               <div className="min-w-0 flex-1">
                 <p className="text-xs text-ink-mute">
                   {p.brand}
                   {p.application && ` · ${APPLICATION_LABELS[p.application]}`}
                 </p>
                 <p className="leading-snug font-semibold">{p.name}</p>
+                <PhotoCredit image={cataloguePhoto(p.image)} />
                 {p.matched_ingredients.length > 0 && (
                   <p className="mt-0.5 text-xs leading-snug break-words text-ink-mute">
                     Có: {p.matched_ingredients.join(', ')}

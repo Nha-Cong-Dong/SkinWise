@@ -5,6 +5,7 @@ import { GroupsContext, useGroupName } from '../groups'
 import { href } from '../router'
 import type { LabelGroups, MyProduct, Routine } from '../routine'
 import { Dialog, DialogTitle } from './Dialog'
+import { stagger } from './motion'
 
 type LoadState = { kind: 'loading' } | { kind: 'error' } | { kind: 'done'; data: GoalsResponse }
 
@@ -33,8 +34,8 @@ export function GoalsPage({ routine, found }: { routine: Routine; found: Map<str
   const chosen = data ? data.goals.filter((g) => selected.includes(g.code)) : []
 
   return (
-    <div className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,8fr)] lg:gap-12">
-      <section aria-labelledby="goals-title" className="flex max-w-[47.5rem] min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1">
+    <div data-motion="enter" className="grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,3fr)_minmax(0,8fr)] lg:gap-12">
+      <section aria-labelledby="goals-title" className="motion-enter flex max-w-[47.5rem] min-w-0 flex-col gap-4 lg:col-start-2 lg:row-start-1">
         <div>
           <h1 id="goals-title" className="text-3xl lg:text-4xl">
             Mục tiêu da
@@ -50,7 +51,7 @@ export function GoalsPage({ routine, found }: { routine: Routine; found: Map<str
               <p className="text-sm leading-relaxed">{data.notice_vi}</p>
             </div>
           )}
-          {state.kind === 'loading' && <p className="text-sm text-ink-mute">Đang tải…</p>}
+          {state.kind === 'loading' && <p className="motion-loading text-sm text-ink-mute">Đang tải…</p>}
           {state.kind === 'error' && (
             <p className="text-sm text-avoid-ink">
               Không tải được thông tin mục tiêu.{' '}
@@ -69,7 +70,7 @@ export function GoalsPage({ routine, found }: { routine: Routine; found: Map<str
       </section>
 
       {/* Wide screens: the goals in a column on the left; phones: a row of buttons under the title. */}
-      <aside className="lg:sticky lg:top-4 lg:col-start-1 lg:row-span-2 lg:row-start-1">
+      <aside className="motion-enter lg:sticky lg:top-4 lg:col-start-1 lg:row-span-2 lg:row-start-1" style={stagger(1)}>
         <h2 className="hidden font-sans text-lg font-bold lg:mb-2 lg:block">Mục tiêu của bạn</h2>
         {data && (
           <div
@@ -102,7 +103,7 @@ export function GoalsPage({ routine, found }: { routine: Routine; found: Map<str
         </p>
       </aside>
 
-      <div className="flex max-w-[47.5rem] min-w-0 flex-col gap-12 lg:col-start-2 lg:row-start-2">
+      <div className="motion-enter flex max-w-[47.5rem] min-w-0 flex-col gap-12 lg:col-start-2 lg:row-start-2" style={stagger(2)}>
       {data && chosen.length === 0 && (
         <p className="text-[0.9375rem] text-ink-soft">
           Chọn một hoặc vài mục tiêu để xem hoạt chất thường dùng và thông tin có nguồn.
@@ -147,7 +148,7 @@ function GoalSection({ goal, routine, found, onOpen }: ItemProps & { goal: Goal;
       {goal.has_article && (
         <a
           href={href({ page: 'goal-article', code: goal.code })}
-          className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-primary/20 bg-thistle/30 px-5 text-sm font-semibold text-primary hover:bg-thistle/50"
+          className="mt-3 inline-flex min-h-11 items-center gap-1.5 rounded-full border border-primary/20 bg-wash px-5 text-sm font-semibold text-primary hover:bg-wash-strong"
         >
           Đọc bài đầy đủ<span aria-hidden="true">→</span>
         </a>

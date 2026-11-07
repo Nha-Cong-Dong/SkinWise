@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react'
+import { useState, type CSSProperties, type ReactNode } from 'react'
 import type { Session, Severity } from '../api'
 import { ALL_DAYS, DAY_LABELS, DAY_NAMES, SESSION_LABELS } from '../labels'
 import { href } from '../router'
@@ -14,6 +14,7 @@ import {
 } from '../routine'
 import { GroupChips, LABEL_CHIP_NOTE } from './GroupChips'
 import { Glyph, MoonIcon, SeverityBadge, SunIcon } from './Icons'
+import { stagger } from './motion'
 import { TONE } from './sessionTone'
 import { btn, segBox, segOption } from './ui'
 import { SeverityCounts } from './WarningsPanel'
@@ -32,6 +33,12 @@ type Props = {
 /** "Lịch tuần": one session at a time, each step with its days of the week. */
 export function RoutineBoard({ actions, flagged, found, onShare, check }: Props) {
   const [session, setSession] = useState<Session>('AM')
+  // After the first switch, the newly chosen session's panel fades in (ANIMATION.md 5.2).
+  const [switched, setSwitched] = useState(false)
+  const chooseSession = (s: Session) => {
+    setSwitched(true)
+    setSession(s)
+  }
   // A step's chip names an ingredient once the check has answered for it: explain such chips once.
   const scheduled = new Set(actions.routine.entries.map((e) => e.productKey))
   const named = actions.routine.products.some(
@@ -40,7 +47,7 @@ export function RoutineBoard({ actions, flagged, found, onShare, check }: Props)
   const count = (s: Session) => sessionEntries(actions.routine, s).length
   return (
     <section aria-labelledby="schedule-title">
-      <header className="flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
+      <header className="motion-enter flex flex-wrap items-end justify-between gap-x-6 gap-y-4">
         <div className="max-w-2xl">
           <h1 id="schedule-title" className="text-3xl lg:text-4xl">
             Lịch tuần
@@ -50,19 +57,29 @@ export function RoutineBoard({ actions, flagged, found, onShare, check }: Props)
           </p>
         </div>
         <div className="flex w-full flex-wrap items-center gap-3 sm:w-auto">
-          <SessionSwitch session={session} onChange={setSession} count={count} />
+          <SessionSwitch session={session} onChange={chooseSession} count={count} />
           <button onClick={onShare} className={btn}>
             <Glyph name="share" className="size-4" />
             Lưu & chia sẻ
           </button>
         </div>
       </header>
-      {named && <p className="mt-3 max-w-3xl text-xs leading-relaxed text-ink-mute">{LABEL_CHIP_NOTE}</p>}
+      {named && <p className="motion-enter mt-3 max-w-3xl text-xs leading-relaxed text-ink-mute">{LABEL_CHIP_NOTE}</p>}
 
-      <WeekOverview actions={actions} check={check} session={session} onSession={setSession} />
+      <WeekOverview actions={actions} check={check} session={session} onSession={chooseSession} />
 
-      <div className="mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18.75rem] lg:gap-8">
-        <SessionPanel key={session} session={session} actions={actions} flagged={flagged} found={found} />
+      <div
+        className="motion-enter mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-6 lg:grid-cols-[minmax(0,1fr)_18.75rem] lg:gap-8"
+        style={stagger(2)}
+      >
+        <SessionPanel
+          key={session}
+          session={session}
+          actions={actions}
+          flagged={flagged}
+          found={found}
+          className={switched ? 'motion-tab' : ''}
+        />
         <aside className="flex flex-col gap-4">
           <WarningsSummary check={check} />
           <AddToSession actions={actions} session={session} />
@@ -114,7 +131,7 @@ function WeekOverview({
   const warned = (day: number, s: Session) =>
     warnings.some((w) => w.occurrences.some((o) => o.day === day && (o.session === s || o.session === null)))
   return (
-    <section aria-label="Cả tuần" className="mt-5 rounded-md bg-surface p-2 lg:hidden">
+    <section aria-label="Cả tuần" className="motion-enter mt-5 rounded-md bg-surface p-2 lg:hidden" style={stagger(1)}>
       <div className="grid grid-cols-[2.75rem_repeat(7,minmax(0,1fr))] items-center gap-1">
         <span />
         {DAY_LABELS.map((d) => (
@@ -226,7 +243,7 @@ function AddToSession({ actions, session }: { actions: RoutineActions; session: 
               <button
                 onClick={() => actions.addEntry(p.key, session)}
                 aria-label={`Thêm “${p.name}” vào buổi ${label}`}
-                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-thistle/30 text-primary hover:bg-thistle/50 md:size-9"
+                className="inline-flex size-11 shrink-0 items-center justify-center rounded-full border border-primary/20 bg-wash text-primary hover:bg-wash-strong md:size-9"
               >
                 <Glyph name="plus" className="size-4" />
               </button>
@@ -250,15 +267,17 @@ export function SessionShell({
   caption,
   children,
   className = '',
+  style,
 }: {
   session: Session
   caption?: ReactNode
   children: ReactNode
   className?: string
+  style?: CSSProperties
 }) {
   const tone = TONE[session]
   return (
-    <section aria-label={`Buổi ${SESSION_LABELS[session].toLowerCase()}`} className={`rounded-lg p-4 lg:p-5 ${tone.panel} ${className}`}>
+    <section aria-label={`Buổi ${SESSION_LABELS[session].toLowerCase()}`} className={`rounded-lg p-4 lg:p-5 ${tone.panel} ${className}`} style={style}>
       <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1">
         <span className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1 text-xs font-semibold ${tone.tag}`}>
           {session === 'AM' ? <SunIcon className="size-4" /> : <MoonIcon className="size-4" />}
@@ -271,12 +290,24 @@ export function SessionShell({
   )
 }
 
-function SessionPanel({ session, actions, flagged, found }: Omit<Props, 'onShare' | 'check'> & { session: Session }) {
+function SessionPanel({
+  session,
+  actions,
+  flagged,
+  found,
+  className,
+}: Omit<Props, 'onShare' | 'check'> & { session: Session; className: string }) {
   const entries = sessionEntries(actions.routine, session)
+  // Steps already there when the panel mounted; a step added later rises in (ANIMATION.md 5.6).
+  const [initial] = useState(() => new Set(entries.map((e) => e.id)))
   const products = new Map(actions.routine.products.map((p) => [p.key, p]))
   const tone = TONE[session]
   return (
-    <SessionShell session={session} caption={entries.length > 0 ? `${entries.length} bước` : undefined}>
+    <SessionShell
+      session={session}
+      caption={entries.length > 0 ? `${entries.length} bước` : undefined}
+      className={className}
+    >
       {entries.length === 0 ? (
         <p className={`px-1 pt-3 pb-2 text-sm ${tone.mute}`}>
           Chưa có bước nào. Thêm sản phẩm ở mục “Thêm vào buổi {SESSION_LABELS[session].toLowerCase()}”.
@@ -297,6 +328,7 @@ function SessionPanel({ session, actions, flagged, found }: Omit<Props, 'onShare
                 actions={actions}
                 tone={tone}
                 night={session === 'PM'}
+                fresh={!initial.has(entry.id)}
               />
             ) : null
           })}
@@ -316,18 +348,20 @@ type EntryProps = {
   actions: RoutineActions
   tone: (typeof TONE)['AM']
   night: boolean
+  /** Added after the panel mounted. */
+  fresh: boolean
 }
 
 /**
  * A step: the product, then its week as round day buttons. Every row's week starts at the same
  * place, so reading one column top to bottom gives what is used that day.
  */
-function EntryRow({ entry, step, last, product, severity, found, actions, tone, night }: EntryProps) {
+function EntryRow({ entry, step, last, product, severity, found, actions, tone, night, fresh }: EntryProps) {
   // 44px on phones (fingers), 36px from md.
   const iconButton = `inline-flex size-11 items-center justify-center rounded-md disabled:opacity-25 disabled:hover:bg-transparent md:size-9 ${tone.button}`
   const session = `buổi ${SESSION_LABELS[entry.session].toLowerCase()}`
   return (
-    <li className={`grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 py-3.5 xl:grid-cols-[1.5rem_minmax(0,1fr)_auto] xl:items-center ${tone.row}`}>
+    <li className={`${fresh ? 'motion-item ' : ''}grid grid-cols-[1.5rem_minmax(0,1fr)] items-start gap-x-3 gap-y-3 py-3.5 xl:grid-cols-[1.5rem_minmax(0,1fr)_auto] xl:items-center ${tone.row}`}>
       <span
         className={`mt-0.5 flex size-6 items-center justify-center rounded-full text-xs font-semibold tabular-nums xl:mt-0 ${tone.step}`}
       >
@@ -389,7 +423,7 @@ function EntryRow({ entry, step, last, product, severity, found, actions, tone, 
                 onClick={() => actions.toggleDay(entry.id, day)}
                 aria-pressed={on}
                 aria-label={`${DAY_LABELS[day]}, ${DAY_NAMES[day]}`}
-                className={`relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff}`}
+                className={`motion-press relative h-11 rounded-md border text-xs font-semibold tabular-nums md:size-9 md:shrink-0 md:rounded-full ${on ? tone.dayOn : tone.dayOff}`}
               >
                 {DAY_LABELS[day]}
                 {on && (

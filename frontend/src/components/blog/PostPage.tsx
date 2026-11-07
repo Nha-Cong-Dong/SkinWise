@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, type ReactNode } from 'react'
 import { api, imageSrc, type ImageOut, type PostDetail } from '../../api'
 import { actionError as errorText, formatDate } from '../../blog'
 import { SKIN_TYPE_LABELS, flagReasons } from '../../labels'
@@ -6,13 +6,21 @@ import { ALL_POSTS, href, navigate } from '../../router'
 import type { Routine, RoutineActions } from '../../routine'
 import { ImportError, parsePortable, restore } from '../../share'
 import { statusOf } from '../../useLoad'
-import { Dialog } from '../Dialog'
+import { Dialog, DialogTitle } from '../Dialog'
 import { ReplaceConfirm } from '../ShareRoutine'
 import { Comments } from './Comments'
 import { usePost } from './hooks'
+import { BlogIcon } from './icons'
 import { ReportDialog, type ReportTarget } from './ReportDialog'
 import { SourcedInfo } from './SourcedInfo'
-import { DemoFooter, DisclosureTag, LoadError, Loading, Stars, quiet, secondary, textLink } from './parts'
+import { Avatar, DemoFooter, DisclosureTag, LoadError, Loading, Stars } from './parts'
+import { quiet, secondary, textLink } from './styles'
+import { BlogShell } from './Shell'
+
+const BACK = { href: href(ALL_POSTS), label: 'Về danh sách bài review' }
+
+/** Said next to every post: a review is someone's experience, not checked information. */
+const PERSONAL = 'Trải nghiệm cá nhân, không phải thông tin đã kiểm chứng.'
 
 export function PostMissing() {
   return (
@@ -25,7 +33,18 @@ export function PostMissing() {
   )
 }
 
+function Frame({ children, rail }: { children: ReactNode; rail?: ReactNode }) {
+  return (
+    <BlogShell spot={null} title="Bài đánh giá" heading={false} back={BACK} rail={rail} railLabel="Về bài này" railAfter>
+      {children}
+    </BlogShell>
+  )
+}
+
 type Trying = { kind: 'loading' } | { kind: 'error'; message: string } | { kind: 'ready'; routine: Routine; dropped: string[] }
+
+const action =
+  'motion-press inline-flex min-h-11 items-center gap-1.5 rounded-full px-3 text-sm text-ink-soft hover:bg-thistle/25 hover:text-ink md:min-h-9 disabled:opacity-40'
 
 export function PostPage({ id, actions }: { id: number; actions: RoutineActions }) {
   const { state, update: change, retry } = usePost(id)
@@ -34,9 +53,27 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
   const [busy, setBusy] = useState<'like' | 'save' | 'delete' | null>(null)
   const [actionError, setActionError] = useState<string | null>(null)
 
-  if (state.kind === 'error' && statusOf(state.error) === 404) return <PostMissing />
-  if (state.kind === 'error') return <LoadError onRetry={retry}>Không tải được bài viết.</LoadError>
-  if (state.kind !== 'ready') return <Loading />
+  if (state.kind === 'error' && statusOf(state.error) === 404) {
+    return (
+      <Frame>
+        <PostMissing />
+      </Frame>
+    )
+  }
+  if (state.kind === 'error') {
+    return (
+      <Frame>
+        <LoadError onRetry={retry}>Không tải được bài viết.</LoadError>
+      </Frame>
+    )
+  }
+  if (state.kind !== 'ready') {
+    return (
+      <Frame>
+        <Loading />
+      </Frame>
+    )
+  }
   const post = state.value
 
   const update = (fields: Partial<PostDetail>) => change((p) => ({ ...p, ...fields }))
@@ -88,68 +125,19 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
     )
   }
 
-  return (
-    <article className="space-y-6">
-      <p className="text-sm">
-        <a href={href(ALL_POSTS)} className={textLink}>
-          ← Review cộng đồng
-        </a>
-      </p>
-
-      {post.is_mine && post.status === 'pending' && (
-        <p className="rounded-md bg-surface p-4 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
-          Bài viết đang chờ duyệt vì có nội dung cần kiểm tra: {flagReasons(post.flags)}. Người khác chưa thấy bài này.
+  const about = (
+    <section aria-labelledby="about-title" className="space-y-3 rounded-md border border-line bg-surface p-4 text-sm leading-relaxed text-ink-soft">
+      <h2 id="about-title" className="text-base font-bold text-ink">
+        Về bài này
+      </h2>
+      {post.disclosure !== 'none' && (
+        <p>
+          <DisclosureTag disclosure={post.disclosure} />{' '}
+          {post.disclosure === 'gifted' ? 'Người viết cho biết sản phẩm được tặng.' : 'Người viết cho biết bài có tài trợ.'}
         </p>
       )}
-      {post.is_mine && post.status === 'hidden' && (
-        <p className="rounded-md bg-surface p-4 text-sm leading-relaxed text-ink-soft ring-1 ring-line">
-          Bài viết đang tạm ẩn vì có nhiều báo cáo, chờ người duyệt xem lại.
-        </p>
-      )}
-
-      <header>
-        <h1 className="text-2xl leading-tight font-bold text-pretty sm:text-3xl">{post.title}</h1>
-        <p className="mt-2 text-sm text-ink-mute">
-          {formatDate(post.created_at)}
-          {post.updated_at !== post.created_at && ` · sửa ${formatDate(post.updated_at)}`}
-        </p>
-      </header>
-
-      <section aria-labelledby="personal-title" className="rounded-md bg-paper p-5 ring-1 ring-line sm:p-6">
-        <h2 id="personal-title" className="text-lg font-bold">
-          Trải nghiệm cá nhân của{' '}
-          <a href={href({ page: 'author', handle: post.author.handle })} className={textLink}>
-            @{post.author.handle}
-          </a>
-        </h2>
-        <p className="mt-1 text-xs leading-relaxed text-ink-mute">
-          Đây là cảm nhận của người viết, không phải thông tin đã kiểm chứng. SkinWise không kiểm tra nội dung bài viết.
-        </p>
-        <div className="mt-3 flex flex-wrap items-center gap-2 text-sm">
-          {post.rating !== null && <Stars rating={post.rating} className="text-base" />}
-          {post.skin_type && <span className="text-ink-soft">{SKIN_TYPE_LABELS[post.skin_type]}</span>}
-          <DisclosureTag disclosure={post.disclosure} />
-        </div>
-        {/* Plain text: React escapes it, so no HTML runs and links are not clickable. */}
-        <div className="mt-4 text-[0.9375rem] leading-relaxed break-words whitespace-pre-wrap text-ink">{post.body}</div>
-        {post.images.length > 0 && <ImageGrid images={post.images} />}
-      </section>
-
-      <SourcedInfo post={post} />
-
-      <div className="flex flex-wrap items-center gap-2">
-        <button onClick={toggleLike} disabled={busy !== null} aria-pressed={post.liked} className={quiet}>
-          {post.liked ? '♥ Đã thích' : '♡ Thích'} · {post.like_count}
-        </button>
-        <button onClick={toggleSave} disabled={busy !== null} aria-pressed={post.saved} className={quiet}>
-          {post.saved ? 'Đã lưu' : 'Lưu'}
-        </button>
-        {post.routine && (
-          <button onClick={tryRoutine} className={secondary}>
-            Thử routine này
-          </button>
-        )}
-        <span className="flex-1" />
+      <p>{PERSONAL} SkinWise không kiểm tra nội dung bài viết.</p>
+      <div className="-ml-3 flex flex-wrap gap-1 border-t border-line pt-3">
         {post.is_mine ? (
           <>
             <a href={href({ page: 'edit', id: post.id })} className={quiet}>
@@ -161,22 +149,122 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
           </>
         ) : (
           <button onClick={() => setReport({ kind: 'post', id: post.id })} className={quiet}>
-            Báo cáo
+            Báo cáo bài viết
           </button>
         )}
       </div>
-      {actionError && <p className="text-sm text-avoid-ink">{actionError}</p>}
+    </section>
+  )
 
-      <Comments postId={post.id} onReport={setReport} />
-      <DemoFooter />
+  return (
+    <Frame rail={about}>
+      <div className="space-y-6">
+        {post.is_mine && post.status === 'pending' && (
+          <p className="rounded-md border border-line bg-surface p-4 text-sm leading-relaxed text-ink-soft">
+            Bài viết đang chờ duyệt vì có nội dung cần kiểm tra: {flagReasons(post.flags)}. Người khác chưa thấy bài này.
+          </p>
+        )}
+        {post.is_mine && post.status === 'hidden' && (
+          <p className="rounded-md border border-line bg-surface p-4 text-sm leading-relaxed text-ink-soft">
+            Bài viết đang tạm ẩn vì có nhiều báo cáo, chờ người duyệt xem lại.
+          </p>
+        )}
+
+        <article
+          aria-labelledby="post-title"
+          className="grid grid-cols-[2.25rem_minmax(0,1fr)] gap-x-3 rounded-md border border-line bg-surface px-4 py-5 sm:px-6"
+        >
+          <Avatar handle={post.author.handle} />
+          <div className="min-w-0 space-y-2">
+            <p className="flex min-h-6 flex-wrap items-center gap-x-2 gap-y-0.5">
+              <a href={href({ page: 'author', handle: post.author.handle })} className="inline-flex min-h-11 items-center md:min-h-0 font-semibold break-all text-ink hover:underline">
+                {post.author.handle}
+              </a>
+              <span className="text-xs text-ink-soft">
+                {post.skin_type && `${SKIN_TYPE_LABELS[post.skin_type]} · `}
+                {formatDate(post.created_at)}
+                {post.updated_at !== post.created_at && ` · sửa ${formatDate(post.updated_at)}`}
+              </span>
+              <DisclosureTag disclosure={post.disclosure} />
+            </p>
+            <h1 id="post-title" className="text-2xl leading-tight font-bold text-pretty">
+              {post.title}
+            </h1>
+            <p className="text-xs text-ink-soft">{PERSONAL}</p>
+            {post.rating !== null && <Stars rating={post.rating} className="text-base" />}
+            {/* Plain text: React escapes it, so no HTML runs and links are not clickable. */}
+            <div className="pt-1 text-base leading-relaxed break-words whitespace-pre-wrap text-ink">{post.body}</div>
+            {post.images.length > 0 && <ImageGrid images={post.images} />}
+            {post.products.length > 0 && (
+              <div className="flex flex-col gap-0.5 rounded-md border border-line px-3.5 py-2.5">
+                <span className="text-xs text-ink-soft">Sản phẩm trong bài</span>
+                <span className="text-sm">
+                  {post.products.map((p, n) => (
+                    <span key={p.position}>
+                      {n > 0 && ' · '}
+                      {p.product_id !== null ? (
+                        <a href={href({ page: 'product', id: p.product_id })} className={`inline-flex min-h-11 items-center md:min-h-0 ${textLink}`}>
+                          {p.brand ? `${p.brand} ${p.name}` : p.name}
+                        </a>
+                      ) : (
+                        p.name
+                      )}
+                    </span>
+                  ))}
+                </span>
+                {post.has_routine && (
+                  <span className="self-start rounded-full bg-thistle/40 px-2 text-xs leading-relaxed font-semibold text-thistle-ink">
+                    Có lịch dùng
+                  </span>
+                )}
+              </div>
+            )}
+            <div className="-ml-3 flex flex-wrap items-center gap-1 pt-1">
+              <button
+                onClick={toggleLike}
+                disabled={busy !== null}
+                aria-pressed={post.liked}
+                className={`${action} ${post.liked ? 'font-semibold text-primary' : ''}`}
+              >
+                <BlogIcon name="heart" filled={post.liked} className="size-[1.125rem]" />
+                {post.liked ? 'Đã thích' : 'Thích'} · {post.like_count}
+              </button>
+              <button onClick={() => document.getElementById('comments-title')?.scrollIntoView({ block: 'start' })} className={action}>
+                <BlogIcon name="comment" className="size-[1.125rem]" />
+                Bình luận · {post.comment_count}
+              </button>
+              <button
+                onClick={toggleSave}
+                disabled={busy !== null}
+                aria-pressed={post.saved}
+                className={`${action} ${post.saved ? 'font-semibold text-primary' : ''}`}
+              >
+                <BlogIcon name="bookmark" filled={post.saved} className="size-[1.125rem]" />
+                {post.saved ? 'Đã lưu' : 'Lưu'}
+              </button>
+              {post.routine && (
+                <button onClick={tryRoutine} className={`${secondary} sm:ml-auto`}>
+                  Thử lịch dùng này
+                </button>
+              )}
+            </div>
+            <div aria-live="polite">{actionError && <p className="text-sm text-avoid-ink">{actionError}</p>}</div>
+          </div>
+        </article>
+
+        <SourcedInfo post={post} />
+
+        <Comments postId={post.id} onReport={setReport} />
+        <DemoFooter />
+      </div>
 
       <ReportDialog target={report} onClose={() => setReport(null)} />
       <Dialog
         open={trying !== null}
         onClose={() => setTrying(null)}
-        title={<h2 className="text-xl font-bold">Thử routine của @{post.author.handle}</h2>}
+        title={<DialogTitle>Thử lịch dùng của {post.author.handle}</DialogTitle>}
       >
-        {trying?.kind === 'loading' && <Loading>Đang mở routine…</Loading>}
+        {trying?.kind === 'loading' && <Loading>Đang mở lịch dùng…</Loading>}
         {trying?.kind === 'error' && <p className="text-sm text-avoid-ink">{trying.message}</p>}
         {trying?.kind === 'ready' && (
           <ReplaceConfirm
@@ -191,7 +279,7 @@ export function PostPage({ id, actions }: { id: number; actions: RoutineActions 
           />
         )}
       </Dialog>
-    </article>
+    </Frame>
   )
 }
 
@@ -201,14 +289,14 @@ function ImageGrid({ images }: { images: ImageOut[] }) {
   const shown = viewing !== null ? images[viewing] : null
   return (
     <>
-      <ul className={`mt-4 grid gap-2 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
+      <ul className={`mt-2 grid gap-2 ${images.length === 1 ? 'grid-cols-1' : 'grid-cols-2'}`}>
         {images.map((image, n) => (
           <li key={image.id}>
             <figure>
               <button
                 onClick={() => setViewing(n)}
                 aria-label={`Xem lớn: ${alt(image, n)}`}
-                className="block w-full overflow-hidden rounded-md bg-surface ring-1 ring-line hover:ring-ink-mute"
+                className="block w-full overflow-hidden rounded-md border border-line bg-paper hover:border-ink-soft"
               >
                 <img
                   src={imageSrc(image)}
@@ -240,13 +328,13 @@ function ImageGrid({ images }: { images: ImageOut[] }) {
             />
             {images.length > 1 && (
               <div className="mt-3 flex justify-between text-sm">
-                <button onClick={() => setViewing((viewing + images.length - 1) % images.length)} className={quiet}>
+                <button onClick={() => setViewing((viewing + images.length - 1) % images.length)} className={secondary}>
                   ← Ảnh trước
                 </button>
-                <span className="self-center text-ink-mute">
+                <span className="self-center text-ink-soft">
                   {viewing + 1}/{images.length}
                 </span>
-                <button onClick={() => setViewing((viewing + 1) % images.length)} className={quiet}>
+                <button onClick={() => setViewing((viewing + 1) % images.length)} className={secondary}>
                   Ảnh sau →
                 </button>
               </div>

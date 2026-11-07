@@ -59,8 +59,9 @@ export type SyncState =
 const isEmpty = (r: Routine) => r.products.length === 0 && r.entries.length === 0
 
 const toServer = (r: Routine): NonNullable<StoredRoutine['data']> => ({
-  products: r.products.map(({ key, name, brand, productId, inci, groups, notices, origin }) => ({
+  products: r.products.map(({ key, name, brand, productId, inci, groups, notices, origin, photoId }) => ({
     key, name, brand, productId, inci, groups, notices: notices ?? [], ...(origin && { origin }),
+    ...(photoId !== undefined && { photoId }), // left out when none, never null
   })), // prettier-ignore
   entries: r.entries.map(({ id, productKey, session, days }) => ({ id, productKey, session, days })),
 })

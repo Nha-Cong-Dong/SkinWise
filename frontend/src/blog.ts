@@ -83,6 +83,21 @@ export function portableProducts(
 export const formatDate = (iso: string) =>
   new Date(iso).toLocaleDateString('vi-VN', { day: 'numeric', month: 'numeric', year: 'numeric' })
 
+/** "vừa xong", "5 phút", "3 giờ", "2 ngày" within a week, else the date (lists and comments). */
+export function ago(iso: string, now = Date.now()): string {
+  const minutes = Math.floor((now - new Date(iso).getTime()) / 60_000)
+  if (!Number.isFinite(minutes)) return ''
+  if (minutes < 1) return 'vừa xong'
+  if (minutes < 60) return `${minutes} phút`
+  if (minutes < 24 * 60) return `${Math.floor(minutes / 60)} giờ`
+  if (minutes < 7 * 24 * 60) return `${Math.floor(minutes / (24 * 60))} ngày`
+  return formatDate(iso)
+}
+
+/** Search text the server accepts: 2–100 characters (it also drops edge punctuation, so it may still say no). */
+export const SEARCH_MIN = 2
+export const SEARCH_MAX = 100
+
 export { SESSION_EXPIRED }
 // 429 from the per-user hourly limits of backend/app/blog.py (LIMITS).
 export const TOO_MANY = 'Bạn đã gửi khá nhiều trong một giờ qua. Hãy thử lại sau ít phút.'

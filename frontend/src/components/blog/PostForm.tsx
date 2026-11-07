@@ -15,7 +15,9 @@ import { addFiles, fromExisting, uploadAll, type ImageItem } from './images'
 import { pickedKey, toPostProduct, type Picked } from './picked'
 import { PostMissing } from './PostPage'
 import { ProductPicker } from './ProductPicker'
-import { DemoFooter, LoadError, Loading, field, primary, secondary } from './parts'
+import { DemoFooter, LoadError, Loading } from './parts'
+import { field, primary, secondary } from './styles'
+import { BlogShell } from './Shell'
 
 /** #/blog/viet: a new post, optionally starting with one catalogue product (from a product page). */
 export function WritePage({ actions, product, account }: { actions: RoutineActions; product: number | null; account: string }) {
@@ -28,20 +30,17 @@ export function WritePage({ actions, product, account }: { actions: RoutineActio
         ? [{ key: pickedKey({ productId: state.value.id }), productId: state.value.id, name: state.value.name, brand: state.value.brand, groups: state.value.groups }]
         : []
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Viết bài review</h1>
+    <BlogShell spot="write" title="Bài đánh giá mới" back={{ href: href(ALL_POSTS), label: 'Về danh sách bài review' }}>
       {state.kind === 'error' && (
-        <div className="mt-4">
+        <div className="mb-4">
           <LoadError onRetry={statusOf(state.error) === 404 ? undefined : retry}>
             Không tải được sản phẩm đã chọn; hãy tìm lại ở mục Sản phẩm trong bài.
           </LoadError>
         </div>
       )}
-      <div className="mt-6">
-        {start === null ? <Loading /> : <PostForm actions={actions} post={null} startProducts={start} account={account} />}
-      </div>
+      {start === null ? <Loading /> : <PostForm actions={actions} post={null} startProducts={start} account={account} />}
       <DemoFooter />
-    </div>
+    </BlogShell>
   )
 }
 
@@ -49,9 +48,8 @@ export function WritePage({ actions, product, account }: { actions: RoutineActio
 export function EditPage({ id, actions, account }: { id: number; actions: RoutineActions; account: string }) {
   const { state, retry } = usePost(id)
   return (
-    <div>
-      <h1 className="text-2xl font-bold">Sửa bài review</h1>
-      <div className="mt-6">
+    <BlogShell spot={null} title="Sửa bài đánh giá" back={{ href: href({ page: 'post', id }), label: 'Về bài viết' }}>
+      <div>
         {state.kind === 'loading' && <Loading />}
         {state.kind === 'error' &&
           (statusOf(state.error) === 404 ? (
@@ -67,7 +65,7 @@ export function EditPage({ id, actions, account }: { id: number; actions: Routin
           ))}
       </div>
       <DemoFooter />
-    </div>
+    </BlogShell>
   )
 }
 
@@ -219,7 +217,7 @@ function PostForm({
         return fail(post ? 'Bài viết không còn nữa, hoặc có sản phẩm không còn trong danh sách của SkinWise.' : 'Có sản phẩm không còn trong danh sách của SkinWise. Hãy bỏ sản phẩm đó rồi lưu lại.')
       }
       if (status === 422) {
-        return fail('Không lưu được: có mục chưa hợp lệ. Hãy kiểm tra tiêu đề, nội dung, sản phẩm, ảnh và routine.')
+        return fail('Không lưu được: có mục chưa hợp lệ. Hãy kiểm tra tiêu đề, nội dung, sản phẩm, ảnh và lịch dùng.')
       }
       fail('Không lưu được bài viết. Hãy thử lại.')
     }
@@ -239,9 +237,13 @@ function PostForm({
   }
 
   return (
-    <form onSubmit={(e) => void submit(e)} onPaste={onPaste} className="max-w-3xl space-y-6 text-sm">
+    <form
+      onSubmit={(e) => void submit(e)}
+      onPaste={onPaste}
+      className="space-y-6 rounded-md border border-line bg-surface p-4 text-sm sm:p-6"
+    >
       {restored && (
-        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md bg-surface p-3 text-ink-soft ring-1 ring-line">
+        <p className="flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md border border-line bg-paper p-3 text-ink-soft">
           <span className="flex-1">Đã mở lại bản nháp chưa đăng trên tab này (ảnh không được giữ).</span>
           <button type="button" onClick={discardDraft} className="text-link underline underline-offset-2">
             Bỏ bản nháp
@@ -257,7 +259,7 @@ function PostForm({
           className={`mt-1 ${field}`}
           data-autofocus
         />
-        <span className="mt-1 block text-xs text-ink-mute">
+        <span className="mt-1 block text-xs text-ink-soft">
           {TITLE_MIN}–{TITLE_MAX} ký tự ({title.trim().length})
         </span>
       </label>
@@ -274,7 +276,7 @@ function PostForm({
           rows={10}
           className={`mt-2 ${field} leading-relaxed`}
         />
-        <span className="mt-1 block text-xs text-ink-mute">
+        <span className="mt-1 block text-xs text-ink-soft">
           {BODY_MIN}–{BODY_MAX.toLocaleString('vi-VN')} ký tự ({body.trim().length.toLocaleString('vi-VN')}). Văn bản
           thuần: link không bấm được.
         </span>
@@ -298,13 +300,13 @@ function PostForm({
                 aria-checked={rating === n}
                 aria-label={`${n} sao`}
                 onClick={() => setRating(rating === n ? null : n)}
-                className={`rounded px-0.5 text-2xl leading-none ${rating !== null && n <= rating ? 'text-ink' : 'text-ink-mute/40 hover:text-ink-mute'}`}
+                className={`motion-press inline-flex size-11 items-center justify-center rounded-sm text-2xl leading-none md:size-9 ${rating !== null && n <= rating ? 'text-ink' : 'text-ink-soft hover:text-ink'}`}
               >
-                ★
+                {rating !== null && n <= rating ? '★' : '☆'}
               </button>
             ))}
           </div>
-          <span className="mt-1 block text-xs text-ink-mute">{rating === null ? 'Chưa chấm' : 'Bấm lại để bỏ điểm'}</span>
+          <span className="mt-1 block text-xs text-ink-soft">{rating === null ? 'Chưa chấm' : 'Bấm lại để bỏ điểm'}</span>
         </fieldset>
         <label className="block">
           <span className="font-semibold text-ink">Loại da của bạn</span>
@@ -344,14 +346,14 @@ function PostForm({
       </fieldset>
 
       <fieldset>
-        <legend className="font-semibold text-ink">Routine</legend>
+        <legend className="font-semibold text-ink">Lịch dùng</legend>
         <div className="mt-2 space-y-2 text-ink-soft">
           {post?.routine && (
             <label className="flex items-start gap-2.5">
               <input type="radio" name="routine" checked={choice === 'kept'} onChange={() => setChoice('kept')} className="mt-1 size-4 accent-primary" />
               <span>
-                Giữ routine đang đính kèm
-                <span className="block text-xs text-ink-mute">{routineSummary(post.routine)}</span>
+                Giữ lịch dùng đang đính kèm
+                <span className="block text-xs text-ink-soft">{routineSummary(post.routine)}</span>
               </span>
             </label>
           )}
@@ -366,8 +368,8 @@ function PostForm({
                 className="mt-1 size-4 accent-primary"
               />
               <span>
-                Thay bằng routine hiện tại của tôi
-                <span className="block text-xs text-ink-mute">{current ? routineSummary(current) : 'Routine của bạn đang trống.'}</span>
+                Thay bằng lịch dùng hiện tại của tôi
+                <span className="block text-xs text-ink-soft">{current ? routineSummary(current) : 'Lịch dùng của bạn đang trống.'}</span>
               </span>
             </label>
           ) : (
@@ -380,20 +382,21 @@ function PostForm({
                 className="mt-1 size-4 accent-primary"
               />
               <span>
-                Đính kèm routine hiện tại
-                <span className="block text-xs text-ink-mute">{current ? routineSummary(current) : 'Routine của bạn đang trống.'}</span>
+                Đính kèm lịch dùng hiện tại
+                <span className="block text-xs text-ink-soft">{current ? routineSummary(current) : 'Lịch dùng của bạn đang trống.'}</span>
               </span>
             </label>
           )}
           {post?.routine && (
             <label className="flex items-start gap-2.5">
               <input type="radio" name="routine" checked={choice === 'none'} onChange={() => setChoice('none')} className="mt-1 size-4 accent-primary" />
-              Bỏ routine khỏi bài
+              Bỏ lịch dùng khỏi bài
             </label>
           )}
-          <p className="text-xs leading-relaxed text-ink-mute">
-            Người đọc thấy các sản phẩm, thứ tự bước và ngày dùng trong routine, kể cả bảng thành phần bạn tự dán, và có thể
-            chép routine này về máy của họ. SkinWise sẽ kiểm tra kết hợp giữa các sản phẩm trong routine.
+          <p className="text-xs leading-relaxed text-ink-soft">
+            Người đọc thấy các sản phẩm, thứ tự bước và ngày dùng trong lịch dùng, kể cả bảng thành phần bạn tự dán, và có
+            thể chép lịch dùng này về máy của họ. SkinWise sẽ kiểm tra kết hợp giữa các sản phẩm trong lịch dùng. Ảnh sản
+            phẩm trong tủ đồ không được đính kèm.
           </p>
         </div>
       </fieldset>
@@ -407,7 +410,7 @@ function PostForm({
 
       <div className="space-y-2 border-t border-line pt-4">
         {!ready && (
-          <p className="text-xs text-ink-mute">
+          <p className="text-xs text-ink-soft">
             Cần tiêu đề {TITLE_MIN}–{TITLE_MAX} ký tự, nội dung ít nhất {BODY_MIN} ký tự và ít nhất một sản phẩm.
           </p>
         )}

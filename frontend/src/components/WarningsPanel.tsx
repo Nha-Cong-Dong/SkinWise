@@ -13,6 +13,7 @@ import {
 } from '../routine'
 import { SeverityBadge } from './Icons'
 import { DataNote, Notice } from './Notice'
+import { stagger } from './motion'
 import { RuleCard } from './RuleCard'
 
 type Props = {
@@ -49,14 +50,14 @@ export function WarningsPanel({ state, products, found = NONE, page = false }: P
         {announcement(state)}
       </p>
       {page ? (
-        <header className="flex flex-wrap items-end justify-between gap-4">
+        <header className="motion-enter flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs text-ink-mute">Cả tuần · cập nhật ngay khi bạn sửa lịch dùng</p>
             <h1 id="results-title" className="text-3xl lg:text-4xl">
               Kết quả kiểm tra
             </h1>
           </div>
-          {state.kind === 'loading' && <span className="text-xs text-ink-mute">Đang kiểm tra…</span>}
+          {state.kind === 'loading' && <span className="motion-loading text-xs text-ink-mute">Đang kiểm tra…</span>}
         </header>
       ) : (
         <div className="flex items-baseline justify-between gap-3">
@@ -69,12 +70,15 @@ export function WarningsPanel({ state, products, found = NONE, page = false }: P
       {result &&
         result.warnings.length > 0 &&
         (page ? <SeverityTiles warnings={result.warnings} /> : <SeverityCounts warnings={result.warnings} className="mt-2" />)}
+      {/* The whole list is one block, warnings and notice_vi together: an "avoid" card never shows
+          after an "info" card, and the "no warning ≠ safe" line never lags (ANIMATION.md 7). */}
       <div
-        className={
+        className={`${page ? 'motion-enter' : ''} ${
           page && result && result.warnings.length > 0
             ? 'mt-6 grid grid-cols-[minmax(0,1fr)] items-start gap-8 lg:grid-cols-[minmax(0,4fr)_minmax(0,7fr)]'
             : ''
-        }
+        }`}
+        style={page ? stagger(2) : undefined}
       >
       {page && result && result.warnings.length > 0 && (
         <nav aria-label="Danh sách cảnh báo" className="hidden lg:sticky lg:top-4 lg:block">

@@ -7,7 +7,21 @@
 import { useMemo, useSyncExternalStore } from 'react'
 import type { SkinType } from './api'
 
-export type BlogFilter = { skin: SkinType | null; product: number | null; sort: 'new' | 'top' }
+/** Shortcuts of the review pages: every post, the user's own, the liked ones, the user's skin type. */
+export type BlogView = 'all' | 'mine' | 'liked' | 'same-skin'
+
+/** `view`, `group`, `q` may be left out (= every post, no group, no search). */
+export type BlogFilter = {
+  skin: SkinType | null
+  product: number | null
+  sort: 'new' | 'top'
+  view?: BlogView
+  group?: string | null // an active-group code
+  q?: string | null // search text
+}
+
+const BLOG_VIEWS: Record<Exclude<BlogView, 'all'>, string> = { mine: 'cua-toi', liked: 'da-thich', 'same-skin': 'cung-loai-da' }
+const GROUP_CODE = /^[A-Z0-9_]{1,40}$/
 
 /** The four tabs of "Lịch dùng": today, the week, the shelf, the check results. */
 export type RoutineTab = 'today' | 'week' | 'shelf' | 'check'
@@ -28,6 +42,7 @@ export type Route =
   | { page: 'review' }
   | { page: 'blog'; filter: BlogFilter }
   | { page: 'saved' }
+  | { page: 'activity' } // in-app notifications of the review pages
   | { page: 'write'; product: number | null } // product: start the post with this catalogue product
   | { page: 'post'; id: number }
   | { page: 'edit'; id: number }
@@ -75,16 +90,23 @@ export function parseHash(hash: string): Route {
     case 'blog': {
       if (second === undefined) {
         const skin = query.get('da')
+        const view = (Object.keys(BLOG_VIEWS) as Exclude<BlogView, 'all'>[]).find((v) => BLOG_VIEWS[v] === query.get('xem'))
+        const group = query.get('nhom')
+        const q = (query.get('q') ?? '').trim().slice(0, 100)
         return {
           page: 'blog',
           filter: {
             skin: SKIN_TYPES.includes(skin as SkinType) ? (skin as SkinType) : null,
             product: toId(query.get('sp')),
             sort: query.get('sort') === 'top' ? 'top' : 'new',
+            view: view ?? 'all',
+            group: group && GROUP_CODE.test(group) ? group : null,
+            q: q || null,
           },
         }
       }
       if (second === 'da-luu' && third === undefined) return { page: 'saved' }
+      if (second === 'hoat-dong' && third === undefined) return { page: 'activity' }
       if (second === 'viet' && third === undefined) return { page: 'write', product: toId(query.get('sp')) }
       const id = toId(second)
       if (id === null) return { page: 'not-found' }
@@ -126,14 +148,20 @@ export function href(route: Route): string {
       return '#review'
     case 'blog': {
       const query = new URLSearchParams()
+      const { view, group, q } = route.filter
+      if (view && view !== 'all') query.set('xem', BLOG_VIEWS[view])
+      if (q) query.set('q', q)
       if (route.filter.skin) query.set('da', route.filter.skin)
       if (route.filter.product !== null) query.set('sp', String(route.filter.product))
+      if (group) query.set('nhom', group)
       if (route.filter.sort === 'top') query.set('sort', 'top')
       const search = query.toString()
       return search ? `#/blog?${search}` : '#/blog'
     }
     case 'saved':
       return '#/blog/da-luu'
+    case 'activity':
+      return '#/blog/hoat-dong'
     case 'write':
       return route.product !== null ? `#/blog/viet?sp=${route.product}` : '#/blog/viet'
     case 'post':
@@ -179,5 +207,5 @@ export function useRoute(): Route {
 
 /** Pages of the "Review cộng đồng" section of the menu. */
 export function isBlogPage(route: Route): boolean {
-  return ['blog', 'saved', 'write', 'post', 'edit', 'product', 'author'].includes(route.page)
+  return ['blog', 'saved', 'activity', 'write', 'post', 'edit', 'product', 'author'].includes(route.page)
 }

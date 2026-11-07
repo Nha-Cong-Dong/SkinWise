@@ -1,5 +1,8 @@
 @import "tailwindcss";
 
+/* Only for what the design swaps outright in the dark theme (the logo files). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Fonts are served with the app, not from Google Fonts: no request to a third party (the
    viewer's IP stays here) and no stylesheet blocking the first paint. Files and subsets as
    Google Fonts serves them (Archivo variable 400–800, Newsreader italic 400). "Newsreader Display"
@@ -205,6 +208,11 @@
   /* Only for what floats above the page: dialogs, dropdowns, the bottom bars. */
   --shadow-float: 0 1px 2px rgb(47 42 85 / 0.1), 0 8px 24px rgb(47 42 85 / 0.12);
 
+  /* Motion (ANIMATION.md): ease-out only, every control point inside 0–1, so nothing overshoots. */
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1); /* default for anything coming in */
+  --ease-out-strong: cubic-bezier(0.16, 1, 0.3, 1); /* page-load fade-up, dialogs */
+  --ease-in-soft: cubic-bezier(0.4, 0, 1, 1); /* only for something leaving */
+
   /* Base roles. */
   --color-primary: #383466; /* every action: main button, link, selected item, focus ring */
   --color-primary-hover: #272451;
@@ -230,6 +238,9 @@
   --color-thistle: #cdb4db; /* active-ingredient chips; selected item and focus ring on dusk */
   --color-thistle-hover: #deccea;
   --color-thistle-ink: #442a59;
+  /* Background of secondary buttons and of the selected sub-tab (thistle on surface). */
+  --color-wash: color-mix(in srgb, var(--color-thistle) 30%, var(--color-surface));
+  --color-wash-strong: color-mix(in srgb, var(--color-thistle) 50%, var(--color-surface));
 
   /* Old names used across the components, now pointing at the roles above. */
   --color-paper: var(--color-neutral);
@@ -254,7 +265,62 @@
   --color-safe-soft: #e0f5e6;
 }
 
+/* Dark theme (tokens.css [data-theme="dark"]). The token names stay; their values change, so the
+   components need no dark: classes. Set on <html> by public/theme-init.js before the first paint,
+   then by theme.ts. */
 @layer base {
+  :root {
+    color-scheme: light;
+    --duration-instant: 120ms;
+    --duration-fast: 180ms;
+    --duration-base: 240ms;
+    --duration-enter: 320ms;
+    --duration-highlight: 600ms;
+    --duration-exit: 160ms; /* about a third shorter than the way in */
+    --motion-rise: 8px;
+    --motion-rise-sm: 4px;
+    --stagger-step: 40ms;
+    --stagger-max: 6;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --color-primary: var(--color-thistle);
+    --color-primary-hover: #deccea;
+    --color-neutral: #11111f;
+    --color-surface: #1d1c2e;
+    --color-white: #1d1c2e;
+    --color-on-surface: #f0eff8;
+    --color-secondary: #beb9d9;
+    --color-border: #3c3954;
+    --color-petal: #381c2a;
+    --color-dawn: #381c2a;
+    --color-dawn-ink: #ffc8dd;
+    --color-avoid: #febfb4;
+    --color-avoid-ink: #febfb4;
+    --color-avoid-soft: #492019;
+    --color-caution: #f7c790;
+    --color-caution-ink: #f7c790;
+    --color-caution-soft: #412805;
+    --color-info: #a2d2ff;
+    --color-info-ink: #a2d2ff;
+    --color-icy: #102f4d;
+    --color-safe: #aae0bc;
+    --color-safe-ink: #aae0bc;
+    --color-safe-soft: #0a371f;
+    /* Weaker washes: thistle text on them stays above 4.5:1 (6.4 and 5.1). */
+    --color-wash: color-mix(in srgb, var(--color-thistle) 15%, var(--color-surface));
+    --color-wash-strong: color-mix(in srgb, var(--color-thistle) 24%, var(--color-surface));
+    /* Shadows do not show on a dark page: a 1px line instead. */
+    --shadow-float: 0 0 0 1px #3c3954;
+  }
+
+  /* The morning panel at night: plum, as in the design (Main.dc.html), its lines a little lighter. */
+  [data-theme='dark'] .session-am {
+    --color-petal: color-mix(in srgb, #ffc8dd 16%, var(--color-surface));
+    --color-dawn: color-mix(in srgb, #ffc8dd 5%, var(--color-surface));
+  }
+
   body {
     @apply bg-neutral font-sans text-on-surface antialiased;
   }
@@ -276,7 +342,7 @@
 
   ::selection {
     background: var(--color-blush);
-    color: var(--color-on-surface);
+    color: #1c1c2c; /* dark text on blush in both themes (10.9:1) */
   }
 
   dialog::backdrop {
@@ -293,8 +359,90 @@
     ::after {
       transition-duration: 0s !important;
       animation-duration: 0s !important;
+      animation-delay: 0s !important;
       scroll-behavior: auto !important;
     }
+  }
+}
+
+/* Motion (ANIMATION.md). Only opacity and transform; fill-mode "backwards" holds the first frame
+   during a stagger delay and then hands back to the element's own styles, so the resting state is
+   exactly the page without motion. Nothing waits for JavaScript to become visible. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise));
+  }
+}
+@keyframes fade-up-sm {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise-sm));
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise)) scale(0.98);
+  }
+}
+
+@layer components {
+  /* First visit to a tab (data-motion="enter" on its panel): blocks rise in reading order, 40ms
+     apart, the 7th and later sharing the 6th's delay. */
+  [data-motion='enter'] .motion-enter {
+    animation: fade-up var(--duration-enter) var(--ease-out-strong) backwards;
+    animation-delay: calc(min(var(--i, 0), var(--stagger-max)) * var(--stagger-step));
+  }
+  /* Later visits: one short fade for the whole panel. */
+  [data-motion='tab'],
+  .motion-tab {
+    animation: fade-up-sm var(--duration-fast) var(--ease-out-soft) backwards;
+  }
+  /* Something the user just added to a list. */
+  .motion-item {
+    animation: fade-up-sm var(--duration-base) var(--ease-out-soft) backwards;
+  }
+  /* Content opening inside a card (a <details>, "Xem nguyên văn"). */
+  .motion-fade {
+    animation: fade-in var(--duration-fast) var(--ease-out-soft) backwards;
+  }
+  /* A photo that has just loaded (not one from the cache). */
+  .motion-photo {
+    animation: fade-in var(--duration-base) var(--ease-out-soft) backwards;
+  }
+  /* "Đang tải…": appears only after 300ms of waiting, then fades in. Without animations it simply shows. */
+  .motion-loading {
+    animation: fade-in var(--duration-fast) var(--ease-out-soft) 300ms backwards;
+  }
+  /* Leaving (the undo bar hiding itself): opacity only, shorter, ease-in. */
+  .motion-leave {
+    animation: fade-out var(--duration-exit) var(--ease-in-soft) forwards;
+  }
+  .motion-dialog[open] {
+    animation: dialog-in var(--duration-base) var(--ease-out-strong) backwards;
+  }
+  .motion-dialog[open]::backdrop {
+    animation: fade-in var(--duration-base) var(--ease-out-soft) backwards;
+  }
+  /* Hover and press: colours in 120ms, a press settles to 0.98 and back, no rebound. */
+  .motion-press {
+    transition-property: color, background-color, border-color, opacity, transform;
+    transition-duration: var(--duration-instant);
+    transition-timing-function: var(--ease-out-soft);
+  }
+  .motion-press:active:not(:disabled) {
+    transform: scale(0.98);
   }
 }
 

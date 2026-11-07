@@ -4,7 +4,9 @@ import { ApiError, api, type EmailSent, type Me } from '../api'
 import { Dialog, DialogTitle } from './Dialog'
 import { Logo, SeverityBadge } from './Icons'
 import { PolicyText } from './PolicyText'
+import { ThemeSwitch } from './ThemeSwitch'
 import { btnPrimary, field, segBox, segOption } from './ui'
+import { stagger } from './motion'
 
 const primary = `${btnPrimary} w-full min-h-12`
 const textLink = 'font-semibold text-link underline-offset-2 hover:underline'
@@ -59,17 +61,29 @@ function emailRequestError(e: unknown): string {
   return 'Không gửi được email. Hãy thử lại sau.'
 }
 
-function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+function Shell({ children, aside, onBack }: { children: ReactNode; aside?: ReactNode; onBack?: () => void }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-10 px-4 py-10 lg:flex-row lg:items-start lg:gap-16 lg:py-20">
-      <main className="w-full max-w-md rounded-md bg-surface p-6 sm:p-8">
-        <Logo className="h-12 w-auto" />
-        <p className="mt-2 text-sm leading-relaxed text-ink-soft">
-          Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng, kèm nguồn tham khảo.
-        </p>
-        {children}
-      </main>
-      {aside}
+    <div data-motion="enter" className="flex min-h-screen flex-col items-center px-4 py-4 lg:py-6">
+      <div className="flex w-full max-w-5xl items-center justify-between gap-3">
+        {onBack ? (
+          <button onClick={onBack} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary">
+            ← Giới thiệu SkinWise
+          </button>
+        ) : (
+          <span />
+        )}
+        <ThemeSwitch />
+      </div>
+      <div className="flex w-full flex-1 flex-col items-center justify-center gap-10 py-6 lg:flex-row lg:items-start lg:gap-16 lg:py-14">
+        <main className="motion-enter w-full max-w-md rounded-md bg-surface p-6 sm:p-8">
+          <Logo className="h-12 w-auto" />
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng, kèm nguồn tham khảo.
+          </p>
+          {children}
+        </main>
+        {aside}
+      </div>
     </div>
   )
 }
@@ -104,7 +118,7 @@ function DoorTabs({ mode, go }: { mode: Mode; go: (mode: Mode) => void }) {
  */
 function Intro() {
   return (
-    <section aria-labelledby="intro-title" className="w-full max-w-md text-sm leading-relaxed text-ink-soft lg:max-w-lg">
+    <section aria-labelledby="intro-title" style={stagger(1)} className="motion-enter w-full max-w-md text-sm leading-relaxed text-ink-soft lg:max-w-lg">
       <p className="font-script text-[2.875rem] leading-[1.05] font-semibold tracking-[-0.015em] [word-spacing:-0.1em] text-primary lg:text-[3.375rem]" aria-hidden="true">
         Biến sự hỗn loạn
         <br />
@@ -117,10 +131,10 @@ function Intro() {
         {(
           [
             ['✚', 'bg-dawn text-dawn-ink', 'Chọn sản phẩm bạn đang dùng (khoảng 30 sản phẩm có sẵn) hoặc dán bảng thành phần in trên bao bì.'],
-            ['☾', 'bg-thistle/40 text-primary', 'Xếp lịch sáng / tối theo từng ngày trong tuần, theo thứ tự các bước.'],
+            ['☾', 'bg-wash-strong text-primary', 'Xếp lịch sáng / tối theo từng ngày trong tuần, theo thứ tự các bước.'],
             [
               '✓',
-              'bg-thistle/40 text-primary',
+              'bg-wash-strong text-primary',
               'SkinWise nhận ra hoạt chất và báo khi sản phẩm trùng hoạt chất hoặc kết hợp cần thận trọng. Mỗi cảnh báo kèm giải thích tiếng Việt và đoạn trích nguyên văn từ nguồn đáng tin cậy.',
             ],
           ] as const
@@ -152,8 +166,17 @@ function Intro() {
 type Mode = 'sign-in' | 'register' | 'forgot'
 
 /** The door of the app: sign in, create an account, or ask for a password reset link. */
-export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
-  const [mode, setMode] = useState<Mode>('sign-in')
+export function SignIn({
+  onSignedIn,
+  initialMode = 'sign-in',
+  onBack,
+}: {
+  onSignedIn: (me: Me) => void
+  initialMode?: 'sign-in' | 'register'
+  /** Back to the landing page; left out where there is none (a shared routine link). */
+  onBack?: () => void
+}) {
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [email, setEmail] = useState('') // kept when switching between the forms
   const [sent, setSent] = useState<EmailSent | null>(null)
 
@@ -163,7 +186,7 @@ export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
   }
 
   return (
-    <Shell aside={<Intro />}>
+    <Shell aside={<Intro />} onBack={onBack}>
       {!sent && mode !== 'forgot' && <DoorTabs mode={mode} go={go} />}
       {sent ? (
         <Sent sent={sent} onBack={() => go('sign-in')} />

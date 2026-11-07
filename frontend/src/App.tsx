@@ -1,4 +1,4 @@
-import { lazy, Suspense, useCallback, useEffect, useRef, useState } from 'react'
+import { lazy, Suspense, useCallback, useEffect, useRef, useState, type ReactNode } from 'react'
 import { ApiError, api, type CosmeticFunction, type Group, type Severity } from './api'
 import { emailLink, useAccount } from './account'
 import { AccountPanel, SyncConflict } from './components/AccountPanel'
@@ -14,12 +14,15 @@ import { RoutineBoard } from './components/RoutineBoard'
 import { ReplaceConfirm, ShareRoutine } from './components/ShareRoutine'
 import { EmailLinkPage, SignIn } from './components/SignIn'
 import { ProductDetailPage } from './components/ProductDetailPage'
+import { ThemeSwitch } from './components/ThemeSwitch'
 import { TodayPage } from './components/TodayPage'
 import { UndoRemove } from './components/UndoRemove'
 import { SeverityCounts, WarningsPanel } from './components/WarningsPanel'
 import { clearSelectedGoals } from './goals'
 import { FunctionsContext, GroupsContext } from './groups'
 import { FEEDBACK_URL, SEVERITY } from './labels'
+import { useApplyTheme } from './theme'
+import { useUnreadCount } from './components/blog/unread'
 import { ProfileContext, useProfileOwner } from './profile'
 import { ALL_POSTS, href, isBlogPage, useRoute, type Route, type RoutineTab } from './router'
 import { useIncomingRoutine } from './share'
@@ -46,6 +49,8 @@ const ProductPage = lazy(() => import('./components/blog/ProductPage').then((m) 
 const GoalArticlePage = lazy(() =>
   import('./components/GoalArticlePage').then((m) => ({ default: m.GoalArticlePage })),
 )
+const LandingPage = lazy(() => import('./components/LandingPage').then((m) => ({ default: m.LandingPage })))
+const ActivityPage = lazy(() => import('./components/blog/ActivityPage').then((m) => ({ default: m.ActivityPage })))
 const AuthorPage = lazy(() => import('./components/blog/AuthorPage').then((m) => ({ default: m.AuthorPage })))
 
 
@@ -81,8 +86,15 @@ const SEVERITY_RANK = Object.keys(SEVERITY) as Severity[] // most severe first
 
 function App() {
   const route = useRoute()
+  useApplyTheme(route.page === 'review') // the reviewers' page stays light
   const page = route.page
   const [adding, setAdding] = useState(false)
+  // Signed out: null shows the landing page; otherwise the form its buttons opened.
+  const [door, setDoor] = useState<'sign-in' | 'register' | null>(null)
+  // A form opened from the bottom of the landing page starts at the top.
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [door])
   // The last removed product, offered for "Hoàn tác" for a few seconds (shelf and product page).
   const [removed, setRemoved] = useState<RemovedProduct | null>(null)
   const expireRemoved = useCallback(() => setRemoved(null), [])
@@ -215,7 +227,26 @@ function App() {
   }
 
   if (page !== 'review' && !me) {
-    if (account.state.kind === 'signed-out') return <SignIn onSignedIn={account.signedIn} />
+    if (account.state.kind === 'signed-out') {
+      // A shared routine link goes straight to sign-in, as before; everyone else sees the landing page first.
+      if (door || window.location.hash.startsWith('#routine=')) {
+        return (
+          <SignIn
+            key={door ?? 'sign-in'}
+            onSignedIn={account.signedIn}
+            initialMode={door ?? 'sign-in'}
+            onBack={door ? () => setDoor(null) : undefined}
+          />
+        )
+      }
+      return (
+        <GroupsContext value={groups}>
+          <Suspense fallback={<p className="motion-loading p-6 text-sm text-ink-mute">Đang tải…</p>}>
+            <LandingPage onStart={() => setDoor('register')} onSignIn={() => setDoor('sign-in')} />
+          </Suspense>
+        </GroupsContext>
+      )
+    }
     return (
       <div className="flex min-h-screen items-center justify-center px-4 text-sm text-ink-mute">
         {account.state.kind === 'unreachable' ? (
@@ -226,7 +257,7 @@ function App() {
             </button>
           </p>
         ) : (
-          <p>Đang tải…</p>
+          <p className="motion-loading">Đang tải…</p>
         )}
       </div>
     )
@@ -240,30 +271,37 @@ function App() {
           {/* Phones: logo and account on top, the four pages in a tab bar at the bottom of the screen.
               From 1024px: one bar on top with the logo, the pages and the account. */}
           <header className="border-b border-line bg-surface">
-            <div className="mx-auto flex min-h-16 max-w-[75rem] items-center gap-6 px-4 sm:px-6 lg:min-h-20 lg:px-10 lg:gap-8 xl:gap-14">
+            <div className="mx-auto flex min-h-16 max-w-[75rem] items-center gap-6 px-4 sm:px-6 lg:min-h-20 lg:gap-6 lg:px-10 xl:gap-10">
               <a href={href({ page: 'routine', tab: 'today' })} className="inline-flex shrink-0 rounded-md">
                 <Logo className="h-10 w-auto lg:h-13" />
               </a>
-              <nav className="hidden flex-1 gap-2 lg:flex" aria-label="Điều hướng chính">
+              <nav className="hidden flex-1 gap-1 lg:flex xl:gap-2" aria-label="Điều hướng chính">
                 {MENU.map(([target, label, isCurrent]) => (
                   <a
                     key={label}
                     href={href(target)}
                     aria-current={isCurrent(route) ? 'page' : undefined}
-                    className={`inline-flex min-h-11.5 items-center rounded-full px-5.5 text-[1.0625rem] whitespace-nowrap ${isCurrent(route) ? 'bg-primary font-semibold text-surface' : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'}`}
+                    className={`inline-flex min-h-11.5 items-center rounded-full px-4 text-[1.0625rem] whitespace-nowrap xl:px-5.5 ${isCurrent(route) ? 'bg-primary font-semibold text-surface' : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'}`}
                   >
                     {label}
+                    {target === ALL_POSTS && me && <UnreadBadge />}
                   </a>
                 ))}
               </nav>
-              {me && (
-                <AccountButton
-                  email={me.email}
-                  status={accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? null)}
-                  warn={conflict !== null || sync.state.kind === 'offline' || accountOffline}
-                  onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
-                />
-              )}
+              <div className="ml-auto flex items-center gap-3">
+                {/* Hidden on a wrapper: "hidden" on the switch itself would lose to its own inline-grid. */}
+                <div className="hidden lg:block">
+                  <ThemeSwitch />
+                </div>
+                {me && (
+                  <AccountButton
+                    email={me.email}
+                    status={accountOffline ? 'Mất kết nối, sẽ thử lại' : (syncLabel(sync.state) ?? null)}
+                    warn={conflict !== null || sync.state.kind === 'offline' || accountOffline}
+                    onClick={() => (conflict ? setHiddenConflict(null) : setAccountOpen(true))}
+                  />
+                )}
+              </div>
             </div>
           </header>
 
@@ -279,6 +317,7 @@ function App() {
                 className={`flex min-h-14 items-center justify-center px-1 text-center text-xs leading-tight ${isCurrent(route) ? 'font-semibold text-primary' : 'text-ink-soft hover:text-ink'}`}
               >
                 {label}
+                {target === ALL_POSTS && me && <UnreadBadge />}
               </a>
             ))}
           </nav>
@@ -302,7 +341,7 @@ function App() {
           )}
 
           <main className="mx-auto max-w-[75rem] px-4 pt-6 pb-24 sm:px-6 lg:pb-12">
-            <Suspense fallback={<p className="text-sm text-ink-mute">Đang tải…</p>}>
+            <Suspense fallback={<p className="motion-loading text-sm text-ink-mute">Đang tải…</p>}>
             {route.page === 'shelf-product' ? (
               <>
                 <RoutineTabs tab="shelf" check={check} />
@@ -320,7 +359,7 @@ function App() {
             ) : route.page === 'routine' ? (
               <>
                 <RoutineTabs tab={route.tab} check={check} />
-                <div className="mt-6 lg:mt-8">
+                <TabPanel key={route.tab} tab={route.tab}>
                   {route.tab === 'today' ? (
                     <TodayPage actions={actions} check={check} />
                   ) : route.tab === 'week' ? (
@@ -343,7 +382,7 @@ function App() {
                   ) : (
                     <WarningsPanel state={check} products={actions.routine.products} found={found} page />
                   )}
-                </div>
+                </TabPanel>
                 {(route.tab === 'week' || route.tab === 'shelf') && <ResultsBar check={check} />}
               </>
             ) : page === 'goals' ? (
@@ -362,31 +401,35 @@ function App() {
                 </Suspense>
               </div>
             ) : route.page === 'blog' ? (
-              <div className="mx-auto max-w-6xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <BlogListPage filter={route.filter} />
               </div>
+            ) : route.page === 'activity' ? (
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
+                <ActivityPage />
+              </div>
             ) : route.page === 'saved' ? (
-              <div className="mx-auto max-w-6xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <SavedPage />
               </div>
             ) : route.page === 'write' ? (
-              <div className="mx-auto max-w-3xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <WritePage key={route.product ?? 'new'} actions={actions} product={route.product} account={me?.email ?? ''} />
               </div>
             ) : route.page === 'edit' ? (
-              <div className="mx-auto max-w-3xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <EditPage key={route.id} id={route.id} actions={actions} account={me?.email ?? ''} />
               </div>
             ) : route.page === 'post' ? (
-              <div className="mx-auto max-w-3xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <PostPage key={route.id} id={route.id} actions={actions} />
               </div>
             ) : route.page === 'product' ? (
-              <div className="mx-auto max-w-6xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <ProductPage key={route.id} id={route.id} />
               </div>
             ) : route.page === 'author' ? (
-              <div className="mx-auto max-w-6xl">
+              <div key={currentPage} data-motion="enter" className="motion-enter mx-auto max-w-6xl">
                 <AuthorPage key={route.handle} handle={route.handle} />
               </div>
             ) : (
@@ -525,21 +568,19 @@ function AccountButton({
   warn: boolean
   onClick: () => void
 }) {
-  const name = status ? `Tài khoản ${email}, ${status.toLowerCase()}` : `Tài khoản ${email}`
+  // Only the round avatar; a sync problem shows as a dot and is part of the button's name.
+  const name = status ? `Tài khoản, ${status.toLowerCase()}` : 'Tài khoản'
+  const shown = email.length > 40 ? `${email.slice(0, 39)}…` : email
   return (
     <button
       onClick={onClick}
       aria-label={name}
-      title={name}
-      className="ml-auto flex min-h-11 min-w-0 items-center gap-3 rounded-full xl:pl-1"
+      title={status ? `${shown} · ${status}` : shown}
+      className="motion-press inline-flex size-11 shrink-0 items-center justify-center rounded-full lg:size-12"
     >
-      <span className="hidden min-w-0 flex-col items-end text-right xl:flex" aria-hidden="true">
-        <span className="max-w-[16rem] truncate text-sm font-medium">{email}</span>
-        <span className={`text-xs ${warn ? 'text-caution-ink' : 'text-ink-mute'}`}>{status ?? 'Tài khoản'}</span>
-      </span>
       <span
         aria-hidden="true"
-        className="relative inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-thistle text-sm font-semibold text-thistle-ink lg:size-12 lg:text-base"
+        className="relative inline-flex size-11 items-center justify-center rounded-full bg-thistle text-sm font-semibold text-thistle-ink lg:size-12 lg:text-base"
       >
         {initial(email)}
         {warn && (
@@ -547,6 +588,26 @@ function AccountButton({
         )}
       </span>
     </button>
+  )
+}
+
+/**
+ * Unread activity on the review pages, next to "Đánh giá" (rendered only when signed in: asking
+ * without a session would be a 401). Thistle, not a severity colour; read out as part of the link.
+ */
+function UnreadBadge() {
+  const unread = useUnreadCount()
+  if (!unread) return null
+  return (
+    <>
+      <span
+        aria-hidden="true"
+        className="ml-1.5 inline-flex min-w-5 items-center justify-center rounded-full bg-thistle px-1.5 text-xs leading-5 font-semibold text-thistle-ink tabular-nums"
+      >
+        {unread > 99 ? '99+' : unread}
+      </span>
+      <span className="sr-only">, {unread} hoạt động chưa đọc</span>
+    </>
   )
 }
 
@@ -579,9 +640,9 @@ function RoutineTabs({ tab, check }: { tab: RoutineTab; check: CheckState }) {
               key={value}
               href={href({ page: 'routine', tab: value })}
               aria-current={on ? 'page' : undefined}
-              className={`flex min-h-11 items-center justify-center rounded-sm px-1 text-center text-xs font-semibold whitespace-nowrap lg:min-h-10 lg:rounded-full lg:px-5 lg:text-sm ${
+              className={`motion-press flex min-h-11 items-center justify-center rounded-sm px-1 text-center text-xs font-semibold whitespace-nowrap lg:min-h-10 lg:rounded-full lg:px-5 lg:text-sm ${
                 on
-                  ? 'bg-primary text-surface lg:bg-thistle/40 lg:text-primary'
+                  ? 'bg-primary text-surface lg:bg-wash-strong lg:text-primary'
                   : 'text-ink-soft hover:bg-thistle/25 hover:text-ink'
               }`}
             >
@@ -592,6 +653,26 @@ function RoutineTabs({ tab, check }: { tab: RoutineTab; check: CheckState }) {
         })}
       </div>
     </nav>
+  )
+}
+
+/** Tabs already shown in this page load: their next visit fades as one block (ANIMATION.md 5.2). */
+const seenTabs = new Set<RoutineTab>()
+
+/**
+ * The content of one routine tab, keyed by the tab so it remounts on a switch. The first visit lets
+ * the tab's blocks rise in reading order (`motion-enter`); later visits fade the whole panel once.
+ * Decided when the panel mounts, so a re-render (a new check result) never replays it.
+ */
+function TabPanel({ tab, children }: { tab: RoutineTab; children: ReactNode }) {
+  const [motion] = useState(() => (seenTabs.has(tab) ? 'tab' : 'enter'))
+  useEffect(() => {
+    seenTabs.add(tab)
+  }, [tab])
+  return (
+    <div data-motion={motion} className="mt-6 lg:mt-8">
+      {children}
+    </div>
   )
 }
 

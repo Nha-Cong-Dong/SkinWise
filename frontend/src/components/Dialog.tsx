@@ -60,7 +60,7 @@ export function Dialog({ open, onClose, title, children }: Props) {
         if (pressedOnBackdrop.current && onBackdrop(e)) onClose()
         pressedOnBackdrop.current = false
       }}
-      className="m-auto max-h-[calc(100dvh-2rem)] w-[min(44rem,calc(100%-2rem))] overflow-y-auto overscroll-contain rounded-md bg-surface p-0 text-ink shadow-float"
+      className="motion-dialog m-auto max-h-[calc(100dvh-2rem)] w-[min(44rem,calc(100%-2rem))] overflow-y-auto overscroll-contain rounded-md bg-surface p-0 text-ink shadow-float"
     >
       {open && (
         <>
@@ -71,7 +71,7 @@ export function Dialog({ open, onClose, title, children }: Props) {
             <button
               onClick={onClose}
               aria-label="Đóng"
-              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-thistle/30 text-primary hover:bg-thistle/50"
+              className="inline-flex size-11 shrink-0 items-center justify-center rounded-full bg-wash text-primary hover:bg-wash-strong"
             >
               <Glyph name="close" className="size-5" />
             </button>

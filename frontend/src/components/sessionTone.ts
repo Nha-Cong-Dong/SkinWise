@@ -1,7 +1,7 @@
 // Each session has its own palette: the morning panel is a pink dawn, the evening panel dusk.
 export const TONE = {
   AM: {
-    panel: 'bg-[linear-gradient(to_bottom,var(--color-petal),var(--color-dawn)_120px)] text-ink',
+    panel: 'session-am bg-[linear-gradient(to_bottom,var(--color-petal),var(--color-dawn)_120px)] text-ink',
     tag: 'bg-dawn text-dawn-ink',
     mute: 'text-ink-mute',
     row: 'border-t border-petal first:border-t-0',

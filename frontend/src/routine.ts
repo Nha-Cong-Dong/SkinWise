@@ -28,6 +28,8 @@ export type MyProduct = {
   notices?: TextNotice[]
   /** Where a list not typed or pasted by the user came from. Shown only: checks treat it as pasted. */
   origin?: ProductOrigin
+  /** The user's own photo (POST /me/product-photos) of a typed-in product. Never shared. */
+  photoId?: number
 }
 
 /** A list copied off a label photo by an AI model. `confirmed`: the user checked it against the package. */
@@ -222,6 +224,17 @@ export function useRoutine() {
         ;[entries[i], entries[j]] = [entries[j], entries[i]]
         return { ...r, entries }
       })
+    },
+    /** Attach (or with undefined, drop) the user's photo of a product. */
+    setProductPhoto(key: string, photoId: number | undefined) {
+      setRoutine((r) => ({
+        ...r,
+        products: r.products.map((p) => {
+          if (p.key !== key) return p
+          const { photoId: _old, ...rest } = p
+          return photoId === undefined ? rest : { ...rest, photoId }
+        }),
+      }))
     },
     toggleDay(id: string, day: number) {
       updateEntry(id, (e) => ({

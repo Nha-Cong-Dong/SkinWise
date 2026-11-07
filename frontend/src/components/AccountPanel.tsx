@@ -7,6 +7,7 @@ import { ProfileSummary } from './blog/ProfileDialog'
 import { Dialog, DialogTitle } from './Dialog'
 import { DataNote } from './Notice'
 import { PolicyText } from './PolicyText'
+import { ThemeSwitch } from './ThemeSwitch'
 import { btn, btnDanger, btnPrimary, field } from './ui'
 
 const primary = btnPrimary
@@ -66,7 +67,9 @@ export function AccountPanel({
       <section className="space-y-4">
       <dl className="grid grid-cols-[auto_minmax(0,1fr)] gap-x-6 gap-y-2 text-[0.9375rem]">
         <dt className="text-ink-mute">Email</dt>
-        <dd className="font-medium break-all text-ink">{me.email}</dd>
+        <dd className="truncate font-medium text-ink" title={me.email}>
+          {me.email}
+        </dd>
         <dt className="text-ink-mute">Tạo lúc</dt>
         <dd>{when(me.created_at)}</dd>
         <dt className="text-ink-mute">Lịch dùng</dt>
@@ -99,6 +102,14 @@ export function AccountPanel({
       </section>
 
       <ProfileSummary />
+
+      <section className="flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <h3 className="text-base font-semibold text-ink">Giao diện</h3>
+          <p className="text-xs text-ink-mute">Chỉ lưu trên trình duyệt này.</p>
+        </div>
+        <ThemeSwitch />
+      </section>
 
       <section>
         <h3 className="text-base font-semibold text-ink">Xoá tài khoản</h3>

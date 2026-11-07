@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from 'react'
 import { CAPTION_MAX, IMAGE_TYPES, MAX_IMAGES } from '../../blog'
 import { Glyph } from '../Icons'
 import type { ImageItem } from './images'
-import { field } from './parts'
+import { field, secondary, small } from './styles'
 
 type Props = {
   items: ImageItem[]
@@ -50,18 +50,18 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
           setOver(false)
           if (!disabled) onFiles(Array.from(e.dataTransfer.files))
         }}
-        className={`rounded-md border border-dashed p-3.5 ${over ? 'border-link bg-surface' : 'border-ink-mute/40'}`}
+        className={`rounded-md border border-dashed p-3.5 ${over ? 'border-primary bg-wash' : 'border-line bg-paper'}`}
       >
         <div className="flex flex-wrap items-center gap-x-3 gap-y-2">
           <button
             type="button"
             onClick={() => input.current?.click()}
             disabled={disabled || items.length >= MAX_IMAGES}
-            className="rounded-full px-4 py-2 text-sm font-medium bg-thistle/30 text-primary ring-1 ring-primary/25 hover:bg-thistle/50 disabled:opacity-40"
+            className={`${secondary} ${small}`}
           >
             Chọn ảnh
           </button>
-          <span className="text-xs text-ink-mute">hoặc kéo thả ảnh vào đây, hay dán ảnh (Ctrl+V)</span>
+          <span className="text-xs text-ink-soft">hoặc kéo thả ảnh vào đây, hay dán ảnh (Ctrl+V)</span>
         </div>
         <input
           ref={input}
@@ -75,7 +75,7 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
             onFiles(files)
           }}
         />
-        <p className="mt-2 text-xs leading-relaxed text-ink-mute">
+        <p className="mt-2 text-xs leading-relaxed text-ink-soft">
           Tối đa 4 ảnh, mỗi ảnh tối đa 5 MB (JPEG, PNG, WebP). Không đăng ảnh có khuôn mặt người khác, số điện thoại hay
           thông tin cá nhân. Thông tin vị trí trong ảnh sẽ được xoá.
         </p>
@@ -89,7 +89,7 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
       {items.length > 0 && (
         <ol className="mt-3 grid gap-3 sm:grid-cols-2">
           {items.map((item, n) => (
-            <li key={item.key} className="rounded-md bg-surface p-2.5 ring-1 ring-line">
+            <li key={item.key} className="rounded-md border border-line bg-surface p-2.5">
               <div className="relative">
                 <img
                   src={item.preview}
@@ -119,14 +119,14 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
                 item.caption && <p className="mt-2 text-xs text-ink-soft">{item.caption}</p>
               )}
               {item.error && <p className="mt-1 text-xs text-avoid-ink">{item.error}</p>}
-              <div className="mt-2 flex items-center gap-1 text-xs text-ink-mute">
+              <div className="mt-2 flex items-center gap-1 text-xs text-ink-soft">
                 <span className="mr-auto">Ảnh {n + 1}{n === 0 && ' · ảnh bìa'}</span>
                 <button
                   type="button"
                   onClick={() => move(n, -1)}
                   disabled={disabled || n === 0}
                   aria-label="Đưa lên trước"
-                  className="rounded-full p-1 hover:bg-paper hover:text-ink disabled:opacity-30"
+                  className="motion-press inline-flex size-11 items-center justify-center rounded-full hover:bg-thistle/25 hover:text-ink disabled:opacity-30 md:size-9"
                 >
                   <Glyph name="up" className="size-4" />
                 </button>
@@ -135,7 +135,7 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
                   onClick={() => move(n, 1)}
                   disabled={disabled || n === items.length - 1}
                   aria-label="Đưa xuống sau"
-                  className="rounded-full p-1 hover:bg-paper hover:text-ink disabled:opacity-30"
+                  className="motion-press inline-flex size-11 items-center justify-center rounded-full hover:bg-thistle/25 hover:text-ink disabled:opacity-30 md:size-9"
                 >
                   <Glyph name="down" className="size-4" />
                 </button>
@@ -143,7 +143,7 @@ export function ImageUploader({ items, setItems, problem, onFiles, disabled }: P
                   type="button"
                   onClick={() => remove(item)}
                   disabled={disabled}
-                  className="rounded-full px-2 py-1 hover:bg-paper hover:text-ink disabled:opacity-30"
+                  className="motion-press inline-flex min-h-11 items-center rounded-full px-3 hover:bg-thistle/25 hover:text-ink disabled:opacity-30 md:min-h-9"
                 >
                   Xoá
                 </button>

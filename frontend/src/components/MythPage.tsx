@@ -4,6 +4,7 @@ import { GroupsContext } from '../groups'
 import { Notice } from './Notice'
 import { RuleCard } from './RuleCard'
 import { btnPrimary, field } from './ui'
+import { stagger } from './motion'
 
 export function MythPage() {
   const [myths, setMyths] = useState<RulesResponse | null>(null)
@@ -14,8 +15,8 @@ export function MythPage() {
   }, [])
 
   return (
-    <div className="flex flex-col gap-8">
-      <header>
+    <div data-motion="enter" className="flex flex-col gap-8">
+      <header className="motion-enter">
         <h1 id="myth-title" className="text-3xl lg:text-4xl">
           Đúng hay sai?
         </h1>
@@ -23,8 +24,11 @@ export function MythPage() {
           Những lời đồn phổ biến về việc kết hợp hoạt chất, đối chiếu với nguồn đáng tin cậy.
         </p>
       </header>
-      <PairLookup />
-      <section aria-labelledby="myth-list" className="space-y-4">
+      <div className="motion-enter" style={stagger(1)}>
+        <PairLookup />
+      </div>
+      {/* Cards and notice_vi arrive together (ANIMATION.md 7). */}
+      <section aria-labelledby="myth-list" className="motion-enter space-y-4" style={stagger(2)}>
         <h2 id="myth-list" className="font-sans text-sm font-semibold">
           Lời đồn đã đối chiếu
         </h2>
