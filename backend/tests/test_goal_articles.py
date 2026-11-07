@@ -251,6 +251,34 @@ def test_published_without_review_is_hidden(conn: Connection, conn_client: TestC
     assert conn_client.get("/goals").json()["goals"][0]["has_article"] is False
 
 
+NO_SOURCE = {"text_vi": "không nguồn", "sources": []}
+
+
+def test_shared_goal_article_in_db_is_hidden(conn: Connection, conn_client: TestClient) -> None:
+    # article_problems refuses an article for "all"; seeded directly to check the query does too.
+    seed_articles(conn, article("all", **REVIEWED))
+    assert conn_client.get("/goals/all/article").status_code == 404
+
+
+def test_paragraph_without_source_in_db_is_not_shown(
+    conn: Connection, conn_client: TestClient
+) -> None:
+    # article_problems refuses it; seeded directly: "no source, nothing shown" holds in the DB too.
+    seed_articles(conn, article("acne", section("h", para("có nguồn"), NO_SOURCE), **REVIEWED))
+    response = conn_client.get("/goals/acne/article")
+    assert response.status_code == 200
+    paragraphs = [p["text_vi"] for s in response.json()["sections"] for p in s["paragraphs"]]
+    assert paragraphs == ["có nguồn"]
+
+
+def test_article_without_any_source_in_db_is_hidden(
+    conn: Connection, conn_client: TestClient
+) -> None:
+    seed_articles(conn, article("acne", section("h", NO_SOURCE), **REVIEWED))
+    assert conn_client.get("/goals/acne/article").status_code == 404
+    assert conn_client.get("/goals").json()["goals"][0]["has_article"] is False
+
+
 def test_no_articles_at_all(conn: Connection, conn_client: TestClient) -> None:
     seed_articles(conn)
     assert all(not g["has_article"] for g in conn_client.get("/goals").json()["goals"])
