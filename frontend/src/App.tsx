@@ -178,14 +178,16 @@ function App() {
     return () => window.removeEventListener('hashchange', onHash)
   }, [])
 
-  // A new page (or tab of "Lịch dùng") starts at the top.
+  // A new page (or tab of "Lịch dùng") starts at the top, except when a link points at one warning
+  // (?chu-y=): the tab scrolls to it itself, and its effect runs before this one.
   const currentPage = pageKey(route)
   const shownPage = useRef(currentPage)
+  const pointed = route.page === 'routine' && route.focus !== undefined
   useEffect(() => {
     if (shownPage.current === currentPage) return
     shownPage.current = currentPage
-    window.scrollTo(0, 0)
-  }, [currentPage])
+    if (!pointed) window.scrollTo(0, 0)
+  }, [currentPage, pointed])
 
   useEffect(() => {
     api.groups().then(
