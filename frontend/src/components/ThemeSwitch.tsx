@@ -1,36 +1,22 @@
-import { setThemeChoice, useThemeChoice, type ThemeChoice } from '../theme'
+import { setThemeChoice, useIsDark } from '../theme'
 import { ThemeIcon } from './Icons'
 
-const OPTIONS: [ThemeChoice, string][] = [
-  ['system', 'Giao diện theo máy'],
-  ['light', 'Giao diện sáng'],
-  ['dark', 'Giao diện tối'],
-]
-
-/** Three icon buttons: device / light / dark. The choice stays in this browser only. */
+/**
+ * One button that flips light / dark. The page follows the device until the first press; the
+ * choice stays in this browser only. The icon shows the theme in use.
+ */
 export function ThemeSwitch({ className = '' }: { className?: string }) {
-  const choice = useThemeChoice()
+  const dark = useIsDark()
+  const label = dark ? 'Chuyển sang giao diện sáng' : 'Chuyển sang giao diện tối'
   return (
-    <div
-      role="group"
-      aria-label="Giao diện"
-      className={`inline-grid grid-flow-col gap-0.5 rounded-md border border-line bg-neutral p-0.5 ${className}`}
+    <button
+      type="button"
+      aria-label={label}
+      title={label}
+      onClick={() => setThemeChoice(dark ? 'light' : 'dark')}
+      className={`motion-press inline-flex size-11 items-center justify-center rounded-full text-ink-soft hover:bg-thistle/25 hover:text-ink md:size-10 ${className}`}
     >
-      {OPTIONS.map(([value, label]) => (
-        <button
-          key={value}
-          type="button"
-          aria-pressed={choice === value}
-          aria-label={label}
-          title={label}
-          onClick={() => setThemeChoice(value)}
-          className={`motion-press inline-flex size-11 items-center justify-center rounded-sm md:size-9 ${
-            choice === value ? 'bg-surface text-ink' : 'text-ink-mute hover:text-ink'
-          }`}
-        >
-          <ThemeIcon name={value} className="size-5" />
-        </button>
-      ))}
-    </div>
+      <ThemeIcon name={dark ? 'dark' : 'light'} className="size-5" />
+    </button>
   )
 }

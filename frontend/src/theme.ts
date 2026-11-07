@@ -60,6 +60,26 @@ export function useThemeChoice(): ThemeChoice {
   return useSyncExternalStore(subscribe, () => choice)
 }
 
+function subscribeDevice(onChange: () => void): () => void {
+  const unsubscribe = subscribe(onChange)
+  let media: MediaQueryList | null = null
+  try {
+    media = window.matchMedia('(prefers-color-scheme: dark)')
+    media.addEventListener('change', onChange)
+  } catch {
+    // No matchMedia: only the user's choice counts.
+  }
+  return () => {
+    unsubscribe()
+    media?.removeEventListener('change', onChange)
+  }
+}
+
+/** Whether the page is dark now: the user's choice, or the device's setting while on "Theo máy". */
+export function useIsDark(): boolean {
+  return useSyncExternalStore(subscribeDevice, () => choice === 'dark' || (choice === 'system' && deviceIsDark()))
+}
+
 /**
  * Keep <html data-theme> in step with the choice and, for "Theo máy", with the device. Mounted
  * once, in App. `forceLight`: the reviewers' page keeps the light theme.

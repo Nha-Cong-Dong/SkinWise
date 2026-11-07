@@ -406,7 +406,7 @@ Mức độ không bao giờ chỉ thể hiện bằng màu. Mọi badge đều 
 
 **Chế độ tối**
 
-Chế độ tối theo cài đặt của hệ điều hành (`prefers-color-scheme`). Người dùng có thể ghi đè bằng một nút Sáng / Tối / Theo máy, lựa chọn lưu trong `localStorage`. Chế độ tối dùng lại họ chạng vạng, không dùng xám:
+Chế độ tối theo cài đặt của hệ điều hành (`prefers-color-scheme`). Người dùng có thể ghi đè bằng một nút icon (mặt trời khi đang sáng, mặt trăng khi đang tối; bấm để đổi), lựa chọn lưu trong `localStorage`. Chế độ tối dùng lại họ chạng vạng, không dùng xám:
 - **Night (#11111F):** nền trang. Gần đen nhưng mang hue tím 285°. Không phải navy slate-950.
 - **Night-surface (#1D1C2E):** thẻ, ô nhập. **Night-raised (#29273E):** thẻ bước. **Night-border (#3C3954):** đường kẻ.
 - **Chữ:** On-dusk (16:1 trên Night) và Dusk-mute cho thông tin phụ (9,9:1).
