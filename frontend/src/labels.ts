@@ -1,5 +1,9 @@
 import type { Application, Disclosure, ReportReason, Rule, Session, Severity, SkinType, Warning } from './api'
 
+// Feedback goes to GitHub, not a form on SkinWise: nothing to store or moderate here
+// (the in-app question form was dropped on 27/10, plan/decisions.md).
+export const FEEDBACK_URL = 'https://github.com/Nha-Cong-Dong/SkinWise/issues/new'
+
 export const DAY_LABELS = ['T2', 'T3', 'T4', 'T5', 'T6', 'T7', 'CN'] // 0 = Monday
 /** Spoken names: a screen reader reads "T2" letter by letter. */
 export const DAY_NAMES = ['Thứ Hai', 'Thứ Ba', 'Thứ Tư', 'Thứ Năm', 'Thứ Sáu', 'Thứ Bảy', 'Chủ nhật']
@@ -7,18 +11,27 @@ export const ALL_DAYS = [0, 1, 2, 3, 4, 5, 6]
 
 export const SESSION_LABELS: Record<Session, string> = { AM: 'Sáng', PM: 'Tối' }
 
-// Most severe first. `badge`: label on a pale background; `mark`: the icon's colour.
-export const SEVERITY: Record<Severity, { label: string; badge: string; mark: string }> = {
-  avoid: { label: 'Nên tránh', badge: 'bg-avoid-soft text-avoid-ink', mark: 'text-avoid' },
-  caution: { label: 'Thận trọng', badge: 'bg-caution-soft text-caution-ink', mark: 'text-caution' },
-  info: { label: 'Thông tin', badge: 'bg-info-soft text-info-ink', mark: 'text-info' },
-  safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe' },
+// Most severe first. `badge`: label on a pale background; `mark`: the icon's colour; `bar`: the
+// 4px severity bar on the left of a warning card.
+export const SEVERITY: Record<Severity, { label: string; badge: string; mark: string; bar: string }> = {
+  avoid: { label: 'Nên tránh', badge: 'bg-avoid-soft text-avoid-ink', mark: 'text-avoid', bar: 'bg-avoid' },
+  caution: { label: 'Thận trọng', badge: 'bg-caution-soft text-caution-ink', mark: 'text-caution', bar: 'bg-caution' },
+  info: { label: 'Thông tin', badge: 'bg-icy text-info-ink', mark: 'text-info', bar: 'bg-info' },
+  safe: { label: 'An toàn', badge: 'bg-safe-soft text-safe-ink', mark: 'text-safe', bar: 'bg-safe' },
 }
+
+/**
+ * The severities that ask for care (the two most severe in SEVERITY). Only these earn a bare "!"
+ * or a count with no label: an info / safe card (a myth such as vitamin C + niacinamide) says
+ * the pair is mostly fine, so marking it like a warning would mislead.
+ */
+export const ALERT_SEVERITIES = (Object.keys(SEVERITY) as Severity[]).slice(0, 2)
+export const isAlertSeverity = (s: Severity): boolean => ALERT_SEVERITIES.includes(s)
 
 export const KIND_LABELS: Record<Rule['kind'], string> = {
   conflict: 'Kết hợp cần lưu ý',
   duplicate: 'Trùng hoạt chất',
-  myth: 'Sự thật hay myth',
+  myth: 'Đúng hay sai',
   profile: 'Theo loại da',
   usage: 'Lưu ý khi dùng',
 }
@@ -48,7 +61,12 @@ export const VERIFICATION_LABELS: Record<string, string> = {
   verified: 'Đã xác minh với trang nguồn',
 }
 
-function formatDays(days: number[]): string {
+/** Today as a day of the week, 0 = Monday (the routine's numbering), on this device's clock. */
+export function todayIndex(now = new Date()): number {
+  return (now.getDay() + 6) % 7
+}
+
+export function formatDays(days: number[]): string {
   return days.length === 7 ? 'mỗi ngày' : days.map((d) => DAY_LABELS[d]).join(', ')
 }
 

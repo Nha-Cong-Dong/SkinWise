@@ -1,14 +1,16 @@
-import { useState, type ReactNode } from 'react'
+import { useId, useState, type ReactNode } from 'react'
 import { POLICY_VERSION, type EmailLink } from '../account'
 import { ApiError, api, type EmailSent, type Me } from '../api'
-import { Dialog } from './Dialog'
-import { Mark, SeverityBadge } from './Icons'
+import { Dialog, DialogTitle } from './Dialog'
+import { Logo, SeverityBadge } from './Icons'
 import { PolicyText } from './PolicyText'
+import { ThemeSwitch } from './ThemeSwitch'
+import { btnPrimary, field, segBox, segOption } from './ui'
+import { stagger } from './motion'
 
-const field =
-  'w-full rounded-xl border border-line bg-surface px-3.5 py-2.5 text-[0.9375rem] placeholder:text-ink-mute/80 focus:border-link focus:outline-none focus:ring-2 focus:ring-link/20'
-const primary = 'rounded-full bg-ink px-5 py-2.5 text-sm font-medium text-white hover:bg-link disabled:opacity-40'
-const textLink = 'text-link underline underline-offset-2'
+const primary = `${btnPrimary} w-full min-h-12`
+const textLink = 'font-semibold text-link underline-offset-2 hover:underline'
+const title = 'font-brand text-[1.875rem] leading-tight font-semibold tracking-[-0.01em] text-primary'
 
 const PASSWORD_HINT = 'Ít nhất 8 ký tự. Nên dùng một cụm từ dễ nhớ, khó đoán.'
 const LINK_USED = {
@@ -21,7 +23,7 @@ const LINK_USED = {
 function Missing({ items }: { items: [boolean, string][] }) {
   const missing = items.filter(([ok]) => !ok).map(([, label]) => label)
   if (missing.length === 0) return null
-  return <p className="text-xs text-ink-mute">Còn thiếu: {missing.join(', ')}.</p>
+  return <p className="text-center text-xs text-ink-mute">Còn thiếu: {missing.join(', ')}.</p>
 }
 
 /** The sentence for a 422 the route itself returns (its `detail`), or null for any other 422. */
@@ -59,20 +61,53 @@ function emailRequestError(e: unknown): string {
   return 'Không gửi được email. Hãy thử lại sau.'
 }
 
-function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) {
+function Shell({ children, aside, onBack }: { children: ReactNode; aside?: ReactNode; onBack?: () => void }) {
   return (
-    <div className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-10 lg:flex-row lg:items-center lg:gap-10">
-      <main className="w-full max-w-md rounded-2xl bg-surface p-6 shadow-sm ring-1 ring-line sm:p-8">
-        <div className="flex items-center gap-2.5">
-          <Mark className="size-9" />
-          <span className="text-2xl leading-none font-bold tracking-tight">SkinWise</span>
-        </div>
-        <p className="mt-3 text-sm leading-relaxed text-ink-soft">
-          Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng, kèm nguồn tham khảo.
-        </p>
-        {children}
-      </main>
-      {aside}
+    <div data-motion="enter" className="flex min-h-screen flex-col items-center px-4 py-4 lg:py-6">
+      <div className="flex w-full max-w-5xl items-center justify-between gap-3">
+        {onBack ? (
+          <button onClick={onBack} className="inline-flex min-h-11 items-center text-sm font-semibold text-primary">
+            ← Giới thiệu SkinWise
+          </button>
+        ) : (
+          <span />
+        )}
+        <ThemeSwitch />
+      </div>
+      <div className="flex w-full flex-1 flex-col items-center justify-center gap-10 py-6 lg:flex-row lg:items-start lg:gap-16 lg:py-14">
+        <main className="motion-enter w-full max-w-md rounded-md bg-surface p-6 sm:p-8">
+          <Logo className="h-12 w-auto" />
+          <p className="mt-2 text-sm leading-relaxed text-ink-soft">
+            Xếp lịch dùng sản phẩm, phát hiện trùng hoạt chất và kết hợp cần thận trọng, kèm nguồn tham khảo.
+          </p>
+          {children}
+        </main>
+        {aside}
+      </div>
+    </div>
+  )
+}
+
+/** Sign in or create an account: the two tabs above the form. */
+function DoorTabs({ mode, go }: { mode: Mode; go: (mode: Mode) => void }) {
+  return (
+    <div className={`${segBox} mt-6 rounded-full! border-0 bg-neutral`}>
+      {(
+        [
+          ['sign-in', 'Đăng nhập'],
+          ['register', 'Đăng ký'],
+        ] as const
+      ).map(([value, label]) => (
+        <button
+          key={value}
+          type="button"
+          aria-pressed={mode === value}
+          onClick={() => go(value)}
+          className={`${segOption(mode === value)} rounded-full!`}
+        >
+          {label}
+        </button>
+      ))}
     </div>
   )
 }
@@ -83,19 +118,37 @@ function Shell({ children, aside }: { children: ReactNode; aside?: ReactNode }) 
  */
 function Intro() {
   return (
-    <section aria-labelledby="intro-title" className="w-full max-w-md text-sm leading-relaxed text-ink-soft">
-      <h2 id="intro-title" className="text-base font-semibold text-ink">
+    <section aria-labelledby="intro-title" style={stagger(1)} className="motion-enter w-full max-w-md text-sm leading-relaxed text-ink-soft lg:max-w-lg">
+      <p className="font-script text-[2.875rem] leading-[1.05] font-semibold tracking-[-0.015em] [word-spacing:-0.1em] text-primary lg:text-[3.375rem]" aria-hidden="true">
+        Biến sự hỗn loạn
+        <br />
+        thành sự rõ ràng.
+      </p>
+      <h2 id="intro-title" className="mt-8 font-sans text-[1.0625rem] font-bold text-ink">
         SkinWise làm gì?
       </h2>
-      <ul className="mt-2 list-disc space-y-1.5 pl-5">
-        <li>Chọn sản phẩm bạn đang dùng (khoảng 30 sản phẩm có sẵn) hoặc dán bảng thành phần in trên bao bì.</li>
-        <li>Xếp lịch sáng / tối theo từng ngày trong tuần, theo thứ tự các bước.</li>
-        <li>
-          SkinWise nhận ra hoạt chất và báo khi sản phẩm trùng hoạt chất hoặc kết hợp cần thận trọng. Mỗi cảnh báo
-          kèm giải thích tiếng Việt và đoạn trích nguyên văn từ nguồn đáng tin cậy.
-        </li>
+      <ul className="mt-3 space-y-3">
+        {(
+          [
+            ['✚', 'bg-dawn text-dawn-ink', 'Chọn sản phẩm bạn đang dùng (khoảng 30 sản phẩm có sẵn) hoặc dán bảng thành phần in trên bao bì.'],
+            ['☾', 'bg-wash-strong text-primary', 'Xếp lịch sáng / tối theo từng ngày trong tuần, theo thứ tự các bước.'],
+            [
+              '✓',
+              'bg-wash-strong text-primary',
+              'SkinWise nhận ra hoạt chất và báo khi sản phẩm trùng hoạt chất hoặc kết hợp cần thận trọng. Mỗi cảnh báo kèm giải thích tiếng Việt và đoạn trích nguyên văn từ nguồn đáng tin cậy.',
+            ],
+          ] as const
+        ).map(([icon, tone, text]) => (
+          <li key={icon} className="flex items-start gap-3">
+            <span aria-hidden="true" className={`flex size-8 shrink-0 items-center justify-center rounded-full text-sm ${tone}`}>
+              {icon}
+            </span>
+            <span className="pt-1">{text}</span>
+          </li>
+        ))}
       </ul>
-      <figure className="mt-4 rounded-xl bg-surface p-4 ring-1 ring-line">
+      <figure className="relative mt-6 overflow-hidden rounded-md bg-surface py-4 pr-5 pl-7">
+        <span aria-hidden="true" className="absolute inset-y-0 left-0 w-1 bg-caution" />
         <figcaption className="text-xs text-ink-mute">Ví dụ kết quả kiểm tra</figcaption>
         <div className="mt-2">
           <SeverityBadge severity="caution" />
@@ -113,8 +166,17 @@ function Intro() {
 type Mode = 'sign-in' | 'register' | 'forgot'
 
 /** The door of the app: sign in, create an account, or ask for a password reset link. */
-export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
-  const [mode, setMode] = useState<Mode>('sign-in')
+export function SignIn({
+  onSignedIn,
+  initialMode = 'sign-in',
+  onBack,
+}: {
+  onSignedIn: (me: Me) => void
+  initialMode?: 'sign-in' | 'register'
+  /** Back to the landing page; left out where there is none (a shared routine link). */
+  onBack?: () => void
+}) {
+  const [mode, setMode] = useState<Mode>(initialMode)
   const [email, setEmail] = useState('') // kept when switching between the forms
   const [sent, setSent] = useState<EmailSent | null>(null)
 
@@ -124,7 +186,8 @@ export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
   }
 
   return (
-    <Shell aside={<Intro />}>
+    <Shell aside={<Intro />} onBack={onBack}>
+      {!sent && mode !== 'forgot' && <DoorTabs mode={mode} go={go} />}
       {sent ? (
         <Sent sent={sent} onBack={() => go('sign-in')} />
       ) : mode === 'sign-in' ? (
@@ -142,14 +205,14 @@ export function SignIn({ onSignedIn }: { onSignedIn: (me: Me) => void }) {
 function Sent({ sent, onBack }: { sent: EmailSent; onBack: () => void }) {
   return (
     <div className="mt-6 space-y-4 text-sm leading-relaxed text-ink-soft">
-      <h1 className="text-xl font-bold text-ink">Kiểm tra email của bạn</h1>
+      <h1 className={title}>Kiểm tra email của bạn</h1>
       <p>{sent.message_vi}</p>
       {sent.dev_link && (
-        <a href={sent.dev_link} className={`inline-block ${primary}`}>
+        <a href={sent.dev_link} className={primary}>
           Mở link
         </a>
       )}
-      <button onClick={onBack} className={`block ${textLink}`}>
+      <button onClick={onBack} className={`inline-flex min-h-11 items-center ${textLink}`}>
         Quay lại đăng nhập
       </button>
     </div>
@@ -165,15 +228,15 @@ type FormProps = {
 
 function EmailField({ email, setEmail }: Pick<FormProps, 'email' | 'setEmail'>) {
   return (
-    <label className="block space-y-1.5 text-sm font-medium">
-      <span>Email</span>
+    <label className="block text-xs font-semibold text-ink">
+      Email
       <input
         type="email"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         placeholder="ban@example.com"
         autoComplete="email"
-        className={field}
+        className={`${field} mt-1 font-normal`}
         data-autofocus
       />
     </label>
@@ -194,23 +257,33 @@ function PasswordField({
   hint?: boolean
 }) {
   const [shown, setShown] = useState(false)
+  const id = useId()
   return (
     <div className="space-y-1.5">
-      <label className="block space-y-1.5 text-sm font-medium">
-        <span>{label}</span>
+      <label htmlFor={id} className="block text-xs font-semibold text-ink">
+        {label}
+      </label>
+      {/* The toggle sits outside the label: a button inside a label would also focus the field. */}
+      <div className="relative">
         <input
+          id={id}
           type={shown ? 'text' : 'password'}
           value={value}
           onChange={(e) => onChange(e.target.value)}
           autoComplete={autoComplete}
-          className={field}
+          className={`${field} pr-16`}
         />
-      </label>
+        <button
+          type="button"
+          onClick={() => setShown((s) => !s)}
+          aria-pressed={shown}
+          aria-controls={id}
+          className="absolute inset-y-0 right-0 min-w-14 rounded-r-sm px-3 text-xs font-semibold text-primary hover:bg-thistle/25"
+        >
+          Hiện
+        </button>
+      </div>
       {hint && <p className="text-xs leading-relaxed text-ink-mute">{PASSWORD_HINT}</p>}
-      <label className="flex items-center gap-2 text-sm text-ink-soft">
-        <input type="checkbox" checked={shown} onChange={(e) => setShown(e.target.checked)} className="size-4 accent-ink" />
-        Hiện mật khẩu
-      </label>
     </div>
   )
 }
@@ -256,31 +329,31 @@ function SignInForm({ email, setEmail, onSignedIn, onSent, go }: FormProps & { o
         if (email.trim() && password) signIn()
       }}
     >
-      <h1 className="text-xl font-bold">Đăng nhập</h1>
+      <h1 className={title}>Đăng nhập</h1>
       <EmailField email={email} setEmail={setEmail} />
       <PasswordField label="Mật khẩu" value={password} onChange={setPassword} autoComplete="current-password" />
       {state.kind === 'error' && <p className="text-sm text-avoid-ink">{state.message}</p>}
       {state.kind === 'not-verified' && (
         <div className="space-y-2 text-sm">
           <p className="text-avoid-ink">Email này chưa được xác thực. Mở link trong email để xác thực, hoặc gửi lại link.</p>
-          <button type="button" onClick={resend} className={textLink}>
+          <button type="button" onClick={resend} className={`inline-flex min-h-11 items-center ${textLink}`}>
             Gửi lại link xác thực
           </button>
           {state.error && <p className="text-avoid-ink">{state.error}</p>}
         </div>
       )}
-      <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-        <button type="submit" disabled={!email.trim() || !password || state.kind === 'busy'} className={primary}>
-          {state.kind === 'busy' ? 'Đang xử lý…' : 'Đăng nhập'}
-        </button>
-        <button type="button" onClick={() => go('forgot')} className={`text-sm ${textLink}`}>
+      <div className="flex justify-end">
+        <button type="button" onClick={() => go('forgot')} className={`inline-flex min-h-11 items-center text-sm ${textLink}`}>
           Quên mật khẩu?
         </button>
       </div>
+      <button type="submit" disabled={!email.trim() || !password || state.kind === 'busy'} className={primary}>
+        {state.kind === 'busy' ? 'Đang xử lý…' : 'Đăng nhập'}
+      </button>
       <Missing items={[[!!email.trim(), 'email'], [!!password, 'mật khẩu']]} />
-      <p className="border-t border-line pt-4 text-sm text-ink-soft">
+      <p className="border-t border-line pt-4 text-center text-sm text-ink-soft">
         Chưa có tài khoản?{' '}
-        <button type="button" onClick={() => go('register')} className={`font-medium ${textLink}`}>
+        <button type="button" onClick={() => go('register')} className={textLink}>
           Tạo tài khoản
         </button>
       </p>
@@ -311,7 +384,7 @@ function RegisterForm({ email, setEmail, onSent, go }: FormProps) {
         if (consent && email.trim() && password) register()
       }}
     >
-      <h1 className="text-xl font-bold">Tạo tài khoản</h1>
+      <h1 className={title}>Tạo tài khoản</h1>
       <p className="text-sm leading-relaxed text-ink-soft">
         SkinWise gửi một link tới email để xác thực. Bạn đăng nhập được sau khi bấm link đó.
       </p>
@@ -322,11 +395,11 @@ function RegisterForm({ email, setEmail, onSent, go }: FormProps) {
           type="checkbox"
           checked={consent}
           onChange={(e) => setConsent(e.target.checked)}
-          className="mt-1 size-4 shrink-0 accent-ink"
+          className="mt-1 size-5 shrink-0 accent-primary"
         />
         <span>
           Tôi đồng ý để SkinWise lưu email và routine của tôi, để đăng nhập và dùng routine trên nhiều thiết bị, theo{' '}
-          <button type="button" onClick={() => setPolicyOpen(true)} className={`font-medium ${textLink}`}>
+          <button type="button" onClick={() => setPolicyOpen(true)} className={textLink}>
             chính sách quyền riêng tư
           </button>
           .
@@ -347,16 +420,16 @@ function RegisterForm({ email, setEmail, onSent, go }: FormProps) {
           [consent, 'tích ô đồng ý'],
         ]}
       />
-      <p className="border-t border-line pt-4 text-sm text-ink-soft">
+      <p className="border-t border-line pt-4 text-center text-sm text-ink-soft">
         Đã có tài khoản?{' '}
-        <button type="button" onClick={() => go('sign-in')} className={`font-medium ${textLink}`}>
+        <button type="button" onClick={() => go('sign-in')} className={textLink}>
           Đăng nhập
         </button>
       </p>
       <Dialog
         open={policyOpen}
         onClose={() => setPolicyOpen(false)}
-        title={<h2 className="text-xl font-bold">Chính sách quyền riêng tư</h2>}
+        title={<DialogTitle>Chính sách quyền riêng tư</DialogTitle>}
       >
         <PolicyText />
       </Dialog>
@@ -382,7 +455,7 @@ function ForgotForm({ email, setEmail, onSent, go }: FormProps) {
         if (email.trim()) send()
       }}
     >
-      <h1 className="text-xl font-bold">Quên mật khẩu?</h1>
+      <h1 className={title}>Quên mật khẩu?</h1>
       <p className="text-sm leading-relaxed text-ink-soft">
         Nhập email của tài khoản, SkinWise gửi cho bạn một link để đặt mật khẩu mới.
       </p>
@@ -392,7 +465,7 @@ function ForgotForm({ email, setEmail, onSent, go }: FormProps) {
         {state.kind === 'busy' ? 'Đang gửi…' : 'Gửi link đặt lại mật khẩu'}
       </button>
       <Missing items={[[!!email.trim(), 'email']]} />
-      <button type="button" onClick={() => go('sign-in')} className={`block text-sm ${textLink}`}>
+      <button type="button" onClick={() => go('sign-in')} className={`inline-flex min-h-11 items-center text-sm ${textLink}`}>
         Quay lại đăng nhập
       </button>
     </form>
@@ -453,7 +526,7 @@ export function EmailLinkPage({
   return (
     <Shell>
       <div className="mt-6 space-y-4 text-sm leading-relaxed text-ink-soft">
-        <h1 className="text-xl font-bold text-ink">{reset ? 'Đặt mật khẩu mới' : 'Xác thực email'}</h1>
+        <h1 className={title}>{reset ? 'Đặt mật khẩu mới' : 'Xác thực email'}</h1>
         {state.kind === 'used' ? (
           <>
             <p className="text-avoid-ink">{LINK_USED[link.kind]}</p>
@@ -489,14 +562,12 @@ export function EmailLinkPage({
               </>
             )}
             {state.kind === 'error' && <p className="text-avoid-ink">{state.message}</p>}
-            <div className="flex flex-wrap items-center gap-x-4 gap-y-3">
-              <button type="submit" disabled={state.kind === 'busy' || !password} className={primary}>
-                {state.kind === 'busy' ? 'Đang xử lý…' : reset ? 'Đặt mật khẩu mới' : 'Xác thực email'}
-              </button>
-              <button type="button" onClick={onLeave} className={textLink}>
-                {signedInAs ? 'Huỷ' : 'Quay lại đăng nhập'}
-              </button>
-            </div>
+            <button type="submit" disabled={state.kind === 'busy' || !password} className={primary}>
+              {state.kind === 'busy' ? 'Đang xử lý…' : reset ? 'Đặt mật khẩu mới' : 'Xác thực email'}
+            </button>
+            <button type="button" onClick={onLeave} className={`inline-flex min-h-11 items-center ${textLink}`}>
+              {signedInAs ? 'Huỷ' : 'Quay lại đăng nhập'}
+            </button>
             <Missing items={[[!!password, 'mật khẩu']]} />
           </form>
         )}

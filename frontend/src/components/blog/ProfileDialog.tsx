@@ -3,8 +3,8 @@ import { ApiError, api, type Profile, type SkinType } from '../../api'
 import { HANDLE_PATTERN, normalizeHandle } from '../../blog'
 import { SKIN_TYPE_LABELS } from '../../labels'
 import { useProfile } from '../../profile'
-import { Dialog } from '../Dialog'
-import { field, primary, secondary } from './parts'
+import { Dialog, DialogTitle } from '../Dialog'
+import { field, primary, secondary, selectField } from './styles'
 
 type Props = {
   open: boolean
@@ -19,7 +19,7 @@ export function ProfileDialog({ open, profile, onSaved, onClose }: Props) {
     <Dialog
       open={open}
       onClose={onClose}
-      title={<h2 className="text-xl font-bold">{profile?.handle ? 'Hồ sơ người viết' : 'Đặt biệt danh để viết bài'}</h2>}
+      title={<DialogTitle>{profile?.handle ? 'Hồ sơ người viết' : 'Đặt biệt danh để viết bài'}</DialogTitle>}
     >
       <ProfileForm profile={profile} onSaved={onSaved} onCancel={onClose} />
     </Dialog>
@@ -59,7 +59,7 @@ function ProfileForm({
       <label className="block">
         <span className="font-medium text-ink">Biệt danh</span>
         <span className="mt-1 flex items-center gap-1">
-          <span className="text-ink-mute">@</span>
+          <span className="text-ink-soft">@</span>
           <input
             value={handle}
             onChange={(e) => {
@@ -73,13 +73,13 @@ function ProfileForm({
             className={field}
           />
         </span>
-        <span className="mt-1 block text-xs text-ink-mute">
+        <span className="mt-1 block text-xs text-ink-soft">
           2–30 ký tự: chữ thường không dấu, số, dấu chấm hoặc dấu gạch dưới.
         </span>
       </label>
       <label className="block">
         <span className="font-medium text-ink">Loại da (không bắt buộc)</span>
-        <select value={skin} onChange={(e) => setSkin(e.target.value as SkinType | '')} className={`mt-1 ${field}`}>
+        <select value={skin} onChange={(e) => setSkin(e.target.value as SkinType | '')} className={`mt-1 ${selectField}`}>
           <option value="">Không ghi</option>
           {(Object.keys(SKIN_TYPE_LABELS) as SkinType[]).map((s) => (
             <option key={s} value={s}>
@@ -87,7 +87,7 @@ function ProfileForm({
             </option>
           ))}
         </select>
-        <span className="mt-1 block text-xs text-ink-mute">Dùng làm loại da mặc định khi bạn viết bài; ai đọc bài cũng thấy.</span>
+        <span className="mt-1 block text-xs text-ink-soft">Dùng làm loại da mặc định khi bạn viết bài; ai đọc bài cũng thấy.</span>
       </label>
       <div aria-live="polite">
         {state === 'taken' && <p className="text-avoid-ink">Biệt danh này đã có người dùng.</p>}
@@ -116,7 +116,7 @@ export function ProfileSummary() {
   return (
     <section className="border-t border-line pt-4">
       <h3 className="font-semibold text-ink">Hồ sơ review cộng đồng</h3>
-      {state.kind === 'loading' && <p className="mt-1 text-ink-mute">Đang tải…</p>}
+      {state.kind === 'loading' && <p className="mt-1 text-ink-soft">Đang tải…</p>}
       {state.kind === 'error' && (
         <p className="mt-1 text-avoid-ink">
           Không tải được hồ sơ, hãy thử lại.{' '}

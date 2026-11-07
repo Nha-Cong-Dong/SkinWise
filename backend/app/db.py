@@ -7,6 +7,7 @@ from fastapi import Depends
 from sqlalchemy import Connection, Engine, create_engine, text
 from sqlalchemy.orm import Session, sessionmaker
 
+from app.blog import backfill_search_text
 from app.config import get_settings
 from app.inci import normalize_name
 
@@ -32,6 +33,7 @@ def init_schema(engine: Engine) -> None:
     with engine.begin() as conn:
         conn.exec_driver_sql(SCHEMA_PATH.read_text(encoding="utf-8"))
         _backfill_ingredient_search_names(conn)
+        backfill_search_text(conn)
 
 
 def _backfill_ingredient_search_names(conn: Connection) -> None:

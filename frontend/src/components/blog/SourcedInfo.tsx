@@ -9,7 +9,8 @@ import { GroupChips } from '../GroupChips'
 import { IngredientList } from '../IngredientList'
 import { DataNote, Notice } from '../Notice'
 import { WarningsPanel } from '../WarningsPanel'
-import { LoadError, Loading, textLink } from './parts'
+import { LoadError, Loading } from './parts'
+import { textLink } from './styles'
 
 /**
  * "Thông tin có nguồn (SkinWise)": built only from the product, ingredient and routine-check
@@ -17,11 +18,15 @@ import { LoadError, Loading, textLink } from './parts'
  */
 export function SourcedInfo({ post }: { post: PostDetail }) {
   return (
-    <section aria-labelledby="sourced-title" className="rounded-2xl border border-line bg-surface p-5 sm:p-6">
+    <section
+      aria-labelledby="sourced-title"
+      className="rounded-md border border-l-4 border-line border-l-primary bg-surface p-4 sm:p-6"
+    >
       <h2 id="sourced-title" className="text-lg font-bold">
         Thông tin có nguồn (SkinWise)
       </h2>
-      <p className="mt-1 text-xs leading-relaxed text-ink-mute">
+      <p className="mt-1 text-sm text-ink-soft">Phần này do SkinWise gắn, không phải ý kiến người viết.</p>
+      <p className="mt-1 text-xs leading-relaxed text-ink-soft">
         Phân tích tự động từ bảng thành phần và các luật đã được người duyệt đối chiếu với nguồn. Không phụ thuộc nội
         dung bài viết.
       </p>
@@ -78,9 +83,9 @@ function ProductAnalysis({ product }: { product: PostProductOut }) {
   return (
     <li className="py-3 first:pt-0 last:pb-0">
       <p className="leading-snug">
-        <span className="block text-xs text-ink-mute">{product.brand ?? 'Bảng thành phần người viết tự dán'}</span>
+        <span className="block text-xs text-ink-soft">{product.brand ?? 'Bảng thành phần người viết tự dán'}</span>
         <span className="text-sm font-medium">{product.name}</span>
-        {product.product_id === null && <span className="text-xs text-ink-mute"> ({AUTHOR_NAMED})</span>}
+        {product.product_id === null && <span className="text-xs text-ink-soft"> ({AUTHOR_NAMED})</span>}
       </p>
       <div className="mt-1.5 text-sm">
         {state.kind === 'loading' && <Loading>Đang phân tích…</Loading>}
@@ -102,11 +107,11 @@ function ProductAnalysis({ product }: { product: PostProductOut }) {
                   : 'Bảng thành phần không ghi tên chất nào trong danh sách chất gây dị ứng hương liệu của EU (EU chỉ bắt ghi khi vượt ngưỡng).'}
               </span>
               {state.kind === 'seeded' ? (
-                <a href={href({ page: 'product', id: state.detail.id })} className={textLink}>
+                <a href={href({ page: 'product', id: state.detail.id })} className={`inline-flex min-h-11 items-center md:min-h-0 ${textLink}`}>
                   Xem bảng thành phần
                 </a>
               ) : (
-                <button onClick={() => setOpen((o) => !o)} aria-expanded={open} className={`text-link ${textLink}`}>
+                <button onClick={() => setOpen((o) => !o)} aria-expanded={open} className={`inline-flex min-h-11 items-center md:min-h-0 text-link ${textLink}`}>
                   {open ? 'Ẩn bảng thành phần' : 'Xem bảng thành phần'}
                 </button>
               )}

@@ -319,6 +319,35 @@ CREATE TABLE IF NOT EXISTS goal_item_sources (
   PRIMARY KEY (item_id, position)
 );
 
+-- Long articles for a skin goal (data/goal_articles.toml, app/goal_articles.py). Display only,
+-- like the goal items. Reseeded wholesale on every seed (nothing refers to them by id). A goal
+-- removed from goals.toml takes its article with it.
+CREATE TABLE IF NOT EXISTS goal_articles (
+  goal_code   text PRIMARY KEY REFERENCES goals(code) ON DELETE CASCADE,
+  title_vi    text NOT NULL,
+  published   boolean NOT NULL DEFAULT false, -- only after a human checked the cited sources
+  reviewed_by text,
+  reviewed_at timestamptz
+);
+
+CREATE TABLE IF NOT EXISTS goal_article_paragraphs (
+  id               serial PRIMARY KEY,
+  goal_code        text NOT NULL REFERENCES goal_articles(goal_code) ON DELETE CASCADE,
+  section_position integer NOT NULL, -- order of the section in the article
+  heading_vi       text NOT NULL,    -- heading of that section, repeated on each paragraph
+  position         integer NOT NULL, -- order of the paragraph in its section
+  text_vi          text NOT NULL,
+  UNIQUE (goal_code, section_position, position)
+);
+
+CREATE TABLE IF NOT EXISTS goal_article_paragraph_sources (
+  paragraph_id integer NOT NULL REFERENCES goal_article_paragraphs(id) ON DELETE CASCADE,
+  position     integer NOT NULL,
+  source_id    integer NOT NULL REFERENCES sources(id),
+  quote        text NOT NULL, -- verbatim passage; checked by scripts.verify_quotes article:<goal>
+  PRIMARY KEY (paragraph_id, position)
+);
+
 -- Community reviews (blog, demo with made-up data only; not open to the public). Posts,
 -- comments and reports never reach the warning engine, the rules or resolve(): the sourced
 -- part of a post page is built from /products, /inci/analyze and /routine/check alone.
@@ -421,3 +450,86 @@ CREATE TABLE IF NOT EXISTS blog_reports (
   created_at  timestamptz NOT NULL DEFAULT now(),
   UNIQUE (target_kind, target_id, reporter_id)
 );
+
+-- Added 7/11: search, one level of replies, comment likes and in-app notifications.
+-- search_text: normalize_name(title, body and the names of pasted products), written by app
+-- code (app/blog.py) and filled for older rows by init_schema() (app/db.py), like
+-- product_ingredients.search_name.
+ALTER TABLE blog_posts ADD COLUMN IF NOT EXISTS search_text text;
+CREATE INDEX IF NOT EXISTS blog_posts_search_text_trgm
+  ON blog_posts USING gin (search_text gin_trgm_ops);
+
+-- parent_id: the top-level comment a reply belongs to (a reply to a reply is attached to the
+-- same top-level comment). reply_to_id: the reply that was answered, so its handle can be shown
+-- ("@handle"); NULL once that reply is gone. A top-level comment deleted while it has replies
+-- stays as an empty frame: deleted_at set, body emptied, author_id NULL (nothing of its author
+-- is kept), so the replies under it still make sense.
+ALTER TABLE blog_comments ADD COLUMN IF NOT EXISTS parent_id bigint
+  REFERENCES blog_comments(id) ON DELETE CASCADE;
+ALTER TABLE blog_comments ADD COLUMN IF NOT EXISTS reply_to_id bigint
+  REFERENCES blog_comments(id) ON DELETE SET NULL;
+ALTER TABLE blog_comments ADD COLUMN IF NOT EXISTS deleted_at timestamptz;
+ALTER TABLE blog_comments ALTER COLUMN author_id DROP NOT NULL;
+ALTER TABLE blog_comments DROP CONSTRAINT IF EXISTS blog_comments_author_unless_deleted;
+ALTER TABLE blog_comments ADD CONSTRAINT blog_comments_author_unless_deleted
+  CHECK (author_id IS NOT NULL OR deleted_at IS NOT NULL);
+CREATE INDEX IF NOT EXISTS blog_comments_parent ON blog_comments (parent_id);
+
+CREATE TABLE IF NOT EXISTS blog_comment_likes (
+  comment_id bigint NOT NULL REFERENCES blog_comments(id) ON DELETE CASCADE,
+  user_id    uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  PRIMARY KEY (comment_id, user_id)
+);
+
+-- In-app notifications only (no email). Removed with the account of the recipient or of the
+-- person who caused it, with the post or comment, and once read for 90 days (scripts.purge).
+-- Shown only while the post (and comment) is visible, except status notices to the author.
+CREATE TABLE IF NOT EXISTS blog_notifications (
+  id           bigserial PRIMARY KEY,
+  recipient_id uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  actor_id     uuid REFERENCES users(id) ON DELETE CASCADE, -- NULL for status notices
+  kind         text NOT NULL CHECK (kind IN (
+                 'post_liked', 'post_commented', 'comment_replied', 'comment_liked',
+                 'post_pending', 'post_visible', 'post_hidden', 'post_removed')),
+  post_id      bigint NOT NULL REFERENCES blog_posts(id) ON DELETE CASCADE,
+  comment_id   bigint REFERENCES blog_comments(id) ON DELETE CASCADE,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  read_at      timestamptz
+);
+CREATE INDEX IF NOT EXISTS blog_notifications_recipient
+  ON blog_notifications (recipient_id, created_at);
+-- One like notice per person and post / comment while the like stands (unliking deletes it).
+-- actor_id of a like notice is never shown: kept only to delete it on unlike / with the account.
+CREATE UNIQUE INDEX IF NOT EXISTS blog_notifications_one_like
+  ON blog_notifications (kind, actor_id, post_id, coalesce(comment_id, 0))
+  WHERE kind IN ('post_liked', 'comment_liked');
+
+-- Added 7/11: product photos. Catalogue products: the front image from Open Beauty Facts
+-- (CC BY-SA 3.0), fetched by scripts.fetch_product_images into data/product_images/ and
+-- data/product_images.toml; seeded only once a reviewer checked it shows the right product
+-- (checked = true). Display only: never read by the engine.
+CREATE TABLE IF NOT EXISTS product_images (
+  product_id integer PRIMARY KEY REFERENCES products(id) ON DELETE CASCADE,
+  barcode    text NOT NULL,
+  source_url text NOT NULL, -- the product's page on Open Beauty Facts (credit)
+  image_url  text NOT NULL, -- the image as Open Beauty Facts serves it
+  license    text NOT NULL,
+  fetched_at timestamptz NOT NULL,
+  sha256     text NOT NULL  -- of data/product_images/<slug>.webp, checked at seed time
+);
+
+-- A user's own photo of a product they typed or pasted in (one per routine product, chosen
+-- by the frontend; the routine stores its id as photoId). Seen by its owner only; removed with
+-- the account, or by scripts.purge once the routine stored on the server has not referred to it
+-- for 7 days (last_seen_at).
+CREATE TABLE IF NOT EXISTS user_product_photos (
+  id           bigserial PRIMARY KEY,
+  owner_id     uuid NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+  file_name    text NOT NULL UNIQUE, -- random, in UPLOAD_DIR
+  width        integer NOT NULL,
+  height       integer NOT NULL,
+  created_at   timestamptz NOT NULL DEFAULT now(),
+  last_seen_at timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS user_product_photos_owner ON user_product_photos (owner_id);

@@ -1,20 +1,52 @@
 // Pages by address hash, without a library: every page, post, product and author has its own
 // link, and the browser's back button works. Older hashes keep their meaning: "#review" (the
-// reviewers' page), and "#routine=…", "#verify-email?…", "#reset-password?…", "#results", which
-// all belong to the routine page (share.ts, account.ts and App.tsx read them).
+// reviewers' page), "#/routine" (now "Lịch dùng", today's tab), and "#routine=…", "#verify-email?…",
+// "#reset-password?…", which belong to the routine page (share.ts, account.ts and App.tsx read
+// them); "#results" opens the check tab.
 
 import { useMemo, useSyncExternalStore } from 'react'
 import type { SkinType } from './api'
 
-export type BlogFilter = { skin: SkinType | null; product: number | null; sort: 'new' | 'top' }
+/** Shortcuts of the review pages: every post, the user's own, the liked ones, the user's skin type. */
+export type BlogView = 'all' | 'mine' | 'liked' | 'same-skin'
+
+/** `view`, `group`, `q` may be left out (= every post, no group, no search). */
+export type BlogFilter = {
+  skin: SkinType | null
+  product: number | null
+  sort: 'new' | 'top'
+  view?: BlogView
+  group?: string | null // an active-group code
+  q?: string | null // search text
+}
+
+const BLOG_VIEWS: Record<Exclude<BlogView, 'all'>, string> = { mine: 'cua-toi', liked: 'da-thich', 'same-skin': 'cung-loai-da' }
+const GROUP_CODE = /^[A-Z0-9_]{1,40}$/
+
+/** The four tabs of "Lịch dùng": today, the week, the shelf, the check results. */
+export type RoutineTab = 'today' | 'week' | 'shelf' | 'check'
+
+export const ROUTINE_TABS: Record<RoutineTab, string> = {
+  today: 'hom-nay',
+  week: 'lich-tuan',
+  shelf: 'tu-do',
+  check: 'kiem-tra',
+}
 
 export type Route =
-  | { page: 'routine' }
+  /**
+   * focus (week and check tabs): a rule key. The week tab shows that warning's steps, the check
+   * tab scrolls to its card; both lift them once (ANIMATION.md 5.9).
+   */
+  | { page: 'routine'; tab: RoutineTab; focus?: string }
+  | { page: 'shelf-product'; key: string } // one product of the shelf, by its routine key
   | { page: 'goals' }
+  | { page: 'goal-article'; code: string }
   | { page: 'myths' }
   | { page: 'review' }
   | { page: 'blog'; filter: BlogFilter }
   | { page: 'saved' }
+  | { page: 'activity' } // in-app notifications of the review pages
   | { page: 'write'; product: number | null } // product: start the post with this catalogue product
   | { page: 'post'; id: number }
   | { page: 'edit'; id: number }
@@ -25,15 +57,21 @@ export type Route =
 const SKIN_TYPES: SkinType[] = ['oily', 'dry', 'combination', 'normal', 'sensitive']
 const LEGACY_ROUTINE = ['#routine=', '#verify-email?', '#reset-password?']
 
+// Keys made by routine.ts: "p12" (catalogue product), "c" + a random id (pasted list).
+const PRODUCT_KEY = /^[A-Za-z0-9_-]{1,64}$/
+// Rule keys in rules.toml: "retinoid-exfoliant-acid-same-session".
+const RULE_KEY = /^[a-z0-9-]{1,100}$/
+
 const toId = (text: string | null | undefined): number | null =>
   text && /^[1-9]\d{0,15}$/.test(text) ? Number(text) : null
 
 export function parseHash(hash: string): Route {
   if (hash === '#review') return { page: 'review' }
-  if (hash === '' || hash === '#' || hash === '#results' || LEGACY_ROUTINE.some((p) => hash.startsWith(p))) {
-    return { page: 'routine' }
+  if (hash === '#results') return { page: 'routine', tab: 'check' }
+  if (hash === '' || hash === '#' || LEGACY_ROUTINE.some((p) => hash.startsWith(p))) {
+    return { page: 'routine', tab: 'today' }
   }
-  if (!hash.startsWith('#/')) return { page: 'routine' } // an in-page anchor of the routine page
+  if (!hash.startsWith('#/')) return { page: 'routine', tab: 'today' } // an in-page anchor of the routine page
 
   const [path, search = ''] = hash.slice(2).split('?', 2)
   const query = new URLSearchParams(search)
@@ -42,25 +80,43 @@ export function parseHash(hash: string): Route {
 
   switch (first) {
     case undefined:
-    case 'routine':
-      return parts.length <= 1 ? { page: 'routine' } : { page: 'not-found' }
+    case 'routine': // the address before "Lịch dùng" had tabs
+      return parts.length <= 1 ? { page: 'routine', tab: 'today' } : { page: 'not-found' }
+    case 'lich-dung': {
+      if (second === undefined) return { page: 'routine', tab: 'today' }
+      const tab = (Object.keys(ROUTINE_TABS) as RoutineTab[]).find((t) => ROUTINE_TABS[t] === second)
+      if (tab === 'shelf' && parts.length === 3 && PRODUCT_KEY.test(third)) return { page: 'shelf-product', key: third }
+      if (!tab || parts.length !== 2) return { page: 'not-found' }
+      const focus = query.get('chu-y')
+      return (tab === 'week' || tab === 'check') && focus && RULE_KEY.test(focus)
+        ? { page: 'routine', tab, focus }
+        : { page: 'routine', tab }
+    }
     case 'muc-tieu':
-      return parts.length === 1 ? { page: 'goals' } : { page: 'not-found' }
+      if (parts.length === 1) return { page: 'goals' }
+      return parts.length === 2 && /^[a-z0-9-]{1,64}$/.test(second) ? { page: 'goal-article', code: second } : { page: 'not-found' }
     case 'myth':
       return parts.length === 1 ? { page: 'myths' } : { page: 'not-found' }
     case 'blog': {
       if (second === undefined) {
         const skin = query.get('da')
+        const view = (Object.keys(BLOG_VIEWS) as Exclude<BlogView, 'all'>[]).find((v) => BLOG_VIEWS[v] === query.get('xem'))
+        const group = query.get('nhom')
+        const q = (query.get('q') ?? '').trim().slice(0, 100)
         return {
           page: 'blog',
           filter: {
             skin: SKIN_TYPES.includes(skin as SkinType) ? (skin as SkinType) : null,
             product: toId(query.get('sp')),
             sort: query.get('sort') === 'top' ? 'top' : 'new',
+            view: view ?? 'all',
+            group: group && GROUP_CODE.test(group) ? group : null,
+            q: q || null,
           },
         }
       }
       if (second === 'da-luu' && third === undefined) return { page: 'saved' }
+      if (second === 'hoat-dong' && third === undefined) return { page: 'activity' }
       if (second === 'viet' && third === undefined) return { page: 'write', product: toId(query.get('sp')) }
       const id = toId(second)
       if (id === null) return { page: 'not-found' }
@@ -89,23 +145,35 @@ export function parseHash(hash: string): Route {
 export function href(route: Route): string {
   switch (route.page) {
     case 'routine':
-      return '#/routine'
+      return route.focus && (route.tab === 'week' || route.tab === 'check')
+        ? `#/lich-dung/${ROUTINE_TABS[route.tab]}?chu-y=${encodeURIComponent(route.focus)}`
+        : `#/lich-dung/${ROUTINE_TABS[route.tab]}`
+    case 'shelf-product':
+      return `#/lich-dung/${ROUTINE_TABS.shelf}/${route.key}`
     case 'goals':
       return '#/muc-tieu'
+    case 'goal-article':
+      return `#/muc-tieu/${route.code}`
     case 'myths':
       return '#/myth'
     case 'review':
       return '#review'
     case 'blog': {
       const query = new URLSearchParams()
+      const { view, group, q } = route.filter
+      if (view && view !== 'all') query.set('xem', BLOG_VIEWS[view])
+      if (q) query.set('q', q)
       if (route.filter.skin) query.set('da', route.filter.skin)
       if (route.filter.product !== null) query.set('sp', String(route.filter.product))
+      if (group) query.set('nhom', group)
       if (route.filter.sort === 'top') query.set('sort', 'top')
       const search = query.toString()
       return search ? `#/blog?${search}` : '#/blog'
     }
     case 'saved':
       return '#/blog/da-luu'
+    case 'activity':
+      return '#/blog/hoat-dong'
     case 'write':
       return route.product !== null ? `#/blog/viet?sp=${route.product}` : '#/blog/viet'
     case 'post':
@@ -151,5 +219,5 @@ export function useRoute(): Route {
 
 /** Pages of the "Review cộng đồng" section of the menu. */
 export function isBlogPage(route: Route): boolean {
-  return ['blog', 'saved', 'write', 'post', 'edit', 'product', 'author'].includes(route.page)
+  return ['blog', 'saved', 'activity', 'write', 'post', 'edit', 'product', 'author'].includes(route.page)
 }

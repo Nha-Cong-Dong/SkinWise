@@ -5,6 +5,8 @@ import { useEffect, useState } from 'react'
 import {
   api,
   requestProblem,
+  SESSION_EXPIRED,
+  TOO_FAST,
   type GroupIngredient,
   type InciAnalysis,
   type RequestProblem,
@@ -15,7 +17,7 @@ import {
   type TextNotice,
   type Warning,
 } from './api'
-import { ALL_DAYS } from './labels'
+import { ALL_DAYS, isAlertSeverity } from './labels'
 
 export type MyProduct = {
   key: string
@@ -28,6 +30,8 @@ export type MyProduct = {
   notices?: TextNotice[]
   /** Where a list not typed or pasted by the user came from. Shown only: checks treat it as pasted. */
   origin?: ProductOrigin
+  /** The user's own photo (POST /me/product-photos) of a typed-in product. Never shared. */
+  photoId?: number
 }
 
 /** A list copied off a label photo by an AI model. `confirmed`: the user checked it against the package. */
@@ -38,6 +42,22 @@ const INFORMATIONAL: TextNotice['code'][] = ['vietnamese_names', 'drug_facts']
 /** The pasted list may not be the whole label, so the check may miss warnings. */
 export function maybeIncomplete(product: MyProduct): boolean {
   return (product.notices ?? []).some((n) => !INFORMATIONAL.includes(n.code))
+}
+
+/**
+ * Why a check result may be missing warnings, per product: pasted lists that may not be the
+ * whole label (`incomplete`), and products with unrecognised names that may be misspelled actives
+ * or that were not all looked up (`misspelled`). Only products the result covers count.
+ */
+export function dataGaps(
+  result: RoutineCheckResponse | null,
+  products: MyProduct[],
+): { incomplete: MyProduct[]; misspelled: RoutineCheckResponse['products'] } {
+  const checked = new Set(result?.products.map((p) => p.key))
+  return {
+    incomplete: products.filter((p) => checked.has(p.key) && maybeIncomplete(p)),
+    misspelled: (result?.products ?? []).filter((p) => p.possible_actives.length > 0 || p.suggestions_truncated),
+  }
 }
 
 /**
@@ -223,6 +243,17 @@ export function useRoutine() {
         return { ...r, entries }
       })
     },
+    /** Attach (or with undefined, drop) the user's photo of a product. */
+    setProductPhoto(key: string, photoId: number | undefined) {
+      setRoutine((r) => ({
+        ...r,
+        products: r.products.map((p) => {
+          if (p.key !== key) return p
+          const { photoId: _old, ...rest } = p
+          return photoId === undefined ? rest : { ...rest, photoId }
+        }),
+      }))
+    },
     toggleDay(id: string, day: number) {
       updateEntry(id, (e) => ({
         ...e,
@@ -279,6 +310,43 @@ export function isUsageNote(w: Warning): boolean {
   return w.rule.kind === 'usage'
 }
 
+/** A combination warning that asks for care (avoid / caution): what "!" marks and tab counts show. */
+export function isCombinationAlert(w: Warning): boolean {
+  return !isUsageNote(w) && isAlertSeverity(w.rule.severity)
+}
+
+/** Every warning of one rule: one card, listing each pair of products it was raised for. */
+export type WarningGroup = {
+  rule: Warning['rule']
+  /** One per pair of products (a usage rule has a single warning), in the order of the check. */
+  warnings: Warning[]
+  /** Every product of those warnings, each once, in order of first appearance. */
+  productKeys: string[]
+}
+
+/**
+ * Group the warnings of a check by rule, so four products with the same active group read as one
+ * card with six pairs, not six cards. Display only: every warning stays, in its pair, with its days.
+ */
+export function groupByRule(warnings: Warning[]): WarningGroup[] {
+  const groups = new Map<string, WarningGroup>()
+  for (const w of warnings) {
+    const group = groups.get(w.rule.key)
+    if (group) {
+      group.warnings.push(w)
+      for (const key of w.product_keys) if (!group.productKeys.includes(key)) group.productKeys.push(key)
+    } else {
+      groups.set(w.rule.key, { rule: w.rule, warnings: [w], productKeys: [...w.product_keys] })
+    }
+  }
+  return [...groups.values()]
+}
+
+/** "A + B" for a pair rule, "A, B, C" for the products of a usage note. */
+export function warningProducts(w: Warning, names: Map<string, string>): string {
+  return w.product_keys.map((k) => names.get(k) ?? k).join(isUsageNote(w) ? ', ' : ' + ')
+}
+
 /**
  * Re-check the routine whenever it changes (debounced; a newer check cancels an older one).
  * /routine/check needs a session: nothing is sent while `user` is null (signing in, #review), and
@@ -329,4 +397,11 @@ export function useRoutineCheck(routine: Routine, user: string | null): CheckSta
     setAttempt((n) => n + 1)
   }
   return { kind: 'error', message: last.error ?? '', problem: last.problem ?? 'failed', retry }
+}
+
+/** Why the routine check failed, in the words every page uses. */
+export function checkError(problem: RequestProblem): string {
+  if (problem === 'signed-out') return `Không kiểm tra được routine. ${SESSION_EXPIRED}`
+  if (problem === 'too-many') return `Không kiểm tra được routine. ${TOO_FAST}`
+  return 'Không kiểm tra được routine lúc này. Có thể mạng đang chập chờn hoặc máy chủ đang bận.'
 }

@@ -2,8 +2,8 @@ import { useState, type FormEvent } from 'react'
 import { ApiError, api, type ReportIn, type ReportReason } from '../../api'
 import { REPORT_NOTE_MAX, SESSION_EXPIRED, TOO_MANY } from '../../blog'
 import { REPORT_REASON_LABELS } from '../../labels'
-import { Dialog } from '../Dialog'
-import { field, primary, secondary } from './parts'
+import { Dialog, DialogTitle } from '../Dialog'
+import { field, primary, secondary } from './styles'
 
 export type ReportTarget = { kind: ReportIn['target_kind']; id: number }
 
@@ -12,7 +12,7 @@ export function ReportDialog({ target, onClose }: { target: ReportTarget | null;
     <Dialog
       open={target !== null}
       onClose={onClose}
-      title={<h2 className="text-xl font-bold">{target?.kind === 'comment' ? 'Báo cáo bình luận' : 'Báo cáo bài viết'}</h2>}
+      title={<DialogTitle>{target?.kind === 'comment' ? 'Báo cáo bình luận' : 'Báo cáo bài viết'}</DialogTitle>}
     >
       {target && <ReportForm key={`${target.kind}:${target.id}`} target={target} onClose={onClose} />}
     </Dialog>
@@ -60,7 +60,7 @@ function ReportForm({ target, onClose }: { target: ReportTarget; onClose: () => 
                 name="reason"
                 checked={reason === r}
                 onChange={() => setReason(r)}
-                className="mt-1 size-4 shrink-0 accent-ink"
+                className="mt-1 size-4 shrink-0 accent-primary"
               />
               {REPORT_REASON_LABELS[r]}
             </label>
@@ -76,7 +76,7 @@ function ReportForm({ target, onClose }: { target: ReportTarget; onClose: () => 
           rows={3}
           className={`mt-1 ${field}`}
         />
-        <span className="mt-1 block text-right text-xs text-ink-mute">
+        <span className="mt-1 block text-right text-xs text-ink-soft">
           {note.length}/{REPORT_NOTE_MAX}
         </span>
       </label>

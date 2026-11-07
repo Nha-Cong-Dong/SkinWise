@@ -168,6 +168,10 @@ Chi tiết từng giai đoạn và tiến độ: [plan/](plan/README.md).
 - [x] Sau MVP: trang duyệt, AI soạn nháp thẻ myth
 - [x] Đọc bảng thành phần từ ảnh nhãn
 - [x] Mục tiêu da: chọn mục tiêu, xem nhóm hoạt chất thường dùng và thẻ thông tin có nguồn (7 mục tiêu, 36 mục đã duyệt 28/10)
+- [x] Giao diện mới (design system SkinWise), chế độ sáng / tối, chuyển động nhẹ, trang giới thiệu có bản demo kiểm tra thật
+- [x] Review cộng đồng: tìm bài, "Đang được bàn", trả lời và thích bình luận, mục Hoạt động (thông báo trong app)
+- [x] Ảnh sản phẩm: sản phẩm mẫu dùng ảnh Open Beauty Facts đã duyệt (ghi công CC BY-SA), sản phẩm tự nhập có thể thêm ảnh riêng
+- [ ] Bài viết dài cho từng mục tiêu da (mục lục, mỗi đoạn có nguồn và đoạn trích): xong code, bài mẫu "Da dễ nổi mụn" đã duyệt 7/11
 - [x] Review cộng đồng (bản demo, dữ liệu mẫu, chưa mở công khai)
 
 ## Nguồn dữ liệu và ghi công

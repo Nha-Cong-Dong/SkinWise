@@ -1,10 +1,15 @@
 """API routes. The frontend calls them under /api; the Vite dev proxy strips that prefix."""
 
+import threading
+from dataclasses import asdict
 from typing import Annotated, Literal
 
-from fastapi import APIRouter, HTTPException, Query, status
+from fastapi import APIRouter, HTTPException, Path, Query, Request, status
+from fastapi.responses import FileResponse
+from pydantic import StringConstraints
 from sqlalchemy.orm import Session
 
+from app.accounts import RateLimit
 from app.accounts_api import CurrentUser
 from app.concentration import OnePercentLine, one_percent_line
 from app.db import DbSession
@@ -16,6 +21,7 @@ from app.engine import (
     check_routine,
     rule_matches,
 )
+from app.goal_articles import load_article, published_article_goals
 from app.goals import load_goals
 from app.inci import read_label_text
 from app.ingredients import (
@@ -31,6 +37,8 @@ from app.ingredients import (
     suggest,
     with_ancestors,
 )
+from app.product_images import file_for as product_image_file
+from app.product_images import images_for
 from app.products import (
     get_product,
     product_applications,
@@ -41,7 +49,9 @@ from app.products import (
 from app.rules import load_product_groups, load_published_rules
 from app.schemas import (
     AnalyzedIngredient,
+    DemoCheckRequest,
     FunctionOut,
+    GoalArticleOut,
     GoalItemOut,
     GoalOut,
     GoalsResponse,
@@ -115,6 +125,12 @@ GOALS_NOTICE_VI = (
 
 router = APIRouter()
 
+# Text from the query string or the path never holds a NUL character: PostgreSQL refuses it
+# in text, so it would end as a 500 instead of a 422 (app/main.py also turns any NUL that gets
+# through into a 422).
+NO_NUL = r"^[^\x00]*$"
+QueryText = Annotated[str, StringConstraints(max_length=200, pattern=NO_NUL)]
+
 
 @router.get("/groups")
 def groups(db: DbSession) -> list[GroupOut]:
@@ -126,6 +142,9 @@ def goals(db: DbSession) -> GoalsResponse:
     """Skin goals with their published, sourced items. Display only: the goals a user picks
     stay in the browser and never reach the warning engine."""
     all_goals = load_goals(db)
+    with_article = published_article_goals(db)
+    for g in all_goals:
+        g.has_article = g.code in with_article
     return GoalsResponse(
         goals=[GoalOut.model_validate(g) for g in all_goals if not g.shared],
         shared_infos=[
@@ -133,6 +152,21 @@ def goals(db: DbSession) -> GoalsResponse:
         ],
         notice_vi=GOALS_NOTICE_VI,
     )
+
+
+GOAL_ARTICLE_NOT_FOUND_VI = "Chưa có bài viết cho mục tiêu này."
+
+
+@router.get("/goals/{code}/article")
+def goal_article(
+    code: Annotated[str, Path(max_length=40, pattern=r"^[a-z0-9_-]+$")], db: DbSession
+) -> GoalArticleOut:
+    """The published long article of a goal. Display only, like /goals. 404 for an unknown
+    goal, the shared goal and an article not published yet."""
+    article = load_article(db, code)
+    if article is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, GOAL_ARTICLE_NOT_FOUND_VI)
+    return GoalArticleOut.model_validate({**asdict(article), "notice_vi": GOALS_NOTICE_VI})
 
 
 @router.get("/functions")
@@ -186,13 +220,16 @@ def ingredient_fields(
 @router.get("/products")
 def products(
     db: DbSession,
-    q: Annotated[str, Query(max_length=200)] = "",
+    q: Annotated[str, Query(max_length=200, pattern=NO_NUL)] = "",
     limit: Annotated[int, Query(ge=1, le=100)] = 50,
 ) -> list[ProductSummary]:
     rows = search_products(db, q, limit)
     groups_by_id = load_product_groups(db, [r.id for r in rows])
+    pictures = images_for(db, [r.id for r in rows])
     return [
-        ProductSummary.model_validate({**r.__dict__, "groups": sorted(groups_by_id[r.id])})
+        ProductSummary.model_validate(
+            {**r.__dict__, "groups": sorted(groups_by_id[r.id]), "image": pictures.get(r.id)}
+        )
         for r in rows
     ]
 
@@ -214,7 +251,28 @@ def product(db: DbSession, product_id: int) -> ProductDetail:
                 IngredientOut(**ingredient_fields(r, line, suggestions)) for r in resolved
             ],
             "one_percent_marker": line.marker if line else None,
+            "image": images_for(db, [product_id]).get(product_id),
         }
+    )
+
+
+@router.get(
+    "/product-images/{slug}.webp",
+    response_class=FileResponse,
+    responses={200: {"content": {"image/webp": {}}}},
+)
+def product_image(
+    db: DbSession, slug: Annotated[str, Path(max_length=200, pattern=r"^[a-z0-9-]+$")]
+) -> FileResponse:
+    """A checked catalogue product image. Its URL carries a hash of the file, so it is
+    cached for long."""
+    path = product_image_file(db, slug)
+    if path is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "no image")
+    return FileResponse(
+        path,
+        media_type="image/webp",
+        headers={"Cache-Control": "public, max-age=31536000, immutable"},
     )
 
 
@@ -242,6 +300,37 @@ def analyze_inci(db: DbSession, user: CurrentUser, body: InciAnalyzeRequest) -> 
 
 @router.post("/routine/check")
 def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> RoutineCheckResponse:
+    return run_check(db, body)
+
+
+# Public demo of the landing page: checks per IP in 10 minutes, in memory, per process (like
+# the sign-in limits; the IP is kept only as a sha256, and only while its window lasts).
+DEMO_CHECKS = (60, 600.0)
+_demo_checks = RateLimit({"email": DEMO_CHECKS})
+_demo_admitting = threading.Lock()
+
+
+def reset_demo_limit() -> None:
+    _demo_checks.clear()
+
+
+@router.post("/demo/check")
+def demo_check(db: DbSession, body: DemoCheckRequest, request: Request) -> RoutineCheckResponse:
+    """The routine check of the landing page, without signing in: sample products only (by
+    id, no pasted list, so no unknown names to look up), at most 10 products and 40 steps,
+    60 checks per IP in 10 minutes (429). Same engine, rules and result as /routine/check.
+    Nothing of the request is logged or kept."""
+    routine = body.as_routine()
+    ip = request.client.host if request.client else "unknown"
+    with _demo_admitting:
+        if _demo_checks.blocked(f"ip:{ip}", None):
+            raise HTTPException(status.HTTP_429_TOO_MANY_REQUESTS, "too many checks; wait")
+        _demo_checks.record(f"ip:{ip}", None)
+    return run_check(db, routine)
+
+
+def run_check(db: Session, body: RoutineCheckRequest) -> RoutineCheckResponse:
+    """The routine check shared by /routine/check and /demo/check."""
     seeded_ids = [p.product_id for p in body.products if p.product_id is not None]
     applications = product_applications(db, seeded_ids)
     missing = set(seeded_ids) - applications.keys()
@@ -320,7 +409,7 @@ def check(db: DbSession, user: CurrentUser, body: RoutineCheckRequest) -> Routin
 def rules(
     db: DbSession,
     kind: Literal["conflict", "duplicate", "myth", "usage"] | None = None,
-    groups: Annotated[list[str], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
+    groups: Annotated[list[QueryText], Query(max_length=2)] = [],  # noqa: B006 (FastAPI copies it)
 ) -> RulesResponse:
     """Published rules, optionally of one kind. With one group: rules involving it. With two:
     the pair rules that would fire for one product of each group, whatever their kind, matched

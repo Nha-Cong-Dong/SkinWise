@@ -1,4 +1,5 @@
-"""Photos attached to community posts: read an upload, re-encode it, store it on disk.
+"""Photos (community posts, users' own product photos, catalogue product images): read an
+image, re-encode it, store it on disk.
 
 Every upload is decoded with Pillow and saved again as WebP, so nothing the user's camera
 wrote travels on: no EXIF (GPS position, device, time), no XMP, no ICC profile, no comments.
@@ -71,8 +72,8 @@ def _check(image: Image.Image) -> None:
         raise TooManyPixels
 
 
-def process(data: bytes) -> ProcessedImage:
-    """Decode, turn upright (EXIF orientation), flatten to RGB, shrink to MAX_SIDE and encode
+def process(data: bytes, max_side: int = MAX_SIDE) -> ProcessedImage:
+    """Decode, turn upright (EXIF orientation), flatten to RGB, shrink to max_side and encode
     as WebP with no metadata at all."""
     if len(data) > MAX_BYTES:
         raise TooLarge
@@ -94,7 +95,7 @@ def process(data: bytes) -> ProcessedImage:
                 rgb.paste(rgba, mask=rgba.getchannel("A"))
             else:
                 rgb = upright.convert("RGB")
-            rgb.thumbnail((MAX_SIDE, MAX_SIDE), Image.Resampling.LANCZOS)
+            rgb.thumbnail((max_side, max_side), Image.Resampling.LANCZOS)
             # A fresh image carries no info dict (EXIF, ICC, XMP, comments) from the upload.
             clean = Image.new("RGB", rgb.size)
             clean.paste(rgb)

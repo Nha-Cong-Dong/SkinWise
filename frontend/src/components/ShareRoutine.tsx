@@ -4,8 +4,8 @@ import { sessionEntries, type Routine, type RoutineActions } from '../routine'
 import { ImportError, downloadFile, makeLink, readFile, restore } from '../share'
 import { DataNote } from './Notice'
 
-const primary = 'rounded-full bg-ink px-4 py-2 text-sm font-medium text-white hover:bg-link disabled:opacity-40'
-const secondary = 'rounded-full px-4 py-2 text-sm font-medium text-ink ring-1 ring-ink hover:bg-paper disabled:opacity-40'
+const primary = 'rounded-full bg-primary px-4 py-2 text-sm font-medium text-surface hover:bg-primary-hover disabled:opacity-40'
+const secondary = 'rounded-full px-4 py-2 text-sm font-medium bg-wash text-primary ring-1 ring-primary/25 hover:bg-wash-strong disabled:opacity-40'
 // Messaging apps may cut links longer than this; a file always works.
 const LONG_LINK = 2000
 
@@ -101,7 +101,7 @@ export function ShareRoutine({ actions, onDone }: { actions: RoutineActions; onD
                 value={link}
                 aria-label="Link chia sẻ routine"
                 onFocus={(e) => e.target.select()}
-                className="min-w-0 flex-1 rounded-xl border border-line bg-paper px-3 py-2 text-xs text-ink"
+                className="min-w-0 flex-1 rounded-md border border-line bg-paper px-3 py-2 text-xs text-ink"
               />
               <button
                 onClick={() =>

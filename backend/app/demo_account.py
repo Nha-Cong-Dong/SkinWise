@@ -12,7 +12,7 @@ from typing import Any
 from sqlalchemy import text
 from sqlalchemy.engine import Connection
 
-from app import blog
+from app import blog, product_photos
 from app.accounts import POLICY_VERSION, PURPOSE
 from app.rules import load_product_groups
 from app.schemas import StoredRoutineData
@@ -75,11 +75,24 @@ def sample_routine(conn: Connection) -> dict[str, Any]:
     return StoredRoutineData.model_validate(data).model_dump(by_alias=True)
 
 
-def remove_demo_account(conn: Connection) -> bool:
-    """Delete the demo account (sessions, consents, routine, profile cascade)."""
+def remove_demo_account(conn: Connection, files: list[str] | None = None) -> bool:
+    """Delete the demo account (sessions, consents, routine, profile and blog writing cascade;
+    others' replies to its comments stay under an empty frame, as for any deleted account).
+    The names of its blog images and product photos are added to `files`, to remove from disk
+    after the commit."""
     email = _demo_only(DEMO_EMAIL)
     conn.execute(text("DELETE FROM email_tokens WHERE email = :e"), {"e": email})
-    return conn.execute(text("DELETE FROM users WHERE email = :e"), {"e": email}).rowcount > 0
+    user_id = conn.execute(
+        text("SELECT id::text FROM users WHERE email = :e"), {"e": email}
+    ).scalar_one_or_none()
+    if user_id is None:
+        return False
+    if files is not None:
+        files += blog.image_files_of(conn, user_id) + product_photos.files_of(conn, user_id)
+    blog.keep_threads_of(conn, user_id)
+    conn.execute(text("DELETE FROM users WHERE id = :id"), {"id": user_id})
+    blog.after_account_deletion(conn)
+    return True
 
 
 @dataclass(frozen=True)

@@ -13,6 +13,10 @@ export default defineConfig({
     tailwindcss(),
     { name: 'site-url', transformIndexHtml: (html) => html.replaceAll('__SITE_URL__', siteUrl) },
   ],
+  build: {
+    // Never inline fonts as data: URIs: the CSP in deploy/nginx allows fonts from 'self' only.
+    assetsInlineLimit: (file) => (/\.(woff2?|ttf|otf)$/.test(file) ? false : undefined),
+  },
   server: {
     // Dev only: forward /api/* to the FastAPI backend so the browser needs no CORS.
     proxy: {

@@ -31,6 +31,15 @@ class GroupOut(FromAttributes):
     parent_code: str | None  # umbrella group, e.g. AHA -> EXFOLIANT_ACID
 
 
+class ProductImageOut(BaseModel):
+    """A checked image of a catalogue product (Open Beauty Facts, CC BY-SA). Display only."""
+
+    url: str  # /product-images/<slug>.webp?v=<hash>
+    credit_vi: str  # shown under the image: "Ảnh: Open Beauty Facts (CC BY-SA 3.0)"
+    source_url: str  # the product's page on Open Beauty Facts
+    license_url: str  # the licence text (creativecommons.org, CC BY-SA 3.0)
+
+
 class ProductSummary(FromAttributes):
     id: int
     slug: str | None
@@ -44,6 +53,7 @@ class ProductSummary(FromAttributes):
     # Label names of the ingredient lines that matched a /products search query (at most 5,
     # in label order); [] otherwise. Display only.
     matched_ingredients: list[str] = []
+    image: ProductImageOut | None = None  # None: no checked image (show the initial instead)
 
 
 class SuggestionOut(FromAttributes):
@@ -165,12 +175,43 @@ class GoalOut(FromAttributes):
     description_vi: str
     actives: list[GoalItemOut]
     infos: list[GoalItemOut]
+    has_article: bool  # true only when the goal has a published article (/goals/{code}/article)
 
 
 class GoalsResponse(BaseModel):
     goals: list[GoalOut]  # without the shared goal "all"
     shared_infos: list[GoalItemOut]  # items of "all", shown with every goal
     notice_vi: str  # always set: general sourced information, not a doctor's advice
+
+
+class ArticleParagraphOut(FromAttributes):
+    text_vi: str
+    refs: list[int]  # 1-based numbers into GoalArticleOut.sources, unique, ascending
+
+
+class ArticleSectionOut(FromAttributes):
+    anchor: str  # "phan-1", "phan-2"... in section order
+    heading_vi: str
+    paragraphs: list[ArticleParagraphOut]
+
+
+class ArticleSourceOut(FromAttributes):
+    n: int  # 1-based, numbered by first appearance in the article
+    title: str
+    publisher: str
+    url: str
+    quotes: list[str]  # every quote of this source in the article, in order, without repeats
+
+
+class GoalArticleOut(FromAttributes):
+    goal: str
+    goal_name_vi: str
+    title_vi: str
+    reviewed_by: str
+    reviewed_at: date
+    sections: list[ArticleSectionOut]
+    sources: list[ArticleSourceOut]
+    notice_vi: str  # same notice as /goals: general sourced information, not a doctor's advice
 
 
 class RulesResponse(BaseModel):
@@ -208,13 +249,47 @@ class RoutineCheckRequest(BaseModel):
 
     @model_validator(mode="after")
     def _keys_match(self) -> "RoutineCheckRequest":
-        keys = [p.key for p in self.products]
-        if len(keys) != len(set(keys)):
-            raise ValueError("product keys must be unique")
-        unknown = sorted({i.product_key for i in self.items} - set(keys))
-        if unknown:
-            raise ValueError(f"items refer to unknown product keys: {unknown}")
+        _check_keys([p.key for p in self.products], self.items)
         return self
+
+
+def _check_keys(keys: list[str], items: list[RoutineEntry]) -> None:
+    if len(keys) != len(set(keys)):
+        raise ValueError("product keys must be unique")
+    unknown = sorted({i.product_key for i in items} - set(keys))
+    if unknown:
+        raise ValueError(f"items refer to unknown product keys: {unknown}")
+
+
+DEMO_MAX_PRODUCTS = 10
+DEMO_MAX_ITEMS = 40
+
+
+class DemoProduct(BaseModel):
+    """A sample product of the public demo: by id only (a pasted list is refused, 422)."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    key: Annotated[str, StringConstraints(min_length=1, max_length=100)]
+    product_id: int
+
+
+class DemoCheckRequest(BaseModel):
+    """The body of POST /demo/check: like RoutineCheckRequest, sample products only, smaller."""
+
+    model_config = ConfigDict(extra="forbid")
+
+    products: Annotated[list[DemoProduct], Field(max_length=DEMO_MAX_PRODUCTS)]
+    items: Annotated[list[RoutineEntry], Field(max_length=DEMO_MAX_ITEMS)]
+
+    @model_validator(mode="after")
+    def _keys_match(self) -> "DemoCheckRequest":
+        _check_keys([p.key for p in self.products], self.items)
+        return self
+
+    def as_routine(self) -> RoutineCheckRequest:
+        """The same request for the routine check."""
+        return RoutineCheckRequest.model_validate(self.model_dump())
 
 
 class GroupIngredient(FromAttributes):
@@ -420,6 +495,16 @@ class StoredProduct(BaseModel):
     # Where a pasted list came from (frontend ProductOrigin). Shown only; absent in routines
     # saved before it existed, and left out of the output when absent (never `null`).
     origin: StoredOrigin | None = Field(default=None, exclude_if=lambda v: v is None)
+    # The user's own photo of a typed-in product (POST /me/product-photos). Absent when none,
+    # and left out of the output then. Never part of a shared routine or of a blog post.
+    photo_id: Annotated[int, Field(gt=0)] | None = Field(
+        default=None, alias="photoId", exclude_if=lambda v: v is None
+    )
+
+
+class ProductPhotoOut(BaseModel):
+    id: int
+    url: str  # /me/product-photos/{id}; served to its owner only
 
 
 class StoredEntry(BaseModel):
@@ -650,17 +735,78 @@ class SaveOut(BaseModel):
 
 class CommentIn(BaseModel):
     body: Annotated[str, StringConstraints(strip_whitespace=True, min_length=1, max_length=2000)]
+    # Reply to this comment of the same post. A reply to a reply is attached to the same
+    # top-level comment (one level of replies).
+    parent_id: int | None = None
 
 
 class CommentOut(BaseModel):
     id: int
     post_id: int
-    author: AuthorRef
+    parent_id: int | None  # the top-level comment of a reply; None for a top-level comment
+    # A reply that answered another reply: that reply's author, shown as "@handle"; None
+    # otherwise, or once that reply is gone or not visible to the user.
+    reply_to_handle: str | None
+    # None when deleted: a top-level comment deleted (or not visible to the user) is kept as
+    # an empty frame while it has replies the user sees: author None, body "".
+    author: AuthorRef | None
     body: str
-    status: ContentStatus
+    status: ContentStatus  # "visible" for an empty frame
     flags: list[str]  # the user's own comments only, else []
     is_mine: bool
+    deleted: bool
+    like_count: int
+    liked_by_me: bool
     created_at: datetime
+    replies: list["CommentOut"]  # top-level comments only, oldest first; [] for a reply
+
+
+class TrendingItem(BaseModel):
+    kind: Literal["product", "group"]
+    product_id: int | None  # kind "product"
+    group: str | None  # kind "group": an active group code
+    label_vi: str  # the catalogue product name, or the group's Vietnamese name
+    post_count: int  # visible posts in the window, at least 2
+
+
+NoticeKind = Literal[
+    "post_liked",
+    "post_commented",
+    "comment_replied",
+    "comment_liked",
+    "post_pending",
+    "post_visible",
+    "post_hidden",
+    "post_removed",
+]
+
+
+class ActivityItem(BaseModel):
+    id: int
+    kind: NoticeKind
+    created_at: datetime
+    read: bool
+    # Who commented / replied. Always None for likes (post_liked, comment_liked: who liked is
+    # never shown) and for status notices (post_pending ... post_removed); None too when that
+    # user has no nickname.
+    actor_handle: str | None
+    post_id: int
+    post_title: str
+    comment_id: int | None  # the new comment / reply, or the liked comment
+    excerpt_vi: str | None  # the first 80 characters of that comment, only while visible
+
+
+class ActivityOut(BaseModel):
+    unread_count: int
+    items: list[ActivityItem]  # newest first
+
+
+class ActivityReadIn(BaseModel):
+    ids: Annotated[list[int], Field(max_length=200)] | None = None  # None: all
+
+
+class ActivityReadOut(BaseModel):
+    unread_count: int
 
 
 class ReportIn(BaseModel):

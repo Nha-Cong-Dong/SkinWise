@@ -10,7 +10,7 @@ import { POLICY_VERSION } from '../account'
 export function PolicyText() {
   return (
     <div className="space-y-4 text-sm leading-relaxed text-ink-soft">
-      <p className="rounded-xl bg-caution-soft p-3 text-caution-ink">
+      <p className="rounded-md bg-caution-soft p-3 text-caution-ink">
         Bản nháp (phiên bản {POLICY_VERSION}), chưa được người có chuyên môn pháp lý duyệt. SkinWise chưa mở tài khoản
         cho người dùng thật.
       </p>
@@ -20,10 +20,12 @@ export function PolicyText() {
       </Section>
       <Section title="SkinWise lưu gì">
         Địa chỉ email của bạn và mật khẩu đã băm (không lưu mật khẩu gốc); routine của bạn (sản phẩm, bảng thành phần
-        bạn tự dán, lịch dùng); thời điểm tạo tài khoản, đăng nhập và đồng bộ. Nếu bạn dùng review cộng đồng: biệt danh
+        bạn tự dán, lịch dùng); ảnh bạn tự tải cho sản phẩm nhập tay (tối đa 60 ảnh, được chuyển sang định dạng WebP và
+        bỏ hết thông tin đi kèm ảnh); thời điểm tạo tài khoản, đăng nhập và đồng bộ. Nếu bạn dùng review cộng đồng: biệt danh
         và loại da bạn chọn (không bắt buộc); bài review của bạn (tiêu đề, nội dung, điểm, loại da, sản phẩm gắn kèm,
         routine nếu bạn đính kèm); ảnh bạn tải lên, được chuyển sang định dạng WebP và bỏ hết thông tin đi kèm ảnh (vị
-        trí GPS, thiết bị, thời gian chụp); chú thích ảnh; bình luận; bài bạn thích, bài bạn lưu; báo cáo bạn gửi. SkinWise
+        trí GPS, thiết bị, thời gian chụp); chú thích ảnh; bình luận; bài và bình luận bạn thích, bài bạn lưu; báo cáo bạn gửi; thông báo trong app về
+        bình luận, trả lời và lượt thích dành cho bạn, và về việc người duyệt hiện / ẩn / gỡ bài của bạn (thông báo chỉ hiện trong app, không gửi qua email). SkinWise
         không hỏi tên, số điện thoại hay ngày sinh. Địa chỉ IP được giữ trong bộ nhớ máy chủ để giới hạn số lần gửi link
         qua email, đăng nhập sai và đọc ảnh nhãn, và được xoá khỏi bộ nhớ khoảng 1 giờ sau lần cuối được tính. Máy chủ web cũng giữ địa chỉ IP trong bộ nhớ (không ghi ra
         đĩa) để giới hạn số lần kiểm tra routine và phân tích thành phần. Nhật ký
@@ -31,9 +33,11 @@ export function PolicyText() {
         ngày.
       </Section>
       <Section title="Ai thấy được gì">
-        Routine trong tài khoản chỉ bạn thấy. Trong review cộng đồng, người dùng khác đã đăng nhập thấy biệt danh và
+        Routine trong tài khoản chỉ bạn thấy. Ảnh sản phẩm bạn tự tải chỉ bạn xem được, không đi kèm routine bạn chia
+        sẻ và không được đưa vào bài review cộng đồng. Trong review cộng đồng, người dùng khác đã đăng nhập thấy biệt danh và
         loại da trong hồ sơ của bạn, bài review (cả ảnh, chú thích, sản phẩm và routine đính kèm) và bình luận của bạn,
-        cùng số lượt thích của mỗi bài; họ không thấy ai đã thích, đã lưu hay đã báo cáo. Email của bạn không bao giờ hiện
+        cùng số lượt thích của mỗi bài và bình luận; họ không thấy ai đã thích, đã lưu hay đã báo cáo. Thông báo lượt
+        thích cũng không cho tác giả biết ai đã thích. Email của bạn không bao giờ hiện
         cho người dùng khác. Người duyệt của SkinWise xem được bài, bình luận và báo cáo để gỡ nội dung vi phạm; họ thấy
         lý do và ghi chú kèm báo cáo, không thấy ai đã báo cáo.
       </Section>
@@ -58,13 +62,14 @@ export function PolicyText() {
       </Section>
       <Section title="Giữ trong bao lâu">
         Đến khi bạn xoá tài khoản. Tài khoản không xác thực email được xoá sau khoảng 7 ngày kể từ khi đăng ký (lâu hơn
-        một chút nếu bạn vừa xin gửi lại link xác thực). Bản sao lưu cơ sở dữ liệu và ảnh được giữ tối đa 30 ngày; trong
+        một chút nếu bạn vừa xin gửi lại link xác thực). Ảnh sản phẩm bạn tự tải được xoá khoảng 7 ngày sau khi routine
+        lưu trên máy chủ không còn dùng ảnh đó. Thông báo trong app được xoá 90 ngày sau khi bạn đã đọc. Bản sao lưu cơ sở dữ liệu và ảnh được giữ tối đa 30 ngày; trong
         thời gian đó, bản sao lưu có thể vẫn còn email và dữ liệu của tài khoản đã xoá.
       </Section>
       <Section title="Quyền của bạn">
         Xem và sửa routine ngay trong app; tải về toàn bộ dữ liệu SkinWise giữ về bạn; xoá tài khoản bất cứ lúc nào
-        trong trang Tài khoản; xoá tài khoản thì xoá cả hồ sơ, bài review, ảnh, bình luận, lượt thích, bài đã lưu và báo cáo
-        của bạn. Bạn cũng xoá được từng bài và bình luận của mình. Rút lại đồng ý chính là xoá tài khoản. Bạn có quyền
+        trong trang Tài khoản; xoá tài khoản thì xoá cả hồ sơ, bài review, ảnh (cả ảnh sản phẩm), bình luận, lượt thích, bài
+        đã lưu, báo cáo và thông báo của bạn. Bạn cũng xoá được từng bài và bình luận của mình. Rút lại đồng ý chính là xoá tài khoản. Bạn có quyền
         khiếu nại theo Luật Bảo vệ dữ liệu cá nhân số 91/2025/QH15.
       </Section>
       <Section title="Khi có sự cố">

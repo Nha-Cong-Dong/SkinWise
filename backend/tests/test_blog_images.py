@@ -312,33 +312,33 @@ def _request(headers: dict[str, str], chunks: list[bytes]):
     return Request(scope, receive)
 
 
-def test_read_limited_stops_a_chunked_body_past_the_limit() -> None:
+def testread_limited_stops_a_chunked_body_past_the_limit() -> None:
     import asyncio
 
     from fastapi import HTTPException
 
-    from app.blog_api import _read_limited
+    from app.blog_api import read_limited
 
     limit = MAX_BYTES + images.MULTIPART_OVERHEAD
     chunk = b"x" * (1024 * 1024)
     chunked = _request({"transfer-encoding": "chunked"}, [chunk] * 6)  # no Content-Length
     with pytest.raises(HTTPException) as e:
-        asyncio.run(_read_limited(chunked, limit))
+        asyncio.run(read_limited(chunked, limit))
     assert e.value.status_code == 413
     small = _request({"transfer-encoding": "chunked"}, [b"abc", b"def"])
-    assert asyncio.run(_read_limited(small, limit)) == b"abcdef"
+    assert asyncio.run(read_limited(small, limit)) == b"abcdef"
 
 
-def test_read_limited_trusts_a_large_content_length_to_refuse() -> None:
+def testread_limited_trusts_a_large_content_length_to_refuse() -> None:
     import asyncio
 
     from fastapi import HTTPException
 
-    from app.blog_api import _read_limited
+    from app.blog_api import read_limited
 
     declared = _request({"content-length": str(MAX_BYTES + 10**6)}, [b""])
     with pytest.raises(HTTPException) as e:
-        asyncio.run(_read_limited(declared, MAX_BYTES + images.MULTIPART_OVERHEAD))
+        asyncio.run(read_limited(declared, MAX_BYTES + images.MULTIPART_OVERHEAD))
     assert e.value.status_code == 413
 
 

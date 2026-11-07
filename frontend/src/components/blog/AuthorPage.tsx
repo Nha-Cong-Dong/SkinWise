@@ -3,7 +3,8 @@ import { SKIN_TYPE_LABELS } from '../../labels'
 import { ALL_POSTS, href } from '../../router'
 import { statusOf, useLoad } from '../../useLoad'
 import { Notice } from '../Notice'
-import { DemoFooter, LoadError, Loading, PostGrid, textLink } from './parts'
+import { Avatar, DemoFooter, LoadError, Loading, PostGrid } from './parts'
+import { BlogShell } from './Shell'
 
 /** #/tac-gia/<handle>: an author's visible posts. Only the nickname and skin type are public. */
 export function AuthorPage({ handle }: { handle: string }) {
@@ -18,23 +19,23 @@ export function AuthorPage({ handle }: { handle: string }) {
           : { kind: 'loading' as const }
 
   return (
-    <div>
-      <p className="text-sm">
-        <a href={href(ALL_POSTS)} className={textLink}>
-          ← Review cộng đồng
-        </a>
-      </p>
-      <div className="mt-4">
+    <BlogShell spot={null} title="Người viết" heading={false} back={{ href: href(ALL_POSTS), label: 'Về danh sách bài review' }}>
+      <div>
         {state.kind === 'loading' && <Loading />}
         {state.kind === 'missing' && <p className="text-sm text-ink-soft">Không tìm thấy người viết này.</p>}
         {state.kind === 'error' && <LoadError onRetry={retry}>Không tải được trang người viết.</LoadError>}
         {state.kind === 'ready' && (
           <>
-            <h1 className="text-2xl font-bold">@{state.author.handle}</h1>
-            <p className="mt-1 text-sm text-ink-soft">
-              {state.author.skin_type && `${SKIN_TYPE_LABELS[state.author.skin_type]} · `}
-              {state.author.post_count} bài review
-            </p>
+            <div className="flex items-center gap-3">
+              <Avatar handle={state.author.handle} />
+              <div className="min-w-0">
+                <h1 className="text-2xl leading-tight font-bold break-words">{state.author.handle}</h1>
+                <p className="text-sm text-ink-soft">
+                  {state.author.skin_type && `${SKIN_TYPE_LABELS[state.author.skin_type]} · `}
+                  {state.author.post_count} bài review
+                </p>
+              </div>
+            </div>
             <div className="mt-6">
               {state.author.posts.length === 0 ? (
                 <Notice>Chưa có bài review nào.</Notice>
@@ -46,6 +47,6 @@ export function AuthorPage({ handle }: { handle: string }) {
         )}
       </div>
       <DemoFooter />
-    </div>
+    </BlogShell>
   )
 }

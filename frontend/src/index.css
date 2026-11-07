@@ -1,9 +1,15 @@
 @import "tailwindcss";
 
+/* Only for what the design swaps outright in the dark theme (the logo files). */
+@custom-variant dark (&:where([data-theme="dark"], [data-theme="dark"] *));
+
 /* Fonts are served with the app, not from Google Fonts: no request to a third party (the
    viewer's IP stays here) and no stylesheet blocking the first paint. Files and subsets as
-   Google Fonts serves them (Archivo variable 400–800, Newsreader italic 400); licence: SIL
-   Open Font License 1.1, see fonts/OFL-*.txt. The browser downloads only the subsets a page uses. */
+   Google Fonts serves them (Archivo variable 400–800, Newsreader italic 400). "Newsreader Display"
+   500 for page titles, Nunito 600/700 for dialog titles and Dancing Script 600 for the sign-in
+   tagline: the original files from the "SkinWise Wireframe" design (Newsreader, Nunito, Dancing
+   Script; OFL).
+   Licence: SIL Open Font License 1.1, see fonts/OFL-*.txt. The browser downloads only the subsets a page uses. */
 @font-face {
   font-family: "Archivo";
   font-style: normal;
@@ -59,67 +65,288 @@
     U+2000-206F, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
 }
 
-/* Day / night: the routine has two sessions, so the brand is a white morning panel and an
-   indigo evening panel. Saturated colour is kept for warning severity only. */
+@font-face {
+  font-family: "Newsreader Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/newsreader-vietnamese-500-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301,
+    U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Newsreader Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/newsreader-latin-ext-500-normal.woff2") format("woff2");
+  unicode-range: U+0100-02AF, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1E00-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Newsreader Display";
+  font-style: normal;
+  font-weight: 500;
+  font-display: swap;
+  src: url("./fonts/newsreader-latin-500-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-0301, U+0303-0304,
+    U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/nunito-vietnamese-700-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/nunito-latin-ext-700-normal.woff2") format("woff2");
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 700;
+  font-display: swap;
+  src: url("./fonts/nunito-latin-700-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/nunito-vietnamese-600-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/nunito-latin-ext-600-normal.woff2") format("woff2");
+  unicode-range: U+0100-02AF, U+0304, U+0308, U+0329, U+1E00-1E9F, U+1EF2-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Nunito";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/nunito-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+@font-face {
+  font-family: "Dancing Script";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/dancing-script-vietnamese-600-normal.woff2") format("woff2");
+  unicode-range: U+0102-0103, U+0110-0111, U+0128-0129, U+0168-0169, U+01A0-01A1, U+01AF-01B0, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1EA0-1EF9, U+20AB;
+}
+@font-face {
+  font-family: "Dancing Script";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/dancing-script-latin-ext-600-normal.woff2") format("woff2");
+  unicode-range: U+0100-02AF, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20CF, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: "Dancing Script";
+  font-style: normal;
+  font-weight: 600;
+  font-display: swap;
+  src: url("./fonts/dancing-script-latin-600-normal.woff2") format("woff2");
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA, U+02DC, U+0300-0301, U+0303-0304, U+0308-0309, U+0323, U+0329, U+2000-206F, U+2074, U+20AC, U+2122, U+2191, U+2193, U+2212, U+2215, U+FEFF, U+FFFD;
+}
+
+/* Design system "SkinWise" (_workspace/design-import/project/ds/skinwise/tokens.css, light theme
+   only). Morning is a pink dawn panel, evening an indigo dusk panel; saturated colour is kept for
+   warning severity only. There is no #FFFFFF anywhere: "white" is the warm paper surface. */
 @theme {
   --font-sans: "Archivo", ui-sans-serif, system-ui, "Segoe UI", Roboto, sans-serif;
   /* Words quoted from a source, never the app's own text. */
   --font-serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
+  /* Page titles (h1, h2). */
+  --font-display: "Newsreader Display", ui-serif, Georgia, "Times New Roman", serif;
+  /* Titles of dialogs and of the sign-in card (the design's Nunito 600). */
+  --font-brand: "Nunito", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
+  /* Only the tagline of the sign-in page. */
+  --font-script: "Dancing Script", cursive;
 
-  --text-xl: 1.3125rem;
+  /* Type scale (tokens.css --text-*). 13px is the smallest size. */
+  --text-xs: 0.8125rem; /* caption / label, 13px */
+  --text-xs--line-height: 1.45;
+  --text-sm: 0.9375rem; /* body-sm, 15px */
+  --text-sm--line-height: 1.55;
+  --text-base: 1rem; /* body-md */
+  --text-base--line-height: 1.6;
+  --text-lg: 1.125rem; /* body-lg */
+  --text-lg--line-height: 1.6;
+  --text-xl: 1.3125rem; /* headline-sm, 21px */
   --text-xl--line-height: 1.3;
+  --text-2xl: 1.625rem; /* headline-lg, 26px */
+  --text-2xl--line-height: 1.25;
+  --text-3xl: 1.875rem; /* page title on a phone, 30px */
+  --text-3xl--line-height: 1.2;
+  --text-4xl: 2.5rem; /* page title on a computer, 40px */
+  --text-4xl--line-height: 1.15;
 
-  --color-paper: #eef1ef;
-  --color-surface: #ffffff;
-  --color-line: #d8dce2;
-  --color-ink: #1b2140;
-  --color-ink-soft: #444b6a;
-  --color-ink-mute: #646a88;
-  --color-link: #3346a8;
+  /* Radius: sm for what is read or typed exactly, md for buttons / cards / dialogs, lg only for
+     the two session panels, full for days, step discs, chips, avatars. */
+  --radius-sm: 4px;
+  --radius-md: 8px;
+  --radius-lg: 14px;
 
-  --color-night: #1e2448;
-  --color-night-raised: #2b3263;
-  --color-night-line: #3a4277;
-  --color-night-text: #e8eaf6;
-  --color-night-mute: #aeb3d4;
-  --color-moon: #f1e6bd;
-  --color-sun: #f2b234;
+  /* Only for what floats above the page: dialogs, dropdowns, the bottom bars. */
+  --shadow-float: 0 1px 2px rgb(47 42 85 / 0.1), 0 8px 24px rgb(47 42 85 / 0.12);
 
-  /* Active-ingredient groups. */
-  --color-active: #e7e9f7;
-  --color-active-ink: #2e3a8c;
+  /* Motion (ANIMATION.md): ease-out only, every control point inside 0–1, so nothing overshoots. */
+  --ease-out-soft: cubic-bezier(0.22, 0.61, 0.36, 1); /* default for anything coming in */
+  --ease-out-strong: cubic-bezier(0.16, 1, 0.3, 1); /* page-load fade-up, dialogs */
+  --ease-in-soft: cubic-bezier(0.4, 0, 1, 1); /* only for something leaving */
 
-  --color-avoid: #c4362b;
-  --color-avoid-ink: #93211a;
-  --color-avoid-soft: #fbe5e2;
-  --color-caution: #d08a10;
-  --color-caution-ink: #7c4d08;
-  --color-caution-soft: #fcefd4;
-  --color-info: #23809f;
-  --color-info-ink: #135a72;
-  --color-info-soft: #def0f5;
-  --color-safe: #2e8c59;
-  --color-safe-ink: #1b6340;
-  --color-safe-soft: #def2e6;
+  /* Base roles. */
+  --color-primary: #383466; /* every action: main button, link, selected item, focus ring */
+  --color-primary-hover: #272451;
+  --color-neutral: #f5f2f8; /* page background */
+  --color-surface: #fcfbf8; /* cards, inputs, text on primary */
+  --color-on-surface: #1c1c2c; /* main text */
+  --color-secondary: #5a586b; /* secondary information */
+  --color-border: #d9d8e0; /* 1px lines */
+  --color-white: #fcfbf8; /* no pure white: Tailwind's white is the surface */
+
+  /* Sessions. */
+  --color-petal: #ffc8dd;
+  --color-dawn: #ffeef4;
+  --color-dawn-ink: #8b2f55;
+  --color-dusk: #2f2a55;
+  --color-dusk-raised: #3f3969;
+  --color-dusk-line: #534f7a;
+  --color-on-dusk: #f0eff8;
+  --color-dusk-mute: #beb9d9;
+
+  /* Accents. Blush marks only what just matched or changed (selection). */
+  --color-blush: #ffafcc;
+  --color-thistle: #cdb4db; /* active-ingredient chips; selected item and focus ring on dusk */
+  --color-thistle-hover: #deccea;
+  --color-thistle-ink: #442a59;
+  /* Background of secondary buttons and of the selected sub-tab (thistle on surface). */
+  --color-wash: color-mix(in srgb, var(--color-thistle) 30%, var(--color-surface));
+  --color-wash-strong: color-mix(in srgb, var(--color-thistle) 50%, var(--color-surface));
+
+  /* Old names used across the components, now pointing at the roles above. */
+  --color-paper: var(--color-neutral);
+  --color-line: var(--color-border);
+  --color-ink: var(--color-on-surface);
+  --color-ink-soft: var(--color-secondary);
+  --color-ink-mute: var(--color-secondary);
+  --color-link: var(--color-primary);
+
+  /* Warning severity: the only saturated colours. mark = icon and 4px bar, ink = badge text on soft. */
+  --color-avoid: #bd3a2b;
+  --color-avoid-ink: #8d251f;
+  --color-avoid-soft: #ffe6e1;
+  --color-caution: #bf7101;
+  --color-caution-ink: #824c11;
+  --color-caution-soft: #ffeecf;
+  --color-info: #3275b4;
+  --color-info-ink: #1d4f82;
+  --color-icy: #bde0fe;
+  --color-safe: #348757;
+  --color-safe-ink: #1c5e3d;
+  --color-safe-soft: #e0f5e6;
 }
 
+/* Dark theme (tokens.css [data-theme="dark"]). The token names stay; their values change, so the
+   components need no dark: classes. Set on <html> by public/theme-init.js before the first paint,
+   then by theme.ts. */
 @layer base {
+  :root {
+    color-scheme: light;
+    --duration-instant: 120ms;
+    --duration-fast: 180ms;
+    --duration-base: 240ms;
+    --duration-enter: 320ms;
+    --duration-highlight: 600ms;
+    --duration-exit: 160ms; /* about a third shorter than the way in */
+    --motion-rise: 8px;
+    --motion-rise-sm: 4px;
+    --stagger-step: 40ms;
+    --stagger-max: 6;
+  }
+
+  [data-theme='dark'] {
+    color-scheme: dark;
+    --color-primary: var(--color-thistle);
+    --color-primary-hover: #deccea;
+    --color-neutral: #11111f;
+    --color-surface: #1d1c2e;
+    --color-white: #1d1c2e;
+    --color-on-surface: #f0eff8;
+    --color-secondary: #beb9d9;
+    --color-border: #3c3954;
+    --color-petal: #381c2a;
+    --color-dawn: #381c2a;
+    --color-dawn-ink: #ffc8dd;
+    --color-avoid: #febfb4;
+    --color-avoid-ink: #febfb4;
+    --color-avoid-soft: #492019;
+    --color-caution: #f7c790;
+    --color-caution-ink: #f7c790;
+    --color-caution-soft: #412805;
+    --color-info: #a2d2ff;
+    --color-info-ink: #a2d2ff;
+    --color-icy: #102f4d;
+    --color-safe: #aae0bc;
+    --color-safe-ink: #aae0bc;
+    --color-safe-soft: #0a371f;
+    /* Weaker washes: thistle text on them stays above 4.5:1 (6.4 and 5.1). */
+    --color-wash: color-mix(in srgb, var(--color-thistle) 15%, var(--color-surface));
+    --color-wash-strong: color-mix(in srgb, var(--color-thistle) 24%, var(--color-surface));
+    /* Shadows do not show on a dark page: a 1px line instead. */
+    --shadow-float: 0 0 0 1px #3c3954;
+  }
+
+  /* The morning panel at night: plum, as in the design (Main.dc.html), its lines a little lighter. */
+  [data-theme='dark'] .session-am {
+    --color-petal: color-mix(in srgb, #ffc8dd 16%, var(--color-surface));
+    --color-dawn: color-mix(in srgb, #ffc8dd 5%, var(--color-surface));
+  }
+
   body {
-    @apply bg-paper font-sans text-ink antialiased;
+    @apply bg-neutral font-sans text-on-surface antialiased;
+  }
+
+  input[type='checkbox'],
+  input[type='radio'] {
+    accent-color: var(--color-primary);
   }
 
   :focus-visible {
-    outline: 2px solid var(--color-link);
+    outline: 2px solid var(--color-primary);
     outline-offset: 2px;
   }
 
+  /* On the dusk panel the indigo ring would not show (1.2:1); thistle does (7:1). */
+  .dusk-panel :focus-visible {
+    outline-color: var(--color-thistle);
+  }
+
   ::selection {
-    background: var(--color-moon);
-    color: var(--color-ink);
+    background: var(--color-blush);
+    color: #1c1c2c; /* dark text on blush in both themes (10.9:1) */
   }
 
   dialog::backdrop {
-    background: rgb(27 33 64 / 0.5);
+    background: rgb(47 42 85 / 0.5); /* dusk 50% */
   }
 
   html:has(dialog[open]) {
@@ -132,7 +359,153 @@
     ::after {
       transition-duration: 0s !important;
       animation-duration: 0s !important;
+      animation-delay: 0s !important;
       scroll-behavior: auto !important;
     }
   }
+}
+
+/* Motion (ANIMATION.md). Only opacity and transform; fill-mode "backwards" holds the first frame
+   during a stagger delay and then hands back to the element's own styles, so the resting state is
+   exactly the page without motion. Nothing waits for JavaScript to become visible. */
+@keyframes fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise));
+  }
+}
+@keyframes fade-up-sm {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise-sm));
+  }
+}
+@keyframes fade-in {
+  from {
+    opacity: 0;
+  }
+}
+@keyframes fade-out {
+  to {
+    opacity: 0;
+  }
+}
+@keyframes dialog-in {
+  from {
+    opacity: 0;
+    transform: translateY(var(--motion-rise)) scale(0.98);
+  }
+}
+
+@layer components {
+  /* Drop-down lists: the browser's own arrow looks foreign, so it is drawn here (a soft chevron in a
+     mid tone that reads on both themes). img-src allows data: (deploy/nginx). */
+  .select-field {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%238a86a3' stroke-width='1.75' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.875rem center;
+    background-size: 1.125rem;
+    padding-right: 2.75rem;
+    cursor: pointer;
+  }
+  /* First visit to a tab (data-motion="enter" on its panel): blocks rise in reading order, 40ms
+     apart, the 7th and later sharing the 6th's delay. */
+  [data-motion='enter'] .motion-enter {
+    animation: fade-up var(--duration-enter) var(--ease-out-strong) backwards;
+    animation-delay: calc(min(var(--i, 0), var(--stagger-max)) * var(--stagger-step));
+  }
+  /* Later visits: one short fade for the whole panel. */
+  [data-motion='tab'],
+  .motion-tab {
+    animation: fade-up-sm var(--duration-fast) var(--ease-out-soft) backwards;
+  }
+  /* Something the user just added to a list. */
+  .motion-item {
+    animation: fade-up-sm var(--duration-base) var(--ease-out-soft) backwards;
+  }
+  /* Content opening inside a card (a <details>, "Xem nguyên văn"). */
+  .motion-fade {
+    animation: fade-in var(--duration-fast) var(--ease-out-soft) backwards;
+  }
+  /* A photo that has just loaded (not one from the cache). */
+  .motion-photo {
+    animation: fade-in var(--duration-base) var(--ease-out-soft) backwards;
+  }
+  /* "Đang tải…": appears only after 300ms of waiting, then fades in. Without animations it simply shows. */
+  .motion-loading {
+    animation: fade-in var(--duration-fast) var(--ease-out-soft) 300ms backwards;
+  }
+  /* Leaving (the undo bar hiding itself): opacity only, shorter, ease-in. */
+  .motion-leave {
+    animation: fade-out var(--duration-exit) var(--ease-in-soft) forwards;
+  }
+  .motion-dialog[open] {
+    animation: dialog-in var(--duration-base) var(--ease-out-strong) backwards;
+  }
+  .motion-dialog[open]::backdrop {
+    animation: fade-in var(--duration-base) var(--ease-out-soft) backwards;
+  }
+  /* Hover and press: colours in 120ms, a press settles to 0.98 and back, no rebound. */
+  .motion-press {
+    transition-property: color, background-color, border-color, opacity, transform;
+    transition-duration: var(--duration-instant);
+    transition-timing-function: var(--ease-out-soft);
+  }
+  .motion-press:active:not(:disabled) {
+    transform: scale(0.98);
+  }
+  /* What a link pointed at (a warning card, the steps of a warning in the week, ANIMATION.md 5.9):
+     no outline; it rises once and settles 5px above its place with a soft blush glow, which stays
+     so the place is still marked after the motion. The text never fades or waits. */
+  .motion-spotlight {
+    position: relative;
+    isolation: isolate;
+    transform: translateY(-5px);
+    animation: spotlight-lift 520ms var(--ease-out-strong) backwards;
+  }
+  .motion-spotlight:not(.spotlight-wide) {
+    box-shadow: var(--spot-glow);
+    animation-name: spotlight-lift, spotlight-glow;
+  }
+  /* Morning rows have no background of their own: a raised surface behind them carries the glow,
+     reaching a little past the text. */
+  .spotlight-wide::before {
+    content: '';
+    position: absolute;
+    inset: 0 -0.5rem;
+    z-index: -1;
+    border-radius: var(--radius-md);
+    background: var(--color-surface);
+    box-shadow: var(--spot-glow);
+    pointer-events: none;
+    animation: spotlight-glow 520ms var(--ease-out-strong) backwards;
+  }
+  /* A day the warning applies on: the same glow, smaller, no ring. */
+  .spotlight-day {
+    box-shadow: 0 0 14px 3px rgb(255 175 204 / 1), 0 0 4px 1px rgb(240 120 165 / 0.6);
+  }
+}
+:root {
+  --spot-glow: 0 16px 36px -8px rgb(255 175 204 / 1), 0 4px 14px -2px rgb(240 120 165 / 0.55);
+}
+/* Rises from its own place: 5px of travel, under the 8px limit. */
+@keyframes spotlight-lift {
+  from {
+    transform: none;
+  }
+}
+@keyframes spotlight-glow {
+  from {
+    box-shadow: 0 0 0 0 rgb(255 175 204 / 0);
+  }
+}
+
+/* Page titles use the display serif at 500 (the only weight shipped). Unlayered on purpose: it wins
+   over font-bold / tracking utilities still on headings, so no heading gets a synthesised bold. */
+h1:not(.font-sans, .font-brand),
+h2:not(.font-sans, .font-brand) {
+  font-family: var(--font-display);
+  font-weight: 500;
+  letter-spacing: -0.01em;
 }

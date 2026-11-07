@@ -90,6 +90,7 @@ class Goal:
     shared: bool
     actives: list[GoalItem] = field(default_factory=list)
     infos: list[GoalItem] = field(default_factory=list)
+    has_article: bool = False  # set by the route: a published article exists (goal_articles)
 
 
 _GOALS = text("SELECT code, name_vi, description_vi, shared FROM goals ORDER BY position, code")

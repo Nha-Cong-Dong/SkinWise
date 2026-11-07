@@ -49,17 +49,23 @@ def remove_demo_accounts(conn: Connection) -> tuple[int, list[str]]:
         conn.execute(
             text(
                 "SELECT i.file_name FROM blog_images i JOIN users u ON u.id = i.owner_id "
-                f"WHERE {match}"
+                f"WHERE {match} UNION ALL "
+                "SELECT ph.file_name FROM user_product_photos ph "
+                f"JOIN users u ON u.id = ph.owner_id WHERE {match}"
             ),
             params,
         ).scalars()
     )
+    # Others' replies to demo comments stay, under an empty frame (as when deleting an account).
+    leaving = conn.execute(text(f"SELECT u.id::text FROM users u WHERE {match}"), params)
+    for user_id in leaving.scalars().all():
+        blog.keep_threads_of(conn, user_id)
     emails = list(
         conn.execute(text(f"DELETE FROM users u WHERE {match} RETURNING u.email"), params).scalars()
     )
     # email_tokens has no foreign key to users (links exist before the account is verified).
     conn.execute(text("DELETE FROM email_tokens WHERE email = ANY(:e)"), {"e": emails})
-    blog.drop_orphan_reports(conn)
+    blog.after_account_deletion(conn)
     return len(emails), files
 
 
@@ -146,11 +152,12 @@ def create_posts(conn: Connection, posts: list[dict[str, Any]], users: dict[int,
     created = 0
     for p in posts:
         author = users[p["author"]]
-        exists = conn.execute(
-            text("SELECT 1 FROM blog_posts WHERE author_id = :a AND title = :t"),
+        post_id = conn.execute(
+            text("SELECT id FROM blog_posts WHERE author_id = :a AND title = :t"),
             {"a": author, "t": p["title"]},
-        ).first()
-        if exists:
+        ).scalar_one_or_none()
+        if post_id is not None:
+            ensure_comments(conn, post_id, p, users)
             continue
         body = PostIn.model_validate(
             {
@@ -166,10 +173,33 @@ def create_posts(conn: Connection, posts: list[dict[str, Any]], users: dict[int,
         post_id = blog.create_post(conn, author, _post_data(body))
         for n in p.get("likes", []):
             blog.set_like(conn, post_id, users[n], True)
-        for n, comment in p.get("comments", []):
-            blog.add_comment(conn, post_id, users[n], comment)
+        ensure_comments(conn, post_id, p, users)
         created += 1
     return created
+
+
+def ensure_comments(
+    conn: Connection, post_id: int, post: dict[str, Any], users: dict[int, str]
+) -> None:
+    """Add the post's comments and replies that are not there yet (same author and text),
+    then the comment likes. A comment [n, text, k] replies to comment number k (from 1) of
+    the same post; comment_likes = [[k, [account numbers]]]."""
+    ids: list[int] = []
+    for n, body, *answered in post.get("comments", []):
+        comment_id = conn.execute(
+            text(
+                "SELECT id FROM blog_comments WHERE post_id = :p AND author_id = :a "
+                "AND body = :b AND deleted_at IS NULL"
+            ),
+            {"p": post_id, "a": users[n], "b": body},
+        ).scalar_one_or_none()
+        if comment_id is None:
+            parent = ids[answered[0] - 1] if answered else None
+            comment_id = blog.add_comment(conn, post_id, users[n], body, parent)
+        ids.append(comment_id)
+    for k, likers in post.get("comment_likes", []):
+        for n in likers:
+            blog.set_comment_like(conn, ids[k - 1], users[n], True)
 
 
 def main(args: list[str]) -> int:

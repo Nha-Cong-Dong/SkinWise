@@ -1,6 +1,8 @@
 import type { ReactNode } from 'react'
 import type { Severity } from '../api'
 import { SEVERITY } from '../labels'
+import logoDarkUrl from '../assets/brand/skinwise-logo-dark.svg'
+import logoUrl from '../assets/brand/skinwise-logo.svg'
 
 type IconProps = { className?: string }
 
@@ -12,25 +14,25 @@ const stroke = {
   strokeLinejoin: 'round',
 } as const
 
-/** Half sun, half night: the two sessions of a routine. */
-export function Mark({ className }: IconProps) {
+/** The logo with the word "SkinWise". */
+export function Logo({ className }: IconProps) {
+  // The design has its own file for the dark theme; only the one that fits is shown.
   return (
-    <svg viewBox="0 0 32 32" className={className} aria-hidden="true">
-      <circle cx="16" cy="16" r="15" fill="var(--color-night)" />
-      <path d="M16 1a15 15 0 0 0 0 30z" fill="var(--color-sun)" />
-      <path d="M22.5 10.5a5.5 5.5 0 1 0 2.6 9.9 6.5 6.5 0 0 1-2.6-9.9z" fill="var(--color-moon)" />
-    </svg>
+    <>
+      <img src={logoUrl} alt="SkinWise" className={`${className ?? ''} dark:hidden`} width={293} height={80} />
+      <img src={logoDarkUrl} alt="SkinWise" className={`${className ?? ''} hidden dark:inline-block`} width={293} height={80} />
+    </>
   )
 }
 
 export function SunIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <circle cx="12" cy="12" r="4.5" fill="var(--color-sun)" />
+      <circle cx="12" cy="12" r="4.5" fill="var(--color-dawn-ink)" />
       <path
         d="M12 2.5v2.2M12 19.3v2.2M2.5 12h2.2M19.3 12h2.2M5.3 5.3l1.5 1.5M17.2 17.2l1.5 1.5M5.3 18.7l1.5-1.5M17.2 6.8l1.5-1.5"
         {...stroke}
-        stroke="var(--color-sun)"
+        stroke="var(--color-dawn-ink)"
       />
     </svg>
   )
@@ -39,7 +41,7 @@ export function SunIcon({ className }: IconProps) {
 export function MoonIcon({ className }: IconProps) {
   return (
     <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
-      <path d="M15.5 3.5a8.5 8.5 0 1 0 5 15.4A9.5 9.5 0 0 1 15.5 3.5z" fill="var(--color-moon)" />
+      <path d="M15.5 3.5a8.5 8.5 0 1 0 5 15.4A9.5 9.5 0 0 1 15.5 3.5z" fill="var(--color-thistle)" />
     </svg>
   )
 }
@@ -66,11 +68,32 @@ export function SeverityIcon({ severity, className }: IconProps & { severity: Se
 export function SeverityBadge({ severity, children }: { severity: Severity; children?: ReactNode }) {
   return (
     <span
-      className={`inline-flex items-center gap-1 rounded-full py-0.5 pr-2 pl-1 text-xs font-semibold whitespace-nowrap ${SEVERITY[severity].badge}`}
+      className={`inline-flex items-center gap-1 rounded-sm py-0.5 pr-1.5 pl-1 text-xs font-semibold whitespace-nowrap ${SEVERITY[severity].badge}`}
     >
       <SeverityIcon severity={severity} className="size-4" />
       {children ?? SEVERITY[severity].label}
     </span>
+  )
+}
+
+/** Line icons of the theme switch: device (screen), light (sun), dark (moon). Decorative. */
+export function ThemeIcon({ name, className }: IconProps & { name: 'system' | 'light' | 'dark' }) {
+  return (
+    <svg viewBox="0 0 24 24" className={className} aria-hidden="true">
+      {name === 'system' && (
+        <path d="M4 5.5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1v-9a1 1 0 0 1 1-1zM9 20.5h6M12 16.5v4" {...stroke} />
+      )}
+      {name === 'light' && (
+        <>
+          <circle cx="12" cy="12" r="4" {...stroke} />
+          <path
+            d="M12 2.75v2M12 19.25v2M2.75 12h2M19.25 12h2M5.5 5.5l1.4 1.4M17.1 17.1l1.4 1.4M5.5 18.5l1.4-1.4M17.1 6.9l1.4-1.4"
+            {...stroke}
+          />
+        </>
+      )}
+      {name === 'dark' && <path d="M19.5 14.5A8 8 0 0 1 9.5 4.5a8 8 0 1 0 10 10z" {...stroke} />}
+    </svg>
   )
 }
 
