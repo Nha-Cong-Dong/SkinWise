@@ -11,13 +11,6 @@ import { ThemeSwitch } from './ThemeSwitch'
 import { btn, btnPrimary } from './ui'
 import { WarningsPanel } from './WarningsPanel'
 
-/**
- * The texts of "Vấn đề · Giải pháp · Cách hoạt động · Bắt đầu" come from
- * _workspace/feature-landing-theme/landing_copy.md, a draft the user has not approved yet. While
- * this is false every such section shows "[CHỜ DUYỆT]"; set it to true once approved.
- */
-const COPY_APPROVED = false
-
 type Props = {
   /** "Bắt đầu lập kế hoạch", "Tạo tài khoản": the register form. */
   onStart: () => void
@@ -152,15 +145,10 @@ function Hero({ onStart }: { onStart: () => void }) {
   )
 }
 
-function Pending() {
-  if (COPY_APPROVED) return null
-  return (
-    <span className="ml-2 inline-block rounded-sm border border-dashed border-ink-mute px-1.5 align-middle font-sans text-xs font-semibold tracking-normal text-ink-mute">
-      [CHỜ DUYỆT]
-    </span>
-  )
-}
-
+/**
+ * The texts of "Vấn đề · Giải pháp · Cách hoạt động · Bắt đầu" are the copy the user approved on
+ * 2026-11-07 (_workspace/feature-landing-theme/landing_copy.md); change them only with their review.
+ */
 function Section({ id, title, children }: { id: string; title: string; children: ReactNode }) {
   return (
     <section
@@ -171,7 +159,6 @@ function Section({ id, title, children }: { id: string; title: string; children:
     >
       <h2 id={`${id}-title`} className="max-w-3xl text-3xl text-balance lg:text-4xl">
         {title}
-        <Pending />
       </h2>
       {children}
     </section>
