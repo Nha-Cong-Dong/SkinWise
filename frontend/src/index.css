@@ -176,7 +176,7 @@
   --font-serif: "Newsreader", ui-serif, Georgia, "Times New Roman", serif;
   /* Page titles (h1, h2). */
   --font-display: "Newsreader Display", ui-serif, Georgia, "Times New Roman", serif;
-  /* Titles of dialogs and of the sign-in card (the design's Nunito 600). */
+  /* Title of the sign-in card (the design's Nunito 600). Dialog titles use the display font. */
   --font-brand: "Nunito", ui-sans-serif, system-ui, "Segoe UI", sans-serif;
   /* Only the tagline of the sign-in page. */
   --font-script: "Dancing Script", cursive;

@@ -11,7 +11,7 @@ type Props = {
 /** A dialog's title in the design's Nunito, primary colour. */
 export function DialogTitle({ children }: { children: ReactNode }) {
   return (
-    <h2 className="font-brand text-2xl leading-tight font-semibold tracking-[-0.01em] text-pretty text-primary sm:text-[1.875rem]">
+    <h2 className="text-2xl leading-tight text-pretty text-primary sm:text-[1.875rem]">
       {children}
     </h2>
   )
