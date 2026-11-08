@@ -217,12 +217,19 @@ def ingredient_fields(
     }
 
 
+# The sample catalogue is ~100 products; an empty query lists all of them.
+CATALOGUE_LIMIT = 300
+
+
 @router.get("/products")
 def products(
     db: DbSession,
     q: Annotated[str, Query(max_length=200, pattern=NO_NUL)] = "",
-    limit: Annotated[int, Query(ge=1, le=100)] = 50,
+    limit: Annotated[int | None, Query(ge=1, le=CATALOGUE_LIMIT)] = None,
 ) -> list[ProductSummary]:
+    # No query: the whole catalogue (the shelf browses it). A search: the best 50.
+    if limit is None:
+        limit = CATALOGUE_LIMIT if not q.strip() else 50
     rows = search_products(db, q, limit)
     groups_by_id = load_product_groups(db, [r.id for r in rows])
     pictures = images_for(db, [r.id for r in rows])

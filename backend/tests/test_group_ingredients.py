@@ -3,8 +3,13 @@
 Shown only: the warnings and groups are those the engine gives without these fields.
 """
 
+import tomllib
+from pathlib import Path
+
 from fastapi.testclient import TestClient
 from sqlalchemy import Engine, text
+
+DATA = Path(__file__).resolve().parents[1] / "data"
 
 # Bifida Biome Serum Toner: one PHA, near the end, just before an entry declared at 10 ppb.
 BIFIDA_TONER = (
@@ -55,10 +60,16 @@ def test_seeded_positions_match_the_product_detail(make_user, engine: Engine) ->
     with engine.connect() as conn:
         rows = conn.execute(text("SELECT id, slug FROM products ORDER BY id")).all()
     ids = [row.id for row in rows]
-    # Only the Drug Facts label joined active first is not in order of weight.
-    unordered = {row.id for row in rows if row.slug == "cerave-acne-foaming-cream-cleanser"}
-    assert len(unordered) == 1
-    results = check(client, [{"key": str(i), "product_id": i} for i in ids])
+    # Only Drug Facts labels joined active first are not in order of weight.
+    with open(DATA / "products.toml", "rb") as f:
+        catalogue = tomllib.load(f)["product"]
+    joined = {p["slug"] for p in catalogue if p.get("ingredients_ordered") is False}
+    unordered = {row.id for row in rows if row.slug in joined}
+    assert "cerave-acne-foaming-cream-cleanser" in joined and len(unordered) == len(joined)
+    results: dict[str, dict] = {}
+    for start in range(0, len(ids), 50):  # a routine holds at most 50 products
+        batch = ids[start : start + 50]
+        results |= check(client, [{"key": str(i), "product_id": i} for i in batch])
     assert any(r["group_ingredients"] for r in results.values())
     for pid in ids:
         result = results[str(pid)]

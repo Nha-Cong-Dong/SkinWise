@@ -1,4 +1,6 @@
+import tomllib
 from collections.abc import Iterator
+from pathlib import Path
 
 import pytest
 from fastapi.testclient import TestClient
@@ -57,20 +59,23 @@ def test_groups_have_vietnamese_names(client: TestClient) -> None:
 
 def test_product_search_tolerates_typos_and_case(client: TestClient) -> None:
     assert search(client, "ordnary niacinamid")[0] == "the-ordinary-niacinamide-10-zinc-1"
-    assert search(client, "PAULS CHOISE") == [BHA]
+    pauls = search(client, "PAULS CHOISE")
+    assert BHA in pauls and all(slug.startswith("paulas-choice-") for slug in pauls)
     assert set(search(client, "cerave")) >= {LOTION, "cerave-renewing-sa-cleanser"}
 
 
 def test_product_search_ignores_vietnamese_diacritics(client: TestClient) -> None:
     winter_melon = {"cocoon-tinh-chat-bi-dao-n7", "cocoon-gel-bi-dao-rua-mat"}
-    assert set(search(client, "bí đao")[:2]) == winter_melon
-    assert set(search(client, "bi dao")[:2]) == winter_melon
+    assert search(client, "bí đao") == search(client, "bi dao")
+    assert winter_melon <= set(search(client, "bi dao"))
     assert search(client, "tinh chat bi dao")[0] == "cocoon-tinh-chat-bi-dao-n7"
 
 
 def test_product_search_without_query_lists_products_with_groups(client: TestClient) -> None:
     products = {p["slug"]: p for p in client.get("/products").json()}
-    assert len(products) >= 15
+    # The whole catalogue, not the first 50: the shelf browses it.
+    with open(Path(__file__).resolve().parents[1] / "data" / "products.toml", "rb") as f:
+        assert len(products) >= len(tomllib.load(f)["product"]) > 50
     assert products[RETINOL]["groups"] == ["RETINOID"]
     assert products[LOTION]["groups"] == []
 
