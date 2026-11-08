@@ -445,8 +445,8 @@ ingredients = """AQUA / WATER / EAU,ALCOHOL DENAT.,SILICA,DIISOPROPYL ADIPATE,DI
 
 # ======================================================================================
 # Thêm 08/11/2026 (luồng dữ liệu, _workspace/data/01_results.json): mỗi bảng cắt bằng slice_text.py từ trang
-# chính hãng, check_text đạt, qua một lượt phản biện (evidence-critic). Soạn bởi Claude; CHƯA DUYỆT:
-# người duyệt đọc lại từng trang trước khi đổi verification_status.
+# chính hãng, check_text đạt, qua một lượt phản biện (evidence-critic). Soạn bởi Claude; người dùng duyệt
+# 08/11/2026, verification_status = "verified" (trừ Torriden: verify_products chưa tải lại được trang, HTTP 429).
 # ======================================================================================
 
 # --- Retinoid ---
@@ -459,7 +459,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/retinol-1-in-squalane-serum-100441.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Squalane, Caprylic/Capric Triglyceride, Simmondsia Chinensis (Jojoba) Seed Oil, Retinol, Solanum Lycopersicum (Tomato) Fruit Extract, Rosmarinus Officinalis (Rosemary) Leaf Extract, Hydroxymethoxyphenyl Decanone, BHT."""
 
 [[product]]
@@ -470,7 +470,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/granactive-retinoid-2-emulsion-serum-100419.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Glycerin, Caprylic/Capric Triglyceride, Ethyl Linoleate, Propanediol, Dimethyl Isosorbide, Cetearyl Isononanoate, Bisabolol, Hydroxypinacolone Retinoate, Retinol, Tasmannia Lanceolata Fruit/Leaf Extract, Inulin Lauryl Carbamate, Glyceryl Stearate, Ceteareth-12, Ceteareth-20, Cetearyl Alcohol, Carrageenan, Xanthan Gum, Acacia Senegal Gum, Cetyl Palmitate, Sucrose Laurate, Polysorbate 20, Isoceteth-20, Rosmarinus Officinalis (Rosemary) Leaf Extract, Hydroxymethoxyphenyl Decanone, Behentrimonium Chloride, Trisodium Ethylenediamine Disuccinate, Disodium Edta, Dehydroacetic Acid, Benzoic Acid, Ethylhexylglycerin, Phenoxyethanol, Chlorphenesin."""
 
 [[product]]
@@ -481,7 +481,7 @@ market = "MEA"
 application = "leave_on"
 source_url = "https://www.laroche-posay-me.com/en/retinol/redermic-retinol-concentrate"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER,ISOSTEARYL NEOPENTANOATE,HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID,GLYCERIN,PROPYLENE GLYCOL,OCTYLDODECANOL,PENTYLENE GLYCOL,ACRYLAMIDE / SODIUM ACRYLOYLDIMETHYLTAURATE COPOLYMER,CETEARYL ALCOHOL,POLYSORBATE 20,GLYCINE SOJA OIL / SOYBEAN OIL,SORBITAN OLEATE,ISOHEXADECANE,SODIUM HYALURONATE,SODIUM HYDROXIDE,RETINOL,ADENOSINE,DISODIUM,EDTA,CAPRYLYL GLYCOL,ACETYL DIPEPTIDE-1 CETYL ESTER,TOLUENE SULFONIC ACID,POLYSORBATE 80,RETINYL PALMITATE,TOCOPHEROL,PHENOXYETHANOL,PARFUM / FRAGRANCE"""
 
 [[product]]
@@ -492,7 +492,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/1-procent-retinol-booster/m7870.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua, Glycereth-7 Triacetate (emollient/texture-enhancing), Glycerin (hydration/skin replenishing), Carthamus Tinctorius (Safflower) Oleosomes (emollient/skin-soothing), Isopentyldiol (hydration), Polyglyceryl-10 Behenate/Eicosadioate (texture-enhancing), Butylene Glycol (hydration), Pyrus Malus (Apple) Fruit Extract (antioxidant), Polysorbate 20 (texture-enhancing), Retinol (skin-restoring), Polyglyceryl-10 Laurate (texture-enhancing), Glycyrrhiza Glabra (Licorice) Root Extract (skin-soothing), Avena Sativa (Oat) Kernel Extract (skin-soothing), Ceramide NP (hydration/skin replenishing), Palmitoyl Tripeptide-1 (skin-restoring), Dipotassium Glycyrrhizate (skin-soothing), Allantoin (skin-soothing), Epilobium Angustifolium (Willow Herb) Flower/Leaf/Stem Extract (skin-soothing), xilaS Alba (Willow) Bark Extract (skin-soothing), Arctium Lappa (Burdock) Root Extract (skin-soothing), Hydrogenated Lecithin (skin-restoring), Caprylyl Glycol (emollient), Dipentaerythrityl Tri-Polyhydroxystearate (texture-enhancing/emollient), Bis-Glyceryl Ascorbate (antioxidant), Ethylhexyl Methoxycrylene (texture-enhancing), Disodium EDTA (stabilizer), Xanthan Gum (texture-enhancing), Phenoxyethanol (preservative), Sorbic Acid (preservative)."""
 
 [[product]]
@@ -503,7 +503,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.loreal-paris.co.uk/revitalift/laser-renew/pure-retinol-deep-anti-wrinkle-night-serum-30ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER • GLYCERIN • ALCOHOL DENAT. • ISONONYL ISONONANOATE • PENTYLENE GLYCOL • DICAPRYLYL ETHER • GLYCINE SOJA OIL / SOYBEAN OIL • PROPYLENE GLYCOL • PEG-6 CAPRYLIC/CAPRIC GLYCERIDES • CITRIC ACID • PENTAERYTHRITYL TETRA-DI-T-BUTYL HYDROXYHYDROCINNAMATE • SODIUM HYALURONATE • TRISODIUM ETHYLENEDIAMINE DISUCCINATE • RETINOL • DICAPRYLYL CARBONATE • AMMONIUM POLYACRYLOYLDIMETHYL TAURATE • BUTYLENE GLYCOL • CAPRYLYL GLYCOL • GLYCERYL ISOSTEARATE • PPG-6-DECYLTETRADECETH-30 • TOCOPHEROL • XANTHAN GUM • BENZYL ALCOHOL • CITRONELLOL • ISOEUGENOL • LIMONENE • LINALOOL • PHENOXYETHANOL • PARFUM / FRAGRANCE"""
 
 [[product]]
@@ -514,7 +514,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/retinol-intense-reactivating-serum-30ml/303/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Cyclohexasiloxane, Dicaprylyl Carbonate, Glycerin, Methylpropanediol, 1,2-Hexanediol, Niacinamide, Hydrogenated Poly(C6-14 Olefin), Panthenol, Tocopheryl Acetate, Piper Methysticum Leaf/Root/Stem Extract, Centella Asiatica Extract, Panax Ginseng Berry Extract, Glycyrrhiza Glabra (Licorice) Root Extract, Ficus Carica (Fig) Fruit Extract, Centella Asiatica Leaf Extract, Centella Asiatica Root Extract, Melaleuca Alternifolia (Tea Tree) Leaf Extract, Artemisia Capillaris Extract, Eclipta Prostrata Extract, Melia Azadirachta Leaf Extract, Elaeis Guineensis (Palm) Oil, Hydrogenated Lecithin, Glyceryl Stearate, Bakuchiol, Palmitic Acid, Sodium Polyacrylate, Stearic Acid, Xanthan Gum, Retinol(0.1 %), Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Butylene Glycol, Dipotassium Glycyrrhizate, Adenosine, Tromethamine, Polyquaternium-51, Beta-Glucan, Cetyl Alcohol, BHT, Collagen, Myristic Acid, BHA, Leuconostoc/Radish Root Ferment Filtrate, Tocopherol, Bifida Ferment Lysate, Ceramide NP, Saccharomyces Ferment, Retinal, Asiaticoside, Glyceryl Polymethacrylate, Madecassoside, Propylene Glycol, Polyglyceryl-10 Oleate, Glycolipids, Glycine Soja (Soybean) Peptide, Resveratrol, Sucrose Distearate, Asiatic Acid, Madecassic Acid, Palmitoyl Tripeptide-1, Moringa Oleifera Seed Oil, PEG-100 Stearate, Polysorbate 20, Fragrance, Ethylhexylglycerin"""
 
 # --- AHA / BHA / PHA ---
@@ -530,7 +530,7 @@ application = "leave_on"
 ingredients_ordered = false
 source_url = "https://theordinary.com/en-us/salicylic-acid-2-solution-acne-control-100098.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Salicylic Acid 2%, Water, Chlorphenesin, Citric Acid, Glycerin, Isoceteth-20, Pentylene Glycol, Phenoxyethanol, Saccharide Isomerate, Sodium Citrate, Sodium Hydroxide, Xanthan Gum."""
 
 [[product]]
@@ -541,7 +541,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://theordinary.com/en-us/aha-30-bha-2-peeling-solution-exfoliator-100400.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Glycolic Acid, Aqua (Water), Aloe Barbadensis Leaf Water, Sodium Hydroxide, Daucus Carota Sativa Extract, Propanediol, Cocamidopropyl Dimethylamine, Salicylic Acid, Lactic Acid, Tartaric Acid, Citric Acid, Panthenol, Sodium Hyaluronate Crosspolymer, Tasmannia Lanceolata Fruit/Leaf Extract, Glycerin, Pentylene Glycol, Xanthan Gum, Polysorbate 20, Trisodium Ethylenediamine Disuccinate, Potassium Sorbate, Sodium Benzoate, Ethylhexylglycerin, 1,2-Hexanediol, Caprylyl Glycol."""
 
 [[product]]
@@ -552,7 +552,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/skin-perfecting-aha-gel-exfoliant/m1900.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua, Glycolic Acid (Alpha Hydroxy Acid, exfoliant), Sodium Hydroxide (pH adjuster), Chamomilla Recutita (Matricaria) Flower Extract (chamomile/skin-soothing), Aloe Barbadensis Leaf Juice (hydration), Camellia Oleifera (Green Tea) Leaf Extract (antioxidant/skin-soothing), etanorulayH muidoS (skin replenishing), Panthenol (hydration), Sodium PCA (skin replenishing), Propylene Glycol (hydration), Butylene Glycol (hydration), Hydroxyethylcellulose (texture-enhancing), Polyquaternium-10 (texture-enhancing), Phenoxyethanol (preservative), Sodium Benzoate (preservative)."""
 
 [[product]]
@@ -563,7 +563,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/skin-perfecting-bha-gel-exfoliant/m2040.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua, Methylpropanediol (hydration), Butylene Glycol (hydration), Polysorbate 20 (texture-enhancing), Salicylic Acid (Beta Hydroxy Acid, exfoliant), Phytosphingosine (skin-renewing), Hydroxyethylcellulose (texture-enhancing), Vitis Vinifera (Grape) Fruit Extract (antioxidant), Camellia Oleifera (Green Tea) Leaf Extract (antioxidant), Epilobium Angustifolium (Willow Herb) Flower/Leaf/Stem Extract (skin-soothing), Bisabolol (skin-soothing), Tetrasodium EDTA (stabilizer), Sodium Hydroxide (pH adjuster)"""
 
 [[product]]
@@ -574,7 +574,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://www.bioderma.us/en/p/sebium-foaming-gel-ecorefill.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA/WATER/EAU, SODIUM COCOAMPHOACETATE, SODIUM LAURETH SULFATE, METHYLPROPANEDIOL, DISODIUM EDTA, SODIUM CHLORIDE, LACTIC ACID, ZINC SULFATE, COPPER SULFATE, POTASSIUM SORBATE, XYLITOL, FRUCTOOLIGOSACCHARIDES, MANNITOL, RHAMNOSE, PROPYLENE GLYCOL, SODIUM HYDROXIDE, GINKGO BILOBA LEAF EXTRACT, FRAGRANCE (PARFUM)"""
 
 [[product]]
@@ -585,7 +585,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cerave.com/skincare/moisturizers/sa-cream-for-rough-and-bumpy-skin"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA/WATER/EAU, GLYCERIN, PARAFFINUM LIQUIDUM/MINERAL OIL/HUILE MINERALE, GLYCERYL STEARATE, CETEARYL ALCOHOL, TRIETHANOLAMINE, SALICYLIC ACID, NIACINAMIDE, CETYL ALCOHOL, AMMONIUM LACTATE, BEHENTRIMONIUM METHOSULFATE, PEG-100 STEARATE, ZEA MAYS OIL/CORN OIL, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, DIMETHICONE , METHYLPARABEN, SODIUM LAUROYL LACTYLATE, CHOLECALCIFEROL, CHOLESTEROL, PHENOXYETHANOL, DISODIUM EDTA, TOCOPHEROL, PROPYLPARABEN, HYDROLYZED HYALURONIC ACID, PHYTOSPHINGOSINE, XANTHAN GUM"""
 
 [[product]]
@@ -596,7 +596,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/aha-bha-pha-30-days-miracle-serum-50ml/78/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Centella Asiatica Extract, Cetyl Ethylhexanoate, Caprylic/Capric Triglyceride, Glycerin, Olea Europaea (Olive) Fruit Oil, Propanediol, Alcohol, Butylene Glycol, 1,2-Hexanediol, Niacinamide, Melaleuca Alternifolia (Tea Tree) Leaf Water, Camellia Sinensis Leaf Extract, Scutellaria Baicalensis Root Extract, Polygonum Cuspidatum Root Extract, Glycyrrhiza Glabra (Licorice) Root Extract, Chamomilla Recutita (Matricaria) Flower Extract, Rosmarinus Officinalis (Rosemary) Leaf Extract, Sodium Lactate(18,375 ppb), Sodium PCA(7,875 ppb), Citric Acid(7,875 ppb), Lactic Acid(3,150 ppb), Malic Acid(3,150 ppb), Glycolic Acid(3,150 ppb), Pyruvic Acid(525 ppb), Tartaric Acid(10.5 ppb), Gaultheria Procumbens (Wintergreen) Leaf Extract(105 ppm), Lactobionic Acid(105 ppm), Pentylene Glycol, Vaccinium Macrocarpon (Cranberry) Fruit Extract, Lavandula Angustifolia (Lavender) Extract, Ocimum Basilicum (Basil) Leaf Extract, Syringa Vulgaris (Lilac) Extract, Houttuynia Cordata Extract, Angelica Keiskei Extract, Althaea Officinalis Root Extract, Rosmarinus Officinalis (Rosemary) Extract, Madecassoside, Camellia Oleifera Seed Oil, Oryza Sativa (Rice) Bran Oil, Camellia Sinensis Seed Oil, Rosa Canina Fruit Oil, Prunus Amygdalus Dulcis (Sweet Almond) Oil, Limnanthes Alba (Meadowfoam) Seed Oil, Sodium Chloride, Citrus Paradisi (Grapefruit) Peel Oil, Citrus Aurantium Dulcis (Orange) Peel Oil, Curcuma Longa (Turmeric) Root Extract, Melia Azadirachta Leaf Extract, Melia Azadirachta Flower Extract, Xanthan Gum, Pelargonium Graveolens Flower Oil, Boswellia Carterii Oil, Melia Azadirachta Bark Extract, Corallina Officinalis Extract, Amyris Balsamifera Bark Oil, Moringa Oleifera Seed Oil, Ocimum Sanctum Leaf Extract, Disodium EDTA, Caprylyl Glycol, Ethylhexylglycerin, Limonene, Citronellol, Citral"""
 
 # La Roche-Posay Effaclar Duo+ (laroche-posay.sg): dropped 08/11, the page prints letter-spaced names
@@ -612,7 +612,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/ascorbyl-tetraisopalmitate-solution-20-in-vitamin-f-vitamin-c-100406.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Coconut Alkanes, Tetrahexyldecyl Ascorbate, Ethyl Linoleate, Coco-Caprylate/Caprate, Simmondsia Chinensis (Jojoba) Seed Oil, Solanum Lycopersicum (Tomato) Fruit Extract, Squalane"""
 
 [[product]]
@@ -623,7 +623,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/vitamin-c-15-super-booster/m97770.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water (Aqua/Eau), Ascorbic Acid, Dipropylene Glycol, Propanediol, Glycerin, Ethoxydiglycol, Sodium Hydroxide, PPG-26-Buteth-26, PEG-40 Hydrogenated Castor Oil, Bisabolol, Ferulic Acid, Sodium Phytate, Decylene Glycol, Tocopherol, 1,2-Hexanediol, Sphingomonas Ferment Extract, Phenoxyethanol."""
 
 [[product]]
@@ -634,7 +634,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/galactomyces-pure-vitamin-c-glow-serum-30ml/87/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Galactomyces Ferment Filtrate(75 %), Dipropylene Glycol, Glycerin, Butylene Glycol, Ascorbic Acid(30,000 ppm), 1,2-Hexanediol, Niacinamide, Tromethamine, Water, Trehalose, C12-14 Pareth-12, Allantoin, Hydroxyethylcellulose, Xanthan Gum, Ethylhexylglycerin, Adenosine, Citrus Aurantium Bergamia (Bergamot) Fruit Oil, Hydrogenated Lecithin, Glyceryl Acrylate/Acrylic Acid Copolymer, Sodium Hyaluronate, PVM/MA Copolymer, Polyglyceryl-10 Stearate, Lavandula Angustifolia (Lavender) Oil, Panthenol, Sodium Ascorbyl Phosphate(25 ppm), Phenylethyl Resorcinol, Propolis Extract, Aronia Melanocarpa Fruit Extract, Bambusa Vulgaris Extract, Aspalathus Linearis Extract, Saccharide Hydrolysate, Maltodextrin, Ficus Carica (Fig) Fruit Extract, Phoenix Dactylifera (Date) Fruit Extract, Tuber Magnatum Extract, Pyridoxine, Houttuynia Cordata Extract, Folic Acid, Biotin, Opuntia Ficus-Indica Stem Extract, Opuntia Coccinellifera Fruit Extract, Caprylic/Capric Triglyceride, Adansonia Digitata Seed Extract, Leuconostoc/Radish Root Ferment Filtrate, Sparassis Crispa Extract, Calendula Officinalis Flower Extract, Brassica Oleracea Italica (Broccoli) Extract, Tocopherol, Cyanocobalamin, Vaccinium Myrtillus Fruit Extract, Vaccinium Macrocarpon (Cranberry) Fruit Extract, Vaccinium Angustifolium (Blueberry) Fruit Extract, Rubus Idaeus (Raspberry) Fruit Extract, Rubus Fruticosus (Blackberry) Fruit Extract, Ribes Nigrum (Black Currant) Fruit Extract, Euterpe Oleracea Fruit Extract, Spirulina Maxima Extract, Thiamine HCl, Linoleic Acid, Inositol, Astaxanthin, Caramel, Linalool, Limonene"""
 
 [[product]]
@@ -645,7 +645,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.garnier.co.uk/our-brands/skin-care/vitamin-c/garnier-vitamin-c-brightening-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER, GLYCERIN, ALCOHOL DENAT., DIPROPYLENE GLYCOL, BUTYLENE GLYCOL, NIACINAMIDE, PEG/PPG/POLYBUTYLENE GLYCOL-8/5/3 GLYCERIN, HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID, ISONONYL ISONONANOATE, ASCORBYL GLUCOSIDE, CITRUS LIMON FRUIT EXTRACT / LEMON FRUIT EXTRACT, POTASSIUM HYDROXIDE, 2-MERCAPTONICOTINOYL GLYCINE, SODIUM HYALURONATE, SODIUM THIOSULFATE, SILICA, ADENOSINE, PHENYLETHYL RESORCINOL, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, HYDROGENATED LECITHIN, CAPRYLYL GLYCOL, TETRASODIUM GLUTAMATE DIACETATE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, XANTHAN GUM, TOCOPHERYL ACETATE, SALICYLIC ACID, CHLORPHENESIN, CI 15510 / ORANGE 4, CI 19140 / YELLOW 5, LINALOOL, GERANIOL, LIMONENE, PARFUM / FRAGRANCE"""
 
 [[product]]
@@ -656,7 +656,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://loreal-paris.co.uk/revitalift/clinical/12-percent-vitamin-c-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU, ASCORBIC ACID, CYCLOHEXASILOXANE, GLYCERIN, ALCOHOL DENAT., POTASSIUM HYDROXIDE, POLYMETHYLSILSESQUIOXANE, POLYSILICONE-11, DIMETHICONE, PROPYLENEGLYCOL, PENTAERYTHRITYL TETRAETHYLHEXANOATE, C13-14 ISOPARAFFIN, TOCOPHEROL, SODIUM HYALURONATE, HYDROLYZED HYALURONIC ACID, ADENOSINE, ACETYL DIPEPTIDE-1 CETYL ESTER, PEG-20 METHYL GLUCOSE SESQUISTEARATE, POLOXAME R 3 3 8, SALICYLIC ACID, POLYACRYLAMIDE, TOLUENE SULFONIC ACID, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, XANTHAN GUM, CAPRYLYL GLYCOL, DISODIUM EDTA, BHT, LAURETH-7, PARFUM / FRAGRANCE"""
 
 # --- Niacinamide ---
@@ -669,7 +669,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/niacinamide-booster/m7980.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water (Aqua/Eau), Niacinamide, Acetyl Glucosamine, Ascorbyl Glucoside, Butylene Glycol, Phospholipids, Sodium Hyaluronate, Allantoin, Boerhavia Diffusa Root Extract, Glycerin, Dipotassium Glycyrrhizate, Glycyrrhiza Glabra (Licorice) Root Extract, Epigallocatechin Gallate, Beta-Glucan, Panthenol, Carnosine, Genistein, Citric Acid, Sodium Citrate, Sodium Hydroxide, Xanthan Gum, Ethylhexylglycerin, Polysorbate 20, Trisodium Ethylenediamine Disuccinate, Pentylene Glycol, Caprylyl Glycol, Phenoxyethanol."""
 
 [[product]]
@@ -680,7 +680,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/yuja-niacin-anti-blemish-serum-50ml/108/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Citrus Junos Fruit Extract(83 %), Niacinamide(10 %), Caprylic/Capric Triglyceride, 1,2-Hexanediol, Hydrogenated Poly(C6-14 Olefin), (-)-alpha-bisabolol, Carbomer, Arginine, Brassica Campestris (Rapeseed) Seed Oil, Xanthan Gum, Ethylhexylglycerin, Adenosine, Citrus Junos Peel Oil(293.1 ppm), Melia Azadirachta Flower Extract, Ocimum Sanctum Leaf Extract, Glycyrrhiza Glabra (Licorice) Root Extract, Polyglyceryl-3 Diisostearate, Melia Azadirachta Leaf Extract, Water, Curcuma Longa (Turmeric) Root Extract, Corallina Officinalis Extract, Glycerin, Butylene Glycol, Althaea Officinalis Root Extract, Oryza Sativa (Rice) Bran Extract, 3-O-Ethyl Ascorbic Acid, Hydrogenated Lecithin, Ficus Carica (Fig) Fruit Extract, Punica Granatum Fruit Extract, Morus Alba Fruit Extract, Ginkgo Biloba Nut Extract, Tocopherol, Polyglyceryl-10 Stearate, Panthenol, Sodium Ascorbyl Phosphate, Biotin, Folic Acid, Pyridoxine, Cyanocobalamin, Linoleic Acid, Riboflavin, Beta-Carotene, Inositol, Thiamine HCl, Disodium EDTA, Limonene, Linalool"""
 
 # US OTC drug (Drug Facts): the active ingredient(s) are joined in front of the inactive list,
@@ -694,7 +694,7 @@ application = "leave_on"
 ingredients_ordered = false
 source_url = "https://www.cerave.com/skincare/moisturizers/am-facial-moisturizing-lotion-with-sunscreen"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """HOMOSALATE (10%), OCTINOXATE (5%), OCTOCRYLENE (2%), ZINC OXIDE (8%), WATER, NIACINAMIDE , CETEARYL ALCOHOL, GLYCERIN, PROPANEDIOL, DIMETHICONE , BEHENTRIMONIUM METHOSULFATE, BHT, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, TRIETHOXYCAPRYLYLSILANE, TRIETHYL CITRATE, SODIUM LAUROYL LACTYLATE, SODIUM HYALURONATE, CHOLESTEROL, ALUMINUM STARCH OCTENYLSUCCINATE, PHENOXYETHANOL, HYDROXYETHYLCELLULOSE, HYDROXYACETOPHENONE, CAPRYLYL GLYCOL, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, PHYTOSPHINGOSINE, XANTHAN GUM, BENZOIC ACID"""
 
 # --- Benzoyl peroxide ---
@@ -710,7 +710,7 @@ application = "rinse_off"
 ingredients_ordered = false
 source_url = "https://panoxyl.com/acne-products/acne-foaming-wash-benzoyl-peroxide/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Benzoyl Peroxide 10%, Carbomer homopolymer type C, carbomer interpolymer type A, decyl glucoside, dimethicone, dioctyl sodium sulfosuccinate, glycerin, palmitic acid, polyacrylate crosspolymer-6, polyoxyl 40 stearate, propanediol, purified water, silica, sodium chloride, sodium citrate, sodium hydroxide, sodium laurylglucosides hydroxypropylsulfonate, sorbitan stearate, stearic acid, t-butyl alcohol, xanthan gum"""
 
 # US OTC drug (Drug Facts): the active ingredient(s) are joined in front of the inactive list,
@@ -724,7 +724,7 @@ application = "rinse_off"
 ingredients_ordered = false
 source_url = "https://www.cerave.com/skincare/cleansers/facial-cleansers/-acne-foaming-cream-wash-"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """BENZOYL PEROXIDE 10%, WATER, GLYCERIN, PROPYLENE GLYCOL, COCAMIDOPROPYL HYDROXYSULTAINE, SODIUM C14-16 OLEFIN SULFONATE, POTASSIUM HYDROXIDE, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, NIACINAMIDE , GLYCOLIC ACID , TRIDECETH-6, TRIETHYL CITRATE, SODIUM CITRATE, SODIUM HYALURONATE, SODIUM HYDROXIDE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, PROPANEDIOL, TETRASODIUM EDTA, CAPRYLYL GLYCOL, DIETHYLHEXYL SODIUM SULFOSUCCINATE, PHYTOSPHINGOSINE, XANTHAN GUM, ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER, BENZOIC ACID, PEG-30 DIPOLYHYDROXYSTEARATE"""
 
 # --- Azelaic acid ---
@@ -737,7 +737,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/aa-booster/m7750.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua, Azelaic Acid (skin brightener/antioxidant), C12-15 Alkyl Benzoate (texture-enhancing), Caprylic/Capric Triglyceride (hydration/skin replenishing), Methyl Glucose Sesquistearate (texture-enhancing), Glycerine (hydration/skin replenishing), Cetearyl Alcohol (texture-enhancing), Glyceryl Stearate (texture-enhancing), Dimethicone (hydration), Salicylic Acid (Beta Hydroxy Acid, exfoliant), enisonedA (skin-restoring), Glycyrrhiza Glabra (Licorice) Root Extract (skin-soothing), Boerhavia Diffusa Root Extract (antioxidant), Allantoin (skin-soothing), Bisabolol (skin-soothing), Cyclopentasiloxane (hydration), Xanthan Gum (texture-enhancing), Sclerotium Gum (texture-enhancing), Propanediol (hydration), Butylene Glycol (hydration), Phenoxyethanol (preservative)"""
 
 # --- Sữa rửa mặt (không hoạt chất mạnh) ---
@@ -750,7 +750,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://www.cerave.com/skincare/cleansers/foaming-facial-cleanser"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU, COCAMIDOPROPYL HYDROXYSULTAINE, GLYCERIN, SODIUM LAUROYL SARCOSINATE, PEG-150 PENTAERYTHRITYL TETRASTEARATE, NIACINAMIDE, PEG-6 CAPRYLIC/CAPRIC GLYCERIDES, SODIUM METHYL COCOYL TAURATE, PROPYLENE GLYCOL, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, METHYLPARABEN, SODIUM CHLORIDE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, DISODIUM EDTA, PROPYLPARABEN, CITRIC ACID, TETRASODIUM EDTA, HYDROLYZED HYALURONIC ACID, PHYTOSPHINGOSINE, XANTHAN GUM"""
 
 [[product]]
@@ -761,7 +761,7 @@ market = "MY"
 application = "rinse_off"
 source_url = "https://www.laroche-posay.com.my/en-my/toleriane/toleriane-caring-wash"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER,GLYCERIN,PENTAERYTHRITYL TETRAETHYLHEXANOATE,PROPYLENE GLYCOL,AMMONIUM POLYACRYLOYLDIMETHYL TAURATE,POLYSORBATE 60,CERAMIDE NP,NIACINAMIDE,SODIUM CHLORIDE,COCO-BETAINE,DISODIUM EDTA,CAPRYLYL GLYCOL,PANTHENOL,T-BUTYL ALCOHOL,TOCOPHEROL"""
 
 [[product]]
@@ -772,7 +772,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://www.cetaphil.com/us/products/gentle-skin-cleanser"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Glycerin, Cetearyl Alcohol, Panthenol, Niacinamide, Pantolactone, Xanthan Gum, Sodium Cocoyl Isethionate, Sodium Benzoate, Citric Acid"""
 
 [[product]]
@@ -783,7 +783,7 @@ market = "VN"
 application = "rinse_off"
 source_url = "https://cocoonvietnam.com/san-pham/sua-rua-mat-sen-hau-giang-500ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """WATER/AQUA, CETEARYL ALCOHOL, GLYCERIN, COCAMIDOPROPYL BETAINE, DISODIUM COCOYL GLUTAMATE, ORYZA SATIVA BRAN OIL, DISODIUM LAURYL SULFOSUCCINATE, SODIUM COCOYL ISETHIONATE, ZEA MAYS STARCH, XANTHAN GUM, NELUMBO NUCIFERA FLOWER EXTRACT, MADECASSOSIDE, BETA-GLUCAN, SODIUM PCA, PANTHENOL, LECITHIN, SCLEROTIUM GUM, PULLULAN, TOCOPHEROL, PROPANEDIOL, DIPROPYLENE GLYCOL, COCO-GLUCOSIDE, GLYCERYL OLEATE, HYDROXYACETOPHENONE, HYDROGENATED PALM GLYCERIDES CITRATE, HYDROGENATED CASTOR OIL, PIROCTONE OLAMINE, CARAMEL, SODIUM CHLORIDE, SORBITAN CAPRYLATE, TITANIUM DIOXIDE, SODIUM BENZOATE, POTASSIUM SORBATE, CITRIC ACID, SILICA"""
 
 # --- Dưỡng ẩm (không hoạt chất mạnh) ---
@@ -796,7 +796,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cerave.com/skincare/moisturizers/moisturizing-cream"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU, GLYCERIN, CETEARYL ALCOHOL, CAPRYLIC/CAPRIC TRIGLYCERIDE, CETYL ALCOHOL, CETEARETH-20, PETROLATUM , POTASSIUM PHOSPHATE, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, DIMETHICONE , BEHENTRIMONIUM METHOSULFATE, SODIUM LAUROYL LACTYLATE, SODIUM HYALURONATE, CHOLESTEROL, PHENOXYETHANOL, DISODIUM EDTA, DIPOTASSIUM PHOSPHATE, TOCOPHEROL, PHYTOSPHINGOSINE, XANTHAN GUM, ETHYLHEXYLGLYCERIN"""
 
 [[product]]
@@ -807,7 +807,7 @@ market = "SG"
 application = "leave_on"
 source_url = "https://www.laroche-posay.sg/toleriane/toleriane-sensitive-fluid"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER,CAPRYLIC/CAPRIC TRIGLYCERIDE,GLYCERIN,PROPANEDIOL,PENTYLENE GLYCOL,NIACINAMIDE,AMMONIUM POLYACRYLOYLDIMETHYL TAURATE,CAPRYLYL GLYCOL,CITRIC ACID,XANTHAN GUM"""
 
 [[product]]
@@ -818,9 +818,10 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cetaphil.com/us/products/product-categories/all-moisturizers/moisturizing-cream/302993917564.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Glycerin, Petrolatum, Dicaprylyl Ether, Dimethicone, Glyceryl Stearate, Cetyl Alcohol, Helianthus Annuus (Sunflower) Seed Oil, Peg-30 Stearate, Panthenol, Niacinamide, Prunus Amygdalus Dulcis (Sweet Almond) Oil, Tocopheryl Acetate, Pantolactone, Dimethiconol, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Carbomer, Propylene Glycol, Disodium Edta, Benzyl Alcohol, Phenoxyethanol, Sodium Hydroxide, Citric Acid"""
 
+# Duyệt 08/11 nhưng để "unverified" cho tới khi verify_products tải được trang (torriden.us trả 429).
 [[product]]
 slug = "torriden-dive-in-serum"
 brand = "Torriden"
@@ -840,7 +841,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://cocoonvietnam.com/san-pham/thach-bi-dao-100ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA/WATER, NIACINAMIDE, BUTYLENE GLYCOL, BUTYL AVOCADATE, SODIUM ACRYLATES COPOLYMER, GLYCERIN, BETAINE, BENINCASA CERIFERA FRUIT EXTRACT, PROPANEDIOL, MADECASSIC ACID, ASIATIC ACID, ASIATICOSIDE, CENTELLA ASIATICA EXTRACT, PENTYLENE GLYCOL, FERULIC ACID, POTASSIUM AZELOYL DIGLYCINATE, OLEYL ERUCATE, COCO-CAPRYLATE/CAPRATE, DICAPRYLYL CARBONATE, EPILOBIUM ANGUSTIFOLIUM FLOWER/LEAF/STEM EXTRACT, CAPRYLIC/CAPRIC TRIGLYCERIDE, ALOE BARBADENSIS LEAF JUICE, BISABOLOL, GLYCERETH-26, LECITHIN, PHELLODENDRON AMURENSE BARK EXTRACT, ALLANTOIN, ETHYLHEXYLGLYCERIN, TOCOPHEROL, HYDROXYACETOPHENONE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, PHENOXYETHANOL, MELALEUCA ALTERNIFOLIA LEAF OIL, ROSMARINUS OFFICINALIS LEAF OIL"""
 
 [[product]]
@@ -851,7 +852,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://www.vichy.com.vn/all-products/skincare/face-serums/dryness/mineral-89-probiotic-fractions-concentrate"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER, NIACINAMIDE, PROPANEDIOL, PEG/PPG/POLYBUTYLENE GLYCOL-8/5/3 GLYCERIN, GLYCERIN, METHYL GLUCETH-20, PEG-60 HYDROGENATED CASTOR OIL, CARBOMER, SODIUM HYALURONATE, TOCOPHEROL, HYDROXYACETOPHENONE, CITRIC ACID, VITREOSCILLA FERMENT, CAPRYLYL GLYCOL, BIOSACCHARIDE GUM-1, MALTODEXTRIN, BUTYLENE GLYCOL"""
 
 # --- Chống nắng ---
@@ -864,7 +865,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.biore.com/en-gb/products/biore-uv-aqua-rich-watery-essence-spf50/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA, ALCOHOL DENAT., ETHYLHEXYL SALICYLATE, OCTOCRYLENE, LAURYL METHACRYLATE/SODIUM METHACRYLATE CROSSPOLYMER, BUTYL METHOXYDIBENZOYLMETHANE, BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE, C12-15 ALKYL BENZOATE, DEXTRIN PALMITATE, DIETHYLHEXYL 2,6-NAPHTHALATE, DICAPRYLYL ETHER, GLYCERIN, PHENYL TRIMETHICONE, HOMOSALATE, ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER, PARFUM, GLYCERYL BEHENATE, SODIUM HYDROXIDE, CETYL ALCOHOL, SORBITAN DISTEARATE, STEAROYL GLUTAMIC ACID, ARGININE, DISODIUM EDTA, TOCOPHEROL, SODIUM HYALURONATE, HENOXYETHANOL, CITRAL, GERANIOL, LIMONENE, LINALOOL"""
 
 [[product]]
@@ -875,7 +876,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://sunplay.com.vn/tone-up-uv/tinh-chat-chong-nang/tinh-chat-chong-nang-hieu-chinh-sac-da-lavender-spf50supsup-pa-20.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Ethylhexyl Methoxycinnamate, Butylene Glycol, Triethylhexanoin, Silica, Diethylamino Hydroxybenzoyl Hexyl Benzoate, Bis-Ethylhexyloxyphenol Methoxyphenyl Triazine, Centella Asiatica Flower/Leaf/Stem Extract, Terminalla Ferdinandiana Fruit Extract (Kakadu Plum Fruit Extract), Magnesium Ascorbyl Phosphate, Hydrolyzed Sodium Hyaluronate, Pearl Powder, Biosaccharide Gum-4, PEG-40 Stearate, Methylene Bis-Benzotriazolyl Tetramethylbutylphenol (Nano), Decyl Glucoside, Propylene Glycol, Synthetic Fluorphlogopite, Alumina, Glycerin, Tin Oxide, Bis-PEG-18 Methyl Ether Dimethyl Silane, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Ammonium Acryloyldimethyltaurate/VP Copolymer, Bis-Isobutyl PEG/PPG-10/7/Dimethicone Copolymer, Xanthan Gum, Disodium EDTA, Triethanolamine, Propanediol, Caprylhydroxamic Acid, Phenoxyethanol, Polyglyceryl-2 Triisostearate, Fragrance, CI 42090, CI 73360, CI 77891."""
 
 [[product]]
@@ -886,7 +887,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://cocoonvietnam.com/san-pham/kem-chong-nang-bi-dao-50ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA/WATER, C12-15 ALKYL BENZOATE, ISODODECANE, CYCLOPENTASILOXANE, BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE, BUTYLOCTYL SALICYLATE, TRIS-BIPHENYL TRIAZINE, SILICA, METHYL METHACRYLATE CROSSPOLYMER, ETHYLHEXYL TRIAZONE, BUTYL METHOXYDIBENZOYLMETHANE, DIETHYLAMINO HYDROXYBENZOYL HEXYL BENZOATE, DICAPRYLYL CARBONATE, ETHYLHEXYL METHOXYCRYLENE, CAPRYLYL METHICONE, BENINCASA CERIFERA FRUIT EXTRACT, NIACINAMIDE, BETAINE, HYDROXYMETHOXYPHENYL DECANONE, ASCORBYL TETRAISOPALMITATE, GLYCINE SOJA SEED EXTRACT, ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER, TRIMETHYLSILOXYSILICATE, GLYCERIN, PROPANEDIOL, BUTYLENE GLYCOL, PENTYLENE GLYCOL, 1,2-HEXANEDIOL, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, TOCOPHEROL, DECYL GLUCOSIDE, ETHYLHEXYLGLYCERIN, CAPRYLIC/CAPRIC TRIGLYCERIDE, DISODIUM PHOSPHATE , XANTHAN GUM, PHENOXYETHANOL, POTASSIUM SORBATE."""
 
 [[product]]
@@ -897,10 +898,10 @@ market = "SG"
 application = "leave_on"
 source_url = "https://www.laroche-posay.sg/anthelios/anthelios-uvmune-400-oil-control-fluid-spf50-plus"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER,ALCOHOL DENAT.,TRIETHYL CITRATE,DIISOPROPYL SEBACATE,SILICA,BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE,ETHYLHEXYL SALICYLATE,ETHYLHEXYL TRIAZONE,BUTYL METHOXYDIBENZOYLMETHANE,GLYCERIN,PROPANEDIOL,C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER,C12-15 ALKYL BENZOATE,SODIUM CITRATE,METHOXYPROPYLAMINO CYCLOHEXENYLIDENE ETHOXYETHYLCYANOACETATE,PERLITE,TOCOPHEROL,CAPRYLIC/CAPRIC TRIGLYCERIDE,ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER,BIXA ORELLANA SEED EXTRACT,CAPRYLYL GLYCOL,CITRIC ACID,DIETHYLAMINO HYDROXYBENZOYL HEXYL BENZOATE,DROMETRIZOLE TRISILOXANE,HYDROXYACETOPHENONE,HYDROXYETHYLCELLULOSE,MALTODEXTRIN,PENTYLENE GLYCOL,SILICA SILYLATE,TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID,TRIETHANOLAMINE,TRISODIUM ETHYLENEDIAMINE DISUCCINATE,ZINC PCA,PARFUM / FRAGRANCE"""
 
-# Đợt 2, 08/11/2026 (_workspace/data/02_results_round2.json), cùng quy trình và cùng trạng thái CHƯA DUYỆT.
+# Đợt 2, 08/11/2026 (_workspace/data/02_results_round2.json), cùng quy trình, người dùng duyệt 08/11/2026.
 
 # --- AHA / BHA (đợt 2) ---
 
@@ -912,7 +913,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/skin-perfecting-6pct-mandelic-acid-2pct-lactic-acid-liquid-exfoliant/m1470.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water (Aqua/Eau), 2,3-Butanediol, Mandelic Acid, Lactic Acid, Sodium Hydroxide, Myrica Cerifera (Bayberry) Fruit Extract, Akebia Quinata Stem Extract, Prunus Lannesiana Flower Extract, Lactobacillus Ferment Lysate, Saccharomyces Lysate, Achillea Millefolium Extract, Saccharide Isomerate, Arginine, Hydroxyacetophenone, Butylene Glycol, Sodium Phytate, Pentylene Glycol, Xanthan Gum, Citric Acid, Sodium Citrate, 1,2-Hexanediol, Caprylyl Glycol, Sodium Benzoate."""
 
 # US OTC drug (Drug Facts): the active ingredient(s) are joined in front of the inactive list,
@@ -926,7 +927,7 @@ application = "rinse_off"
 ingredients_ordered = false
 source_url = "https://www.cerave.com/skincare/cleansers/acne-salicylic-acid-cleanser"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """SALICYLIC ACID 2%, WATER, SODIUM LAUROYL SARCOSINATE, COCAMIDOPROPYL HYDROXYSULTAINE, GLYCERIN, NIACINAMIDE , GLUCONOLACTONE, SODIUM METHYL COCOYL TAURATE, PEG-150 PENTAERYTHRITYL TETRASTEARATE, CERAMIDE NP , CERAMIDE AP , CERAMIDE EOP , CARBOMER, CALCIUM GLUCONATE, TRIETHYL CITRATE, SODIUM BENZOATE, SODIUM HYDROXIDE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, TETRASODIUM EDTA, CAPRYLYL GLYCOL, HYDROLYZED HYALURONIC ACID, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, XANTHAN GUM, HECTORITE, PHYTOSPHINGOSINE, BENZOIC ACID"""
 
 [[product]]
@@ -937,7 +938,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/aha-bha-pha-30-days-miracle-cream-60g/79/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Centella Asiatica Extract, Dipropylene Glycol, Glycerin, Water, Niacinamide, Caprylic/Capric Triglyceride, Cetyl Ethylhexanoate, Melaleuca Alternifolia (Tea Tree) Leaf Water, Ricinus Communis (Castor) Seed Oil, Hydrogenated Castor Oil, Melia Azadirachta Leaf Extract, Melia Azadirachta Flower Extract, Coccinia Indica Fruit Extract, Solanum Melongena (Eggplant) Fruit Extract, Aloe Barbadensis Flower Extract, Ocimum Sanctum Leaf Extract, Curcuma Longa (Turmeric) Root Extract, Corallina Officinalis Extract, Calendula Officinalis Flower Extract, Camellia Sinensis Leaf Extract, Lavandula Angustifolia (Lavender) Extract, Rosmarinus Officinalis (Rosemary) Extract, Origanum Vulgare Flower/Leaf/Stem Extract, Thymus Vulgaris (Thyme) Extract, Fructan, Albatrellus Confluens (Mushroom) Extract, Salix Alba (Willow) Bark Extract(1,000 ppm), Enantia Chlorantha Bark Extract, Lens Esculenta (Lentil) Seed Extract, Hamamelis Virginiana (Witch Hazel) Extract, Houttuynia Cordata Extract, Centella Asiatica Leaf Extract, Coptis Japonica Extract, Saccharide Isomerate, Sodium Hyaluronate, Butylene Glycol, Propanediol, Betaine, Allantoin, Madecassoside, Madecassic Acid, Asiaticoside, Asiatic Acid, Adenosine, Ceramide NP, Oleanolic Acid, Capryloyl Salicylic Acid, Inulin Lauryl Carbamate, Polyglyceryl-3 Methylglucose Distearate, Cetearyl Glucoside, Sorbitan Olivate, Cetearyl Alcohol, Lactobionic Acid(100 ppm), Citric Acid(11 ppm), Ammonium Acryloyldimethyltaurate/VP Copolymer, 1,2-Hexanediol, Benzyl Glycol, Ethylhexylglycerin, Raspberry Ketone, Disodium EDTA, Mentha Piperita (Peppermint) Oil, Limonene"""
 
 [[product]]
@@ -948,7 +949,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://www.vichy.com.vn/all-products/skincare/face-cleansers-and-toners/acne/normaderm---purifying-pore-tightening-lotion"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA, ALCOHOL DENAT., GLYCERIN, SODIUM CITRATE, PROPYLENE GLYCOL, PEG-60 HYDROGENATED CASTOR OIL, CI 19140, CI 42053, GLYCOLIC ACID, TRIETHANOLAMINE, SALICYLIC ACID, DIPOTASSIUM GLYCYRRHIZATE, DISODIUM EDTA, CITRIC ACID, PARFUM"""
 
 [[product]]
@@ -959,7 +960,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.loreal-paris.co.uk/revitalift/laser-renew/glycolic-acid-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER, GLYCOLIC ACID, GLYCERIN, ALCOHOL DENAT., SODIUM HYDROXIDE, ALOE BARBADENSIS LEAF JUICE, SODIUM HYALURONATE, HYDROXYETHYLCELLULOSE, ASCORBYL GLUCOSIDE, CITRIC ACID, POTASSIUM SORBATE, SODIUM BENZOATE"""
 
 [[product]]
@@ -970,7 +971,7 @@ market = "UK"
 application = "rinse_off"
 source_url = "https://www.garnier.co.uk/our-brands/skin-care/pure-active/anti-blackhead-bha-charcoal-daily-face-cleanser"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER, SODIUM LAURETH SULFATE, GLYCERIN, DECYL GLUCOSIDE, SODIUM CHLORIDE, COCO-BETAINE, SALICYLIC ACID, VACCINIUM MYRTILLUS FRUIT EXTRACT, SORBITOL, NIACINAMIDE, PEG-150 PENTAERYTHRITYL TETRASTEARATE, PEG-6 CAPRYLIC/CAPRIC GLYCERIDES, SODIUM HYDROXIDE, PERLITE, PROPYLENE GLYCOL, CHARCOAL POWDER, CAPRYLOYL SALICYLIC ACID, TETRASODIUM GLUTAMATE DIACETATE, CITRIC ACID, MENTHOL, POLYGLYCERIN-10, POLYGLYCERYL-10 MYRISTATE, POLYGLYCERYL-10 STEARATE, ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER, HEXYLENE GLYCOL, SODIUM DEHYDROACETATE, PARFUM / FRAGRANCE"""
 
 # US OTC drug (Drug Facts): the active ingredient(s) are joined in front of the inactive list,
@@ -984,7 +985,7 @@ application = "rinse_off"
 ingredients_ordered = false
 source_url = "https://www.cetaphil.com/us/cleansers/gentle-clear-pore-clearing-acne-cleanser/302994143009.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """2% Salicylic Acid, Benzyl Alcohol, Butyrospermum Parkii (Shea) Butter, Cocamidopropyl Betaine, Glycerin, Glycine Soja (Soybean) Oil, Guar Hydroxypropyl-Trimonium Chloride, Hydrogenated Soybean Oil, Hydroxypropyl Starch Phosphate, Lactic Acid, Lauric Acid, Palmitic Acid, Phenoxyethanol, Sodium Benzoate, Sodium Chloride, Sodium Hydroxide, Sodium Lauroyl Glycinate, Sodium Lauroyl Isethionate, Stearic Acid, Tetrasodium Edta, Water"""
 
 # --- Retinoid (đợt 2) ---
@@ -997,7 +998,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/granactive-retinoid-5-in-squalane-serum-100421.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Squalane, C12-15 Alkyl Benzoate, Bisabolol, Dimethyl Isosorbide, Caprylic/Capric Triglyceride, Simmondsia Chinensis (Jojoba) Seed Oil, Hydroxypinacolone Retinoate, Solanum Lycopersicum (Tomato) Fruit Extract, Rosmarinus Officinalis (Rosemary) Leaf Extract, Hydroxymethoxyphenyl Decanone."""
 
 [[product]]
@@ -1008,7 +1009,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/retinal-02-emulsion-100646.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Coco-Caprylate/Caprate, Propanediol, Pentylene Glycol, Hydroxyapatite, Retinal, Cetylhydroxyproline Palmitamide, 4-t-Butylcyclohexanol, Hydroxyphenyl Propamidobenzoic Acid, Ergothioneine, Biosaccharide Gum-1, Bisabolol, Brassica Campestris Sterols, Zingiber Officinale Root Extract, Butylene Glycol, Isohexadecane, Hexyldecanol, Maltodextrin, Caesalpinia Spinosa Gum, Polyacrylate Crosspolymer-6, Hydroxyethyl Acrylate/Sodium Acryloyldimethyl Taurate Copolymer, Stearic Acid, Isoceteth-20, Polysorbate 60, Ascorbyl Palmitate, Tocopherol, Lactic Acid, Sodium Lactate, Sodium Hydroxide, Ethylhexylglycerin, Phenoxyethanol, Chlorphenesin."""
 
 [[product]]
@@ -1019,7 +1020,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cerave.com/skincare/serums/skin-renewing-retinol-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua/Water/Eau, Glycerin, Caprylic/Capric Triglyceride, Potassium Cetyl Phosphate, Hydrogenated Palm Glycerides, Polysorbate 20, Peg-40 Stearate, Cyclopentasiloxane, Hydroxyethylcellulose, Potassium Phosphate, Ceramide NP, Ceramide AP, Ceramide EOP, Carbomer, Niacinamide, Isoceteth-10, Dimethicone /Vinyl Dimethicone Crosspolymer, Triethanolamine, Cetearyl Alcohol, Behentrimonium Methosulfate, Cichorium Intybus Root Extract / Chicory Root Extract, Lecithin, Retinol, Silica, Sodium Lauroyl Lactylate, Cholesterol, Phenoxyethanol, Tocopherol, Alcohol, Hydroxyacetophenone, Citric Acid, Hydrolyzed Hyaluronic Acid, Pentylene Glycol, Xanthan Gum, Phytosphingosine, Butyrospermum Parkii Butter / Shea Butter, Ethylhexylglycerin"""
 
 [[product]]
@@ -1030,7 +1031,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/retinol-intense-advanced-triple-action-eye-cream-30ml/265/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Glycerin, Caprylic/Capric Triglyceride, Dimethicone, Polysorbate 60, Niacinamide, Methylpropanediol, Cetyl Alcohol, Polymethylsilsesquioxane, Centella Asiatica Extract, Dioscorea Japonica Root Extract, Piper Methysticum Leaf/Root/Stem Extract, Melaleuca Alternifolia (Tea Tree) Leaf Extract, Panax Ginseng Berry Extract, Artemisia Capillaris Extract, Ganoderma Lucidum (Mushroom) Stem Extract, Chlorella Vulgaris Extract, Glycine Soja (Soybean) Seed Extract, Nymphaea Alba Flower Extract, Elaeis Guineensis (Palm) Oil, Hydrogenated Lecithin, Sodium Hyaluronate, 1,2-Hexanediol, Dimethicone/Vinyl Dimethicone Crosspolymer, Panthenol, BHT, Cyclopentasiloxane, Steareth-21, PEG-10 Dimethicone/Vinyl Dimethicone Crosspolymer, Polyacrylamide, Steareth-2, Isohexadecane, Carbomer, Hydroxyacetophenone, C13-14 Isoparaffin, Tromethamine, Palmitic Acid, Polyquaternium-51, Stearic Acid, Polysorbate 20, Retinol(0.1%), Ethylhexylglycerin, Glyceryl Caprylate, Tocopheryl Acetate, Polyglyceryl-10 Myristate, PEG-30 Dipolyhydroxystearate, Hydroxyethylcellulose, Glycosyl Trehalose, Beta-Glucan, Glyceryl Polymethacrylate, Laureth-7, Butylene Glycol, Disodium EDTA, Hydrogenated Starch Hydrolysate, Adenosine, Raffinose, Dipotassium Glycyrrhizate, Lecithin, Tocopherol, Pentylene Glycol, BHA, Myristic Acid, Propanediol, Dipropylene Glycol, Disodium Phosphate, Caprylyl Glycol, Collagen, Madecassic Acid, Biosaccharide Gum-1, Asiaticoside, Sodium Palmitoyl Proline, Leuconostoc/Radish Root Ferment Filtrate, Asiatic Acid, Glutathione, Retinal, Madecassoside, Sodium Phosphate, Acetyl Hexapeptide-8, Ammonium Acryloyldimethyltaurate/VP Copolymer, Tetrahydropiperine, Phloretin, Arginine, Fragrance"""
 
 # --- Vitamin C (đợt 2) ---
@@ -1043,7 +1044,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cerave.com/skincare/facial-serums/skin-renewing-vitamin-c-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """WATER, ASCORBIC ACID, GLYCERIN, DIMETHICONE , CETEARYL ETHYLHEXANOATE, ALCOHOL DENAT., SODIUM HYDROXIDE, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, PANTHENOL, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, CETEARYL ALCOHOL, BEHENTRIMONIUM METHOSULFATE, SODIUM HYALURONATE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, PHENOXYETHANOL, TOCOPHERYL ACETATE, DISODIUM EDTA, ISOPROPYL MYRISTATE, CAPRYLYL GLYCOL, XANTHAN GUM, PHYTOSPHINGOSINE, ETHYLHEXYLGLYCERIN"""
 
 [[product]]
@@ -1054,7 +1055,7 @@ market = "SG"
 application = "leave_on"
 source_url = "https://www.laroche-posay.sg/vitamin-c/pure-vitamin-c-light-face-moisturizer"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER,DIMETHICONE,ISOCETYL STEARATE,GLYCERIN,MANNOSE,ASCORBIC ACID,CAPRYLIC/CAPRIC TRIGLYCERIDE,BUTYLENE GLYCOL,SUCROSE TRISTEARATE,POTASSIUM HYDROXIDE,POLYMETHYLSILSESQUIOXANE,STEARETH-10,ISOBUTANE,MADECASSOSIDE,SODIUM STEAROYL GLUTAMATE,DISODIUM EDTA,PROPYLENE GLYCOL,HYDROGENATED LECITHIN,HYDROLYZED HYALURONIC ACID,CAPRYLYL GLYCOL,TETRASODIUM EDTA,ACETYL DIPEPTIDE-1 CETYL ESTER,XANTHAN GUM,TOLUENE SULFONIC ACID,ACRYLATES /C10- 30 ALKYL ACRYLATE CROSSPOLYMER,ACRYLONITRILE/METHYL METHACRYLATE/VINYLIDENE CHLORIDE COPOLYMER,PHENOXYETHANOL,PARFUM / FRAGRANCE."""
 
 # --- Niacinamide / làm sáng (đợt 2) ---
@@ -1067,7 +1068,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.loreal-paris.co.uk/bright-reveal/10-niacinamide-amino-sulfonic-ferulic-acid-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER • CAPRYLYL METHICONE • NIACINAMIDE • ALCOHOL DENAT. • BUTYLENE GLYCOL • GLYCERIN • HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID • CAFFEINE • CAPRYLOYL SALICYLIC ACID • GLYCOLIC ACID • HYDROXYACETOPHENONE • MENTHOXYPROPANEDIOL • POTASSIUM HYDROXIDE • SODIUM HYALURONATE • SODIUM THIOSULFATE • TRISODIUM ETHYLENEDIAMINE DISUCCINATE • 2-MERCAPTONICOTINOYL GLYCINE • TOCOPHERYL ACETATE • AMMONIUM ACRYLOYLDIMETHYLTAURATE/VP COPOLYMER • BIOSACCHARIDE GUM-1 • POLOXAMER 338 • TOCOPHEROL • XANTHAN GUM • PEG-12 DIMETHICONE/PPG-20 CROSSPOLYMER • CI 14700 / RED 4 • CI 17200 / RED 33 • CHLORPHENESIN • PHENOXYETHANOL • PARFUM / FRAGRANCE."""
 
 [[product]]
@@ -1078,7 +1079,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/yuja-niacin-30-days-miracle-brightening-toner-150ml/123/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Citrus Junos Fruit Extract(90 %), Niacinamide(5 %), 1,2-Hexanediol, Glycerin, Polyglyceryl-10 Laurate, C12-14 Pareth-7, Water, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Ethylhexylglycerin, Citrus Junos Peel Oil(105 ppm), Butylene Glycol, Adenosine, Tromethamine, Disodium EDTA, Coptis Chinensis Root Extract, Hydrogenated Lecithin, Polyglyceryl-10 Stearate, Panthenol, Sodium Ascorbyl Phosphate, Saussurea Involucrata Extract, Bisabolol, Maltodextrin, Hydrolyzed Vegetable Protein, Sambucus Nigra Flower Extract, Citrus Aurantium Dulcis (Orange) Flower Extract, Magnolia Liliflora Flower Extract, Plumeria Rubra Flower Extract, Lilium Tigrinum Extract, Folic Acid, Biotin, Pyridoxine, Pancratium Maritimum Extract, Tocopherol, Cyanocobalamin, Linoleic Acid, Thiamine HCl, Beta-Carotene, Riboflavin, Inositol, Limonene"""
 
 [[product]]
@@ -1089,7 +1090,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/alpha-arbutin-2-ha-serum-100401.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Alpha-Arbutin, Propanediol, Polyacrylate Crosspolymer-6, Hydrolyzed Sodium Hyaluronate, Ergothioneine, Polysorbate 20, Citric Acid, Sodium Citrate, Sodium Hydroxide, Sodium Metabisulfite, Trisodium Ethylenediamine Disuccinate, Ethoxydiglycol, Phenoxyethanol, Chlorphenesin"""
 
 [[product]]
@@ -1100,7 +1101,7 @@ market = "VN"
 application = "rinse_off"
 source_url = "https://www.larocheposay.vn/mela-b3/mela-b3-micro-peeling-gel"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU • GLYCERIN • COCO-BETAINE • PROPANEDIOL • SODIUM COCOYL GLYCINATE • PEG-120 METHYL GLUCOSE DIOLEATE • SODIUM HYDROXIDE • SODIUM CHLORIDE • CITRIC ACID • GLUCONOLACTONE • CERAMIDE NP • NIACINAMIDE • 2-MERCAPTONICOTINOYL GLYCINE • SODIUM THIOSULFATE • DISODIUM EDTA • CAPRYLOYL GLYCINE • CAPRYLYL GLYCOL • TRISODIUM ETHYLENEDIAMINE DISUCCINATE • PENTYLENE GLYCOL • ACRYLATES COPOLYMER • TOCOPHEROL • TOCOPHERYL ACETATE • PARFUM / FRAGRANCE"""
 
 # --- Cocoon: toner, tẩy trang, mặt nạ (đợt 2) ---
@@ -1113,7 +1114,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://cocoonvietnam.com/san-pham/nuoc-sen-hau-giang-140ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA/WATER, GLYCERIN, 1,2-HEXANEDIOL, NELUMBO NUCIFERA FLOWER EXTRACT, MADECASSOSIDE, PANTHENOL, SCHISANDRA SPHENANTHERA FRUIT EXTRACT, BETA-GLUCAN, XYLITOL, CYANOCOBALAMIN, DIPOTASSIUM GLYCYRRHIZATE, ALLANTOIN, XYLITYLGLUCOSIDE, ANHYDROXYLITOL, ROSA DAMASCENA FLOWER WATER, POLYACRYLATE CROSSPOLYMER-11, HYDROXYACETOPHENONE, SODIUM METABISULFITE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, SODIUM BENZOATE, POTASSIUM SORBATE, CITRIC ACID, TROMETHAMINE"""
 
 [[product]]
@@ -1124,7 +1125,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://cocoonvietnam.com/san-pham/nuoc-tay-trang-bi-dao-500ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA/WATER, POLYGLYCERYL-4 LAURATE/SEBACATE, POLYGLYCERYL-4 CAPRYLATE/CAPRATE, BETAINE, BENINCASA CERIFERA FRUIT EXTRACT, CENTELLA ASIATICA EXTRACT, O-CYMEN-5-OL, PROPANEDIOL, GLYCERETH-26, GLYCERIN, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, SODIUM LACTATE, CETYLPYRIDINIUM CHLORIDE, HYDROXYACETOPHENONE, BUTYLENE GLYCOL, MELALEUCA ALTERNIFOLIA LEAF OIL, LACTIC ACID, POTASSIUM SORBATE"""
 
 [[product]]
@@ -1135,7 +1136,7 @@ market = "VN"
 application = "rinse_off"
 source_url = "https://cocoonvietnam.com/san-pham/mat-na-nghe-hung-yen-100ml"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua/Water, Kaolin, Silica, Curcuma Longa (Turmeric) Root Powder, Caprylic/Capric Triglyceride, Hydroxyethyl Acrylate/Sodium Acryloyldimethyl Taurate Copolymer, Tetrahydrodiferuloylmethane, Curcuma Longa (Turmeric) Root Extract, Niacinamide, Lactic Acid, Avena Sativa (Oat) Meal Extract, Oryza Sativa (Rice) Bran Oil, Glycerin, Glycereth-26, Phaseolus Radiatus Seed Extract, Allantoin, Propanediol, Butylene Glycol, Juglans Regia (Walnut) Shell Powder, Xanthan Gum, Pentylene Glycol, 1,2-Hexanediol, Ethylhexylglycerin, Trisodium Ethylenediamine Disuccinate, BHT, Menthyl Lactate, Phenoxyethanol, Eucalyptus Globulus Leaf Oil, Sodium Benzoate, Lavandula Angustifolia Flower Oil, Chlorphenesin, Potassium Sorbate"""
 
 # --- Rửa trôi: sữa rửa mặt, mặt nạ, nước tẩy trang (đợt 2) ---
@@ -1148,7 +1149,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://theordinary.com/en-us/salicylic-acid-2-face-masque-100443.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Kaolin, Squalane, Glycerin, Dimethyl Isosorbide, Silica Cetyl Silylate, Salicylic Acid, Sodium Polyacrylate, Pentylene Glycol, Charcoal Powder, 4-T-Butylcyclohexanol, Sclerotium Gum, Acacia Senegal Gum, Xanthan Gum, Phytic Acid, Polysorbate 20, Trisodium Ethylenediamine Disuccinate, Chlorphenesin, Phenoxyethanol"""
 
 [[product]]
@@ -1159,7 +1160,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://theordinary.com/en-us/glucoside-foaming-face-cleanser-100616.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Decyl Glucoside, Coco Glucoside, Xanthan Gum, Tocopherol, Phytic Acid, Benzyl Alcohol, Ethylhexylglycerin."""
 
 [[product]]
@@ -1170,7 +1171,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://www.cerave.com/skincare/cleansers/hydrating-cream-to-foam-cleanser"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua / Water / Eau, Glycerin, Sodium Methyl Cocoyl Taurate, Coco-Betaine, Sodium Cocoyl Isethionate, Sodium Chloride, Pca, Ppg-5-Ceteth-20, Peg-100 Stearate, Peg-150 Pentaerythrityl Tetrastearate, Peg-6 Caprylic/Capric Glycerides, Peg-30 Dipolyhydroxystearate, Ci 77891 / Titanium Dioxide , Aspartic Acid, Ceramide Np, Ceramide Ap, Ceramide Eop, Sorbitan Isostearate, Carbomer, Glycol Distearate, Glyceryl Stearate, Glyceryl Oleate, Glycine, Trideceth-6, Cetearyl Alcohol, Behentrimonium Methosulfate, Threonine, Sodium Hydroxide, Salicylic Acid , Sodium Pca, Sodium Lactate, Arginine, Sodium Lauroyl Lactylate, Serine, Sodium Benzoate, Valine, Sodium Hyaluronate, Proline, Isoleucine, Cholesterol, Phenoxyethanol, Alanine, Phenylalanine, Coconut Acid, Coco-Glucoside, Chlorphenesin, Disodium Edta, Hydroxyethyl Urea , Citric Acid, Hydroxyethyl Acrylate/Sodium Acryloyldimethyl Taurate Copolymer, Caprylyl Glycol, Phytosphingosine, Xanthan Gum, Histidine, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Polyquaternium-53, Polyquaternium-39, Polysorbate 60, Ethylhexylglycerin, Benzoic Acid"""
 
 [[product]]
@@ -1181,7 +1182,7 @@ market = "US"
 application = "rinse_off"
 source_url = "https://www.cetaphil.com/us/products/daily-facial-cleanser"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Glycerin, Cocamidopropyl Betaine, Disodium Laureth Sulfosuccinate, Sodium Cocoamphoacetate, Panthenol, Niacinamide, Pantolactone, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Sodium Benzoate, Masking Fragrance, Sodium Chloride, Citric Acid"""
 
 [[product]]
@@ -1192,7 +1193,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.garnier.co.uk/our-brands/skin-care/micellar/micellar-cleansing-water-sensitive-skin"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER, HEXYLENE GLYCOL, GLYCERIN, POLOXAMER 184, DISODIUM COCOAMPHODIACETATE, DISODIUM EDTA, CITRIC ACID, PANTHENOL, MYRTRIMONIUM BROMIDE"""
 
 # --- Dưỡng ẩm (đợt 2) ---
@@ -1205,7 +1206,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/natural-moisturizing-factors-ha-moisturizer-100435.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Caprylic/Capric Triglyceride, Cetyl Alcohol, Propanediol, Stearyl Alcohol, Glycerin, Sodium Hyaluronate, Arginine, Aspartic Acid, Glycine, Alanine, Serine, Valine, Isoleucine, Proline, Threonine, Histidine, Phenylalanine, Glucose, Maltose, Fructose, Trehalose, Sodium PCA, PCA, Sodium Lactate, Urea, Allantoin, Linoleic Acid, Oleic Acid, Phytosteryl Canola Glycerides, Palmitic Acid, Stearic Acid, Lecithin, Triolein, Tocopherol, Carbomer, Isoceteth-20, Polysorbate 60, Sodium Chloride, Citric Acid, Trisodium Ethylenediamine Disuccinate, Pentylene Glycol, Triethanolamine, Sodium Hydroxide, Phenoxyethanol, Chlorphenesin."""
 
 [[product]]
@@ -1216,7 +1217,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/hyaluronic-acid-2-b5-serum-original-formulation-100425.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Sodium Hyaluronate, Pentylene Glycol, Propanediol, Sodium Hyaluronate Crosspolymer, Panthenol, Ahnfeltia Concinna Extract, Glycerin, Trisodium Ethylenediamine Disuccinate, Citric Acid, Isoceteth-20, Ethoxydiglycol, Ethylhexylglycerin, Hexylene Glycol, 1,2-Hexanediol, Phenoxyethanol, Caprylyl Glycol"""
 
 [[product]]
@@ -1227,7 +1228,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://theordinary.com/en-us/multi-peptide-ha-serum-100613.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Water), Glycerin, Lactococcus Ferment Lysate, Acetyl Hexapeptide-8, Pentapeptide-18, Palmitoyl Tripeptide-1, Palmitoyl Tetrapeptide-7, Palmitoyl Tripeptide-38, Dipeptide Diaminobutyroyl Benzylamide Diacetate, Acetylarginyltryptophyl Diphenylglycine, Sodium Hyaluronate Crosspolymer, Sodium Hyaluronate, Allantoin, Glycine, Alanine, Serine, Valine, Isoleucine, Proline, Threonine, Histidine, Phenylalanine, Arginine, Aspartic Acid, Trehalose, Fructose, Glucose, Maltose, Urea, Sodium PCA, PCA, Sodium Lactate, Citric Acid, Hydroxypropyl Cyclodextrin, Sodium Chloride, Sodium Hydroxide, Butylene Glycol, Pentylene Glycol, Acacia Senegal Gum, Xanthan Gum, Carbomer, Polysorbate 20, PPG-26-Buteth-26, PEG-40 Hydrogenated Castor Oil, Trisodium Ethylenediamine Disuccinate, Ethoxydiglycol, Sodium Benzoate, Caprylyl Glycol, Ethylhexylglycerin, Phenoxyethanol, Chlorphenesin."""
 
 [[product]]
@@ -1238,7 +1239,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cerave.com/skincare/moisturizers/facial-moisturizers/ultra-light-moisturizing-gel"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU, GLYCERIN, NIACINAMIDE , PROPANEDIOL, DIMETHICONE , ISONONYL ISONONANOATE, CERAMIDE NP, CERAMIDE AP, CERAMIDE EOP, CARBOMER, DIMETHICONE CROSSPOLYMER, CETEARYL ALCOHOL, BEHENTRIMONIUM METHOSULFATE, TRIETHYL CITRATE, SILICA, SODIUM HYDROXIDE, SODIUM HYALURONATE, SODIUM LAUROYL LACTYLATE, CHOLESTEROL, PHENOXYETHANOL, TOCOPHEROL, CHLORPHENESIN, CAPRYLYL GLYCOL, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, BIOSACCHARIDE GUM-1, XANTHAN GUM, PHYTOSPHINGOSINE, BENZOIC ACID"""
 
 [[product]]
@@ -1249,7 +1250,7 @@ market = "US"
 application = "leave_on"
 source_url = "https://www.cetaphil.com/us/products/product-categories/all-moisturizers/daily-hydrating-lotion/302993889038.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Water, Dicaprylyl Carbonate, Hydroxyethyl Urea, Cyclopentasiloxane, Glycerin, Glyceryl Stearate, PEG-100 Stearate, Hydrolyzed Hyaluronic Acid, Sodium Hydroxide, Homarine HCI, Sodium PCA, Cetyl Alcohol, Caprylyl Glycol, Phenoxyethanol, Acrylates/C10-30 Alkyl Acrylate Crosspolymer, Erythritol"""
 
 [[product]]
@@ -1260,7 +1261,7 @@ market = "SG"
 application = "leave_on"
 source_url = "https://www.laroche-posay.sg/hyalu-b5/hyalu-b5-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER,GLYCERIN,ALCOHOL DENAT,PROPYLENE GLYCOL,PANTHENOL,PENTYLENE GLYCOL,DIMETHICONE,PEG-6 CAPRYLIC/CAPRIC GLYCERIDES,PPG-6-DECYLTETRADECETH-30,GLYCERYL ISOSTEARATE,MADECASSOSIDE,SODIUM HYALURONATE,AMMONIUM POLYACRYLOYLDIMETHYL TAURATE,DISODIUM EDTA,HYDROLYZED HYALURONIC ACID,CAPRYLYL GLYCOL,CITRIC ACID,XANTHAN GUM,BUTYLENE GLYCOL,TOCOPHEROL,PHENOXYETHANOL,PARFUM /FRAGRANCE"""
 
 [[product]]
@@ -1271,7 +1272,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/calm-rescue-repair-weightless-moisturiser/m9220.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua (Solvent), Glycerin (Humectant), Caprylic/ Capric Triglyceride (Skin conditioning agent), Stearic Acid (Emulsion Stabilizer), Triheptanoin (Emollient), C13-16 Isoalkane (Solvent), Butylene Glycol (Skin conditioning agent), Propanediol (Solvent ), Inulin (Humectant), Glyceryl Stearate (Skin conditioning agent), Acrylates/C10-30 Alkyl Acrylate Crosspolymer (Emulsion Stabilizer), Squalane (Skin conditioning agent), Ethylhexyl Stearate (Solvent), Sodium Hydroxide (pH adjuster), Caprylyl Glycol (Skin conditioning agent), Allantoin (Skin conditioning agent), Sodium Phytate (Chelating agent), Ethylhexylglycerin (Skin conditioning agent), Hexylene Glycol (Emulsifying agent), Alpha-Glucan Oligosaccharide (Skin conditioning agent), Glycogen (Humectant), Laminaria Digitata Extract (Humectant), Albatrellus Confluens (Mushroom) Extract (Skin conditioning agent), Opuntia Ficus-Indica Stem Extract (Skin conditioning agent), Galactoarabinan (Film former), Citric Acid (pH adjuster), Maltodextrin (Absorbent), Schizophyllan (Humectant), Acetyl Hexapeptide-8 (Humectant), Phenoxyethanol (Preservative), Potassium Sorbate (Preservative)."""
 
 [[product]]
@@ -1282,7 +1283,7 @@ market = "KR (en.somebymi.com)"
 application = "leave_on"
 source_url = "https://en.somebymi.com/product/snail-truecica-miracle-repair-serum-50ml/607/"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Snail Secretion Filtrate(87 %), Butylene Glycol, Water, Niacinamide, 1,2-Hexanediol, C12-14 Pareth-12, C12-14 Pareth-7, Carbomer, Tromethamine, Dioscorea Japonica Root Extract, Trehalose, Ethylhexylglycerin, Citrus Aurantium Bergamia (Bergamot) Fruit Oil, Beta-Glucan, Hydrolyzed Corn Starch, Allantoin, Adenosine, Disodium EDTA, Sucrose, Melaleuca Alternifolia (Tea Tree) Leaf Extract(50 ppm), Salvia Officinalis (Sage) Oil, Centella Asiatica Extract(100 ppm), Salvia Officinalis (Sage) Leaf Extract, Glycyrrhiza Glabra (Licorice) Root Extract, Agrimonia Eupatoria Extract, Camellia Sinensis Leaf Extract, Chamaecyparis Obtusa Leaf Extract, Silybum Marianum Seed Extract, Sodium Chondroitin Sulfate, Perilla Frutescens Leaf Extract, Artemisia Capillaris Extract(8,745 ppb), Broussonetia Kazinoki Root Extract, Propolis Extract, Pentylene Glycol, Cimicifuga Dahurica Root Extract, Salix Alba (Willow) Bark Extract, Madecassoside(1 ppm), Oenothera Biennis (Evening Primrose) Flower Extract, Asiaticoside(4 ppm), Asiatic Acid(3 ppm), Madecassic Acid(3 ppm), Phenoxyethanol, Limonene, Linalool"""
 
 [[product]]
@@ -1293,7 +1294,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.loreal-paris.co.uk/revitalift/filler-renew/hyaluronic-acid-anti-wrinkle-serum"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER • GLYCERIN • HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID • SODIUM HYALURONATE • ASCORBYL GLUCOSIDE • CITRIC ACID • PEG-60 HYDROGENATED CASTOR OIL • PENTYLENE GLYCOL • SECALE CEREALE SEED EXTRACT / RYE SEED EXTRACT • SODIUM ACETYLATED HYALURONATE • SODIUM DNA • SODIUM RNA • TRISODIUM ETHYLENEDIAMINE DISUCCINATE • CARVONE • CITRONELLOL • LIMONENE • LINALOOL • LINALYL ACETATE • CHLORPHENESIN • PHENOXYETHANOL • PARFUM / FRAGRANCE"""
 
 [[product]]
@@ -1304,7 +1305,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://www.vichy.com.vn/all-products/skincare/face-serums/ageing-signs/liftactiv-collagen-specialist-16"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU, GLYCERIN, RHAMNOSE, ALCOHOL DENAT., NIACINAMIDE, DIMETHICONE, HYDROXYETHYLPIPERAZINE ETHANE SULFONIC ACID, HYDROLYZED RICE PROTEIN, ADENOSINE, CITRIC ACID, GRIFOLA FRONDOSA FRUITING BODY EXTRACT, HYDROXYACETOPHENONE, PALMITOYL TETRAPEPTIDE-7, PALMITOYL TRIPEPTIDE-1, SH-POLYPEPTIDE-69, SODIUM HYALURONATE, TETRASODIUM GLUTAMATE DIACETATE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, SILICA, AMMONIUM POLYACRYLOYLDIMETHYL TAURATE, BUTYLENE GLYCOL, CAPRYLYL GLYCOL, CARBOMER, MALTODEXTRIN, PEG-20 METHYL GLUCOSE SESQUISTEARATE, PENTYLENE GLYCOL, POLYSORBATE 20, SODIUM CHLORIDE, SODIUM LACTATE, SODIUM PHOSPHATE, TOCOPHEROL, XANTHAN GUM, PERFUME / FRAGRANCE"""
 
 # --- Chống nắng (đợt 2) ---
@@ -1320,7 +1321,7 @@ application = "leave_on"
 ingredients_ordered = false
 source_url = "https://theordinary.com/en-us/uv-filters-spf-45-serum-100720.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Avobenzone 3.0%, Homosalate 7.0%, Octisalate 4.5%, Octocrylene 10.0%, Aqua, Behenyl Acrylate Polymer, Biosaccharide Gum-2, Butyloctyl Salicylate, Chlorphenesin, Diethylhexyl 2,6-Naphthalate, Dimethicone/Vinyl Dimethicone Crosspolymer (Soft Particle), Glycerin, Isododecane, Magnesium Sulfate, N-Acetylcarnosine, p-Anisic Acid, Pentylene Glycol, Phenoxyethanol, Propanediol, Sodium Citrate, Soy Phospholipids, Sphingolipids, Tocopherol, Tri(Polyglyceryl-3/Lauryl) Hydrogenated Trilinoleate, Trisodium Ethylenediamine Disuccinate."""
 
 [[product]]
@@ -1331,7 +1332,7 @@ market = "VN"
 application = "leave_on"
 source_url = "https://www.vichy.com.vn/all-products/suncare/sunscreens/uv-protection/capital-soleil---dry-touch-face-fluid-spf-50-plus"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """AQUA / WATER / EAU, ALCOHOL DENAT., GLYCERIN, DIISOPROPYL SEBACATE, ISOPROPYL MYRISTATE, ETHYLHEXYL SALICYLATE, ETHYLHEXYL TRIAZONE, SILICA, BIS-ETHYLHEXYLOXYPHENOL METHOXYPHENYL TRIAZINE, BUTYL METHOXYDIBENZOYLMETHANE, PROPANEDIOL, C12-22 ALKYL ACRYLATE/HYDROXYETHYLACRYLATE COPOLYMER, SILICA SILYLATE, PERLITE, DROMETRIZOLE TRISILOXANE, TOCOPHEROL, CAPRYLIC/CAPRIC TRIGLYCERIDE, ACRYLATES/C10-30 ALKYL ACRYLATE CROSSPOLYMER, BUTYLENE GLYCOL, CAPRYLYL GLYCOL, CITRIC ACID, DISODIUM PHOSPHATE, HYDROXYACETOPHENONE, HYDROXYETHYLCELLULOSE, POLYSORBATE 60, SODIUM PHOSPHATE, TEREPHTHALYLIDENE DICAMPHOR SULFONIC ACID, TRIETHANOLAMINE, TRISODIUM ETHYLENEDIAMINE DISUCCINATE, PARFUM / FRAGRANCE"""
 
 [[product]]
@@ -1342,7 +1343,7 @@ market = "UK"
 application = "leave_on"
 source_url = "https://www.paulaschoice.co.uk/defense-essential-glow-moisturizer-spf-30/m2230.html"
 retrieved_at = 2026-11-08
-verification_status = "unverified"
+verification_status = "verified"
 ingredients = """Aqua, C12-15 Alkyl Benzoate (emollient), Zinc Oxide (nano, sunscreen), Titanium Dioxide (nano, sunscreen), Glycerin (skin-replenishing), Isononyl Isononanoate (emollient), Butylene Glycol (texture enhancer), Cetearyl Alcohol (emollient/texture enhancer), Potassium Cetyl Phosphate (emulsifier), Dimethicone (hydration), Glyceryl Stearate (texture enhancer), Glycyrrhiza Glabra (Licorice) Root Extract (skin-soothing), Actinidia Chinensis (Kiwi) Fruit Extract (antioxidant), Argania Spinosa Kernel Oil (non-fragrant antioxidant plant oil), Tetrapeptide-30 (skin-restoring agent), Linoleic Acid (skin-restoring agent), Resveratrol (antioxidant), Ascorbyl Glucoside (vitamin C/antioxidant), Niacinamide (skin-restoring), Tocopheryl Acetate (vitamin E/antioxidant), Magnesium Ascorbyl Phosphate (vitamin C/antioxidant), Bisabolol (skin-soothing), Tocopherol (vitamin E/antioxidant), Phospholipids (skin-restoring agent), Lecithin (skin-restoring agent), Glycine Soja (Soybean) Sterols (antioxidant/hydration), Xanthophylls (antioxidant), Pullulan (texture enhancer), Sodium Gluconate (hydration), Xanthan Gum (texture enhancer), Sclerotium Gum (texture enhancer), Alumina (texture enhancer), Caprylic/Capric Triglyceride (skin-replenishing), Citric Acid (pH adjuster), Triethoxycaprylylsilane (texture enhancer), C13-14 Isoparaffin (solvent), Acrylates Copolymer (film-forming agent), Polyhydroxystearic Acid (dispersing agent), Caprylyl Glycol (hydration), Polyacrylamide (film-forming agent), Ceteareth-20 (texture enhancer), Aluminum Stearate (texture enhancer), Laureth-7 (emulsifier), Ethylhexylglycerin (preservative), Phenoxyethanol (preservative)."""
 
 # The Ordinary Glycolic Acid 7% Exfoliating Toner: retried 08/11 (id 100418, en-ca and en-us), the Ingredients
